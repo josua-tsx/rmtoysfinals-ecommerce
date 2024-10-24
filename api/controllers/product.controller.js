@@ -13,8 +13,13 @@ export const addProduct = async (req, res, next) => {
     productImages,
     filters,
     category,
-    supplier
+    supplier,
   } = req.body;
+
+  if (!category || !supplier)
+    return next(
+      handleMakeError(400, "You need category or supplier to add product!")
+    );
 
   try {
     const newProduct = new Product({
@@ -27,7 +32,7 @@ export const addProduct = async (req, res, next) => {
       productImages,
       filters,
       category,
-      supplier
+      supplier,
     });
 
     await newProduct.save();
@@ -39,16 +44,18 @@ export const addProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find().populate({
-      path: "supplier",
-      select: "supplierName"
-    }).populate({
-      path: "category",
-      select: "categoryName"
-    })
+    const products = await Product.find()
+      .populate({
+        path: "supplier",
+        select: "supplierName",
+      })
+      .populate({
+        path: "category",
+        select: "categoryName",
+      });
 
     res.status(200).json(products);
-  } catch (error) { 
+  } catch (error) {
     next(error);
   }
 };
@@ -61,8 +68,8 @@ export const deleteProduct = async (req, res, next) => {
 
     if (!singleProduct) return next(handleMakeError(400, "Product not found"));
 
-    await Stocks.deleteMany({product: productId})
-    
+    await Stocks.deleteMany({ product: productId });
+
     await Product.findByIdAndDelete(productId);
 
     res.status(200).json({ message: "Successfully deleted" });
@@ -82,6 +89,8 @@ export const editProduct = async (req, res, next) => {
     discount,
     productImages,
     filters,
+    category,
+    supplier,
   } = req.body;
 
   try {
@@ -96,7 +105,9 @@ export const editProduct = async (req, res, next) => {
         productImages,
         filters,
         category,
-        supplier
+        supplier,
+        category,
+        supplier,
       },
       {
         new: true,
@@ -127,3 +138,11 @@ export const getSingleProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+export const draftProduct = async (req, res, next ) => {
+  try {
+    
+  } catch (error) {
+    next(error)
+  }
+}

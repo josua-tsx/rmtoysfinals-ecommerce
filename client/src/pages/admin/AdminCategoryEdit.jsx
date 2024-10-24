@@ -64,12 +64,7 @@ export default function AdminCategoryEdit() {
     const inputs = Object.fromEntries(formData);
 
     const { categoryName, categoryDescription } = inputs;
-
-    try {
-      editCategoryMutation({ categoryName, categoryDescription });
-    } catch (error) {
-      console.log(error);
-    }
+    editCategoryMutation({ categoryName, categoryDescription });
   };
 
   const handleChange = (e) => {
@@ -108,7 +103,7 @@ export default function AdminCategoryEdit() {
                 id="categoryName"
                 value={currentCategory.categoryName}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+                className="border border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
               />
             </div>
             <div className="flex gap-2 flex-col">
@@ -121,7 +116,7 @@ export default function AdminCategoryEdit() {
                 id="categoryDescription"
                 value={currentCategory.categoryDescription}
                 onChange={handleChange}
-                className="border resize-none border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+                className="border resize-none border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
               />
             </div>
           </div>

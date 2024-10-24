@@ -11,7 +11,7 @@ export default function ShopProductCards({product}) {
     <div className="w-80 md:w-full h-[350px] border mx-auto font-main items-center flex flex-col justify-center group rounded-[5px] bg-card border-black shadow-md relative ">
       <div className="border p-1 text-sm z-10 bg-primary uppercase text-card font-medium absolute top-[-10px] right-[-10px] border-black rounded-[5px]">
         {
-          product.filters[0].categories
+          product.category.categoryName
         }
       </div>
       <div className="w-full flex justify-center relative overflow-hidden group-hover:bg-primary rounded-t-[5px]">

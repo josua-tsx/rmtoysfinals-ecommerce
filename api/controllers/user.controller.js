@@ -53,12 +53,12 @@ export const getAllCustomer = async (req, res, next) => {
   }
 }
 
-export const getAllWorkers = async (req, res, next) => {
-  try {
-    const dontFindCustomer = await User.find({role: {$ne: "customer"}})
-    if (!dontFindCustomer) return next(handleMakeError(400, "Not found!"))
-    res.status(200).json(dontFindCustomer)
-  } catch (error) {
-    next(error)
-  }
-}
+// export const getAllWorkers = async (req, res, next) => {
+//   try {
+//     const dontFindCustomer = await User.find({role: {$ne: "customer"}})
+//     if (!dontFindCustomer) return next(handleMakeError(400, "Not found!"))
+//     res.status(200).json(dontFindCustomer)
+//   } catch (error) {
+//     next(error)
+//   }
+// }

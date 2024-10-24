@@ -6,32 +6,64 @@ import { FaCheckCircle } from "react-icons/fa";
 import { IoArchive } from "react-icons/io5";
 import { IoIosAdd } from "react-icons/io";
 import Buttons from "../../reusable/Buttons";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function AdminEditProducts() {
+  const params = useParams();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
   const [images, setImages] = useState([]);
 
   const [label, setLabel] = useState("");
   const [value, setValue] = useState("");
 
-
-  const [stocks, setStocks] = useState(0)
-  const [discount, setDiscount] = useState(0)
-  const [productName, setProductName] = useState("")
-  const [productDescription, setProductDescription] = useState("")
+  const [discount, setDiscount] = useState(0);
+  const [productName, setProductName] = useState("");
+  const [productDescription, setProductDescription] = useState("");
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
-  const [filters, setFilters] = useState({})
-  const [price, setPrice] = useState(0)
-
-  const params = useParams()
-
+  const [filters, setFilters] = useState({});
+  const [price, setPrice] = useState(0);
+  const [category, setCategory] = useState("");
+  const [supplier, setSupplier] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
+
+
+  const {
+    data: singleProduct,
+    isPending: isProductPending,
+    isError: isProductError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const { editProductId } = params;
+      const res = await axiosInstance.get(
+        `/product/get-product/${editProductId}`
+      );
+      return res.data;
+    },
+    enabled: !!params.editProductId,
+  });
+
+  useEffect(() => {
+    if (singleProduct) {
+      setFilters(singleProduct.filters);
+      setProductName(singleProduct.productName || "");
+      setProductDescription(singleProduct.productDescription || "");
+      setPrice(singleProduct.price || 0);
+      setDiscount(singleProduct.discount || 0);
+      setCategory(singleProduct.category || "");
+      setSupplier(singleProduct.supplier || "");
+      setProductsDetailsArray(singleProduct.productDetails || []);
+      setImages(singleProduct.productImages || []);
+    }
+  }, [singleProduct]);
 
   const { data, isPending, isError } = useQuery({
     queryKey: ["filters"],
@@ -41,60 +73,74 @@ export default function AdminEditProducts() {
     },
   });
 
-
-
-  const { data: SingleProduct, isPending: isPendingProduct, isError: isErrorProduct } = useQuery({
-    queryKey: ["products", params.editProductId],
+  const {
+    data: categories = [],
+    isPending: isCategoryPending,
+    isError: isCategoryError,
+  } = useQuery({
+    queryKey: ["categories"],
     queryFn: async () => {
-      const { editProductId } = params;
-      const res = await axiosInstance.get(`/product/get-product/${editProductId}`);
-      if (!res.data) throw new Error("Product not found");
+      const res = await axiosInstance.get(`/category/get-categories`);
       return res.data;
     },
-    enabled: !!params.editProductId,
   });
 
-  
-  console.log(SingleProduct)
+  const {
+    data: suppliers = [],
+    isPending: isSuppliersPending,
+    isError: isSuppliersError,
+  } = useQuery({
+    queryKey: ["suppliers"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/supplier/get-suppliers`);
+      return res.data;
+    },
+  });
 
-
-  const { mutate: editProductMutation } = useMutation({
+  const {
+    mutate: editProductMutation,
+  } = useMutation({
     mutationFn: async (data) => {
-        const { editProductId } = params;
-      const res = await axiosInstance.put(`/product/edit-product/${editProductId}`, data);
+      const { editProductId } = params;
+      const res = await axiosInstance.put(
+        `/product/edit-product/${editProductId}`,
+        data
+      );
       return res.data;
     },
     onSuccess: () => {
-      setProductDescription("")
-      setProductName("")
-      setProductsDetailsArray([])
-      setImages([])
-      setDiscount(0)
-      setStocks(0)
-      toast.success("Product Edited");
+      queryClient.refetchQueries({ queryKey: ["products"] });
+
+      setProductDescription("");
+      setProductName("");
+      setProductsDetailsArray([]);
+      setImages([]);
+      setCategory("")
+      setSupplier("")
+      setPrice(0)
+      setDiscount(0);
+      navigate(`/admin/products`)
+      toast.success("Successfully edited");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "Somethign went wrong");
+      toast.error(err.response.data.message || "Something went wrong");
     },
   });
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    try {
-      editProductMutation({
-        productName,
-        price,
-        productDescription,
-        productDetails: productsDetailsArray,
-        stocks,
-        discount,
-        productImages: images,
-        filters
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    editProductMutation({
+      productName,
+      price,
+      productDescription,
+      productDetails: productsDetailsArray,
+      discount,
+      productImages: images,
+      filters,
+      category: category,
+      supplier: supplier,
+    });
   };
 
   const handleSubmitLabelValueObject = () => {
@@ -148,18 +194,27 @@ export default function AdminEditProducts() {
     setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (isPending || isPendingProduct) {
-    return <p>Loading data...</p>;
+  if (
+    isPending ||
+    isCategoryPending ||
+    isSuppliersPending ||
+    isProductPending 
+  ) {
+    return <p>awdwad</p>;
   }
-  
-  if (isError || isErrorProduct) {
-    return <p>Error occurred. Please try again.</p>;
+
+  if (
+    isError ||
+    isCategoryError ||
+    isSuppliersError ||
+    isProductError 
+  ) {
+    return <p>awdwad</p>;
   }
-  
 
   return (
     <section className="bg-yellow h-screen font-main">
-      <AdminHeader title={"EDIT PRODUCTS"} />
+      <AdminHeader title={"ADD NEW PRODUCTS"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
         <form
@@ -188,7 +243,6 @@ export default function AdminEditProducts() {
                   id="productDescription"
                   onChange={(e) => setProductDescription(e.target.value)}
                   value={productDescription}
-          
                 ></textarea>
               </div>
 
@@ -266,7 +320,7 @@ export default function AdminEditProducts() {
 
             <div className="border flex flex-col gap-2 border-black rounded-[5px] uppercase bg-card p-4">
               <div className="flex flex-col md:flex-row gap-2">
-                <div className="flex flex-col flex-1">
+                {/* <div className="flex flex-col flex-1">
                   <label htmlFor="stocks" className="pb-2">
                     Stocks
                   </label>
@@ -278,7 +332,7 @@ export default function AdminEditProducts() {
                     value={stocks}
                     onChange={(e) => setStocks(e.target.value)}
                   />
-                </div>
+                </div> */}
                 <div className="flex flex-col flex-1">
                   <label htmlFor="price" className="pb-2">
                     price
@@ -327,6 +381,46 @@ export default function AdminEditProducts() {
               </div>
 
               <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
+                <div className="flex flex-col">
+                  <h1 className="py-2">Categories</h1>
+                  <select
+                    name="category"
+                    id="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="-2 rounded-[5px] py-2 border border-black outline-none"
+                  >
+                    <option value="">Select Category</option>
+                    {categories.length > 0 &&
+                      categories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.categoryName}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <h1 className="py-2">Suppliers</h1>
+                  <select
+                    name="supplier"
+                    id="supplier"
+                    value={supplier}
+                    onChange={(e) => setSupplier(e.target.value)}
+                    className="-2 rounded-[5px] py-2 border border-black outline-none"
+                  >
+                    <option value="">Select Supplier</option>
+                    {suppliers.length > 0 &&
+                      suppliers.map((supplier) => (
+                        <option key={supplier._id} value={supplier._id}>
+                          {supplier.supplierName}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
                 <h1 className="py-2">FILTERS</h1>
 
                 <div className="flex gap-2 flex-wrap">
@@ -340,13 +434,16 @@ export default function AdminEditProducts() {
                           className="p-2 rounded-[5px] border border-black outline-none"
                           name={item.filterName}
                           id={item.filterName}
-                          onChange={(e) => 
+                          onChange={(e) =>
                             setFilters((prevFilters) => ({
                               ...prevFilters, // Keep existing filters intact
                               [item.filterName]: e.target.value, // Update the current filter value
                             }))
                           }
                         >
+                          <option value={value}>
+                            select {item.filterName}
+                          </option>
                           {Array.isArray(item.filterValue) &&
                             item.filterValue.map((value, index) => (
                               <option key={`${item.id}-${index}`} value={value}>
@@ -368,12 +465,10 @@ export default function AdminEditProducts() {
                 <Buttons buttonName={"draft"} icon={<IoArchive />} />
               </div>
 
-     
-              <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">EDIT PRODUCT
-
-                <FaCheckCircle/>
+              <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
+                UPDATE THIS PRODUCT
+                <FaCheckCircle />
               </button>
-
             </div>
           </div>
 

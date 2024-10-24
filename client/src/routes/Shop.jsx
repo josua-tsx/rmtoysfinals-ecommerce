@@ -16,6 +16,9 @@ export default function Shop() {
   })
 
 
+  console.log(products)
+
+
 
 
   if (isPending) return <p>Loading...</p>;

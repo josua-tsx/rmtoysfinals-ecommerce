@@ -28,6 +28,8 @@ export default function AdminAddStocks() {
     },
     onSuccess: () => {
       toast.success("Successfully Added stock");
+      setStockQuantity(0)
+      setProductId("")
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");

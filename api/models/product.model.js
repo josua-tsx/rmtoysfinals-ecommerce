@@ -7,6 +7,11 @@ const ProductModelSchema = new mongoose.Schema({
     unique: true,
   },
 
+  isDraft: {
+    type: Boolean,
+    default: false
+  },
+
   price: {
     type: Number,
     min: 0,
@@ -52,6 +57,8 @@ const ProductModelSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Supplier",
   },
+
+ 
 });
 
 const Product = mongoose.model("Product", ProductModelSchema);

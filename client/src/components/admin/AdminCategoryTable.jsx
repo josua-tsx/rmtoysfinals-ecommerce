@@ -24,6 +24,8 @@ export default function AdminCategoryTable() {
     },
   });
 
+  console.log(categories)
+
 
   const {mutate: deleteCategoryMutation, isPending: isDeletedPending, isError: isDeletedError} = useMutation({
     mutationFn: async (categoryId) => {

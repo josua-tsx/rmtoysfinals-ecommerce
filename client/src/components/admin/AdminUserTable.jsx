@@ -13,7 +13,6 @@ export default function AdminUserTable() {
         }
     })
     
-    console.log(users)
 
     if (isPending) {
         return <p>loading...</p>
@@ -26,7 +25,7 @@ export default function AdminUserTable() {
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
     <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-      <h1>PRODUCTS TABLE</h1>
+      <h1>USERS TABLE</h1>
       <div className="flex items-center relative">
         <input
           type="text"
@@ -64,7 +63,7 @@ export default function AdminUserTable() {
                     {user.username}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    { !user.phonenumber ? "not updated yt" : user.phoneNumber}
+                    { !user.phonenumber ? "not updated yet" : user.phoneNumber}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {user.role}

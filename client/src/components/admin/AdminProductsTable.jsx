@@ -39,8 +39,6 @@ export default function AdminProductsTable() {
     },
   });
 
-  console.log(products);
-
   const navigateToeditPage = (editId) => {
     navigate(`/admin/editProduct/${editId}`);
   };
@@ -74,7 +72,7 @@ export default function AdminProductsTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {products.length > 0 &&
+            {products.length > 0 ?
               products.map((product) => (
                 <tr key={product._id}>
                   <td className="px-4 ">{product._id}</td>
@@ -88,7 +86,7 @@ export default function AdminProductsTable() {
                   </td>
 
                   <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {product.category.categoryName}
+                    {product.category && product.category.categoryName}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
@@ -115,7 +113,8 @@ export default function AdminProductsTable() {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )) : <p className="px-1">no products</p>
+            } 
           </tbody>
         </table>
       </div>

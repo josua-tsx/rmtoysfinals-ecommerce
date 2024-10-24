@@ -17,11 +17,26 @@ export default function ShopSide() {
     },
   });
 
-  if (isLoading) {
+  const {
+    data: categories = [],
+    isPending: isCategoryPending,
+    isError: isCategoryError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/category/get-categories`);
+      return res.data;
+    },
+  });
+
+
+  
+
+  if (isLoading  || isCategoryPending) {
     return <p>loading...</p>
   }
 
-  if (isError) {
+  if (isError || isCategoryError) {
     return <p>loading...</p>
   }
 
@@ -84,10 +99,42 @@ export default function ShopSide() {
 
         {/* CATEGORIES */}
 
+
+        <div  className={` flex-col gap-2  pb-5`}>
+        <div className="flex items-start justify-between">
+          <h1 className="text-xl mb-2 uppercase">Categories</h1>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className={`flex flex-col gap-2`}>
+
+          
+          {
+            categories.length > 0 && categories.map((category) => (
+              <div key={category.categoryName} className={`flex items-center gap-3`}>
+              <input
+                type="checkbox"
+                className="w-4 h-4  text-blue-600 bg-gray-100 border-gray-300 rounded  dark:bg-gray-700 dark:border-gray-600"
+                id={category.categoryName}
+                value={category.categoryName}
+              />
+              <label htmlFor={category.categoryName} className="uppercase" >{category.categoryName}</label>
+            </div>
+            ))
+          }
+      
+          
+          </div>
+        </div>
+      </div>
+            
+       
+  
+
         {
           data.map((filter) => (
             
-        <div key={filter.id} className={` flex-col gap-2  pb-5`}>
+        <div key={filter._id} className={` flex-col gap-2  pb-5`}>
         <div className="flex items-start justify-between">
           <h1 className="text-xl mb-2 uppercase">{filter.filterName}</h1>
         </div>
