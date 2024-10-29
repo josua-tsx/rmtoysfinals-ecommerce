@@ -37,6 +37,8 @@ import AdminStocks from './pages/admin/AdminStocks.jsx'
 import AdminAddStocks from './pages/admin/AdminAddStocks.jsx'
 import AdminEditStocks from './components/admin/AdminEditStocks.jsx'
 import AdminUser from './pages/admin/AdminUser.jsx'
+import AdminDraftProductsTable from './components/admin/AdminDraftProductsTable.jsx'
+import AdminDraftProduct from './pages/admin/AdminDraftProduct.jsx'
   
 const queryClient = new QueryClient()
 
@@ -137,6 +139,10 @@ const router = createBrowserRouter([
       {
         path: "/admin/editProduct/:editProductId",
         element: <AdminEditProducts/>
+      },
+      {
+        path: "/admin/draftProducts",
+        element: <AdminDraftProduct/>
       },
 
        // SUPPLIER

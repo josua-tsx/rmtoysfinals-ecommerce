@@ -67,6 +67,8 @@ export default function AdminProductsTable() {
               <th className="font-normal p-2 pb-5">NAME</th>
               <th className="font-normal p-2 pb-5">CATEGORY</th>
               <th className="font-normal p-2 pb-5">PRICE</th>
+              <th className="font-normal p-2 pb-5">STATUS</th>
+              <th className="font-normal p-2 pb-5">DATE CREATED</th>
               {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
@@ -92,6 +94,15 @@ export default function AdminProductsTable() {
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     PHP{product.price.toFixed(2)}
                   </td>
+
+                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                    {product.status}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    {product && product.createdAt}
+                  </td>
+
                   {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
                   {product.stocks}
                 </td> */}

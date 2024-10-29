@@ -1,0 +1,132 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axiosInstance from "../../lib/axios";
+import toast from "react-hot-toast";
+
+
+export default function AdminDraftProductsTable() {
+
+  const queryClient = useQueryClient()
+
+
+  const {data: drafts =[], isPending: isDraftsPending, isError: isDraftsError} = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/product/get-drafts`)
+      return res.data
+    }
+  })
+
+  const {mutate: deleteDraftMutation} = useMutation({
+    mutationFn: async (draftId) => {
+      const res = await axiosInstance.delete(`/product/delete-draft/${draftId}`)
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['products']})
+      toast.success("Draft deleted")
+    }, 
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong!")
+    }
+  })
+
+
+  const {mutate: publishDraftMutation} = useMutation({
+    mutationFn: async (draftId) => {
+      const res = await axiosInstance.post(`/product/publish-draft/${draftId}`)
+      return res.data
+    }, 
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['products']})
+      toast.success("Draft published successfully!")
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong!")
+    }
+  })
+ 
+
+
+
+  if (isDraftsPending) {
+    return <p>loading...</p>
+  }
+
+  if (isDraftsError) {
+    return <p>error...</p>
+  }
+
+  return (
+    <div className="font-main border rounded-[5px] border-black bg-card relative ">
+      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
+        <h1>DRAFTS TABLE</h1>
+        {/* <div className="flex items-center relative">
+          <input
+            type="text"
+            placeholder="search products.."
+            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+          />
+          <IoSearch className="absolute right-0" size={30} />
+        </div> */}
+      </div>
+      <div className="overflow-y-auto  h-[600px] py-3">
+        <table className="w-full divide-y divide-gray-700">
+          <thead>
+            <tr className="">
+              <th className="font-normal p-2 pb-5">ID</th>
+              <th className="font-normal p-2 pb-5">NAME</th>
+              <th className="font-normal p-2 pb-5">CATEGORY</th>
+              <th className="font-normal p-2 pb-5">PRICE</th>
+              <th className="font-normal p-2 pb-5">STATUS</th>
+              {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
+              <th className="font-normal p-2 pb-5">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700 ">
+            {
+              drafts.length > 0 ? drafts.map((draft) => (
+                <tr key={draft._id}>
+                <td className="px-4 ">{draft._id}</td>
+                <td className="px-2 uppercase py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
+                  <img
+                    src={draft.productImages.length > 0 && draft.productImages[0]}
+                    alt="Product img"
+                    className="size-10 rounded-full"
+                  />
+                  {draft.productName}
+                </td>
+  
+                <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                {draft.category.categoryName}
+                </td>
+
+                <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                  {draft.price}
+                </td>
+  
+                <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
+                  {draft.status}
+                </td>
+                {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
+                    {product.stocks}
+                  </td> */}
+                <td className=" whitespace-nowrap gap-3 text-sm flex justify-center">
+                  <button onClick={() => deleteDraftMutation(draft._id)}
+                  type="button" 
+                  className="text-red-600 hover:text-red-300">
+                    DELETE
+                  </button>
+                  <button onClick={() => publishDraftMutation(draft._id)}
+                  className="text-green-600 hover:text-indigo-300 mr-2">
+                    PUBLISH
+                  </button>
+                </td>
+              </tr>
+              )) : <p>No draft</p>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

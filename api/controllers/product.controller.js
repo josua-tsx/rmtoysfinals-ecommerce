@@ -1,7 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
-
 export const addProduct = async (req, res, next) => {
   const {
     productName,
@@ -16,12 +15,24 @@ export const addProduct = async (req, res, next) => {
     supplier,
   } = req.body;
 
-  if (!category || !supplier)
+  if (!category || !supplier) {
     return next(
       handleMakeError(400, "You need category or supplier to add product!")
     );
+  }
 
   try {
+    const existingDraftProduct = await Product.findOne({
+      productName,
+      status: "draft",
+    });
+
+    if (existingDraftProduct) {
+      return next(
+        handleMakeError(400, "This product name is already in draft")
+      );
+    }
+
     const newProduct = new Product({
       productName,
       price,
@@ -31,6 +42,7 @@ export const addProduct = async (req, res, next) => {
       discount,
       productImages,
       filters,
+      status: "published",
       category,
       supplier,
     });
@@ -44,7 +56,7 @@ export const addProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find()
+    const products = await Product.find({ status: "published" })
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -105,7 +117,7 @@ export const editProduct = async (req, res, next) => {
         productImages,
         filters,
         category,
-        supplier,
+        status: "published",
         category,
         supplier,
       },
@@ -139,10 +151,100 @@ export const getSingleProduct = async (req, res, next) => {
   }
 };
 
-export const draftProduct = async (req, res, next ) => {
+// DRAFTS
+
+export const addDraft = async (req, res, next) => {
+  const {
+    productName,
+    price,
+    productDescription,
+    productDetails,
+    stocks,
+    discount,
+    productImages,
+    filters,
+    category,
+    supplier,
+  } = req.body;
+
+  if (!category || !supplier)
+    return next(
+      handleMakeError(400, "You need category or supplier to add product!")
+    );
+
   try {
-    
+    const newDraft = new Product({
+      productName,
+      price,
+      productDescription,
+      productDetails,
+      stocks,
+      discount,
+      productImages,
+      filters,
+      status: "draft",
+      category,
+      supplier,
+    });
+
+    await newDraft.save();
+    res.status(200).json(newDraft);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
+
+export const getDrafts = async (req, res, next) => {
+  try {
+    const products = await Product.find({ status: "draft" })
+      .populate({
+        path: "supplier",
+        select: "supplierName",
+      })
+      .populate({
+        path: "category",
+        select: "categoryName",
+      });
+
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteDraft = async (req, res, next) => {
+  const { draftId } = req.params;
+
+  try {
+    const singleDraft = await Product.findById(draftId);
+
+    if (!singleDraft) return next(handleMakeError(400, "Draft is not found!"));
+
+    await Product.findByIdAndDelete(draftId);
+
+    res.status(200).json({ message: "draft is deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const publishDraft = async (req, res, next) => {
+  const { draftId } = req.params;
+
+  try {
+    const publishDraft = await Product.findByIdAndUpdate(
+      draftId,
+      {
+        status: "published",
+      },
+      { new: true }
+    );
+
+    if (!publishDraft) return next(handleMakeError(400, "draft not found"));
+
+    res.status(200).json(publishDraft)
+
+  } catch (error) {
+    next(error);
+  }
+};

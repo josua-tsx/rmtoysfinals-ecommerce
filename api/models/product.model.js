@@ -7,11 +7,6 @@ const ProductModelSchema = new mongoose.Schema({
     unique: true,
   },
 
-  isDraft: {
-    type: Boolean,
-    default: false
-  },
-
   price: {
     type: Number,
     min: 0,
@@ -43,15 +38,21 @@ const ProductModelSchema = new mongoose.Schema({
     default: false,
   },
 
-  filters: {
+  filters: {  
     type: Array,
     required: true,
+  },
+
+  status: {
+    type: String,
+    enum: ["draft", "published"],
+    default: "draft"
   },
 
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
-  },
+},
 
   supplier: {
     type: mongoose.Schema.Types.ObjectId,
@@ -59,7 +60,7 @@ const ProductModelSchema = new mongoose.Schema({
   },
 
  
-});
+}, {timestamps: true});
 
 const Product = mongoose.model("Product", ProductModelSchema);
 

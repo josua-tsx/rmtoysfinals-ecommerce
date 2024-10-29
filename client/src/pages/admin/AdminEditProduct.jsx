@@ -127,6 +127,43 @@ export default function AdminEditProducts() {
     },
   });
 
+  // const {mutate: addDraftProductMutation} = useMutation({
+  //   mutationFn: async (data) => {
+  //     const res = await axiosInstance.post(`/product/add-draft`, data)
+  //     return res.data 
+  //   }, 
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({queryKey: ["products"]})
+  //     setProductDescription("");
+  //     setProductName("");
+  //     setProductsDetailsArray([]);
+  //     setImages([]);
+  //     setDiscount(0);
+  //     toast.success("Saved As Draft");
+  //   },
+  //   onError: (err) => {
+  //     toast.error(err.response.data.message || "Something went wrong");
+  //   },
+  // })
+
+  // const handleFormDraftSubmit = () => {
+
+  //   addDraftProductMutation({
+  //     productName,
+  //     price,
+  //     productDescription,
+  //     productDetails: productsDetailsArray,
+  //     discount,
+  //     productImages: images,
+  //     filters,
+  //     category: category,
+  //     supplier: supplier
+  //   });
+
+  // }
+
+
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
@@ -458,14 +495,14 @@ export default function AdminEditProducts() {
             </div>
 
             <div className="flex justify-end gap-2">
-              <div
-                onClick={() => console.log("tite")}
+              {/* <div
+                onClick={() => handleFormDraftSubmit()}
                 className="w-[100px] md:w-[200px]"
               >
-                <Buttons buttonName={"draft"} icon={<IoArchive />} />
-              </div>
+                <Buttons buttonType={"button"} buttonName={"draft"} icon={<IoArchive />} />
+              </div> */}
 
-              <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
+              <button className="flex-1 py-2 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
                 UPDATE THIS PRODUCT
                 <FaCheckCircle />
               </button>

@@ -6,12 +6,15 @@ import { FaCheckCircle } from "react-icons/fa";
 import { IoArchive } from "react-icons/io5";
 import { IoIosAdd } from "react-icons/io";
 import Buttons from "../../reusable/Buttons";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 export default function AdminAddProducts() {
+
+  const queryClient = useQueryClient()
+
   const [images, setImages] = useState([]);
 
   const [label, setLabel] = useState("");
@@ -61,14 +64,13 @@ export default function AdminAddProducts() {
     },
   });
 
-  console.log(suppliers)
-
   const { mutate: addProductMutation } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/product/add-product`, data);
       return res.data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["products"]})
       setProductDescription("");
       setProductName("");
       setProductsDetailsArray([]);
@@ -77,9 +79,48 @@ export default function AdminAddProducts() {
       toast.success("Product Submitted");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "Somethign went wrong");
+      toast.error(err.response.data.message || "Something went wrong");
     },
   });
+
+  const {mutate: addDraftProductMutation} = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/product/add-draft`, data)
+      return res.data 
+    }, 
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["products"]})
+      setProductDescription("");
+      setProductName("");
+      setProductsDetailsArray([]);
+      setImages([]);
+      setDiscount(0);
+      toast.success("Saved As Draft");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "Something went wrong");
+    },
+  })
+
+
+
+  const handleFormDraftSubmit = () => {
+
+    addDraftProductMutation({
+      productName,
+      price,
+      productDescription,
+      productDetails: productsDetailsArray,
+      discount,
+      productImages: images,
+      filters,
+      category: category,
+      supplier: supplier
+    });
+
+  }
+
+
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -403,10 +444,10 @@ export default function AdminAddProducts() {
 
             <div className="flex justify-end gap-2">
               <div
-                onClick={() => console.log("tite")}
+                onClick={() => handleFormDraftSubmit()}
                 className="w-[100px] md:w-[200px]"
               >
-                <Buttons buttonName={"draft"} icon={<IoArchive />} />
+                <Buttons buttonType={"button"} buttonName={"draft"} icon={<IoArchive />} />
               </div>
 
               <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">

@@ -22,6 +22,8 @@ export default function AdminStocksTable() {
     },
   });
 
+  console.log(stocks)
+
   const { mutate: deleteStockMutation } = useMutation({
     mutationFn: async (stockId) => {
       const res = await axiosInstance.delete(
