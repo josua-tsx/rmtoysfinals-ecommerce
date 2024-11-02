@@ -17,22 +17,20 @@ const storeRefreshToken = async (userId, refreshToken) => {
 
 // REGISTER
 export const signup = async (req, res, next) => {
-  const { username, email, password, confirmPassword} = req.body;
-
+  const { username, email, password, confirmPassword } = req.body;
 
   const userExists = await User.findOne({ email });
   if (userExists) {
     return next(handleMakeError(400, "User already exist"));
   }
 
+  if (!username || !email || !password || !confirmPassword)
+    return next(handleMakeError(400, "Please input required fields"));
 
-
-  if (!username || !email || !password || !confirmPassword) return next(handleMakeError(400, "Please input required fields"))
-
-  if (password !== confirmPassword) return next(handleMakeError(400, "passwords are not equal "))
+  if (password !== confirmPassword)
+    return next(handleMakeError(400, "passwords are not equal "));
 
   try {
-
     const newUser = new User({
       email,
       username,
@@ -63,7 +61,8 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) return next(handleMakeError(400, "Please input required fields"))
+  if (!email || !password)
+    return next(handleMakeError(400, "Please input required fields"));
 
   try {
     const validUser = await User.findOne({ email });
@@ -75,7 +74,7 @@ export const signin = async (req, res, next) => {
       setCookies(res, accessToken, refreshToken);
 
       // EXCLUDING THE PASSWORD WITH THIS METHOD INSTEAD OF .select("-password") is wild
-      // JOKES ON YOU I CANT USE .select("-password") in this messy code because if i put that after User.FindOne - 
+      // JOKES ON YOU I CANT USE .select("-password") in this messy code because if i put that after User.FindOne -
       // now i cant compare my password because it wouldnt work because there is no password to compare
       const { password: pass, ...rest } = validUser._doc;
       res.json(rest);
@@ -160,10 +159,62 @@ export const refreshToken = async (req, res, next) => {
   }
 };
 
-export const getMe = async (req, res) => {
+export const getMe = async (req, res, next) => {
   try {
-    console.log("accesstoken: " + req.cookies.accessToken);
+    res.json(req.user)
   } catch (error) {
-    console.log(error);
+    next(error)
+    console.log(error)
   }
 };
+
+// ADD WORKER
+
+export const addWorker = async (req, res, next) => {
+  const { email, username, password, confirmPassword, role, jobDescription } = req.body; // Extract confirmPassword
+
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return next(handleMakeError(400, "User already exists"));
+  }
+
+  if (!username || !email || !password || !confirmPassword) {
+    return next(handleMakeError(400, "Please input required fields"));
+  }
+
+  if (password !== confirmPassword) {
+    return next(handleMakeError(400, "Passwords do not match"));
+  }
+
+  try {
+    const newUser = new User({
+      email,
+      username,
+      password,
+      role,
+      jobDescription,
+    });
+
+    // Authenticate
+    const { accessToken, refreshToken } = generateTokens(newUser._id);
+    await storeRefreshToken(newUser._id, refreshToken);
+
+    // Save the access/refresh token cookie
+    setCookies(res, accessToken, refreshToken);
+
+    await newUser.save();
+
+    res.status(201).json({
+      _id: newUser._id,
+      email: newUser.email,
+      username: newUser.username,
+      role: newUser.role,
+      jobDescription: newUser.jobDescription,
+    });
+  } catch (error) {
+    console.error("Error in addWorker controller:", error); // Log error details
+    next(error);
+  }
+};
+
+

@@ -12,7 +12,7 @@ export default function AdminAddCategory() {
     isError: isCategoryError,
   } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosInstance.post(`category/add-category`, data);
+      const res = await axiosInstance.post(`/category/add-category`, data);
       return res.data;
     },
     onSuccess: () => {

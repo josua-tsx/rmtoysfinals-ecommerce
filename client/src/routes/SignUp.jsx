@@ -28,16 +28,12 @@ export default function SignUp() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    try {
-      const formData = new FormData(e.target);
-      const inputs = Object.fromEntries(formData);
+    const formData = new FormData(e.target);
+    const inputs = Object.fromEntries(formData);
 
-      const { username, email, password, confirmPassword } = inputs;
+    const { username, email, password, confirmPassword } = inputs;
 
-      signUpMutation({ username, email, password, confirmPassword });
-    } catch (error) {
-      console.log(error);
-    }
+    signUpMutation({ username, email, password, confirmPassword });
   };
   return (
     <section className="mt-[180px] p-4 font-main text-primary">

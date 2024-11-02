@@ -1,12 +1,10 @@
 import AdminHeader from '../../reusable/Admin/AdminHeader'
-import AdminStatCard from '../../components/admin/AdminStatCard'
-import AdminUserTable from '../../components/admin/AdminUserTable'
-// import AdminWorkersTable from './AdminWorkersTable'
+import AdminWorkersTable from './AdminWorkersTable'
 
-export default function AdminUser() {
+export default function AdminWorker() {
   return (
     <section className="bg-yellow h-screen">
-    <AdminHeader title={"USER TABLE"}/>
+    <AdminHeader title={"WORKER TABLE"}/>
     <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-10 flex-col">
 
       {/* main */}
@@ -19,8 +17,8 @@ export default function AdminUser() {
       </div>
 
 
-        {/* <AdminWorkersTable/> */}
-        <AdminUserTable/>
+        <AdminWorkersTable/>
+     
      
     </div>
   </section>

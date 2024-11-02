@@ -1,6 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import User from "../models/user.models.js";
 import bcypt from "bcryptjs";
+import { generateTokens } from "../utils/generateToken.js";
 
 export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
@@ -53,12 +54,35 @@ export const getAllCustomer = async (req, res, next) => {
   }
 }
 
-// export const getAllWorkers = async (req, res, next) => {
-//   try {
-//     const dontFindCustomer = await User.find({role: {$ne: "customer"}})
-//     if (!dontFindCustomer) return next(handleMakeError(400, "Not found!"))
-//     res.status(200).json(dontFindCustomer)
-//   } catch (error) {
-//     next(error)
-//   }
-// }
+
+export const getAllWorkers = async (req, res, next) => {
+  try {
+    const workers = await User.find({ role: { $ne: "customer" }, _id: {$ne: "66f11dabdd976c6253f3f24c"} });
+
+    // Check if no workers were found
+    if (workers.length === 0) {
+      return next(handleMakeError(400, "No workers found!"));
+    }
+
+    res.status(200).json(workers);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const deleteWorker = async (req, res, next) => {
+
+  const {workerId} = req.params
+
+  try {
+    const worker = await User.findById(workerId)
+
+    if (!worker) return next(handleMakeError(400, "worker not found!"));
+
+    await User.findByIdAndDelete(workerId)
+    res.status(200).json({ message: "Worker Deleted" });
+  } catch (error) {
+    next(error)
+  }
+}

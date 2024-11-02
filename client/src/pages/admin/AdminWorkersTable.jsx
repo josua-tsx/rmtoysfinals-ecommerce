@@ -1,43 +1,56 @@
-import { useQuery } from "@tanstack/react-query";
-import { IoSearch } from "react-icons/io5";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
+import toast from "react-hot-toast";
 
 export default function AdminWorkersTable() {
+  const queryClient = useQueryClient();
+
   const {
-    data: getAllWorkers = [],
-    isPending: isWorkerPending,
-    isError: isWorkerError,
+    data: workers = [],
+    isPending: isWorkersPending,
+    isError: isWorkersError,
   } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["worker"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/user/getAllWorkers`);
       return res.data;
     },
   });
 
-  console.log(getAllWorkers)
+  const { mutate: deleteWorkerMutation } = useMutation({
+    mutationFn: async (workerId) => {
+      const res = await axiosInstance.delete(`/user/delete-worker/${workerId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["worker"] });
+      toast.success("worker deleted");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong");
+    },
+  });
 
-  if (isWorkerPending) {
-    return <p>loading...</p>;
+  if (isWorkersPending) {
+    <p>loading...</p>;
   }
-
-  if (isWorkerError) {
-    return <p>error...</p>;
+  if (isWorkersError) {
+    <p>Error</p>;
   }
 
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>Staffs Table</h1>
-        <div className="flex items-center relative">
+        <h1>WORKER TABLE</h1>
+        {/* <div className="flex items-center relative">
           <input
             type="text"
             placeholder="search products.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
-        </div>
+        </div> */}
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -48,43 +61,51 @@ export default function AdminWorkersTable() {
               <th className="font-normal p-2 pb-5">Username</th>
               <th className="font-normal p-2 pb-5">Phone Number</th>
               <th className="font-normal p-2 pb-5">Role</th>
+              <th className="font-normal p-2 pb-5">Job Description</th>
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {getAllWorkers.length > 0 && getAllWorkers.map((worker) => (
-                  <tr key={worker._id} >
+            {workers.length > 0 ? (
+              workers.map((worker) => (
+                <tr key={worker._id}>
                   <td className="px-4 ">{worker._id}</td>
+
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
-                   
-                   {worker.email}
-       
+                    {worker.email}
                   </td>
-  
-                  <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+
+                  <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
                     {worker.username}
                   </td>
-  
+
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                        {worker.phoneNumber}
+                    {!worker.phoneNumber
+                      ? "not updated yet"
+                      : worker.phoneNumber}
                   </td>
+
+                  <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
+                    {worker.role}
+                  </td>
+
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                        {worker.role}
+                    {worker.jobDescription}
                   </td>
-                
+
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                  
-                    <button
-                  
+                    <button onClick={() => deleteWorkerMutation(worker._id)}
+                      type="button"
                       className="text-red-600 hover:text-red-300"
                     >
                       <MdDelete size={25} />
                     </button>
-                 
                   </td>
                 </tr>
-            ))
-            }
+              ))
+            ) : (
+              <p>no worker found!</p>
+            )}
           </tbody>
         </table>
       </div>

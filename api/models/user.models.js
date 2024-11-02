@@ -34,9 +34,13 @@ const UserModelSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["customer", "admin"],
+      enum: ["customer", "admin", "staff"],
       default: "customer",
     },
+
+    jobDescription: {
+      type: String,
+    }
   },
   {
     timestamps: true,

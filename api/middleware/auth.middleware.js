@@ -4,7 +4,6 @@ import { handleMakeError } from "./handleError.js";
 
 export const requireAuth = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
-  console.log(accessToken);
 
   // if accessToken either expired or undefined
   if (!accessToken) return next(handleMakeError(401, "Unauthorized"));

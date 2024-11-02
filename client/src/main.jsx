@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode} from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -37,9 +37,16 @@ import AdminStocks from './pages/admin/AdminStocks.jsx'
 import AdminAddStocks from './pages/admin/AdminAddStocks.jsx'
 import AdminEditStocks from './components/admin/AdminEditStocks.jsx'
 import AdminUser from './pages/admin/AdminUser.jsx'
-import AdminDraftProductsTable from './components/admin/AdminDraftProductsTable.jsx'
+
 import AdminDraftProduct from './pages/admin/AdminDraftProduct.jsx'
-  
+import AdminWorker from './pages/admin/AdminWorker.jsx'
+import AdminAddWorker from './pages/admin/AdminAddWorker.jsx'
+import EditAddress from './pages/EditAddress.jsx'
+
+
+
+
+
 const queryClient = new QueryClient()
 
 
@@ -198,7 +205,15 @@ const router = createBrowserRouter([
       {
         path: "/admin/user",
         element: <AdminUser/>
-      }
+      },
+      {
+        path: "/admin/worker",
+        element: <AdminWorker/>
+      },
+      {
+        path: "/admin/addWorker",
+        element: <AdminAddWorker/>
+      },
     ]
   },
 ])

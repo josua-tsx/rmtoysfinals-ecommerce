@@ -20,7 +20,7 @@ const ProductModelSchema = new mongoose.Schema({
 
   productDetails: {
     type: Array,
-    required: true,
+  required: true,
   },
 
   discount: {

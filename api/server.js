@@ -12,6 +12,7 @@ import filterRoutes from '../api/routes/filter.route.js'
 import supplierRoutes from '../api/routes/supplier.route.js'
 import categoryRoutes from '../api/routes/category.route.js'
 import stocksRoutes from '../api/routes/stocks.route.js'
+import addressRoutes from '../api/routes/address.route.js'
 //
 import cors from "cors";
 
@@ -38,6 +39,7 @@ app.use(`/api/filter`, filterRoutes)
 app.use(`/api/supplier`, supplierRoutes)
 app.use(`/api/category`, categoryRoutes)
 app.use(`/api/stocks`, stocksRoutes)
+app.use(`/api/address`, addressRoutes)
 
 app.use(handleError);
 

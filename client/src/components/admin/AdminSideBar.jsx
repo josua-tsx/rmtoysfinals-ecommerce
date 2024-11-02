@@ -81,7 +81,15 @@ const adminSideBarItems = [
       {
         name: "user table",
         path: "/admin/user"
-      }
+      },
+      {
+        name: "worker table",
+        path: "/admin/worker"
+      },
+      {
+        name: "add worker",
+        path: "/admin/addWorker"
+      },
     ]
   },
   {

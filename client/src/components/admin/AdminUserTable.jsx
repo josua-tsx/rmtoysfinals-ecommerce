@@ -63,7 +63,7 @@ export default function AdminUserTable() {
                     {user.username}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    { !user.phonenumber ? "not updated yet" : user.phoneNumber}
+                    { !user.phoneNumber ? "not updated yet" : user.phoneNumber}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {user.role}

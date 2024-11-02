@@ -1,0 +1,127 @@
+import { handleMakeError } from "../middleware/handleError.js";
+import Address from "../models/address.models.js";
+
+export const addAddress = async (req, res, next) => {
+  const userId = req.user.id;
+
+  const {
+    country,
+    region,
+    stateProvince,
+    city,
+    barangay,
+    fullAddress,
+    streetBuildingHouseNum,
+  } = req.body;
+
+  try {
+    const existingAddress = await Address.findOne({ fullAddress });
+
+    if (existingAddress)
+      return next(handleMakeError(400, "This Address already in the list!"));
+
+    const allAddress = await Address.find();
+
+    if (allAddress.length === 3)
+      return next(handleMakeError(400, "You can only have 3 addresses"));
+
+    const newAddress = new Address({
+      country,
+      region,
+      stateProvince,
+      city,
+      barangay,
+      streetBuildingHouseNum,
+      fullAddress: `${streetBuildingHouseNum}, ${barangay}, ${city}`,
+      userId: userId,
+    });
+
+    await newAddress.save();
+    res.status(201).json(newAddress);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllAddress = async (req, res, next) => {
+  try {
+    const findAllAddress = await Address.find();
+
+    if (!findAllAddress) return next(handleMakeError(400, "No Address found!"));
+
+    res.status(200).json(findAllAddress);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAddress = async (req, res, next) => {
+  const { addressId } = req.params;
+
+  try {
+    const addressDelete = await Address.findById(addressId);
+
+    if (!addressDelete) return next(handleMakeError(400, "Address not found!"));
+
+    await Address.findByIdAndDelete(addressId);
+
+    res.status(200).json({ message: "Address Sucessfully Deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editAddress = async (req, res, next) => {
+  const { addressId } = req.params;
+
+  const {
+    country,
+    region,
+    stateProvince,
+    city,
+    barangay,
+    fullAddress,
+    streetBuildingHouseNum,
+  } = req.body;
+
+  try {
+    const existingAddress = await Address.findOne({ fullAddress });
+
+    if (existingAddress)
+      return next(handleMakeError(400, "This Address already in the list!"));
+
+    const updateAddress = await Address.findByIdAndUpdate(
+      addressId,
+      {
+        country,
+        region,
+        stateProvince,
+        city,
+        barangay,
+        fullAddress: `${streetBuildingHouseNum}, ${barangay}, ${city}`,
+        streetBuildingHouseNum,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updateAddress) return next(handleMakeError(400, "Address not found!"));
+
+    res.status(200).json(updateAddress);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAddress = async (req, res, next) => {
+  const { addressId } = req.params;
+
+  try {
+    const getAddress = await Address.findById(addressId);
+    if (!getAddress) return next(handleMakeError(400, "Address not found!"));
+    res.status(200).json(getAddress);
+  } catch (error) {
+    next(error);
+  }
+};
