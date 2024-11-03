@@ -32,6 +32,11 @@ const UserModelSchema = new mongoose.Schema(
       type: String,
     },
 
+    address: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address"
+    }],
+
     role: {
       type: String,
       enum: ["customer", "admin", "staff"],

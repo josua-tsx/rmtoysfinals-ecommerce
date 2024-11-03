@@ -12,6 +12,9 @@ export default function AdminUserTable() {
             return res.data
         }
     })
+
+    console.log(users)
+
     
 
     if (isPending) {
@@ -43,6 +46,7 @@ export default function AdminUserTable() {
             <th className="font-normal p-2 pb-5">Email</th>
             <th className="font-normal p-2 pb-5">Username</th>
             <th className="font-normal p-2 pb-5">Phone Number</th>
+            <th className="font-normal p-2 pb-5">Active Address</th>
             <th className="font-normal p-2 pb-5">Role</th>
             <th className="font-normal p-2 pb-5">ACTIONS</th>
           </tr>
@@ -65,6 +69,11 @@ export default function AdminUserTable() {
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     { !user.phoneNumber ? "not updated yet" : user.phoneNumber}
                 </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    {user?.address[0]?.fullAddress}
+                </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {user.role}
                 </td>

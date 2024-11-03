@@ -1,5 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Address from "../models/address.models.js";
+import User from "../models/user.models.js";
 
 export const addAddress = async (req, res, next) => {
   const userId = req.user.id;
@@ -14,16 +15,26 @@ export const addAddress = async (req, res, next) => {
     streetBuildingHouseNum,
   } = req.body;
 
+  if (
+    !region ||
+    !stateProvince ||
+    !city ||
+    !barangay ||
+    !streetBuildingHouseNum
+  )
+    return next(handleMakeError(400, "Please input required fields!"));
+
   try {
     const existingAddress = await Address.findOne({ fullAddress });
 
     if (existingAddress)
       return next(handleMakeError(400, "This Address already in the list!"));
 
-    const allAddress = await Address.find();
+    const userAddress = await Address.find({userId});
 
-    if (allAddress.length === 3)
-      return next(handleMakeError(400, "You can only have 3 addresses"));
+    if (userAddress.length >=3 ) return next(handleMakeError(400, "You can only have 3 addresses!"))
+
+
 
     const newAddress = new Address({
       country,
@@ -36,7 +47,17 @@ export const addAddress = async (req, res, next) => {
       userId: userId,
     });
 
-    await newAddress.save();
+    const savedAddress = await newAddress.save();
+
+    // PUSHING THE ADDRESS IN USER SCHEMA ADDRESS
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: { address: savedAddress._id },
+      },
+      { new: true }
+    );
+
     res.status(201).json(newAddress);
   } catch (error) {
     next(error);
@@ -121,6 +142,22 @@ export const getAddress = async (req, res, next) => {
     const getAddress = await Address.findById(addressId);
     if (!getAddress) return next(handleMakeError(400, "Address not found!"));
     res.status(200).json(getAddress);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserAddress = async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    const getUserAddress = await User.findById(userId);
+    if (!getUserAddress) return next(handleMakeError(400, "No user found!"));
+
+    // Retrieve addresses for the specified user
+    const addresses = await Address.find({ userId }); // Assuming addresses are linked to user by userId
+    // Return the addresses
+    return res.status(200).json(addresses);
   } catch (error) {
     next(error);
   }

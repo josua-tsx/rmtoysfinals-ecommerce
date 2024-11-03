@@ -49,6 +49,11 @@ const ProductModelSchema = new mongoose.Schema({
     default: "draft"
   },
 
+  stocks: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Stocks"
+  },   
+
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",

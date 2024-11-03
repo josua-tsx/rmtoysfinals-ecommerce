@@ -1,6 +1,8 @@
+import Cart from "../models/cart.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
+
 export const addProduct = async (req, res, next) => {
   const {
     productName,
@@ -64,7 +66,10 @@ export const getProducts = async (req, res, next) => {
       .populate({
         path: "category",
         select: "categoryName",
-      });
+      }).populate({
+        path: "stocks",
+        select: "stockQuantity"
+      })
 
     res.status(200).json(products);
   } catch (error) {
@@ -81,6 +86,8 @@ export const deleteProduct = async (req, res, next) => {
     if (!singleProduct) return next(handleMakeError(400, "Product not found"));
 
     await Stocks.deleteMany({ product: productId });
+
+    await Cart.deleteMany({"items.productId": productId})
 
     await Product.findByIdAndDelete(productId);
 
@@ -140,7 +147,13 @@ export const getSingleProduct = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const getSingleProduct = await Product.findById(id);
+    const getSingleProduct = await Product.findById(id).populate({
+      path: "category",
+      select: "categoryName",
+    }).populate({
+      path: "stocks",
+      select: "stockQuantity"
+    })
 
     if (!getSingleProduct)
       return next(handleMakeError(400, "Product not found"));

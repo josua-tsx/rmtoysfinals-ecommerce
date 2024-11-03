@@ -3,7 +3,6 @@ import AdminUploadProductImage from "../../components/admin/AdminUploadProductIm
 import { MdDelete } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
 import { FaCheckCircle } from "react-icons/fa";
-import { IoArchive } from "react-icons/io5";
 import { IoIosAdd } from "react-icons/io";
 import Buttons from "../../reusable/Buttons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

@@ -1,11 +1,27 @@
+import { useQuery } from "@tanstack/react-query";
 import Buttons from "../reusable/Buttons";
 import { useUserStore } from "../stores/useUserStore";
+import axiosInstance from "../lib/axios";
 
 export default function ProfileComponent({ setActiveComponent }) {
   const currentUser = useUserStore((state) => state.currentUser);
-  console.log(currentUser)
 
-  // firebase
+  const {
+    data: currentUserAddress = [],
+    isLoading: isCurrentUserAddressPending,
+    isError: isCurrentUserAddressError,
+  } = useQuery({
+    queryKey: ["address", currentUser._id],
+    queryFn: async () => {
+      const res = await axiosInstance.get(
+        `/address/user/${currentUser._id}/address`
+      );
+      return res.data;
+    },
+  });
+
+  if (isCurrentUserAddressPending) return <p>loading...</p>;
+  if (isCurrentUserAddressError) return <p>loading...</p>;
 
   return (
     <div>
@@ -78,19 +94,30 @@ export default function ProfileComponent({ setActiveComponent }) {
 
           {/* ADDRESSES */}
           <div className="flex flex-col justify-between gap-5">
-            <div className="flex flex-col gap-5">
-              <div className="flex items-center justify-between">
-                <label className="bg-gray-200  p-2 border border-black rounded-[5px] w-[95%]" htmlFor="address">Taguig City</label>
-                <input  className="size-5" type="radio" id="address" name="address" />
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="bg-gray-200  p-2 border border-black rounded-[5px] w-[95%]" htmlFor="address">Taguig City</label>
-                <input className="size-5"  type="radio" id="address" name="address" />
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="bg-gray-200  p-2 border border-black rounded-[5px] w-[95%]" htmlFor="address">Taguig City</label>
-                <input className="size-5" type="radio" id="address" name="address" />
-              </div>
+            <div className="flex flex-col lowercase gap-5">
+              {currentUserAddress.length > 0 ? (
+                currentUserAddress.map((add) => (
+                  <div
+                    key={add._id}
+                    className="flex items-center justify-between"
+                  >
+                    <label
+                      className="bg-gray-200  p-2 border border-black rounded-[5px] w-[95%]"
+                      htmlFor={`address-${add._id}`}
+                    >
+                      {add.fullAddress}
+                    </label>
+                    <input
+                      className="size-5"
+                      type="radio"
+                      id={`address-${add._id}`}
+                      name="address"
+                    />
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm lowercase">(You have no saved address)</p>
+              )}
             </div>
           </div>
         </div>

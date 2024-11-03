@@ -1,4 +1,5 @@
 import { handleMakeError } from "../middleware/handleError.js";
+import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 
 export const addStocks = async (req, res, next) => {
@@ -23,7 +24,16 @@ export const addStocks = async (req, res, next) => {
       stockQuantity,
     });
 
-    await newStock.save();
+    const savedStocks = await newStock.save();
+
+    await Product.findByIdAndUpdate(
+      productId,
+      {
+        $push: { stocks: savedStocks._id },
+      },
+      { new: true }
+    );
+
     res.status(201).json(newStock);
   } catch (error) {
     next(error);
@@ -85,7 +95,7 @@ export const editStock = async (req, res, next) => {
           "Stock for this product already exists. Use update function to modify stock."
         )
       );
-    } 
+    }
 
     console.log("Existing stock:", existingStock);
 
@@ -105,13 +115,14 @@ export const editStock = async (req, res, next) => {
       return next(handleMakeError(400, "Failed to update stock"));
     }
 
-    res.status(200).json({ message: "Stocks updated", updatedStock: updateStock });
+    res
+      .status(200)
+      .json({ message: "Stocks updated", updatedStock: updateStock });
   } catch (error) {
     console.error("Error updating stock:", error);
     next(error);
   }
 };
-
 
 export const getSingleStock = async (req, res, next) => {
   const { stockId } = req.params;

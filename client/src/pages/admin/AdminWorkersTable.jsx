@@ -60,6 +60,7 @@ export default function AdminWorkersTable() {
               <th className="font-normal p-2 pb-5">Email</th>
               <th className="font-normal p-2 pb-5">Username</th>
               <th className="font-normal p-2 pb-5">Phone Number</th>
+              <th className="font-normal p-2 pb-5">Active Address</th>
               <th className="font-normal p-2 pb-5">Role</th>
               <th className="font-normal p-2 pb-5">Job Description</th>
               <th className="font-normal p-2 pb-5">ACTIONS</th>
@@ -85,6 +86,9 @@ export default function AdminWorkersTable() {
                       : worker.phoneNumber}
                   </td>
 
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    {worker.address[0].fullAddress}
+                </td>
                   <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
                     {worker.role}
                   </td>

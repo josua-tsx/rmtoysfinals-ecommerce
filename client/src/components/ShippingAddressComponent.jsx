@@ -11,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import EditAddress from "../pages/EditAddress";
+import { useUserStore } from "../stores/useUserStore";
 
 export default function ShippingAddressComponent() {
   const queryClient = useQueryClient();
@@ -27,16 +28,19 @@ export default function ShippingAddressComponent() {
 
   const [openModal, setOpenModal] = useState(false);
 
-  const [editAddressId, setEditAddressId] = useState(null)
+  const [editAddressId, setEditAddressId] = useState(null);
+
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const {
-    data: address = [],
-    isPending: isAddressPending,
-    isError: isAddressError,
+    data: currentUserAddress,
+    isPending,
+    isError,
+    error
   } = useQuery({
-    queryKey: ["address"],
+    queryKey: ["address", currentUser._id],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/address/get-AllAddress`);
+      const res = await axiosInstance.get(`/address/user/${currentUser._id}/address`);
       return res.data;
     },
   });
@@ -44,10 +48,12 @@ export default function ShippingAddressComponent() {
   const { data: singleAddressEdit } = useQuery({
     queryKey: ["address", editAddressId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/address/get-address/${editAddressId}`);
+      const res = await axiosInstance.get(
+        `/address/get-address/${editAddressId}`
+      );
       return res.data;
     },
-    enabled: !!editAddressId
+    enabled: !!editAddressId,
   });
 
   const { mutate: addAddressMutation } = useMutation({
@@ -128,8 +134,12 @@ export default function ShippingAddressComponent() {
     setOpenModal(true);
   };
 
-  if (isAddressPending) return <p>loading....</p>;
-  if (isAddressError) return <p>loading....</p>;
+
+  if (isPending) return <p>loading...</p>
+  if (isError) return <p>loading...</p>
+
+
+
 
   return (
     <div>
@@ -252,8 +262,8 @@ export default function ShippingAddressComponent() {
           <h1>Your Address: </h1>
           <div className="flex flex-col gap-5">
             <ul className="flex flex-col gap-3">
-              {address.length > 0 ? (
-                address.map((add) => (
+              {currentUserAddress.length > 0 ? (
+                currentUserAddress.map((add) => (
                   <li
                     key={add._id}
                     className="border flex justify-between border-black p-1 px-2 rounded-[5px]"
