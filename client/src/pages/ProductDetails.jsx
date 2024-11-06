@@ -48,7 +48,7 @@ export default function ProductDetails() {
 
   const {mutate: addToWishListMutation} = useMutation({
     mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/cart/wishList`, productId)
+      const res = await axiosInstance.post(`/wish`, productId)
       return res.data
     },
     onSuccess: () => {

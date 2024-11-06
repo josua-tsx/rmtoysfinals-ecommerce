@@ -1,27 +1,32 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
+import Wishlist from "../models/wishlist.models.js";
 
 export const addToCart = async (req, res, next) => {
   const { productId } = req.body;
   const userId = req.user.id;
 
   try {
+
+    const wishlist = await Wishlist.findOne({ userId });
+    if (wishlist) {
+      const existingInWish = wishlist.items.find(
+        (item) => item.productId.toString() === productId
+      );
+
+      if (existingInWish) {
+        return next(handleMakeError(400, "Product is already in the wishlist. Transfer it in Wishlist page"));
+      }
+    }
+
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
       cart = new Cart({ userId, items: [] });
     }
 
-    const existingInWish = cart.items.find(
-      (item) => item.productId.toString() === productId && item.isWishList
-    );
-
-    if (existingInWish) {
-      return next(handleMakeError(400, "Product is already in the wish"));
-    }
-
     const existingItem = cart.items.find(
-      (item) => item.productId.toString() === productId && !item.isWishList
+      (item) => item.productId.toString() === productId
     );
 
     if (existingItem) {
@@ -51,83 +56,91 @@ export const getCarts = async (req, res, next) => {
     });
 
     if (!carts || !carts.items) {
-      return res.status(200).json([]); // Return empty array instead of error
+      return res.status(200).json([]);
     }
 
-    const findUserCart = carts.items.filter((item) => !item.isWishList);
-
-    res.status(200).json(findUserCart);
+    res.status(200).json(carts);
   } catch (error) {
     next(error);
   }
 };
 
-export const addToWishList = async (req, res, next) => {
-  const { productId } = req.body;
+export const deleteCart = async (req, res, next) => {
   const userId = req.user.id;
+  const { productId } = req.body;
 
   try {
-    // Step 1: Find the user's cart
-    let cart = await Cart.findOne({ userId });
 
-    // Step 2: If no cart exists, create a new one
-    if (!cart) {
-      cart = new Cart({ userId, items: [] });
-    }
 
-    // Step 3: Check if the product is already in the cart
-    const existingInCart = cart.items.find(
-      (item) => item.productId.toString() === productId && !item.isWishList
+    const cart = await Cart.findOne({ userId });
+
+    if (!cart || !cart.items) return res.status(200).json([]);
+
+    const existingCart = cart.items.filter(
+      (item) => item.productId.toString() !== productId
     );
 
-    if (existingInCart) {
-      return next(handleMakeError(400, "Product is already in the cart"));
+    // UPDATING THE CART.ITEMS = EXISTINGCART TO PERSIST THE CHANGES OR TO SAVE THE CHANGES BEFORE SAVING THE DOCUMENT
+    cart.items = existingCart;
+
+    await cart.save();
+
+    res.status(200).json({ message: "successfully removed", existingCart });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addCartToWish = async (req, res, next) => {
+  const userId = req.user.id;
+  const { productId } = req.body;
+
+  try {
+    const [wishlist, cart] = await Promise.all([
+      Wishlist.findOne({ userId }),
+      Cart.findOne({ userId }),
+    ]);
+
+    // Validate wishlist and product existence
+    if (
+      !cart ||
+      !cart.items.some((item) => item.productId.toString() === productId)
+    ) {
+      return next(handleMakeError(404, "Product not found in wishlist"));
     }
 
-    // Step 4: Check if the product is already in the wishlist
-    const existingInWishlist = cart.items.find(
-      (item) => item.productId.toString() === productId && item.isWishList
+    // Create cart if doesn't exist
+    const userWish = wishlist || new Wishlist({ userId, items: [] });
+
+    // Check if product exists in cart
+    const existingWishItem = userWish.items.find(
+      (item) => item.productId.toString() === productId
     );
 
-    if (!existingInWishlist) {
-     
-      // Step 5: If new, add item to wishlist
-      cart.items.push({
+    if (existingWishItem) {
+      return next(handleMakeError(400, "Product is already in cart"));
+    } else {
+      userWish.items.push({
         productId,
-        isWishList: true,
       });
     }
 
-    // Step 6: Save the cart and return the updated cart
-    await cart.save();
-    res.status(200).json(cart);
-  } catch (error) {
-    next(error);
-  }
-};
+    // Remove from cart using MongoDB's $pull operator
+    await Cart.updateOne(
+      { userId },
+      { $pull: { items: { productId: productId } } }
+    );
 
+    // Save cart
+    await userWish.save();
 
-export const getUserWishList = async (req, res, next) => {
-  const userId = req.user.id;
-
-  try {
-    // Only fetch items where isWishList is true using MongoDB projection
-    const cart = await Cart.findOne({ userId }).populate({
-      path: "items.productId",
-      select: "productName price productDescription productImages",
+    // Just send the updated cart we already have
+    res.status(200).json({
+      success: true,
+      message: "Product moved from wishlist to cart",
+      cart: userWish, // We already have all the data we need
     });
-
-    if (!cart || !cart.items) {
-      return res.status(200).json([]); // Return empty array instead of error
-    }
-
-    // FILTERING ALL PRODUCTS THAT isWIshList === true then save into new array
-    const findUserWishList = cart.items.filter((item) => item.isWishList);
-
-    res.status(200).json(findUserWishList);
   } catch (error) {
     next(error);
   }
-};
-
- 
+}

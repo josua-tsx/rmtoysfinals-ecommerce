@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export default function Cart() {
   const {
-    data: cart = {items: []},
+    data: cart = [],
     isLoading,
     isError,
   } = useQuery({
@@ -29,12 +29,12 @@ export default function Cart() {
         <FaShoppingCart size={25} />
 
         {
-          cart.length > 0 && (
+          cart?.items?.length > 0 && (
             <span
             className={`absolute bg-red-600 p-2 h-[20px] flex w-[20px] text-sm text-white 
            items-center justify-center -bottom-2 -right-[9.5px] rounded-full`}
           >
-            {cart?.length}
+            {cart?.items?.length}
           </span>
     
           )

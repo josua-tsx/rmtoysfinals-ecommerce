@@ -35,8 +35,8 @@ export default function CartPage() {
           <div className="flex flex-col gap-3  flex-1 uppercase">
             {/* PRODUCTS GOES HERE */}
 
-            {cart?.length > 0 ? (
-              cart?.map((item) => (
+            {cart?.items?.length > 0 ? (
+              cart?.items.map((item) => (
                 <CartCard key={item?._id} productCart={item} />
               ))
             ) : (
@@ -48,7 +48,7 @@ export default function CartPage() {
             <h1 className="uppercase text-xl mb-3">order summary</h1>
             <div className="flex flex-1 flex-col gap-1">
               <p>
-                total items: <span>{cart?.length}</span>
+                total items: <span>{cart?.items?.length}</span>
               </p>
               <p>
                 total price: <span className="text-indigo-500">800PHP</span>

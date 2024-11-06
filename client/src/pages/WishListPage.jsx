@@ -4,22 +4,25 @@ import Buttons from "../reusable/Buttons.jsx";
 import axiosInstance from "../lib/axios.js";
 
 export default function WishListPage() {
+
   const {
-    data: wishList = { items: [] },
+    data: wishlist = [],
     isPending,
     isError,
   } = useQuery({
     queryKey: ["wishlist"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/cart/getWishList`);
+      const res = await axiosInstance.get(`/wish/get`);
       return res.data;
     },
   });
 
-  console.log(wishList);
+  console.log(wishlist);
 
-  if (isPending) return <div>Loading...</div>;
-  if (isError) return <div>Error loading wishlist.</div>;
+  if (isPending) return <p>loading...</p>;
+  if (isError) return <p>error</p>;
+
+
 
   return (
     <section className="pt-[130px] font-main p-3">
@@ -32,23 +35,24 @@ export default function WishListPage() {
           <div className=" w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 flex-1 uppercase">
             {/* PRODUCTS GOES HERE */}
 
-            {
-              wishList.length > 0 ? (
-                
-               wishList.map((wish) => (
-                <WishlistCard key={wish._id} productWish={wish} />
-               ))
-
-              ) : ""
-            }
-
+              {
+                wishlist?.items?.length > 0 ? (
+                  wishlist?.items?.map((wish) => (
+                    <WishlistCard key={wish?._id} productWish={wish} />
+                  ))
+                ) : (
+                  <p>No wish products found.</p>
+                )
+              }
+            
           </div>
 
           <div className="border md:w-[270px] h-[200px] gap-2 flex flex-col bg-card rounded-[5px] p-3 border-black">
             <h1 className="uppercase text-xl mb-3">Wishlist Summary</h1>
             <div className="flex flex-1 flex-col gap-1">
               <p>
-                total items <span className="text-indigo-500">{wishList.length}</span>
+                total items{" "}
+                <span className="text-indigo-500">{wishlist?.items?.length}</span>
               </p>
             </div>
             <div>
