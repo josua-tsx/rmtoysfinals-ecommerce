@@ -42,6 +42,7 @@ import AdminDraftProduct from './pages/admin/AdminDraftProduct.jsx'
 import AdminWorker from './pages/admin/AdminWorker.jsx'
 import AdminAddWorker from './pages/admin/AdminAddWorker.jsx'
 import EditAddress from './pages/EditAddress.jsx'
+import OrderSummaryModal from './components/OrderSummaryModal.jsx'
 
 
 
@@ -104,6 +105,10 @@ const router = createBrowserRouter([
         path: `/wishlist`,
         element: <WishListPage/>
       },
+      {
+        path: `/order`,
+        element: <OrderSummaryModal/>
+      }
 
     ]
   },
@@ -214,6 +219,8 @@ const router = createBrowserRouter([
         path: "/admin/addWorker",
         element: <AdminAddWorker/>
       },
+
+     
     ]
   },
 ])

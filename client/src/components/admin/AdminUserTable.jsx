@@ -71,7 +71,7 @@ export default function AdminUserTable() {
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {user?.address[0]?.fullAddress}
+                    {!user?.address[0]?.fullAddress ? <span className="text-red-700">not updated yet</span> : user?.address[0]?.fullAddress }
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">

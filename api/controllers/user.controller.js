@@ -71,7 +71,7 @@ export const getAllWorkers = async (req, res, next) => {
 
     // Check if no workers were found
     if (workers.length === 0) {
-      return next(handleMakeError(400, "No workers found!"));
+      return res.json([]);
     }
 
     res.status(200).json(workers);

@@ -1,10 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Buttons from "../reusable/Buttons";
 import { useUserStore } from "../stores/useUserStore";
 import axiosInstance from "../lib/axios";
+import toast from "react-hot-toast";
 
 export default function ProfileComponent({ setActiveComponent }) {
   const currentUser = useUserStore((state) => state.currentUser);
+
+  const queryClient = useQueryClient()
 
   const {
     data: currentUserAddress = [],
@@ -19,6 +22,24 @@ export default function ProfileComponent({ setActiveComponent }) {
       return res.data;
     },
   });
+
+  const {mutate: updateIsActive} = useMutation({
+    mutationFn: async (addressId) => {
+      const res = await axiosInstance.patch(`/address/update-currentAddress`, addressId)
+      return res.data 
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["address"]})
+      toast.success("Sucessfully Updated the address!")
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong!")
+    }
+  })
+
+  const handleUpdateCurrentAddress = (addressId) => {
+    updateIsActive({addressId})
+  }
 
   if (isCurrentUserAddressPending) return <p>loading...</p>;
   if (isCurrentUserAddressError) return <p>loading...</p>;
@@ -112,6 +133,7 @@ export default function ProfileComponent({ setActiveComponent }) {
                       type="radio"
                       id={`address-${add._id}`}
                       name="address"
+                      onClick={() => handleUpdateCurrentAddress(add._id)}
                     />
                   </div>
                 ))

@@ -1,5 +1,5 @@
 import express from 'express'
-import { addAddress, deleteAddress, editAddress, getAddress, getAllAddress, getUserAddress } from '../controllers/address.controller.js'
+import { addAddress, deleteAddress, editAddress, getActiveAddress, getAddress, getAllAddress, getUserAddress, updateAddressTrue } from '../controllers/address.controller.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
 
 const router = express.Router()
@@ -12,5 +12,8 @@ router.get(`/get-address/:addressId`, getAddress )
 
 router.get(`/user/:userId/address`, requireAuth, getUserAddress)
 
+router.patch(`/update-currentAddress`, requireAuth, updateAddressTrue )
+
+router.get(`/get-activeAddress`, requireAuth, getActiveAddress)
 
 export default router

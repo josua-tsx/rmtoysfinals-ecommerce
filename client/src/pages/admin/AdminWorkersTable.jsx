@@ -82,12 +82,12 @@ export default function AdminWorkersTable() {
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {!worker.phoneNumber
-                      ? "not updated yet"
+                      ? <span className="text-red-700">not updated yet</span>
                       : worker.phoneNumber}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {worker.address[0].fullAddress}
+                  {!worker?.address[0]?.fullAddress ? <span className="text-red-700">not updated yet</span> : worker?.address[0]?.fullAddress }
                 </td>
                   <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
                     {worker.role}

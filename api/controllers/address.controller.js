@@ -30,11 +30,10 @@ export const addAddress = async (req, res, next) => {
     if (existingAddress)
       return next(handleMakeError(400, "This Address already in the list!"));
 
-    const userAddress = await Address.find({userId});
+    const userAddress = await Address.find({ userId });
 
-    if (userAddress.length >=3 ) return next(handleMakeError(400, "You can only have 3 addresses!"))
-
-
+    if (userAddress.length >= 3)
+      return next(handleMakeError(400, "You can only have 3 addresses!"));
 
     const newAddress = new Address({
       country,
@@ -158,6 +157,44 @@ export const getUserAddress = async (req, res, next) => {
     const addresses = await Address.find({ userId }); // Assuming addresses are linked to user by userId
     // Return the addresses
     return res.status(200).json(addresses);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAddressTrue = async (req, res, next) => {
+  const userId = req.user.id;
+  const { addressId } = req.body;
+
+  try {
+    await Address.updateMany({ userId, isActive: true }, { isActive: false });
+
+    const updateIsActive = await Address.findByIdAndUpdate(
+      addressId,
+      {
+        isActive: true,
+      },
+      { new: true }
+    );
+
+    if (!updateIsActive)
+      return next(handleMakeError(400, "Address not found!"));
+
+    res
+      .status(200)
+      .json({ message: "sucessfully updated the address" }, updateIsActive);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getActiveAddress = async (req, res, next) => {
+  const userId = req.user.id;
+
+  try {
+    const findActiveAddress = await Address.findOne({ userId, isActive: true });
+
+    res.status(200).json(findActiveAddress);
   } catch (error) {
     next(error);
   }

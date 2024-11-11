@@ -1,5 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
+import Stocks from "../models/stocks.model.js";
 import Wishlist from "../models/wishlist.models.js";
 
 export const addToCart = async (req, res, next) => {
@@ -7,7 +8,6 @@ export const addToCart = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
-
     const wishlist = await Wishlist.findOne({ userId });
     if (wishlist) {
       const existingInWish = wishlist.items.find(
@@ -15,7 +15,12 @@ export const addToCart = async (req, res, next) => {
       );
 
       if (existingInWish) {
-        return next(handleMakeError(400, "Product is already in the wishlist. Transfer it in Wishlist page"));
+        return next(
+          handleMakeError(
+            400,
+            "Product is already in the wishlist. Transfer it in Wishlist page"
+          )
+        );
       }
     }
 
@@ -53,6 +58,10 @@ export const getCarts = async (req, res, next) => {
     const carts = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select: "productName price productDescription productImages",
+      populate: {
+        path: "stocks",
+        select: "stockQuantity",
+      },
     });
 
     if (!carts || !carts.items) {
@@ -70,8 +79,6 @@ export const deleteCart = async (req, res, next) => {
   const { productId } = req.body;
 
   try {
-
-
     const cart = await Cart.findOne({ userId });
 
     if (!cart || !cart.items) return res.status(200).json([]);
@@ -143,4 +150,47 @@ export const addCartToWish = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
+
+export const updateQuantity = async (req, res, next) => {
+  const userId = req.user.id;
+  const { productId, quantity } = req.body;
+
+  try {
+    const productStocks = await Stocks.findOne({ product: productId });
+
+    if (quantity > productStocks.stockQuantity)
+      return next(
+        handleMakeError(400, "You cant buy a product greater than stocks")
+      );
+
+    if (typeof quantity !== "number") {
+      return next(handleMakeError(400, "Quantity must be a number"));
+    }
+
+    const cart = await Cart.findOne({ userId });
+    if (!cart || !cart.items) return res.status(200).json([]);
+
+    const existingCart = cart.items.find(
+      (item) => item.productId.toString() === productId
+    );
+
+    if (existingCart) {
+      if (quantity === 0) {
+        cart.items = cart.items.filter(
+          (item) => item.productId.toString() !== productId
+        );
+        await cart.save();
+        return res.json(cart.items);
+      } else {
+        existingCart.quantity = quantity;
+        await cart.save();
+        res.json(cart.items);
+      }
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
