@@ -15,6 +15,7 @@ import stocksRoutes from '../api/routes/stocks.route.js'
 import addressRoutes from '../api/routes/address.route.js'
 import cartRoutes from "../api/routes/cart.route.js"
 import wishlistRoutes from "../api/routes/wishlist.route.js"
+import orderRoutes from '../api/routes/order.route.js'
 //
 import cors from "cors";
 
@@ -44,6 +45,7 @@ app.use(`/api/stocks`, stocksRoutes)
 app.use(`/api/address`, addressRoutes)
 app.use(`/api/cart`, cartRoutes)
 app.use(`/api/wish`, wishlistRoutes)
+app.use(`/api/order`, orderRoutes)
 
 app.use(handleError);
 

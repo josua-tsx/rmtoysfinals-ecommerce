@@ -53,7 +53,7 @@ export default function ChangeInfoComponent() {
     const formData = new FormData(e.target);
     const inputs = Object.fromEntries(formData);
 
-    const { username, email, password, phoneNumber } = inputs;
+    const { username, email, password, phoneNumber, fullName } = inputs;
 
     try {
       updateProfile({
@@ -62,6 +62,7 @@ export default function ChangeInfoComponent() {
         password,
         avatar: imageUrl ? imageUrl : currentUser.avatar,
         phoneNumber,
+        fullName
       });
     } catch (error) {
       console.log(error);
@@ -172,6 +173,23 @@ export default function ChangeInfoComponent() {
                     name="username"
                     defaultValue={currentUser.username}
                     id="username"
+                    className="border border-black px-5 py-2 w-[85%] bg-gray-200 rounded-[5px] outline-none"
+                  />
+                  <button type="button">
+                    <CiEdit size={35} className="text-primary" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="flex  w-full gap-[10px] flex-col">
+                <label htmlFor="fullName">full name: </label>
+                <div className="flex items-center  justify-between gap-5">
+                  <input
+                    type="text"
+                    name="fullName"
+                    defaultValue={currentUser.fullName}
+                    id="fullName"
                     className="border border-black px-5 py-2 w-[85%] bg-gray-200 rounded-[5px] outline-none"
                   />
                   <button type="button">

@@ -11,30 +11,44 @@ export const addAddress = async (req, res, next) => {
     stateProvince,
     city,
     barangay,
-    fullAddress,
     streetBuildingHouseNum,
   } = req.body;
 
+  // Validate required fields
   if (
     !region ||
     !stateProvince ||
     !city ||
     !barangay ||
     !streetBuildingHouseNum
-  )
+  ) {
     return next(handleMakeError(400, "Please input required fields!"));
+  }
 
   try {
-    const existingAddress = await Address.findOne({ fullAddress });
+    // Construct full address string
+    const fullAddress =
+      `${streetBuildingHouseNum.trim()}, ${barangay.trim()}, ${city.trim()}`.trim();
 
-    if (existingAddress)
-      return next(handleMakeError(400, "This Address already in the list!"));
+    // Check if the address already exists for this user
+    const existingAddress = await Address.findOne({
+      userId,
+      fullAddress
+    });
 
-    const userAddress = await Address.find({ userId });
+    if (existingAddress) {
+      return next(
+        handleMakeError(400, "This address is already in your list!")
+      );
+    }
 
-    if (userAddress.length >= 3)
+    // Check if the user already has 3 addresses
+    const userAddresses = await Address.find({ userId });
+    if (userAddresses.length >= 3) {
       return next(handleMakeError(400, "You can only have 3 addresses!"));
+    }
 
+    // Create the new address
     const newAddress = new Address({
       country,
       region,
@@ -42,24 +56,22 @@ export const addAddress = async (req, res, next) => {
       city,
       barangay,
       streetBuildingHouseNum,
-      fullAddress: `${streetBuildingHouseNum}, ${barangay}, ${city}`,
-      userId: userId,
+      fullAddress,
+      userId,
     });
 
+    // Save the new address to the Address collection
     const savedAddress = await newAddress.save();
 
-    // PUSHING THE ADDRESS IN USER SCHEMA ADDRESS
-    await User.findByIdAndUpdate(
-      userId,
-      {
-        $push: { address: savedAddress._id },
-      },
-      { new: true }
-    );
+    // Add the new address ID to the user's address array
+    await User.findByIdAndUpdate(userId, {
+      $push: { address: savedAddress._id },
+    });
 
-    res.status(201).json(newAddress);
+    // Return the saved address as the response
+    res.status(201).json(savedAddress);
   } catch (error) {
-    next(error);
+    next(error); // Pass the error to the error handling middleware
   }
 };
 

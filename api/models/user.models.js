@@ -11,6 +11,10 @@ const UserModelSchema = new mongoose.Schema(
       trim: true,
     },
 
+    fullName: {
+      type: String, 
+    },
+
     username: {
       type: String,
       required: [true, "Username is required"],

@@ -66,7 +66,7 @@ export const signin = async (req, res, next) => {
 
   try {
     const validUser = await User.findOne({ email });
-    if (!validUser) return next(handleMakeError(404, "No user found!"));
+    if (!validUser) return next(handleMakeError(404, "Invalid Credentials!"));
 
     if (validUser && (await validUser.comparePassword(password))) {
       const { accessToken, refreshToken } = generateTokens(validUser._id);

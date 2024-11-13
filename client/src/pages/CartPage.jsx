@@ -3,8 +3,12 @@ import CartCard from "../components/CartCard";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useState } from "react";
+import OrderSummaryModal from "../components/OrderSummaryModal";
 
 export default function CartPage() {
+
+  const [openOrderModal, setOrderModal] = useState(false)
+
 
   const {
     data: cart = [],
@@ -18,7 +22,11 @@ export default function CartPage() {
     },
   });
 
-  console.log(cart)
+  const totalPrice = cart?.items?.reduce((total, item) => {
+    return total + item.productId.price * item.quantity
+  }, 0)
+
+
 
   if (isPending) return <div>Loading...</div>;
   if (isError) return <div>Error loading cart.</div>;
@@ -26,6 +34,15 @@ export default function CartPage() {
 
   return (
     <section className="pt-[130px] font-main p-3">
+
+      {
+        openOrderModal && (
+          <OrderSummaryModal onClose={() => setOrderModal(false)}/>
+        )
+      }
+
+
+
       <div className="max-w-[1280px] mx-auto">
         <div className="flex w-full  mb-5 ">
           <h1 className="text-4xl">CART</h1>
@@ -51,10 +68,10 @@ export default function CartPage() {
                 total items: <span>{cart?.items?.length}</span>
               </p>
               <p>
-                total price: <span className="text-indigo-500">800PHP</span>
+                total price: <span className="text-indigo-500">{totalPrice} PHP</span>
               </p>
             </div>
-            <div>
+            <div onClick={() => setOrderModal(true)}>
               <Buttons buttonName={"checkout"} />
             </div>
           </div>

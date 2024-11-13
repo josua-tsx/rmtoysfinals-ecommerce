@@ -18,7 +18,7 @@ const adminSideBarItems = [
   },
   {
     name: "Order Status",
-    // path: "/admin/addProducts",
+    path: "/admin/orderStatus",
     icon: <TbLayoutDashboardFilled size={20} />,
   },
   {

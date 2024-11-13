@@ -9,33 +9,49 @@ const OrderModelSchema = new mongoose.Schema(
     },
     orderItems: [
       {
-        product: {
-          type: mongo.Schema.Types.ObjectId,
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
           required: true,
         },
         quantity: {
           type: Number,
-          required: true,
-          min: 1,
-        },
-        price: {
-          type: Number,
-          required: true,
-          min: 0,
-        },
+        }
       },
     ],
+
     shippingAddress: {
       type: String,
       required: true,
     },
+
+    paymentMethod: {
+      type: String,
+      enum: ["Gcash", "Cod"],
+      default: "Gcash",
+    },
+
+    notes: {
+      type: String,
+    },
+
+    ////////////////////////////////
+
     taxPrice: {
       type: Number,
       // required: true,
       min: 0,
     },
     shippingPrice: {
+      type: Number,
+      required: true,
+      default: 35,
+    },
+
+    discount: {
+      type: String,
+    },
+    subtotal: {
       type: Number,
       required: true,
       min: 0,
@@ -46,36 +62,21 @@ const OrderModelSchema = new mongoose.Schema(
       min: 0,
     },
 
-    subtotal: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    discount: {
-      type: String
-    },
-
-    notes: {
-      type: String,
-    },
-
     status: {
       type: String,
-      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
+      enum: ["Pending", "Processing", "Shipped", "Out for Delivery" , "Delivered", "Cancelled"],
       default: "Pending",
     },
+
+    imageUrl: {
+      type: String,
+      default: "https://cdn-icons-png.freepik.com/512/8690/8690743.png"
+    }
   },
   {
     timestamps: true,
   }
 );
-
-// Calculate total amount before saving
-OrderModelSchema.pre("save", function (next) {
-  this.totalPrice = this.subtotal + this.taxPrice + this.shippingPrice;
-  next();
-});
 
 const Order = mongoose.model("Order", OrderModelSchema);
 

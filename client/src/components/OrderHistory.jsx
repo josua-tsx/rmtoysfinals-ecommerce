@@ -3,18 +3,18 @@ import React, { useState } from "react";
 import axiosInstance from "../lib/axios";
 import SingleOrderList from "./SingleOrderList";
 
-export default function CustomerOrder() {
+export default function OrderHistory() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
   const {
-    data: userOrder = [],
+    data: deliveredCancelled = [],
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["order"],
+    queryKey: ["deliveredCancelled"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-userOrder`);
+      const res = await axiosInstance.get(`/order/get-deliveredCancelled`);
       return res.data;
     },
   });
@@ -47,12 +47,12 @@ export default function CustomerOrder() {
 
 
 
-      <h1 className="text-xl">YOUR ORDER</h1>
+      <h1 className="text-xl">ORDER HISTORY</h1>
       <div className=" my-5 p-2 flex flex-col gap-2">
         {/* CARD GOES HERE */}
 
-        {userOrder && userOrder.length > 0 ? (
-          userOrder.map((order) => (
+        {deliveredCancelled && deliveredCancelled.length > 0 ? (
+          deliveredCancelled.map((order) => (
             <div
               key={order._id}
               className="border flex p-2 gap-5 items-center border-black rounded-[5px]"
@@ -94,7 +94,7 @@ export default function CustomerOrder() {
 
                 {/* ACTIONS */}
                 <div className="flex flex-col gap-2">
-                  <button>Cancel</button>
+                  {/* <button>Cancel</button> */}
                   <button onClick={() => handleOpenSingleOrder(order)}>
                     View Details
                   </button>

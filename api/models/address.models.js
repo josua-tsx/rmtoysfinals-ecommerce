@@ -34,23 +34,25 @@ const AddressModelSchema = new mongoose.Schema(
 
     fullAddress: {
       type: String,
-      unique: true
     },
 
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
 
     isActive: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// AddressModelSchema.index({ userId: 1, fullAddress: 1 }, { unique: true });
 
 const Address = mongoose.model("Address", AddressModelSchema);
 

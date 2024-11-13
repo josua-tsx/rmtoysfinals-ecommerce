@@ -4,12 +4,14 @@ import CustomerOrder from "../components/CustomerOrder";
 // import SettingComponent from "../components/SettingComponent";
 import ChangeInfoComponent from "../components/ChangeInfoComponent";
 import ShippingAddressComponent from "../components/ShippingAddressComponent";
-import WishListComponent from "../components/WishListComponent";
+// import WishListComponent from "../components/WishListComponent";
+import OrderHistory from "../components/OrderHistory";
 
 const MENU_ITEMS = [
   { name: "profile", label: "PROFILE", component: ProfileComponent },
-  { name: "order", label: "ORDER", component: CustomerOrder },
-  { name: "mywishlist", label: "My Wishlist", component: WishListComponent },
+  { name: "order", label: "ORDER STATUS", component: CustomerOrder },
+  { name: "orderhistory", label: "ORDER HISTORY", component: OrderHistory },
+  // { name: "mywishlist", label: "My Wishlist", component: WishListComponent },
   { name: "shippingaddress", label: "Shipping address", component: ShippingAddressComponent },
   { name: "changeinformation", label: "CHANGE INFORMATION", component: ChangeInfoComponent },
   // { name: "setting", label: "SETTING", component: SettingComponent },
@@ -25,7 +27,7 @@ export default function ProfilePage() {
       <div className="max-w-[1280px] mx-auto">
         <h1 className="text-4xl mb-5">MY PROFILE</h1>
         <div className="flex flex-col md:flex-row gap-2">
-          <div className="border h-[220px] md:w-[300px] border-black p-2 bg-card rounded-[5px]">
+          <div className="border h-[210px] md:w-[300px] border-black p-2 bg-card rounded-[5px]">
             <ul className="flex flex-col gap-2 uppercase">
               {MENU_ITEMS.map(({ name, label }) => (
                 <li

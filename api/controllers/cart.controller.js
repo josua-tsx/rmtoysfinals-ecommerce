@@ -166,7 +166,7 @@ export const updateQuantity = async (req, res, next) => {
 
     if (typeof quantity !== "number") {
       return next(handleMakeError(400, "Quantity must be a number"));
-    }
+    } 
 
     const cart = await Cart.findOne({ userId });
     if (!cart || !cart.items) return res.status(200).json([]);

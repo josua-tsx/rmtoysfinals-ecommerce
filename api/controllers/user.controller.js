@@ -7,7 +7,7 @@ export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
 
   try {
-    const { username, email, password, avatar, phoneNumber } = req.body;
+    const { username, email, password, avatar, phoneNumber, fullName } = req.body;
 
     let hashedPassword;
     if (password) {
@@ -23,6 +23,7 @@ export const updateProfile = async (req, res, next) => {
           password: hashedPassword,
           avatar,
           phoneNumber,
+          fullName
         },
       },
       { new: true }
