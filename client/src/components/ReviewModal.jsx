@@ -55,30 +55,14 @@ export default function ReviewModal({ closeModal }) {
                     <button type="button" className="border border-black bg-primary text-card rounded-[5px] p-2">
                       <FaArrowTurnDown size={20} />
                     </button>
-                    <button type="button" className="border border-black bg-primary text-card rounded-[5px] p-2">
-                      <FaImages size={20} />
-                    </button>
+                 
                   </div>
                 </div>
                 
               </div>
 
 
-              <div className="border relative flex gap-2 py-2 bg-white min-h-[70px] rounded-[5px] border-black">
-                  <div className="flex-1">
-                    {/* <img src={noAvatar} alt="" className="w-[80px] mx-auto rounded-[5px]" /> */}
-                  </div>
-                  <div className="flex-1">
-                    {/* <img src={noAvatar} alt="" className="w-[80px] mx-auto  rounded-[5px]" /> */}
-                  </div>
-                  <div className="flex-1">
-                    {/* <img src={noAvatar} alt="" className="w-[80px] mx-auto  rounded-[5px]" /> */}
-                  </div>
-
-
-                    <AdminImagePlaceholder bgColor={"white"} size={55}/>
-
-              </div>  
+              
             </div>
           </div>
           <div className="bg-card h-[655px] overflow-y-auto  py-5 flex flex-col gap-5 border-black border rounded-[5px]">

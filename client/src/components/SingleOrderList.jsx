@@ -52,11 +52,11 @@ export default function SingleOrderList({ order, onClose }) {
             <div className="flex flex-col text-sm">
               <div className="flex gap-2">
                 <p>Subtotal: </p>
-                <span>{order.subtotal}</span>
+                <span>{order.subtotal} PHP</span>
               </div>
               <div className="flex gap-2">
                 <p>Total Price: </p>
-                <span>{order.totalPrice}</span>
+                <span>{order.totalPrice} PHP</span>
               </div>
               <div className="flex gap-2">
                 <p>Status: </p>

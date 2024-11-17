@@ -93,6 +93,7 @@ export default function AdminOrderStatusTable() {
               <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
               {/* <th className="font-normal p-2 pb-5">PAYMENT STATUS</th> */}
               {/* <th className="font-normal p-2 pb-5">SHIPPING STATUS</th> */}
+              <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
               <th className="font-normal p-2 pb-5">ORDER STATUS</th>
               {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
               <th className="font-normal p-2 pb-5">ACTIONS</th>
@@ -116,6 +117,10 @@ export default function AdminOrderStatusTable() {
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {data.totalPrice}
+                  </td>
+
+                  <td className="px-6 py-4  whitespace-nowrap text-center text-sm">
+                    {data.paymentStatus}
                   </td>
 
                   <td className="px-6 py-4  whitespace-nowrap text-center text-sm">

@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { AdminLayout, RequiredAuth, RootLayout } from "./layout/RootLayout.jsx";
+import { AdminLayout, RequiredAuth, RequiredAuthGcashPage, RootLayout } from "./layout/RootLayout.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import SignIn from "./routes/SignIn.jsx";
 import SignUp from "./routes/SignUp.jsx";
@@ -45,9 +45,24 @@ import OrderSummaryModal from "./components/OrderSummaryModal.jsx";
 import SingleOrderList from "./components/SingleOrderList.jsx";
 import AdminOrderStatus from "./pages/admin/AdminOrderStatus.jsx";
 
+
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
+  // {
+  //   element: (
+  //     <ProtectedCustomerRoute>
+  //       <RequiredAuthGcashPage/>
+  //     </ProtectedCustomerRoute>
+  //   ),
+  //   children: [
+  //     {
+  //       path: `/gcashPage`,
+  //       element: <GcashCheckOut />,
+  //     },
+  //   ],
+  // },
+
   {
     path: "/",
     element: <RootLayout />,
@@ -136,7 +151,7 @@ const router = createBrowserRouter([
       // status
       {
         path: "/admin/orderStatus",
-        element: <AdminOrderStatus/>
+        element: <AdminOrderStatus />,
       },
 
       // FILTER

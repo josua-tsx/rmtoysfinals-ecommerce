@@ -1,12 +1,10 @@
 import { TbPinnedFilled } from "react-icons/tb";
 import noAvatar from "../assets/noavatar.jpg";
 import StarsRating from "./StarsRating";
-import { useState } from "react";
-import { IoIosArrowDown } from "react-icons/io";
 
 export default function ReviewCard() {
 
-    const [showImage, setShowImage] = useState(false)
+
 
   return (
     <div className="relative border flex flex-col gap-3 w-[90%] mx-auto px-2 md:px-5 py-4 rounded-[5px] bg-card border-black ">
@@ -39,35 +37,7 @@ export default function ReviewCard() {
          
         </p>
 
-        <div>
-          <button onClick={() => setShowImage(!showImage)} type="button" className="mb-2 border border-black bg-primary text-card rounded-[5px] flex gap-2 items-center uppercase p-1">
-            show image
-            <IoIosArrowDown size={20} />
-            </button>
-          <div className={`${showImage ? "flex" : "hidden"} gap-3`}>
-            <div>
-              <img
-                src={noAvatar}
-                alt="review product images"
-                className="w-[60px]"
-              />
-            </div>
-            <div>
-              <img
-                src={noAvatar}
-                alt="review product images"
-                className="w-[60px]"
-              />
-            </div>
-            <div>
-              <img
-                src={noAvatar}
-                alt="review product images"
-                className="w-[60px]"
-              />
-            </div>
-          </div>
-        </div>
+     
       </div>
     </div>
   );

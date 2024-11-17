@@ -3,11 +3,13 @@ import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate()
 
   const [notes, setNotes] = useState("");
   const [taxes, setTaxes] = useState(0);
@@ -60,9 +62,12 @@ export default function OrderSummaryModal({ onClose }) {
       return res.data;
     },
     onSuccess: () => {
+      setNotes("")
+      onClose()
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
+      // window.location.href = "https://docs.google.com/document/u/0/";
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -81,6 +86,7 @@ export default function OrderSummaryModal({ onClose }) {
 
     if (!fullName || !phoneNumber || !currentAddress)
       return toast.error("Please update required fields first");
+
 
     placeOrder({
       orderItems: cartItems,

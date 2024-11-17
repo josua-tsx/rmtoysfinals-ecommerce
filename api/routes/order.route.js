@@ -17,6 +17,8 @@ router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
 router.get(`/get-orders`, getAllOrder);
 
+
+
 router.get(`/get-deliveredCancelled`, requireAuth, getDeliveredCancelled )
 
 router.put(`/:orderId/status`, requireAuth, requireAdmin, updateDeliveryStatus)

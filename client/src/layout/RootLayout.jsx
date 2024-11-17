@@ -47,6 +47,21 @@ const RequiredAuth = () => {
   );
 };
 
+const RequiredAuthGcashPage = () => {
+  const currentUser = useUserStore((state) => state.currentUser);
+  return !currentUser ? (
+    <Navigate to={`/sign-in`} />
+  ) : (
+    <div className="font-main-text">
+      {/* Main Content */}
+      <main>
+        <Outlet />
+      </main>
+      <Toaster />
+    </div>
+  );
+}
+
 const AdminLayout = () => {
   return (
     <div className="flex">
@@ -63,4 +78,4 @@ const AdminLayout = () => {
   );
 };
 
-export { RootLayout, AdminLayout, RequiredAuth };
+export { RootLayout, AdminLayout, RequiredAuth, RequiredAuthGcashPage };

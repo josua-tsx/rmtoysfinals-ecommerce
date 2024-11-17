@@ -23,28 +23,65 @@ export const userPlaceOrder = async (req, res, next) => {
         handleMakeError(400, "You can't place an order without your address")
       );
 
-      if (orderItems.length === 0) return next(handleMakeError(400, "You cant placed an order without products!"))
+    if (orderItems.length === 0)
+      return next(
+        handleMakeError(400, "You cant placed an order without products!")
+      );
 
-    const userCart = await Cart.findOne({ userId });
-    console.log(userCart);
+      if (paymentMethod === "Gcash") {
 
-    const newOrder = new Order({
-      userId,
-      orderItems,
-      shippingAddress,
-      paymentMethod,
-      taxPrice,
-      shippingPrice,
-      discount,
-      subtotal,
-      totalPrice,
-      notes,
-    });
 
-    await newOrder.save();
-    userCart.items = [];
-    await userCart.save();
-    res.status(200).json({ message: "Order placed!", newOrder });
+        return next(handleMakeError(400, "JUST NO GCASH"))
+        // const newOrder = new Order({
+        //   userId,
+        //   orderItems,
+        //   shippingAddress,
+        //   paymentMethod,
+        //   taxPrice, 
+        //   shippingPrice,
+        //   discount,
+        //   subtotal,
+        //   totalPrice,
+        //   notes,
+        //   paymentStatus: "Pending",
+        // });
+    
+        // await newOrder.save();
+    
+        // const userCart = await Cart.findOne({ userId });
+        // userCart.items = [];
+    
+        // await userCart.save();
+    
+        // res.status(200).json({ message: "Order placed!", newOrder });
+      }
+   
+
+      if (paymentMethod === "Cod") {
+        const newOrder = new Order({
+          userId,
+          orderItems,
+          shippingAddress,
+          paymentMethod,
+          taxPrice, 
+          shippingPrice,
+          discount,
+          subtotal,
+          totalPrice,
+          notes,
+          paymentStatus: "Pending",
+        });
+    
+        await newOrder.save();
+    
+        const userCart = await Cart.findOne({ userId });
+        userCart.items = [];
+    
+        await userCart.save();
+    
+        res.status(200).json({ message: "Order placed!", newOrder });
+      }
+
   } catch (error) {
     next(error);
   }
@@ -56,7 +93,7 @@ export const getUserOrder = async (req, res, next) => {
   try {
     const userOrders = await Order.find({
       userId,
-      status: {$in: ["Pending", "Processing", "Shipped", "Out for Delivery"]}
+      status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
     });
 
     if (!userOrders || userOrders.length === 0) {
