@@ -92,6 +92,23 @@ const adminSideBarItems = [
       },
     ]
   },
+
+  {
+    name: "Gcash Maintenance ",
+    // path: "/admin/gcash",
+    icon: <MdCategory size={20} />,
+    inner: [
+      {
+        name: "Gcash Table",
+        path: "/admin/gcash"
+      },
+      {
+        name: "Add Gcash",
+        path: `/admin/addGcash`
+      },
+    ]
+  },
+
   {
     name: "Manage Filter",
     path: "/admin/filter",
@@ -113,11 +130,14 @@ const adminSideBarItems = [
     ]
   },
 
+  
   {
     name: "Audit Trail",
     // path: "/admin/filter",
     icon: <MdCategory size={20} />,
   },
+
+  
 
   // {
   //   name: "settings",

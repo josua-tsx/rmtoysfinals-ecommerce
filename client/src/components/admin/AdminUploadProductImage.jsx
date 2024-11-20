@@ -1,6 +1,6 @@
   import AdminImagePlaceholder from "../../reusable/Admin/AdminImagePlaceholder";
   import Buttons from "../../reusable/Buttons";
-  import { useState } from "react";
+  import { useRef, useState } from "react";
   import toast from "react-hot-toast";
   import {
     getDownloadURL,
@@ -15,6 +15,8 @@
     const [files, setFiles] = useState([]); // Stores the actual files to be uploaded
     const [uploading, setUploading] = useState(false);
     
+
+    const fileInputRef = useRef()
 
     const handleImageChange = (e) => {
       const selectedFiles = Array.from(e.target.files);
@@ -55,6 +57,7 @@
       const updatedFiles = files.filter((_, i) => i !== index);
       setImages(updatedImages);
       setFiles(updatedFiles);
+      fileInputRef.current.value = ""
     };
 
     const storeImage = (file) => {
@@ -91,6 +94,7 @@
             {/* Main Picture */}
             <div className="border relative min-h-[400px] bg-card rounded-[5px] border-black p-3">
               <input
+              ref={fileInputRef}
                 type="file"
                 multiple
                 accept="image/*"

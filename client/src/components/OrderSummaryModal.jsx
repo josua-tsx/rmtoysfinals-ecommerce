@@ -9,15 +9,12 @@ export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
 
   const queryClient = useQueryClient();
-  const navigate = useNavigate()
 
   const [notes, setNotes] = useState("");
   const [taxes, setTaxes] = useState(0);
-  const [discount, setDiscount] = useState(0)
+  const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(35);
   const [cartItems, setCartItems] = useState({});
-
-  console.log(cartItems);
 
   const {
     data: activeAddress,
@@ -59,15 +56,21 @@ export default function OrderSummaryModal({ onClose }) {
   const { mutate: placeOrder } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/order/place-order`, data);
+
       return res.data;
     },
-    onSuccess: () => {
-      setNotes("")
-      onClose()
+    onSuccess: (data) => {
+      setNotes("");
+      onClose();
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
-      // window.location.href = "https://docs.google.com/document/u/0/";
+
+      const { paymentLink } = data;
+
+      if (paymentLink) {
+        window.location.href = paymentLink;
+      }
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -82,11 +85,11 @@ export default function OrderSummaryModal({ onClose }) {
 
     console.log(inputs);
 
-    const { fullName, phoneNumber, paymentMethod, notes, currentAddress } = inputs;
+    const { fullName, phoneNumber, paymentMethod, notes, currentAddress } =
+      inputs;
 
     if (!fullName || !phoneNumber || !currentAddress)
       return toast.error("Please update required fields first");
-
 
     placeOrder({
       orderItems: cartItems,
@@ -97,8 +100,9 @@ export default function OrderSummaryModal({ onClose }) {
       discount,
       subtotal,
       totalPrice,
-      notes
-    })
+      notes,
+      quantity: cartItems.quantity,
+    });
   };
 
   if (isActivePending || isCartPending) return <p>loading...</p>;
@@ -123,10 +127,7 @@ export default function OrderSummaryModal({ onClose }) {
                 type="text"
                 id="fullName"
                 name="fullName"
-                value={
-                  currentUser?.fullName
-                    && currentUser?.fullName
-                }
+                value={currentUser?.fullName && currentUser?.fullName}
                 disabled={!activeAddress?.fullAddress ? true : false}
               />
             </div>
@@ -138,10 +139,7 @@ export default function OrderSummaryModal({ onClose }) {
                 type="number"
                 id="phoneNumber"
                 name="phoneNumber"
-                value={
-                  currentUser?.phoneNumber
-                    && currentUser?.phoneNumber
-                }
+                value={currentUser?.phoneNumber && currentUser?.phoneNumber}
                 disabled={!activeAddress?.fullAddress ? true : false}
               />
             </div>
@@ -153,10 +151,7 @@ export default function OrderSummaryModal({ onClose }) {
                 type="text"
                 id="currentAddress"
                 name="currentAddress"
-                value={
-                  activeAddress?.fullAddress
-                    && activeAddress?.fullAddress
-                }
+                value={activeAddress?.fullAddress && activeAddress?.fullAddress}
                 disabled={!activeAddress?.fullAddress ? true : false}
               />
             </div>

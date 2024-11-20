@@ -73,7 +73,7 @@ export const deleteStock = async (req, res, next) => {
     if (!singleStock) return next(handleMakeError(400, "no stock found!"));
     await Stocks.findByIdAndDelete(stockId);
 
-    res.status(200).json({ message: "Successfully deleted" });
+    res.status(200).json({ message: "Successfully Deleted" });
   } catch (error) {
     next(error);
   }

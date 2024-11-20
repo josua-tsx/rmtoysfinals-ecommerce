@@ -1,6 +1,47 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Order from "../models/order.model.js";
+import { paymongoClient } from "../server.js";
+
+
+
+// Create a function to generate a payment link for the order
+async function createPaymentLink(orderId) {
+  try {
+    // Find the order by ID
+    const order = await Order.findById(orderId);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    const amountInCents = order.totalPrice * 100;
+
+    const response = await paymongoClient.links.create({
+      amount: amountInCents,
+      description: `Payment for Order #${orderId}`,
+    });
+
+    const checkoutUrl = response?.checkout_url || response?.data?.checkout_url;
+
+    console.log(checkoutUrl);
+
+    if (checkoutUrl) {
+      // Update the order with the payment link
+      order.paymentLink = checkoutUrl;
+      await order.save();
+
+      // Return the payment link
+      return checkoutUrl;
+    } else {
+      throw new Error("Checkout URL not found in PayMongo response");
+    }
+  } catch (err) {
+    console.error("Error creating payment link:", err);
+    throw err;
+  }
+}
+
+
 
 export const userPlaceOrder = async (req, res, next) => {
   const userId = req.user.id;
@@ -18,6 +59,11 @@ export const userPlaceOrder = async (req, res, next) => {
   } = req.body;
 
   try {
+    let orderItemsWithQuantity = orderItems.map((item) => ({
+      ...item,
+      quantity: item.quantity || 1, // Default to quantity 1 if not provided
+    }));
+
     if (!shippingAddress)
       return next(
         handleMakeError(400, "You can't place an order without your address")
@@ -28,60 +74,57 @@ export const userPlaceOrder = async (req, res, next) => {
         handleMakeError(400, "You cant placed an order without products!")
       );
 
-      if (paymentMethod === "Gcash") {
+    if (paymentMethod === "Gcash") {
+      const newOrder = new Order({
+        userId,
+        orderItems: orderItemsWithQuantity,
+        shippingAddress,
+        paymentMethod,
+        taxPrice,
+        shippingPrice,
+        discount,
+        subtotal,
+        totalPrice,
+        notes,
+        paymentStatus: "Pending",
+      });
 
+      await newOrder.save();
 
-        return next(handleMakeError(400, "JUST NO GCASH"))
-        // const newOrder = new Order({
-        //   userId,
-        //   orderItems,
-        //   shippingAddress,
-        //   paymentMethod,
-        //   taxPrice, 
-        //   shippingPrice,
-        //   discount,
-        //   subtotal,
-        //   totalPrice,
-        //   notes,
-        //   paymentStatus: "Pending",
-        // });
-    
-        // await newOrder.save();
-    
-        // const userCart = await Cart.findOne({ userId });
-        // userCart.items = [];
-    
-        // await userCart.save();
-    
-        // res.status(200).json({ message: "Order placed!", newOrder });
-      }
-   
+      const userCart = await Cart.findOne({ userId });
+      userCart.items = [];
 
-      if (paymentMethod === "Cod") {
-        const newOrder = new Order({
-          userId,
-          orderItems,
-          shippingAddress,
-          paymentMethod,
-          taxPrice, 
-          shippingPrice,
-          discount,
-          subtotal,
-          totalPrice,
-          notes,
-          paymentStatus: "Pending",
-        });
-    
-        await newOrder.save();
-    
-        const userCart = await Cart.findOne({ userId });
-        userCart.items = [];
-    
-        await userCart.save();
-    
-        res.status(200).json({ message: "Order placed!", newOrder });
-      }
+      await userCart.save();
 
+      const paymentLink = await createPaymentLink(newOrder._id);
+
+      res.status(200).json({ message: "Order placed!", newOrder, paymentLink });
+    }
+
+    if (paymentMethod === "Cod") {
+      const newOrder = new Order({
+        userId,
+        orderItems: orderItemsWithQuantity,
+        shippingAddress,
+        paymentMethod,
+        taxPrice,
+        shippingPrice,
+        discount,
+        subtotal,
+        totalPrice,
+        notes,
+        paymentStatus: "Pending",
+      });
+
+      await newOrder.save();
+
+      const userCart = await Cart.findOne({ userId });
+      userCart.items = [];
+
+      await userCart.save();
+
+      res.status(200).json({ message: "Order placed!", newOrder });
+    }
   } catch (error) {
     next(error);
   }
@@ -113,16 +156,14 @@ export const getSingleUserOrder = async (req, res, next) => {
   const { orderId } = req.params;
 
   try {
-    const order = await Order.findOne({ _id: orderId })
-      .populate({
-        path: "orderItems.productId",
-        select: "productName price quantity category productImages",
-        populate: {
-          path: "category",
-          select: "categoryName",
-        },
-      })
-      .sort({ createdAt: -1 });
+    const order = await Order.findOne({ _id: orderId }).populate({
+      path: "orderItems.productId",
+      select: "productName price quantity category productImages",
+      populate: {
+        path: "category",
+        select: "categoryName",
+      },
+    });
 
     if (!order) return next(handleMakeError(400, "Order not foud!"));
 

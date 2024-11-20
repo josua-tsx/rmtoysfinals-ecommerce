@@ -42,13 +42,13 @@ export default function Settings() {
               </Link>
             </li> : ""
             }
-            <li className="border-b-gray-300 uppercase p-1 hover:bg-gray-300 border">
+            <li className="uppercase p-1 hover:bg-gray-300 ">
               <Link to={`/profile`} onClick={() => setShowSetting(false)} className=" flex justify-between items-center">
                 profile
                 <CgProfile size={20} />
               </Link>
             </li>
-            <li className="border-b-gray-300  p-1 hover:bg-gray-300 border">
+            <li className=" p-1 hover:bg-gray-300">
               <button onClick={() => signOut()} 
               className=" uppercase flex justify-between w-full items-center"  >
                 Sign out

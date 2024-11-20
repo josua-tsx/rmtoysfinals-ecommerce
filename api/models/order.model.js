@@ -77,6 +77,11 @@ const OrderModelSchema = new mongoose.Schema(
     imageUrl: {
       type: String,
       default: "https://cdn-icons-png.freepik.com/512/8690/8690743.png"
+    },
+
+    paymentLink: {
+      type: String,
+      required: false, // This will be populated when the payment link is generated
     }
   },
   {

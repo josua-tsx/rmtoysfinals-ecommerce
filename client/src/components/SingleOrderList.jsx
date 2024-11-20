@@ -86,10 +86,10 @@ export default function SingleOrderList({ order, onClose }) {
                         <p>Category: </p>
                         <span>{item?.productId?.category?.categoryName}</span>
                       </div>
-                      {/* <div className="flex gap-2">
+                      <div className="flex gap-2">
                         <p>Quantity: </p>
-                        <span>{item?.productId?.quantity}</span>
-                      </div> */}
+                        <span>{item?.quantity}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

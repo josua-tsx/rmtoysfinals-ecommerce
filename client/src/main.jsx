@@ -44,24 +44,27 @@ import AdminAddWorker from "./pages/admin/AdminAddWorker.jsx";
 import OrderSummaryModal from "./components/OrderSummaryModal.jsx";
 import SingleOrderList from "./components/SingleOrderList.jsx";
 import AdminOrderStatus from "./pages/admin/AdminOrderStatus.jsx";
+import GcashCheckOut from "./pages/GcashCheckOut.jsx";
+import AdminGcash from "./pages/admin/AdminGcash.jsx";
+import AdminAddGcash from "./pages/admin/AdminAddGcash.jsx";
 
 
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
-  // {
-  //   element: (
-  //     <ProtectedCustomerRoute>
-  //       <RequiredAuthGcashPage/>
-  //     </ProtectedCustomerRoute>
-  //   ),
-  //   children: [
-  //     {
-  //       path: `/gcashPage`,
-  //       element: <GcashCheckOut />,
-  //     },
-  //   ],
-  // },
+  {
+    element: (
+      <ProtectedCustomerRoute>
+        <RequiredAuthGcashPage/>
+      </ProtectedCustomerRoute>
+    ),
+    children: [
+      {
+        path: `/gcashPage`,
+        element: <GcashCheckOut />,
+      },
+    ],
+  },
 
   {
     path: "/",
@@ -241,6 +244,19 @@ const router = createBrowserRouter([
         path: "/admin/addWorker",
         element: <AdminAddWorker />,
       },
+
+
+      // GCASH
+
+      {
+        path: "/admin/gcash",
+        element: <AdminGcash/>
+      },
+
+      {
+        path: "/admin/addGcash",
+        element: <AdminAddGcash/>
+      }
     ],
   },
 ]);
