@@ -135,6 +135,13 @@ const adminSideBarItems = [
     name: "Audit Trail",
     // path: "/admin/filter",
     icon: <MdCategory size={20} />,
+    inner: [
+      {
+        name: "Order Transactions",
+        path: "/admin/orderTransact"
+      },
+    
+    ]
   },
 
   

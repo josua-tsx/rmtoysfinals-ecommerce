@@ -47,6 +47,8 @@ import AdminOrderStatus from "./pages/admin/AdminOrderStatus.jsx";
 import GcashCheckOut from "./pages/GcashCheckOut.jsx";
 import AdminGcash from "./pages/admin/AdminGcash.jsx";
 import AdminAddGcash from "./pages/admin/AdminAddGcash.jsx";
+import AdminOrderTransact from "./pages/admin/AdminOrderTransact.jsx";
+
 
 
 const queryClient = new QueryClient();
@@ -256,7 +258,16 @@ const router = createBrowserRouter([
       {
         path: "/admin/addGcash",
         element: <AdminAddGcash/>
+      },
+
+
+      // AUDIT
+
+      {
+        path: `/admin/orderTransact`,
+        element: <AdminOrderTransact/>
       }
+
     ],
   },
 ]);

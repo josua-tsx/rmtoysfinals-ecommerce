@@ -4,11 +4,14 @@ import { useUserStore } from "../stores/useUserStore";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import useOrderStore from "../stores/useOrderStore";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
+  const { setCurrentOrder } = useOrderStore();
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [notes, setNotes] = useState("");
   const [taxes, setTaxes] = useState(0);
@@ -83,26 +86,44 @@ export default function OrderSummaryModal({ onClose }) {
     const formData = new FormData(e.target);
     const inputs = Object.fromEntries(formData);
 
-    console.log(inputs);
-
     const { fullName, phoneNumber, paymentMethod, notes, currentAddress } =
       inputs;
 
     if (!fullName || !phoneNumber || !currentAddress)
       return toast.error("Please update required fields first");
 
-    placeOrder({
-      orderItems: cartItems,
-      shippingAddress: currentAddress,
-      paymentMethod,
-      taxPrice: taxes,
-      shippingPrice: shippingFee,
-      discount,
-      subtotal,
-      totalPrice,
-      notes,
-      quantity: cartItems.quantity,
-    });
+    if (paymentMethod === "Gcash") {
+      const orderData = {
+        orderItems: cartItems,
+        shippingAddress: currentAddress,
+        paymentMethod,
+        taxPrice: taxes,
+        shippingPrice: shippingFee,
+        discount,
+        subtotal,
+        totalPrice,
+        notes,
+        quantity: cartItems.quantity,
+      };
+      setCurrentOrder(orderData)
+      navigate(`/gcashPage`);
+      return;
+    }
+
+    if (paymentMethod === "Cod") {
+      placeOrder({
+        orderItems: cartItems,
+        shippingAddress: currentAddress,
+        paymentMethod,
+        taxPrice: taxes,
+        shippingPrice: shippingFee,
+        discount,
+        subtotal,
+        totalPrice,
+        notes,
+        quantity: cartItems.quantity,
+      });
+    }
   };
 
   if (isActivePending || isCartPending) return <p>loading...</p>;

@@ -10,15 +10,27 @@ import app from "../firebase/firebase";
 import toast from "react-hot-toast";
 import { BiSolidImageAdd } from "react-icons/bi";
 import { MdDelete } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
+import useOrderStore from "../stores/useOrderStore";
 
 export default function GcashCheckOut() {
+  const queryClient = useQueryClient();
+
+  const currentOrder = useOrderStore((state) => state.currentOrder);
+
   const [receipt, setReceipt] = useState(null); // Store the uploaded image URL
   const [file, setFile] = useState(null); // Store the actual file to be uploaded
-  const [uploading, setUploading] = useState(false);
+
+  console.log(receipt);
 
   const [selectedGcash, setSelectedGcash] = useState(null);
+
+  const [gcashName, setGcashName] = useState("");
+  const [gcashNo, setGcashNo] = useState("");
+  const [gcashRefNo, setGcashRefNo] = useState("");
+
+  // const [isReceiptUploaded, setIsReceiptUploaded] = useState(false);
 
   const fileInputRef = useRef(); // Reference to the file input element
 
@@ -34,7 +46,52 @@ export default function GcashCheckOut() {
     },
   });
 
-  console.log(gcashActive);
+  const { mutate: placeOrder } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/order/place-order`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      toast.success(`order placed`);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong!");
+    },
+  });
+
+  const handleOrderFormSubmit = (e) => {
+    e.preventDefault();
+    try {
+      const orderData = {
+        orderItems: currentOrder.orderItems,
+        shippingAddress: currentOrder.shippingAddress,
+        paymentMethod: currentOrder.paymentMethod,
+        taxPrice: currentOrder.taxPrice,
+        shippingPrice: currentOrder.shippingPrice,
+        discount: currentOrder.discount,
+        subtotal: currentOrder.subtotal,
+        totalPrice: currentOrder.totalPrice,
+        notes: currentOrder.notes,
+        quantity: currentOrder.orderItems.quantity,
+      };
+
+      // Add GCash details if payment method is GCash
+      if (currentOrder.paymentMethod === "Gcash") {
+        orderData.gcashAdditionalDetails = {
+          gcashName,
+          gcashNo,
+          gcashRefNo,
+          gcashReceiptImage: receipt,
+        };
+      }
+      // Place the order
+      placeOrder(orderData);
+    } catch (error) {
+      toast.error(error.message || "Failed to place order");
+    }
+  };
 
   const handleImageChange = (e) => {
     const selectedFile = e.target.files[0]; // Get the first selected file
@@ -51,16 +108,13 @@ export default function GcashCheckOut() {
       return;
     }
 
-    setUploading(true);
     storeImage(file)
       .then((url) => {
         toast.success("Image uploaded successfully!");
-        setReceipt(url); // Store the uploaded image URL
-        setFile(null); // Clear the file state
-        setUploading(false);
+        setReceipt(url);
+        setFile(null); // Reset file state
       })
       .catch((error) => {
-        setUploading(false);
         toast.error(error.message);
       });
   };
@@ -74,7 +128,7 @@ export default function GcashCheckOut() {
   const storeImage = (file) => {
     return new Promise((resolve, reject) => {
       const storage = getStorage(app);
-      const fileName = new Date().getTime() + file.name; // Create unique file name
+      const fileName = new Date().getTime() + file.name;
       const storageRef = ref(storage, fileName);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -83,15 +137,17 @@ export default function GcashCheckOut() {
         (snapshot) => {
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          toast.success(`Upload is ${progress}% done`);
+          console.log(`Upload is ${progress}% done`); // For debugging purposes
         },
         (error) => {
           reject(error);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            resolve(downloadURL); // Return the download URL after the upload is complete
-          });
+          getDownloadURL(uploadTask.snapshot.ref)
+            .then((downloadURL) => {
+              resolve(downloadURL);
+            })
+            .catch(reject); // Ensure error handling on URL fetch
         }
       );
     });
@@ -151,11 +207,15 @@ export default function GcashCheckOut() {
           </div>
         </div>
 
-        <form className="p-2 flex-1 flex flex-col gap-5 justify-between rounded-[5px] border border-black bg-card">
+        <form
+          onSubmit={handleOrderFormSubmit}
+          className="p-2 flex-1 flex flex-col gap-5 justify-between rounded-[5px] border border-black bg-card"
+        >
           <div className="flex flex-col gap-5">
             <div className=" rounded-[5px] flex flex-col gap-2">
-              <p className="text-xl md:text-3xl">Total Price: 19000 PHP</p>
-              <p>Order Id: </p>
+              <p className="text-xl md:text-3xl">
+                Total Price: {currentOrder.totalPrice} PHP
+              </p>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -165,7 +225,9 @@ export default function GcashCheckOut() {
                 </label>
                 <input
                   type="text"
-                  className="border border-black outline-none rounded-[5px]"
+                  value={gcashName}
+                  onChange={(e) => setGcashName(e.target.value)}
+                  className="border px-2 border-black outline-none rounded-[5px]"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -173,8 +235,11 @@ export default function GcashCheckOut() {
                   Gcash No.
                 </label>
                 <input
-                  type="text"
-                  className="border border-black outline-none rounded-[5px]"
+                  type="number"
+                  value={gcashNo}
+                  onChange={(e) => setGcashNo(e.target.value)}
+                  min={0}
+                  className="border px-2 border-black outline-none rounded-[5px]"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -182,8 +247,10 @@ export default function GcashCheckOut() {
                   Reference No.
                 </label>
                 <input
-                  type="text"
-                  className="border border-black outline-none rounded-[5px]"
+                  type="number"
+                  value={gcashRefNo}
+                  onChange={(e) => setGcashRefNo(e.target.value)}
+                  className="border px-2 border-black outline-none rounded-[5px]"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -208,7 +275,7 @@ export default function GcashCheckOut() {
 
               {/* Display the uploaded image */}
               {receipt && (
-                <div className="p-2 rounded-[5px]">
+                <div className="p-2 rounded-[5px] flex flex-col gap-2">
                   <div className="bg-card relative flex-1 min-h-[80px] border-black border px-5 p-3 rounded-[5px]">
                     <img
                       src={receipt}
@@ -217,23 +284,29 @@ export default function GcashCheckOut() {
                     />
                     <button
                       type="button"
-                      onClick={handleRemoveImage}
+                      onClick={() => handleRemoveImage()}
                       className="text-red-600 absolute right-0 top-0 hover:text-red-300"
                     >
                       <MdDelete size={25} />
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => handleImageSubmit()}
+                    className="border border-black bg-primary text-card p-1 rounded-[5[x]]"
+                  >
+                    Upload Receipt
+                  </button>
                 </div>
               )}
             </div>
           </div>
 
           <button
-            type="button"
-            onClick={handleImageSubmit}
+            // disabled={isReceiptUploaded}
             className="border border-black rounded-[5px] bg-primary text-card py-1"
           >
-            {uploading ? "Uploading..." : "SUBMIT"}
+            SUBMIT
           </button>
         </form>
       </div>

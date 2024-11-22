@@ -1,51 +1,9 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Order from "../models/order.model.js";
-import { paymongoClient } from "../server.js";
-
-
-
-// Create a function to generate a payment link for the order
-async function createPaymentLink(orderId) {
-  try {
-    // Find the order by ID
-    const order = await Order.findById(orderId);
-    if (!order) {
-      throw new Error("Order not found");
-    }
-
-    const amountInCents = order.totalPrice * 100;
-
-    const response = await paymongoClient.links.create({
-      amount: amountInCents,
-      description: `Payment for Order #${orderId}`,
-    });
-
-    const checkoutUrl = response?.checkout_url || response?.data?.checkout_url;
-
-    console.log(checkoutUrl);
-
-    if (checkoutUrl) {
-      // Update the order with the payment link
-      order.paymentLink = checkoutUrl;
-      await order.save();
-
-      // Return the payment link
-      return checkoutUrl;
-    } else {
-      throw new Error("Checkout URL not found in PayMongo response");
-    }
-  } catch (err) {
-    console.error("Error creating payment link:", err);
-    throw err;
-  }
-}
-
-
 
 export const userPlaceOrder = async (req, res, next) => {
   const userId = req.user.id;
-
   const {
     orderItems,
     shippingAddress,
@@ -56,23 +14,26 @@ export const userPlaceOrder = async (req, res, next) => {
     subtotal,
     totalPrice,
     notes,
+    gcashAdditionalDetails,
   } = req.body;
 
   try {
     let orderItemsWithQuantity = orderItems.map((item) => ({
       ...item,
-      quantity: item.quantity || 1, // Default to quantity 1 if not provided
+      quantity: item.quantity || 1,
     }));
 
-    if (!shippingAddress)
+    if (!shippingAddress) {
       return next(
         handleMakeError(400, "You can't place an order without your address")
       );
+    }
 
-    if (orderItems.length === 0)
+    if (orderItems.length === 0) {
       return next(
-        handleMakeError(400, "You cant placed an order without products!")
+        handleMakeError(400, "You can't place an order without products!")
       );
+    }
 
     if (paymentMethod === "Gcash") {
       const newOrder = new Order({
@@ -87,18 +48,15 @@ export const userPlaceOrder = async (req, res, next) => {
         totalPrice,
         notes,
         paymentStatus: "Pending",
+        gcashAdditionalDetails,
       });
 
       await newOrder.save();
-
       const userCart = await Cart.findOne({ userId });
       userCart.items = [];
-
       await userCart.save();
 
-      const paymentLink = await createPaymentLink(newOrder._id);
-
-      res.status(200).json({ message: "Order placed!", newOrder, paymentLink });
+      res.status(200).json({ message: "Order placed!", newOrder });
     }
 
     if (paymentMethod === "Cod") {
@@ -117,10 +75,8 @@ export const userPlaceOrder = async (req, res, next) => {
       });
 
       await newOrder.save();
-
       const userCart = await Cart.findOne({ userId });
       userCart.items = [];
-
       await userCart.save();
 
       res.status(200).json({ message: "Order placed!", newOrder });
@@ -208,16 +164,25 @@ export const updateDeliveryStatus = async (req, res, next) => {
       "Delivered",
       "Cancelled",
     ];
+
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid delivery status." });
     }
 
-    const updatedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { status },
-      { new: true, runValidators: true }
-    );
+    const orderUpdate = {
+      status,
+    };
 
+    if (status === "Delivered") {
+      orderUpdate.paymentStatus = "Paid"; 
+    } else {
+      orderUpdate.paymentStatus = "Pending"; 
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
+      new: true,
+      runValidators: true,
+    });
     if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
 
     res.status(200).json({ message: "Delivery Status updated sucessfully" });
@@ -239,6 +204,77 @@ export const getDeliveredCancelled = async (req, res, next) => {
       );
 
     res.status(200).json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePaymentStatus = async (req, res, next) => {
+  const { orderId } = req.params;
+  const { paymentStatus } = req.body;
+
+  try {
+    const validPaymentStatuses = ["Pending", "Paid", "Failed", "Refunded"];
+    if (!validPaymentStatuses.includes(paymentStatus)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid payment status status." });
+    }
+
+    // Set order status to "Processing" if payment status is "Failed"
+    const orderUpdate = {
+      paymentStatus,
+    };
+
+    if (paymentStatus === "Paid") {
+      orderUpdate.status = "Processing";
+    }
+
+    if (paymentStatus === "Pending") {
+      orderUpdate.status = "Pending";
+    }
+
+    if (paymentStatus === "Failed") {
+      orderUpdate.status = "Cancelled";
+    }
+
+    if (paymentStatus === "Refunded") {
+      orderUpdate.status = "Cancelled";
+    }
+
+    const updatedPaymentStatus = await Order.findByIdAndUpdate(
+      orderId,
+      orderUpdate,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPaymentStatus)
+      return next(handleMakeError(400, "status not found!"));
+
+    res.status(200).json({ message: "Payment Status updated sucessfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addReason = async (req, res, next) => {
+  const { orderId } = req.params;
+  const { reason } = req.body;
+
+  try {
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        reason,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!order) return next(handleMakeError(400, "Order not found!"));
+
+    res.status(200).json({ message: "Succesfully Added a reason", order });
   } catch (error) {
     next(error);
   }

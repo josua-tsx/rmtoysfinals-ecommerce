@@ -7,6 +7,7 @@ const OrderModelSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    
     orderItems: [
       {
         productId: {
@@ -16,7 +17,8 @@ const OrderModelSchema = new mongoose.Schema(
         },
         quantity: {
           type: Number,
-        }
+          min: 1,
+        },
       },
     ],
 
@@ -35,13 +37,17 @@ const OrderModelSchema = new mongoose.Schema(
       type: String,
     },
 
-    ////////////////////////////////
+    reason: {
+      type: String,
+    },
 
     taxPrice: {
       type: Number,
       // required: true,
       min: 0,
+      default: 0,
     },
+
     shippingPrice: {
       type: Number,
       required: true,
@@ -51,11 +57,13 @@ const OrderModelSchema = new mongoose.Schema(
     discount: {
       type: String,
     },
+    
     subtotal: {
       type: Number,
       required: true,
       min: 0,
     },
+
     totalPrice: {
       type: Number,
       required: true,
@@ -65,24 +73,41 @@ const OrderModelSchema = new mongoose.Schema(
     paymentStatus: {
       type: String,
       enum: ["Pending", "Paid", "Failed", "Refunded"],
-      default: "Pending"
+      default: "Pending",
     },
 
     status: {
       type: String,
-      enum: ["Pending", "Processing", "Shipped", "Out for Delivery" , "Delivered", "Cancelled"],
+      enum: [
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Out for Delivery",
+        "Delivered",
+        "Cancelled",
+      ],
       default: "Pending",
     },
 
     imageUrl: {
       type: String,
-      default: "https://cdn-icons-png.freepik.com/512/8690/8690743.png"
+      default: "https://cdn-icons-png.freepik.com/512/8690/8690743.png",
     },
 
-    paymentLink: {
-      type: String,
-      required: false, // This will be populated when the payment link is generated
-    }
+    gcashAdditionalDetails: {
+      gcashName: {
+        type: String,
+      },
+      gcashNo: {
+        type: String,
+      },
+      gcashRefNo: {
+        type: String,
+      },
+      gcashReceiptImage: {
+        type: String,
+      },
+    },
   },
   {
     timestamps: true,
