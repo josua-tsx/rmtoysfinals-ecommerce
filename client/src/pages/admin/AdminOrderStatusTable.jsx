@@ -8,7 +8,7 @@ export default function AdminOrderStatusTable() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const {
     data: allOrders = [],
@@ -31,33 +31,31 @@ export default function AdminOrderStatusTable() {
     enabled: !!orderId,
   });
 
-  const {mutate: updateStatusMutation} = useMutation({
-    mutationFn: async ({id, status}) => {
-      const res = await axiosInstance.put(`/order/${id}/status`, {status} )
-      return res.data
+  const { mutate: updateStatusMutation } = useMutation({
+    mutationFn: async ({ id, status }) => {
+      const res = await axiosInstance.put(`/order/${id}/status`, { status });
+      return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['order']})
-      queryClient.invalidateQueries({queryKey: ['deliveredCancelled']})
-      toast.success("Sucessfully Updated Status!")
+      queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["deliveredCancelled"] });
+      toast.success("Sucessfully Updated Status!");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong")
-    }
-  })
+      toast.error(err.response.data.message || "something went wrong");
+    },
+  });
 
   const handleChangeStatus = (id, e) => {
-    const newStatus = e.target.value 
+    const newStatus = e.target.value;
 
-    updateStatusMutation({id, status: newStatus})
-  } 
+    updateStatusMutation({ id, status: newStatus });
+  };
 
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
     setOpenModal(true);
   };
-
-
 
   if (isOrdersPending) return <p>loading...</p>;
   if (isOrdersError) return <p>error.</p>;
@@ -120,11 +118,22 @@ export default function AdminOrderStatusTable() {
                   </td>
 
                   <td className="px-6 py-4  whitespace-nowrap text-center text-sm">
-                    {data.paymentStatus}
+                    {(data.paymentStatus && data.paymentStatus === "Failed") ||
+                    data.paymentStatus === "Refunded" ? (
+                      <span className="text-red-700">{data.paymentStatus}</span>
+                    ) : (
+                      <span className="text-blue-700">
+                        {data.paymentStatus}
+                      </span>
+                    )}
                   </td>
 
                   <td className="px-6 py-4  whitespace-nowrap text-center text-sm">
-                    {data.status}
+                    {data.status && data.status === "Cancelled" ? (
+                      <span className="text-red-700">{data.status}</span>
+                    ) : (
+                      <span className="text-blue-700">{data.status}</span>
+                    )}
                   </td>
                   {/* 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">{data.status}</td> */}
@@ -137,7 +146,6 @@ export default function AdminOrderStatusTable() {
                     <button
                       onClick={() => handleOpenSingleOrder(data)}
                       type="button"
-                      className=""
                     >
                       VIEW
                     </button>

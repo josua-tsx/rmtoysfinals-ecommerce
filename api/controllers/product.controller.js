@@ -44,7 +44,6 @@ export const addProduct = async (req, res, next) => {
       discount,
       productImages,
       filters,
-      status: "published",
       category,
       supplier,
     });
@@ -58,7 +57,28 @@ export const addProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find({ status: "published" })
+    const products = await Product.find({ status: "published"})
+      .populate({
+        path: "supplier",
+        select: "supplierName",
+      })
+      .populate({
+        path: "category",
+        select: "categoryName",
+      }).populate({
+        path: "stocks",
+        select: "stockQuantity"
+      })
+
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getNoStocksProducts = async (req, res, next) => {
+  try {
+    const products = await Product.find({status: {$ne: "draft"}})
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -248,7 +268,7 @@ export const publishDraft = async (req, res, next) => {
     const publishDraft = await Product.findByIdAndUpdate(
       draftId,
       {
-        status: "published",
+        status: "",
       },
       { new: true }
     );

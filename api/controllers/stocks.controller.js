@@ -30,6 +30,7 @@ export const addStocks = async (req, res, next) => {
       productId,
       {
         $push: { stocks: savedStocks._id },
+        status: "published"
       },
       { new: true }
     );
@@ -65,39 +66,38 @@ export const getStocks = async (req, res, next) => {
   }
 };
 
-export const deleteStock = async (req, res, next) => {
-  const { stockId } = req.params;
+// export const deleteStock = async (req, res, next) => {
+//   const { stockId } = req.params;
 
-  try {
-    const singleStock = await Stocks.findById(stockId);
-    if (!singleStock) return next(handleMakeError(400, "no stock found!"));
-    await Stocks.findByIdAndDelete(stockId);
+//   try {
+//     const singleStock = await Stocks.findById(stockId);
+//     if (!singleStock) return next(handleMakeError(400, "no stock found!"));
+//     await Stocks.findByIdAndDelete(stockId);
 
-    res.status(200).json({ message: "Successfully Deleted" });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json({ message: "Successfully Deleted" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const editStock = async (req, res, next) => {
   const { stockId } = req.params;
   const { productId, stockQuantity } = req.body;
 
-  console.log("Updating stock:", { stockId, productId, stockQuantity });
-
   try {
-    const existingStock = await Stocks.findOne({ product: productId });
+    // const existingStock = await Stocks.findOne({ product: productId });
 
-    if (existingStock) {
-      return next(
-        handleMakeError(
-          400,
-          "Stock for this product already exists. Use update function to modify stock."
-        )
-      );
-    }
+    // if (existingStock) {
+    //   return next(
+    //     handleMakeError(
+    //       400,
+    //       "Stock for this product already exists. Use update function to modify stock."
+    //     )
+    //   );
+    // }
 
-    console.log("Existing stock:", existingStock);
+    // console.log("Existing stock:", existingStock);
+
 
     const updateStock = await Stocks.findByIdAndUpdate(
       stockId,
@@ -107,8 +107,6 @@ export const editStock = async (req, res, next) => {
       },
       { new: true }
     );
-
-    console.log("Updated stock:", updateStock);
 
     if (!updateStock) {
       console.log("Update operation did not return an updated document");

@@ -2,12 +2,22 @@ import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 import {
   addReason,
+  adminOrderRefund,
+  cancelSuccessTransact,
+  getAllCancelled,
+  getAllFailed,
   getAllOrder,
-  getDeliveredCancelled,
+  getAllRefunded,
+  getAllSuccess,
   getSingleUserOrder,
+  getUserCancelled,
+  getUserDelivered,
+  getUserFailed,
   getUserOrder,
+  getUserRefund,
   updateDeliveryStatus,
   updatePaymentStatus,
+  userCancelOrder,
   userPlaceOrder,
 } from "../controllers/order.controller.js";
 
@@ -21,9 +31,29 @@ router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
 router.get(`/get-orders`, getAllOrder);
 
+router.get(`/get-successOrder`, getAllSuccess)
+
+router.get(`/get-failedCancelled`, getAllFailed)
+
+router.get(`/get-refundedCancelled`, getAllRefunded)
+
+router.get(`/get-cancelled`, getAllCancelled)
+
 router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
 
-router.get(`/get-deliveredCancelled`, requireAuth, getDeliveredCancelled )
+router.put(`/cancel-success-transact`, cancelSuccessTransact)
+
+router.put(`/refund-order`, adminOrderRefund)
+
+router.put(`/user/cancel-order`, requireAuth, userCancelOrder)
+
+router.get(`/get-userDelivered`, requireAuth, getUserDelivered)
+
+router.get(`/get-userCancelled`, requireAuth, getUserCancelled)
+
+router.get(`/get-userRefunded`, requireAuth, getUserRefund)
+
+router.get(`/get-userFailed`, requireAuth, getUserFailed)
 
 router.put(`/:orderId/status`, requireAuth, requireAdmin, updateDeliveryStatus)
 

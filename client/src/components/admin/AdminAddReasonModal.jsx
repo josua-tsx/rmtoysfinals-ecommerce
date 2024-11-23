@@ -19,6 +19,7 @@ export default function AdminAddReasonModal({ singleOrderData, onClose }) {
     onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["order"] });
         setReason("")
+        onClose()
         toast.success("Sucessfully Added Reason!");
     },
     onError: (err) => {

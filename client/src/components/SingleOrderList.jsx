@@ -38,9 +38,11 @@ export default function SingleOrderList({ order, onClose }) {
   return (
     <section className="inset-0 z-40 fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
       {reasonModal && (
-        <AdminAddReasonModal singleOrderData={order} onClose={() => setReasonModal(false)} />
+        <AdminAddReasonModal
+          singleOrderData={order}
+          onClose={() => setReasonModal(false)}
+        />
       )}
-    
 
       <div className="h-screen relative flex flex-col md:flex-row-reverse justify-center gap-2 md:gap-10 items-center ">
         <div className="border relative p-2 flex flex-col gap-2 border-black w-full md:w-[500px] bg-card rounded-[5px]">
@@ -102,12 +104,17 @@ export default function SingleOrderList({ order, onClose }) {
               </div>
               <div className="flex gap-2">
                 <p>Status: </p>
-                <span>{order.status}</span>
+
+                {order.status && order.status === "Cancelled" ? (
+                  <span className="text-red-700">{order.status}</span>
+                ) : (
+                  <span className="text-blue-700">{order.status}</span>
+                )}
               </div>
               {order?.paymentMethod === "Gcash" && (
                 <div className="flex gap-2">
                   <p>Payment Status: </p>
-                  <span>{order?.paymentStatus}</span>
+                  {order.paymentStatus && order.paymentStatus === "Failed" || order.paymentStatus === "Refunded" ? <span className="text-red-700">{order.paymentStatus}</span> : <span className="text-blue-700">{order.paymentStatus}</span>}
                 </div>
               )}
             </div>

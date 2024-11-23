@@ -1,23 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
 import axiosInstance from "../../lib/axios";
-import SingleOrderList from "../../components/SingleOrderList";
 import toast from "react-hot-toast";
+import SingleOrderList from "../../components/SingleOrderList";
+import { useState } from "react";
 
-export default function AdminSuccesfullTransactions() {
+export default function AdminFailedTransactions() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
   const queryClient = useQueryClient();
 
   const {
-    data: successOrderData = [],
-    isPending: isSuccessPending,
-    isError: isSuccessError,
+    data: failedCancelledData = [],
+    isPending: isFailedCancelledPending,
+    isError: isFailedCancelledError,
   } = useQuery({
-    queryKey: ["successOrder"],
+    queryKey: ["failedCancelled"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-successOrder`);
+      const res = await axiosInstance.get(`/order/get-failedCancelled`);
       return res.data;
     },
   });
@@ -31,25 +31,6 @@ export default function AdminSuccesfullTransactions() {
     enabled: !!orderId,
   });
 
-  const {mutate: updateToRefundMutation} = useMutation({
-    mutationFn: async (orderId) => {
-      const res = await axiosInstance.put(`/order/refund-order`, orderId);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["successOrder"] });
-      queryClient.invalidateQueries({ queryKey: ["refundedCancelled"] });
-      toast.success(`Updated to refunded`)
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!")
-    }
-  });
-
-  const handleUpdateToRefunded = (orderId) => {
-    updateToRefundMutation({orderId})
-  }
-
   const { mutate: cancelSuccessMutation } = useMutation({
     mutationFn: async (orderId) => {
       const res = await axiosInstance.put(
@@ -60,7 +41,7 @@ export default function AdminSuccesfullTransactions() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
-      queryClient.invalidateQueries({ queryKey: ["successOrder"] });
+      queryClient.invalidateQueries({ queryKey: ["failedCancelled"] });
       toast.success("Successfully Cancelled!");
     },
     onError: (err) => {
@@ -77,8 +58,10 @@ export default function AdminSuccesfullTransactions() {
     setOpenModal(true);
   };
 
-  if (isSuccessPending) return <p>loading...</p>;
-  if (isSuccessError) return <p>Error</p>;
+  console.log(failedCancelledData);
+
+  if (isFailedCancelledPending) return <p>Loading...</p>;
+  if (isFailedCancelledError) return <p>Error.</p>;
 
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
@@ -90,7 +73,7 @@ export default function AdminSuccesfullTransactions() {
       )}
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>SUCCESFUL TRANSACTIONS</h1>
+        <h1>FAILED TRANSACTIONS</h1>
         {/* <div className="flex items-center relative">
           <input
             type="text"
@@ -107,86 +90,83 @@ export default function AdminSuccesfullTransactions() {
               <th className="font-normal p-2 pb-5">ORDER ID</th>
               <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
               <th className="font-normal p-2 pb-5">ORDER DATE</th>
+              <th className="font-normal p-2 pb-5">ORDER FAILED DATE</th>
               <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
               <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
-              <th className="font-normal p-2 pb-5">TOTAL ITEMS BOUGHT</th>
+              <th className="font-normal p-2 pb-5">TOTAL ITEMS</th>
               <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
               <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
               <th className="font-normal p-2 pb-5">STATUS</th>
-              <th className="font-normal p-2 pb-5">ADDRESS</th>
+              <th className="font-normal p-2 pb-5">REASON</th>
               <th className="font-normal p-2 pb-5">ACTION</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {successOrderData.length > 0 ? (
-              successOrderData.map((success) => {
-                const totalItemsBought =
-                  success.orderItems?.reduce(
+            {failedCancelledData?.length > 0 ? (
+              failedCancelledData.map((failed) => {
+                const totalItems =
+                  failed.orderItems?.reduce(
                     (sum, item) => sum + (item.quantity || 0),
                     0
                   ) || 0;
 
                 return (
-                  <tr key={success._id}>
-                    <td className="px-4">{success._id}</td>
+                  <tr key={failed._id}>
+                    <td className="px-4">{failed._id}</td>
                     <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2">
-                      {success.userId?.email}
+                      {failed.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {success.createdAt}
+                      {failed.createdAt}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {success.totalPrice} PHP
+                      {failed.updatedAt}
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {success.userId?.phoneNumber}
+                      {failed.totalPrice}
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {totalItemsBought}
+                      {failed.userId?.phoneNumber}
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {success.paymentMethod}
+                      {totalItems}
                     </td>
-                    <td className="px-6 py-4 uppercase text-green-700 whitespace-nowrap text-center text-sm">
-                      {success.paymentStatus}
+                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                      {failed.paymentMethod}
                     </td>
-                    <td className="px-6 py-4 uppercase text-green-700 whitespace-nowrap text-center text-sm">
-                      {success.status}
+                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                      {failed.paymentStatus}
                     </td>
                     <td className="py-6 px-6 uppercase whitespace-nowrap text-center text-sm">
-                      {success.userId?.address[0]?.fullAddress}
+                      {failed.status}
                     </td>
-                    <td className=" whitespace-nowrap text-center text-sm">
+                    <td className="py-6 px-6 text-red-700 uppercase whitespace-nowrap text-center text-sm">
+                      {failed.reason}
+                    </td>
+                    <td className=" whitespace-nowrap px-4 text-center text-sm">
+                      <div className="flex gap-2">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleOpenSingleOrder(success)}
+                          onClick={() => handleOpenSingleOrder(failed)}
                           type="button"
-                          className="text-indigo-700"
+                          className="text-green-700"
                         >
                           VIEW
                         </button>
-                        <button
-                          onClick={() =>
-                            handleCancelSuccessTransact(success._id)
-                          }
-                          type="button"
-                          className="text-red-700"
-                        >
+                        <button onClick={() => handleCancelSuccessTransact(failed._id)}
+                        type="button" className="text-red-700">
                           CANCEL
                         </button>
-                        <button onClick={() => handleUpdateToRefunded(success._id)}
-                        type="button" className="text-green-700">
-                          REFUND
-                        </button>
+                      </div>
                       </div>
                     </td>
                   </tr>
                 );
               })
             ) : (
-              <tr>
+                <tr>
                 <td colSpan="11" className="text-center py-4">
-                  No successful transactions.
+                  No failed transactions.
                 </td>
               </tr>
             )}

@@ -92,10 +92,10 @@ export default function AdminProductsTable() {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    PHP{product.price.toFixed(2)}
+                    {product.price.toFixed(2)} PHP
                   </td>
 
-                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                     {product.status}
                   </td>
 

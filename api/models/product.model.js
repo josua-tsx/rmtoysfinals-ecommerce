@@ -46,7 +46,7 @@ const ProductModelSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["draft", "published"],
-    default: "draft"
+    // default: "draft"
   },
 
   stocks: {

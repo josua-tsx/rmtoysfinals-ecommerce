@@ -1,23 +1,21 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import axiosInstance from "../lib/axios";
 import SingleOrderList from "./SingleOrderList";
-import toast from "react-hot-toast";
 
-export default function CustomerOrder() {
-  const [orderId, setOrderId] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
+export default function UserCancelledOrder() {
 
-  const queryClient = useQueryClient()
-
+    const [orderId, setOrderId] = useState(null);
+    const [openModal, setOpenModal] = useState(false);
+    
   const {
-    data: userOrder = [],
+    data: userCancelled = [],
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["order"],
+    queryKey: ["userCancelled"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-userOrder`);
+      const res = await axiosInstance.get(`/order/get-userCancelled`);
       return res.data;
     },
   });
@@ -31,24 +29,6 @@ export default function CustomerOrder() {
     enabled: !!orderId,
   });
 
-  const {mutate: cancelOrderMutation} = useMutation({
-    mutationFn: async (orderId) => {
-      const res = await axiosInstance.put(`/order/user/cancel-order`, orderId)
-      return res.data
-    } , 
-    onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['order']})
-      toast.success("Order Cancelled!")
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!")
-    }
-  })
-
-  const handleCancelOrder = (orderId) => {
-    cancelOrderMutation({orderId})
-  }
-
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
     setOpenModal(true);
@@ -58,22 +38,21 @@ export default function CustomerOrder() {
   if (isError) return <p>error</p>;
 
   return (
-    <div>
+    <div className=" my-5 p-2 flex flex-col gap-2">
+      {/* CARD GOES HERE */}
 
-      {
-        openModal && singleUserOrder && (
-          <SingleOrderList order={singleUserOrder} onClose={() => setOpenModal(false)}/>
-        )
-      }
+      {openModal && singleUserOrder && (
+        <SingleOrderList
+          order={singleUserOrder}
+          onClose={() => setOpenModal(false)}
+        />
+      )}
 
-
-
-      <h1 className="text-xl">YOUR ORDER</h1>
       <div className=" my-5 p-2 flex flex-col gap-2">
         {/* CARD GOES HERE */}
 
-        {userOrder && userOrder.length > 0 ? (
-          userOrder.map((order) => (
+        {userCancelled && userCancelled.length > 0 ? (
+          userCancelled.map((order) => (
             <div
               key={order._id}
               className="border flex p-2 gap-5 items-center border-black rounded-[5px]"
@@ -92,7 +71,7 @@ export default function CustomerOrder() {
                   </div>
                   <div className="flex gap-2">
                     <p>Status: </p>
-                    <span className="text-blue-600">{order.status}</span>
+                    <span className="text-red-700">{order.status}</span>
                   </div>
                   <div className="flex gap-2">
                     <p>Total Items: </p>
@@ -115,10 +94,7 @@ export default function CustomerOrder() {
 
                 {/* ACTIONS */}
                 <div className="flex flex-col gap-2">
-                  <button
-                  onClick={() => handleCancelOrder(order._id)}
-                  type="button"
-                  >Cancel</button>
+                  {/* <button>Cancel</button> */}
                   <button onClick={() => handleOpenSingleOrder(order)}>
                     View Details
                   </button>
@@ -127,9 +103,9 @@ export default function CustomerOrder() {
             </div>
           ))
         ) : (
-          <span>no order</span>
+          <span>no cancelled order.</span>
         )}
       </div>
     </div>
-  );
+  )
 }

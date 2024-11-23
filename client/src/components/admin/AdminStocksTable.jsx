@@ -1,12 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {  useQuery} from "@tanstack/react-query";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
-import toast from "react-hot-toast";
+
 import { useNavigate } from "react-router-dom";
 
 export default function AdminStocksTable() {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   const navigate = useNavigate()
 
@@ -24,21 +24,21 @@ export default function AdminStocksTable() {
 
   console.log(stocks)
 
-  const { mutate: deleteStockMutation } = useMutation({
-    mutationFn: async (stockId) => {
-      const res = await axiosInstance.delete(
-        `/stocks/delete-stock/${stockId}`
-      );
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stocks"] });
-      toast.success("Successfully Deleted");
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong!");
-    },
-  });
+  // const { mutate: deleteStockMutation } = useMutation({
+  //   mutationFn: async (stockId) => {
+  //     const res = await axiosInstance.delete(
+  //       `/stocks/delete-stock/${stockId}`
+  //     );
+  //     return res.data;
+  //   },
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ["stocks"] });
+  //     toast.success("Successfully Deleted");
+  //   },
+  //   onError: (err) => {
+  //     toast.error(err.response.data.message || "something went wrong!");
+  //   },
+  // });
 
 
   const navigateToEdit = (stockId) => {
@@ -100,12 +100,12 @@ export default function AdminStocksTable() {
                     className="text-green-600 hover:text-indigo-300 mr-2">
                       <CiEdit size={25} />
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => deleteStockMutation(stock._id)}
                       className="text-red-600 hover:text-red-300"
                     >
                       <MdDelete size={25} />
-                    </button>
+                    </button> */}
                   </td>
                 </tr>
               ))

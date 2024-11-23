@@ -142,9 +142,9 @@ export default function ProductDetails() {
                   </span>
                 </div>
                {
-                singleProduct.stocks ?  <div className="flex items-center gap-3">
+                singleProduct?.stocks ?  <div className="flex items-center gap-3">
                 <p>Stocks:</p>
-                <span className="text-lg text-indigo-500">{singleProduct.stocks.stockQuantity}</span>
+                <span className="text-lg text-indigo-500">{singleProduct?.stocks?.stockQuantity}</span>
               </div> : ""
                }
                 <div className="flex items-center gap-3">

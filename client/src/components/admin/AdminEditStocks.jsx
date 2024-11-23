@@ -38,6 +38,8 @@ export default function AdminEditStocks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stocks"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success("Successfully Updated stock");
       navigate(`/admin/stocks`);
     },

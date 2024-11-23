@@ -85,6 +85,7 @@ const OrderModelSchema = new mongoose.Schema(
         "Out for Delivery",
         "Delivered",
         "Cancelled",
+        "Refunded"
       ],
       default: "Pending",
     },

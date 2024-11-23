@@ -44,7 +44,7 @@ export default function Shop() {
               {/* card */}
 
               {
-                products.length > 0 && products.map((product) => (
+                products?.length > 0 && products.map((product) => (
                   <ShopProductCards key={product._id} product={product}/>
                 ))
               }

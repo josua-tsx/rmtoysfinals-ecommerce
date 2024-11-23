@@ -13,9 +13,9 @@ export default function AdminAddStocks() {
     isPending: isProductsPending,
     isError: isProductsError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["noStockProducts"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/product/get-products`);
+      const res = await axiosInstance.get(`/product/get-nostockProducts`);
       return res.data;
     },
   });

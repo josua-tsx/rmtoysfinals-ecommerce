@@ -48,6 +48,7 @@ import GcashCheckOut from "./pages/GcashCheckOut.jsx";
 import AdminGcash from "./pages/admin/AdminGcash.jsx";
 import AdminAddGcash from "./pages/admin/AdminAddGcash.jsx";
 import AdminOrderTransact from "./pages/admin/AdminOrderTransact.jsx";
+import AdminAuditTrailLogs from "./pages/admin/AdminAuditTrailLogs.jsx";
 
 
 
@@ -262,6 +263,11 @@ const router = createBrowserRouter([
 
 
       // AUDIT
+
+      {
+        path: `/admin/audit`,
+        element: <AdminAuditTrailLogs/>
+      },
 
       {
         path: `/admin/orderTransact`,
