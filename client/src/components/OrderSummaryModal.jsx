@@ -62,18 +62,12 @@ export default function OrderSummaryModal({ onClose }) {
 
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       setNotes("");
       onClose();
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
-
-      const { paymentLink } = data;
-
-      if (paymentLink) {
-        window.location.href = paymentLink;
-      }
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -93,20 +87,25 @@ export default function OrderSummaryModal({ onClose }) {
       return toast.error("Please update required fields first");
 
     if (paymentMethod === "Gcash") {
-      const orderData = {
-        orderItems: cartItems,
-        shippingAddress: currentAddress,
-        paymentMethod,
-        taxPrice: taxes,
-        shippingPrice: shippingFee,
-        discount,
-        subtotal,
-        totalPrice,
-        notes,
-        quantity: cartItems.quantity,
-      };
-      setCurrentOrder(orderData)
-      navigate(`/gcashPage`);
+      if (cartItems.length > 0) {
+        const orderData = {
+          orderItems: cartItems,
+          shippingAddress: currentAddress,
+          paymentMethod,
+          taxPrice: taxes,
+          shippingPrice: shippingFee,
+          discount,
+          subtotal,
+          totalPrice,
+          notes,
+          quantity: cartItems.quantity,
+        };
+        setCurrentOrder(orderData);
+        navigate("/gcashPage");
+      } else {
+        return toast.error("You can not placed an order without products!");
+      }
+
       return;
     }
 
@@ -201,7 +200,7 @@ export default function OrderSummaryModal({ onClose }) {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-row-reverse gap-2">
             <button
               onClick={onClose}
               type="button"

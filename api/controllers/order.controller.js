@@ -30,13 +30,15 @@ export const userPlaceOrder = async (req, res, next) => {
       );
     }
 
-    if (orderItems.length === 0) {
+    if (orderItemsWithQuantity.length === 0) {
       return next(
         handleMakeError(400, "You can't place an order without products!")
       );
     }
 
     if (paymentMethod === "Gcash") {
+    
+
       const newOrder = new Order({
         userId,
         orderItems: orderItemsWithQuantity,
@@ -343,7 +345,7 @@ export const getAllCancelled = async (req, res, next) => {
 // };
 
 export const updateDeliveryStatus = async (req, res, next) => {
-  const { orderId } = req.params; // Order ID from URL params
+  const { orderId } = req.params;
   const { status } = req.body;
 
   try {
@@ -377,13 +379,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     const orderUpdate = {
       status,
+      paymentStatus: status === "Delivered" ? "Paid" : "Pending",
     };
 
-    if (status === "Delivered") {
-      orderUpdate.paymentStatus = "Paid";
-    } else {
-      orderUpdate.paymentStatus = "Pending";
-    }
+    // if (status === "Delivered") {
+    //   orderUpdate.paymentStatus = "Paid";
+    // } else {
+    //   orderUpdate.paymentStatus = "Pending";
+    // }
 
     const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
       new: true,

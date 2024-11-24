@@ -130,8 +130,8 @@ export default function AdminAddSupplier() {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <button className="border bg-primary text-card rounded-b-[5px] p-2">
+          <div className="flex flex-col p-2">
+            <button className="border border-black rounded-[5px] bg-primary text-card p-2">
               ADD SUPPLIER
             </button>
           </div>

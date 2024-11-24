@@ -1,8 +1,10 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Gcash from "../models/gcash.model.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const addGcash = async (req, res, next) => {
   const { gcashUrl, gcashName } = req.body;
+  const userId = req.user.id
 
   if (!gcashUrl || !gcashName) {
     return next(handleMakeError(400, "Please input required fields!"));
@@ -15,6 +17,17 @@ export const addGcash = async (req, res, next) => {
     });
 
     await gcash.save();
+
+    await logAuditTrail({
+      action: "create_gcashQR",
+      userId,
+      targetId: gcash._id,
+      targetType: "Gcash",
+      details: {
+        gcashName,
+      },
+      role: "admin"
+    })
 
     res.status(200).json({ message: "Added new gcash", gcash });
   } catch (error) {
@@ -36,11 +49,24 @@ export const getAllGcash = async (req, res, next) => {
 
 export const deleteGcash = async (req, res, next) => {
   const { gcashId } = req.params;
+  const userId = req.user.id
 
   try {
     const gcash = await Gcash.findById(gcashId);
     if (!gcash) return next(handleMakeError(400, "No gcash found!"));
+    const gcashName = gcash.gcashName
     await Gcash.findByIdAndDelete(gcashId);
+
+    await logAuditTrail({
+      action: "delete_gcashQR",
+      userId,
+      targetId: gcash._id,
+      targetType: "Gcash",
+      details: {
+        gcashName
+      },
+      role: "admin"
+    })
 
     res.status(200).json({message: "Successfully Deleted!"})
   } catch (error) {
@@ -51,6 +77,7 @@ export const deleteGcash = async (req, res, next) => {
 export const updateGcashStatus = async (req, res, next) => {
   const { gcashId } = req.params; // Order ID from URL params
   const { gcashStatus } = req.body;
+  const userId = req.user.id
 
   try {
     const validStatuses = [
@@ -68,6 +95,20 @@ export const updateGcashStatus = async (req, res, next) => {
     );
 
     if (!updatedGcash) return next(handleMakeError(400, "gcash not found!"));
+
+    const gcashName = updatedGcash.gcashName
+
+    await logAuditTrail({
+      action: "update_gcashStatus",
+      userId,
+      targetId: updatedGcash._id,
+      targetType: "Gcash",
+      details: {
+        gcashName,
+        gcashStatus
+      },
+      role: "admin"
+    })
 
     res.status(200).json({ message: "Delivery Status updated sucessfully" });
   } catch (error) {}

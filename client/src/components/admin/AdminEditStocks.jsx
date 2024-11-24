@@ -10,21 +10,21 @@ export default function AdminEditStocks() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [newProductId, setNewProductId] = useState("");
+  // const [newProductId, setNewProductId] = useState("");
   const [newStockQuantity, setNewStockQuantity] = useState(0);
 
-  console.log(newProductId);
-
   const {
-    data: products = [],
-    isPending: isProductsPending,
-    isError: isProductsError,
+    data: singleStock,
+    isPending: isStockPending,
+    isError: isStockError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["stock"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/product/get-products`);
+      const { stockId } = params;
+      const res = await axiosInstance.get(`/stocks/get-stock/${stockId}`);
       return res.data;
     },
+    enabled: !!params.stockId,
   });
 
   const { mutate: editStockMutation } = useMutation({
@@ -50,9 +50,8 @@ export default function AdminEditStocks() {
 
   const handleEditStock = (e) => {
     e.preventDefault();
-
     editStockMutation({
-      productId: newProductId,
+      productId: singleStock.product._id,
       stockQuantity: newStockQuantity,
     });
   };
@@ -61,10 +60,10 @@ export default function AdminEditStocks() {
     navigate("/admin/stocks")
   }
 
-  if (isProductsPending) {
+  if (isStockPending) {
     return <p>loading...</p>;
   }
-  if (isProductsError) {
+  if (isStockError ) {
     return <p>loading...</p>;
   }
 
@@ -88,23 +87,23 @@ export default function AdminEditStocks() {
                 className="w-full utline-none border border-black p-1 rounded-[5px]"
                 name="productId"
                 id="productId"
-                value={newProductId}
-                onChange={(e) => setNewProductId(e.target.value)}
+                value={singleStock.product.productName}
               >
                 <option value="">Select Product</option>
-                {products.length > 0 &&
-                  products.map((product) => (
-                    <option key={product._id} value={product._id}>
-                      {product.productName}
-                    </option>
-                  ))}
+                      <option value={singleStock.product.productName}>
+                      {singleStock.product.productName}
+                      </option>
+                  
               </select>
             </div>
 
             <div className="flex flex-col justify-between">
-              <label className="p-2 uppercase" htmlFor="stockQuantity">
+             <div className="flex gap-2 items-center">
+             <label className="p-2 uppercase" htmlFor="stockQuantity">
                 Stock Quantity:{" "}
               </label>
+              <p className="text-indigo-700">CURRENT STOCK: {singleStock.stockQuantity}</p>
+             </div>
               <input
                 className="border p-1 w-full outline-none  border-black rounded-[5px]"
                 type="number"
@@ -117,15 +116,15 @@ export default function AdminEditStocks() {
             </div>
           </div>
 
-          <div className="flex">
+          <div className="flex p-2 gap-2">
             <button
               type="submit"
-              className="bg-primary flex-1 text-card p-2 rounded-b-[5px]"
+              className="bg-primary flex-1 border border-black text-card p-2 rounded-[5px]"
             >
               Update Stocks
             </button>
             <button onClick={() => handleCancel()}
-            type="button" className="bg-red-600 px-5 text-card ">Cancel</button>
+            type="button" className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card ">Cancel</button>
 
           </div>
         </form>

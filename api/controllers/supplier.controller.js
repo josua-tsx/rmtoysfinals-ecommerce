@@ -1,7 +1,10 @@
 import Supplier from "../models/supplier.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const addSupplier = async (req, res, next) => {
+  const userId = req.user.id;
+
   const {
     supplierName,
     contactPerson,
@@ -30,6 +33,18 @@ export const addSupplier = async (req, res, next) => {
     });
 
     await newSupplier.save();
+
+    await logAuditTrail({
+      action: "create_supplier",
+      userId,
+      targetId: newSupplier._id,
+      targetType: "Supplier",
+      details: {
+        supplierName: supplierName,
+      },
+      role: "admin",
+    });
+
     res.status(200).json(newSupplier);
   } catch (error) {
     next(error);
@@ -48,15 +63,30 @@ export const getSuppliers = async (req, res, next) => {
 };
 
 export const deleteSupplier = async (req, res, next) => {
+  const userId = req.user.id;
   const { supplierId } = req.params;
 
   try {
     const singleSupplier = await Supplier.findById(supplierId);
 
-    if (!singleSupplier)
+    if (!singleSupplier) {
       return next(handleMakeError(400, "Supplier not found!"));
+    }
+
+    const supplierName = singleSupplier.supplierName;
 
     await Supplier.findByIdAndDelete(supplierId);
+
+    await logAuditTrail({
+      action: "delete_supplier",
+      userId,
+      targetId: singleSupplier._id,
+      targetType: "Supplier",
+      details: {
+        supplierName, // Use the correct variable name
+      },
+      role: "admin",
+    });
 
     res.status(200).json({ message: "Successfully deleted the supplier" });
   } catch (error) {
@@ -65,6 +95,8 @@ export const deleteSupplier = async (req, res, next) => {
 };
 
 export const editSupplier = async (req, res, next) => {
+  const userId = req.user.id;
+
   const { supplierId } = req.params;
   const {
     supplierName,
@@ -83,10 +115,21 @@ export const editSupplier = async (req, res, next) => {
       supplierAddress,
     });
 
-    if (!updateSupplier) return next(handleMakeError(400, "Supplier not found!"));
+    if (!updateSupplier)
+      return next(handleMakeError(400, "Supplier not found!"));
 
-    res.status(200).json(updateSupplier)
-    
+    await logAuditTrail({
+      action: "update_supplier",
+      userId,
+      targetId: updateSupplier._id,
+      targetType: "Supplier",
+      details: {
+        supplierName: supplierName,
+      },
+      role: "admin",
+    });
+
+    res.status(200).json(updateSupplier);
   } catch (error) {
     next(error);
   }

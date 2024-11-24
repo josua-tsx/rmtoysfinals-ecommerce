@@ -117,7 +117,7 @@ export default function AdminFailedTransactions() {
                       {failed.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {failed.createdAt}
+                    {new Date(failed.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {failed.updatedAt}

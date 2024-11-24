@@ -17,6 +17,7 @@ import cartRoutes from "../api/routes/cart.route.js";
 import wishlistRoutes from "../api/routes/wishlist.route.js";
 import orderRoutes from "../api/routes/order.route.js";
 import gcashRoute from '../api/routes/gcash.route.js'
+import auditRoute from '../api/routes/audit.route.js'
 //
 import cors from "cors";
 
@@ -55,6 +56,7 @@ app.use(`/api/cart`, cartRoutes);
 app.use(`/api/wish`, wishlistRoutes);
 app.use(`/api/order`, orderRoutes);
 app.use(`/api/gcash`, gcashRoute);
+app.use(`/api/audit`, auditRoute);
 
 app.use(handleError);
 

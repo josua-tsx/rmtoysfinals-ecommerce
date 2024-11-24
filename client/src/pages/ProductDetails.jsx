@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 
 export default function ProductDetails() {
   const params = useParams();
+  const queryClient = useQueryClient()
 
   const [hideShowDetails, setHideShowDetails] = useState(true);
   const [showModalReview, setShowModalReview] = useState(false);
@@ -29,7 +30,8 @@ export default function ProductDetails() {
   });
 
 
-  const queryClient = useQueryClient()
+  console.log(singleProduct)
+
 
   const {mutate: addToCartMutation} = useMutation({
     mutationFn: async (productId) => {
@@ -149,7 +151,7 @@ export default function ProductDetails() {
                }
                 <div className="flex items-center gap-3">
                   <p>category:</p>
-                  <span className="text-lg text-indigo-500">Jacket</span>
+                  <span className="text-lg text-indigo-500">{singleProduct?.category?.categoryName}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <p> color:</p>

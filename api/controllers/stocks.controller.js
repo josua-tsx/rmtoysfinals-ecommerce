@@ -1,13 +1,19 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const addStocks = async (req, res, next) => {
   const { productId, stockQuantity } = req.body;
+  const userId = req.user.id;
 
   try {
     // Check if a stock entry for this product already exists
     const existingStock = await Stocks.findOne({ product: productId });
+
+    if (stockQuantity === 0) {
+      return next(handleMakeError(400, "Quantity should be greater than 0!"));
+    }
 
     if (existingStock) {
       return next(
@@ -30,10 +36,21 @@ export const addStocks = async (req, res, next) => {
       productId,
       {
         $push: { stocks: savedStocks._id },
-        status: "published"
+        status: "published",
       },
       { new: true }
     );
+
+    await logAuditTrail({
+      action: "published_addStock_product",
+      userId,
+      targetId: newStock._id,
+      targetType: "Product_Stock",
+      details: {
+       quantity: stockQuantity
+      },
+      role: "admin",
+    });
 
     res.status(201).json(newStock);
   } catch (error) {
@@ -81,23 +98,15 @@ export const getStocks = async (req, res, next) => {
 // };
 
 export const editStock = async (req, res, next) => {
+  const userId = req.user.id 
+
   const { stockId } = req.params;
   const { productId, stockQuantity } = req.body;
 
   try {
-    // const existingStock = await Stocks.findOne({ product: productId });
-
-    // if (existingStock) {
-    //   return next(
-    //     handleMakeError(
-    //       400,
-    //       "Stock for this product already exists. Use update function to modify stock."
-    //     )
-    //   );
-    // }
-
-    // console.log("Existing stock:", existingStock);
-
+    if (stockQuantity === 0) {
+      return next(handleMakeError(400, "Quantity should be greater than 0!"));
+    }
 
     const updateStock = await Stocks.findByIdAndUpdate(
       stockId,
@@ -113,6 +122,17 @@ export const editStock = async (req, res, next) => {
       return next(handleMakeError(400, "Failed to update stock"));
     }
 
+    await logAuditTrail({
+      action: "updated_product_stockQuantity",
+      userId,
+      targetId: updateStock._id,
+      targetType: "PRODUCT STOCKQUANTITY",
+      details: {
+        quantity: stockQuantity
+      },
+      role: "admin"
+    })
+
     res
       .status(200)
       .json({ message: "Stocks updated", updatedStock: updateStock });
@@ -126,7 +146,10 @@ export const getSingleStock = async (req, res, next) => {
   const { stockId } = req.params;
 
   try {
-    const singleStock = await Stocks.findById(stockId);
+    const singleStock = await Stocks.findById(stockId).populate({
+      path: "product",
+      select: "productName"
+    })
     if (!singleStock) return next(handleMakeError(400, "stock not found"));
     res.status(200).json(singleStock);
   } catch (error) {

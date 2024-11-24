@@ -9,6 +9,7 @@ const GcashModelSchema = new mongoose.Schema({
   gcashName: {
     type: String,
     required: [true, "GCash Name is required"],
+    unique: true
   },
 
   gcashStatus: {

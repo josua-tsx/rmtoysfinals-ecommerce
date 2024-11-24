@@ -100,7 +100,7 @@ export default function AdminProductsTable() {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {product && product.createdAt}
+                  {new Date(product.createdAt).toLocaleString()}
                   </td>
 
                   {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">

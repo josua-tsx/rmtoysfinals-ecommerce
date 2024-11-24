@@ -43,11 +43,11 @@ export default function AdminCancelledTransact() {
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
       {openModal && singleUserOrder && (
-      <SingleOrderList
-        order={singleUserOrder}
-        onClose={() => setOpenModal(false)}
-      />
-    )}
+        <SingleOrderList
+          order={singleUserOrder}
+          onClose={() => setOpenModal(false)}
+        />
+      )}
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>REFUNDED/CANCELLED TRANSACTIONS</h1>
@@ -89,19 +89,21 @@ export default function AdminCancelledTransact() {
                       {cancel.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {cancel.createdAt}
+                      {new Date(cancel.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {cancel.userId?.phoneNumber}
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {totalItems}
+                      {totalItems}
                     </td>
-                    <td className="px-6 py-4 uppercase text-red-700 whitespace-nowrap text-center text-sm">{cancel.status}</td>
+                    <td className="px-6 py-4 uppercase text-red-700 whitespace-nowrap text-center text-sm">
+                      {cancel.status}
+                    </td>
                     <td className=" whitespace-nowrap text-center text-sm">
                       <div className="flex gap-2">
                         <button
-                            onClick={() => handleOpenSingleOrder(cancel)}
+                          onClick={() => handleOpenSingleOrder(cancel)}
                           type="button"
                           className="text-green-700"
                         >
@@ -113,9 +115,9 @@ export default function AdminCancelledTransact() {
                 );
               })
             ) : (
-                <tr>
+              <tr>
                 <td colSpan="11" className="text-center py-4">
-                  No Cancelled  transactions.
+                  No Cancelled transactions.
                 </td>
               </tr>
             )}

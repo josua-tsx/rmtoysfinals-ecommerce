@@ -1,8 +1,10 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
+  const userId = req.user.id
 
   if (!categoryName || !categoryDescription) {
     return next(handleMakeError(400, "Please input required fields!"));
@@ -15,6 +17,17 @@ export const addCategory = async (req, res, next) => {
     });
 
     await newCategory.save();
+
+    await logAuditTrail({
+      action: "create_category",
+      userId,
+      targetId: newCategory._id,
+      targetType: "Category",
+      details: {
+        categoryName,
+      },
+      role: "admin"
+    })
 
     res.status(200).json(newCategory);
   } catch (error) {
@@ -34,6 +47,7 @@ export const getCategories = async (req, res, next) => {
 
 export const deleteCategory = async (req, res, next) => {
   const { categoryId } = req.params;
+  const userId = req.user.id
 
   try {
     const singleCategory = await Category.findById(categoryId);
@@ -41,7 +55,20 @@ export const deleteCategory = async (req, res, next) => {
     if (!singleCategory)
       return next(handleMakeError(400, "Category not found!"));
 
+    const categoryName = singleCategory.categoryName
+
     await Category.findByIdAndDelete(categoryId);
+
+    await logAuditTrail({
+      action: "delete_category",
+      userId,
+      targetId: singleCategory._id,
+      targetType: "Category",
+      details: {
+        categoryName
+      },
+      role: "admin"
+    })
 
     res.status(200).json({ message: "Category Deleted" });
   } catch (error) {
@@ -50,6 +77,7 @@ export const deleteCategory = async (req, res, next) => {
 };
 
 export const editCategory = async (req, res, next) => {
+  const userId = req.user.id
   const { categoryId } = req.params;
   const { categoryName, categoryDescription } = req.body;
 
@@ -63,6 +91,18 @@ export const editCategory = async (req, res, next) => {
 
     if (!updateCategory)
       return next(handleMakeError(400, "Category not found!"));
+
+
+    await logAuditTrail({
+      action: "update_category",
+      userId,
+      targetId: updateCategory._id,
+      targetType: "Category",
+      details: {
+        categoryName
+      },
+      role: "admin"
+    })
 
     res.status(200).json({message: "Category Updated!"});
   } catch (error) {

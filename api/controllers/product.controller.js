@@ -2,8 +2,12 @@ import Cart from "../models/cart.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const addProduct = async (req, res, next) => {
+
+  const userId = req.user.id
+
   const {
     productName,
     price,
@@ -49,6 +53,20 @@ export const addProduct = async (req, res, next) => {
     });
 
     await newProduct.save();
+
+    // CREATING A AUDIT LOGS FOR CREATING A PRODUCT AS AN ADMIN
+    await logAuditTrail({
+      action: "create_product",
+      userId,
+      targetId: newProduct._id,
+      targetType: "Product",
+      details: {
+        productName,
+        price
+      },
+      role: "admin"
+    })
+
     res.status(200).json(newProduct);
   } catch (error) {
     next(error);
@@ -98,6 +116,7 @@ export const getNoStocksProducts = async (req, res, next) => {
 };
 
 export const deleteProduct = async (req, res, next) => {
+  const userId = req.user.id
   const { productId } = req.params;
 
   try {
@@ -111,6 +130,19 @@ export const deleteProduct = async (req, res, next) => {
 
     await Product.findByIdAndDelete(productId);
 
+
+    await logAuditTrail({
+      action: "delete_product",
+      userId,
+      targetId: singleProduct._id,
+      targetType: "Product",
+      details: {
+        productName: singleProduct.productName,
+        price: singleProduct.price
+      },
+      role: "admin"
+    })
+
     res.status(200).json({ message: "Successfully deleted" });
   } catch (error) {
     next(error);
@@ -119,6 +151,7 @@ export const deleteProduct = async (req, res, next) => {
 
 export const editProduct = async (req, res, next) => {
   const { id } = req.params;
+  const userId = req.user.id
 
   const {
     productName,
@@ -157,6 +190,18 @@ export const editProduct = async (req, res, next) => {
       return next(handleMakeError(400, "Product Not Found!"));
     }
 
+    await logAuditTrail({
+      action: "update_product",
+      userId,
+      targetId: updateProduct._id,
+      targetType: "Product",
+      details: {
+        productName: updateProduct.productName,
+        price: updateProduct.price
+      },
+      role: "admin"
+    })
+
     res.status(200).json(updateProduct);
   } catch (error) {
     next(error);
@@ -187,6 +232,9 @@ export const getSingleProduct = async (req, res, next) => {
 // DRAFTS
 
 export const addDraft = async (req, res, next) => {
+
+  const userId = req.user.id
+
   const {
     productName,
     price,
@@ -221,6 +269,20 @@ export const addDraft = async (req, res, next) => {
     });
 
     await newDraft.save();
+
+
+    await logAuditTrail({
+      action: "draft_product",
+      userId,
+      targetId: newDraft._id,
+      targetType: "Product",
+      details: {
+        productName: newDraft.productName,
+        price: newDraft.price
+      },
+      role: "admin"
+    })
+
     res.status(200).json(newDraft);
   } catch (error) {
     next(error);

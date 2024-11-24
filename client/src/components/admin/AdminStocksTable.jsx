@@ -92,8 +92,8 @@ export default function AdminStocksTable() {
                     />
                     {stock.product.productName}
                   </td>
-                  <td>{stock.product.supplier.supplierName}</td>
-                  <td>{stock.product.category.categoryName}</td>
+                  <td>{stock.product.supplier?.supplierName}</td>
+                  <td>{stock.product?.category?.categoryName}</td>
                   <td>{stock.stockQuantity}</td>
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
                     <button onClick={() => navigateToEdit(stock._id)}

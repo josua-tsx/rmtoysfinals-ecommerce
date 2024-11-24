@@ -13,16 +13,21 @@ import { MdDelete } from "react-icons/md";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import useOrderStore from "../stores/useOrderStore";
+import { useNavigate } from "react-router-dom";
 
 export default function GcashCheckOut() {
   const queryClient = useQueryClient();
 
+  const navigate = useNavigate()
+
   const currentOrder = useOrderStore((state) => state.currentOrder);
+  const clearOrder = useOrderStore((state) => state.clearOrder);
+ 
 
   const [receipt, setReceipt] = useState(null); // Store the uploaded image URL
   const [file, setFile] = useState(null); // Store the actual file to be uploaded
 
-  console.log(receipt);
+
 
   const [selectedGcash, setSelectedGcash] = useState(null);
 
@@ -52,6 +57,8 @@ export default function GcashCheckOut() {
       return res.data;
     },
     onSuccess: () => {
+      clearOrder()
+      navigate("/shop")
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
@@ -63,6 +70,11 @@ export default function GcashCheckOut() {
 
   const handleOrderFormSubmit = (e) => {
     e.preventDefault();
+
+    if (!gcashName || !gcashRefNo || !gcashNo || !receipt) {
+      return toast.error("Please input required fields!")
+    }
+
     try {
       const orderData = {
         orderItems: currentOrder.orderItems,
@@ -88,6 +100,7 @@ export default function GcashCheckOut() {
       }
       // Place the order
       placeOrder(orderData);
+
     } catch (error) {
       toast.error(error.message || "Failed to place order");
     }
@@ -214,7 +227,7 @@ export default function GcashCheckOut() {
           <div className="flex flex-col gap-5">
             <div className=" rounded-[5px] flex flex-col gap-2">
               <p className="text-xl md:text-3xl">
-                Total Price: {currentOrder.totalPrice} PHP
+                Total Price: {currentOrder?.totalPrice} PHP
               </p>
             </div>
 
@@ -302,12 +315,22 @@ export default function GcashCheckOut() {
             </div>
           </div>
 
-          <button
+         <div className="flex gap-2">
+         <button
             // disabled={isReceiptUploaded}
-            className="border border-black rounded-[5px] bg-primary text-card py-1"
+            className="border flex-1   border-black rounded-[5px] bg-primary text-card py-1"
           >
             SUBMIT
           </button>
+          <button
+          onClick={() => navigate("/shop")}
+          type="button"
+            // disabled={isReceiptUploaded}
+            className="border w-[20%] border-black rounded-[5px] bg-red-700 text-card py-1"
+          >
+            CANCEL
+          </button>
+         </div>
         </form>
       </div>
     </section>

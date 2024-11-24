@@ -182,8 +182,8 @@ export default function AdminEditSupplier() {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <button className="border bg-primary text-card rounded-b-[5px] p-2">
+          <div className="flex flex-col p-2">
+            <button className="border bg-primary text-card rounded-[5px] border-black p-2">
               UPDATE SUPPLIER
             </button>
           </div>

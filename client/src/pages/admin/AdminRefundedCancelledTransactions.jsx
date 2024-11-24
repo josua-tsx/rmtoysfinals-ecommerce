@@ -106,14 +106,14 @@ export default function AdminRefundedCancelledTransactions() {
               refundedCancelled.map((refund) => (
                 <tr key={refund._id}>
                   <td className="px-4">{refund._id}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2">
+                  <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
                     {refund.userId?.email}
                   </td>
                   <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {refund.createdAt}
+                  {new Date(refund.createdAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {refund.updatedAt}
+                  {new Date(refund.updatedAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                     {refund.totalPrice}

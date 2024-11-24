@@ -7,7 +7,7 @@ export const useOrderStore = create(
       currentOrder: null,
 
       setCurrentOrder: (order) => set({ currentOrder: order }),
-      clearUser: () => {
+      clearOrder: () => {
         set({ currentOrder: null });
         localStorage.removeItem("order-store");
       },
