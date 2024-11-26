@@ -113,7 +113,7 @@ export default function AdminFailedTransactions() {
                 return (
                   <tr key={failed._id}>
                     <td className="px-4">{failed._id}</td>
-                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2">
+                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2">
                       {failed.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">

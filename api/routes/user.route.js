@@ -9,7 +9,7 @@ router.post(`/update/:id`, requireAuth, updateProfile)
 router.get(`/getAll`, getAll )
 router.get(`/getAllCustomer`, getAllCustomer)
 router.get(`/getAllWorkers`, getAllWorkers)
-router.delete(`/delete-worker/:workerId`, deleteWorker)
+router.delete(`/delete-worker/:workerId`, requireAuth, requireAdmin ,deleteWorker)
 
 router.get(`/get-user/:userId`, getSingleUser)
 

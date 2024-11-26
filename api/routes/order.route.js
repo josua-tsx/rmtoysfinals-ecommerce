@@ -41,7 +41,7 @@ router.get(`/get-cancelled`, getAllCancelled)
 
 router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
 
-router.put(`/cancel-success-transact`, cancelSuccessTransact)
+router.put(`/cancel-success-transact`, requireAuth, requireAdmin ,cancelSuccessTransact)
 
 router.put(`/refund-order`, adminOrderRefund)
 

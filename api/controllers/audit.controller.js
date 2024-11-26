@@ -1,3 +1,4 @@
+import { handleMakeError } from "../middleware/handleError.js"
 import Audit from "../models/audit.model.js"
 
 export const logAuditTrail = async({
@@ -27,6 +28,20 @@ export const logAuditTrail = async({
 export const getAdminLogs = async (req, res, next) => {
     try {
         const logs = await Audit.find({role: "admin"})
+        .populate({
+            path: "userId",
+            select: "email"
+        })
+        .sort({timestamp: -1})
+        res.status(200).json(logs)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getCustomerLogs = async (req, res, next) => {
+    try {
+        const logs = await Audit.find({role: "customer"})
         .populate({
             path: "userId",
             select: "email"

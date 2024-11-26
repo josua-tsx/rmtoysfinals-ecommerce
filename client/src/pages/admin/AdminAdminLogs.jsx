@@ -11,7 +11,12 @@ const ACTION_TYPES = [
   "update_supplier",
   "create_category",
   "update_category",
-  "create_gcashQR"
+  "create_gcashQR",
+  "set_OrderStatus_delivered",
+  "set_OrderStatus_Processing",
+  "set_OrderStatus_Shipped",
+  "set_OrderStatus_OutforDelivery",
+  "admin_add_worker"
 ];
 
 export default function AdminAdminLogs() {
@@ -191,6 +196,108 @@ export default function AdminAdminLogs() {
                            <div>
                                <p> Updated {admin.details?.gcashName}</p>
                                <p> Status to {admin.details?.gcashStatus}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_OrderStatus_delivered" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_OrderStatus_Processing" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_OrderStatus_Shipped" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_OrderStatus_OutforDelivery" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_OrderStatus_Cancelled" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_PaymentStatus_paid" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_PaymentStatus_Failed" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "set_PaymentStatus_Refunded" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "cancelled_Order_Transact" &&
+                          admin.details?.email &&  (
+                           <div>
+                               <p> Order of {admin.details?.email}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "admin_add_worker" &&
+                          admin.details?.email &&  (
+                           <div className="text-sm">
+                               <p> Added {admin.details?.email}</p>
+                               <p> job: {admin.details?.job}</p>
+                               <p> jobDescription: {admin.details?.jobDescription}</p>
+                           </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "admin_delete_worker" &&
+                          admin.details?.email &&  (
+                           <div className="text-sm">
+                               <p> Added {admin.details?.email}</p>
+                               <p> job: {admin.details?.job}</p>
+                               <p> jobDescription: {admin.details?.jobDescription}</p>
                            </div>
                           )}
                         {/* /////////////////////////////// */}

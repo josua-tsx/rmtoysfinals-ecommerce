@@ -1,11 +1,8 @@
 import { IoIosClose } from "react-icons/io";
 import { FaArrowTurnDown } from "react-icons/fa6";
-import { FaImages } from "react-icons/fa";
 import StarsRating from "../components/StarsRating.jsx";
 import { useState } from "react";
 import ReviewCard from "./ReviewCard.jsx";
-import noAvatar from '../assets/noavatar.jpg'
-import AdminImagePlaceholder from "../reusable/Admin/AdminImagePlaceholder.jsx";
 
 
 export default function ReviewModal({ closeModal }) {

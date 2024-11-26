@@ -23,7 +23,7 @@ export default function OrderHistory() {
           <option value="Delivered">DELIVERED</option>
           <option value="Cancelled">CANCELLED</option>
           <option value="Refunded">REFUNDED</option>
-          <option value="Failed">Failed</option>
+          <option value="Failed">FAILED</option>
         </select>
       </div>
       </div>

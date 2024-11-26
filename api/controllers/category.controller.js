@@ -37,7 +37,9 @@ export const addCategory = async (req, res, next) => {
 
 export const getCategories = async (req, res, next) => {
   try {
-    const getCategories = await Category.find();
+    const getCategories = await Category.find().sort({createdAt: -1})
+
+    if (!getCategories) return res.status(200).json([])
 
     res.status(200).json(getCategories);
   } catch (error) {

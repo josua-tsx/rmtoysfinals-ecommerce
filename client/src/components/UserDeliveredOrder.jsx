@@ -2,10 +2,12 @@ import { useState } from "react";
 import axiosInstance from "../lib/axios";
 import SingleOrderList from "./SingleOrderList";
 import { useQuery } from "@tanstack/react-query";
+import RefundModal from "./RefundModal";
 
 export default function UserDeliveredOrder() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [openRefundModal, setOpenRefundModal] = useState(false);
 
   const {
     data: userDelivered = [],
@@ -28,9 +30,16 @@ export default function UserDeliveredOrder() {
     enabled: !!orderId,
   });
 
+
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
     setOpenModal(true);
+  };
+
+  const handleRefundSingle = (orderId) => {
+    setOrderId(orderId._id);
+    setOpenRefundModal(true);
+    setOpenModal(false);
   };
 
   if (isPending) return <p>loading...</p>;
@@ -44,6 +53,16 @@ export default function UserDeliveredOrder() {
         <SingleOrderList
           order={singleUserOrder}
           onClose={() => setOpenModal(false)}
+        />
+      )}
+
+      {openRefundModal && singleUserOrder && (
+        <RefundModal
+          order={singleUserOrder}
+          onClose={() => {
+            setOpenRefundModal(false);
+            setOpenModal(false);
+          }}
         />
       )}
 
@@ -97,7 +116,10 @@ export default function UserDeliveredOrder() {
                   <button onClick={() => handleOpenSingleOrder(order)}>
                     View Details
                   </button>
-                  <button className="text-green-700">
+                  <button
+                    onClick={() => handleRefundSingle(order)}
+                    className="text-green-700"
+                  >
                     Ask For Refund
                   </button>
                 </div>

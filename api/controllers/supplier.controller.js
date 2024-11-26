@@ -53,7 +53,7 @@ export const addSupplier = async (req, res, next) => {
 
 export const getSuppliers = async (req, res, next) => {
   try {
-    const getSuppliers = await Supplier.find();
+    const getSuppliers = await Supplier.find().sort({createdAt: -1})
     if (!getSuppliers)
       return next(handleMakeError(400, "no suppliers availabe"));
     res.status(200).json(getSuppliers);

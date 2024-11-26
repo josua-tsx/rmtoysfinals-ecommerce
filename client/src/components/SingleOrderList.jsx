@@ -188,7 +188,9 @@ export default function SingleOrderList({ order, onClose }) {
                   order?.paymentStatus === "Refunded") && (
                   <div className="flex flex-col md:flex-row gap-2">
                     <p>Reasons: </p>
-                    <p className="text-red-700">{order?.reason}</p>
+                    <textarea className="w-full border border-black p-2 rounded-[5px] text-red-700" value={order?.reason} disabled>
+
+                    </textarea>
                   </div>
                 )}
               </div>

@@ -22,6 +22,8 @@ export default function AdminOrderStatusTable() {
     },
   });
 
+  console.log(allOrders)
+
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -70,7 +72,7 @@ export default function AdminOrderStatusTable() {
       )}
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>PRODUCTS TABLE</h1>
+        <h1>ORDER TABLE</h1>
         {/* <div className="flex items-center relative">
         <input
           type="text"
@@ -89,6 +91,7 @@ export default function AdminOrderStatusTable() {
               <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
               <th className="font-normal p-2 pb-5">ORDER DATE</th>
               <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
+              <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
               {/* <th className="font-normal p-2 pb-5">PAYMENT STATUS</th> */}
               {/* <th className="font-normal p-2 pb-5">SHIPPING STATUS</th> */}
               <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
@@ -115,6 +118,10 @@ export default function AdminOrderStatusTable() {
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {data.totalPrice}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    {data.paymentMethod}
                   </td>
 
                   <td className="px-6 py-4  whitespace-nowrap text-center text-sm">

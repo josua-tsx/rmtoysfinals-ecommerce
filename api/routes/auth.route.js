@@ -1,6 +1,6 @@
 import express from 'express'
 import { addWorker, getMe, refreshToken, signin, signout, signup } from '../controllers/auth.controller.js'
-import { requireAuth } from '../middleware/auth.middleware.js'
+import { requireAdmin, requireAuth } from '../middleware/auth.middleware.js'
 
 const router = express.Router()
 
@@ -9,7 +9,7 @@ router.post(`/signin`, signin)
 router.post(`/signout`, signout)
 // ADD WORKER
 
-router.post(`/add-worker`, addWorker)
+router.post(`/add-worker`, requireAuth, requireAdmin ,addWorker)
 
 
 // refresh token

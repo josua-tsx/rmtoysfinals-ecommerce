@@ -75,7 +75,7 @@ export const getStocks = async (req, res, next) => {
           select: "supplierName",
         },
       ],
-    });
+    }).sort({createdAt: -1})
 
     res.status(200).json(getStocks);
   } catch (error) {

@@ -86,7 +86,7 @@ export const getProducts = async (req, res, next) => {
       }).populate({
         path: "stocks",
         select: "stockQuantity"
-      })
+      }).sort({createdAt: -1})
 
     res.status(200).json(products);
   } catch (error) {

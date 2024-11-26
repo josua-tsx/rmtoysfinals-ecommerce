@@ -1,11 +1,15 @@
-import express from 'express'
+import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
-import { getAdminLogs, logAuditTrail } from '../controllers/audit.controller.js';
+import {
+  getAdminLogs,
+  getCustomerLogs,
+  logAuditTrail,
+} from "../controllers/audit.controller.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post(`/`, requireAuth, requireAdmin, logAuditTrail)
-router.get(`/admin`, getAdminLogs)
+router.post(`/`, requireAuth, requireAdmin, logAuditTrail);
+router.get(`/admin`, getAdminLogs);
+router.get(`/customer`, getCustomerLogs);
 
-
-export default router
+export default router;

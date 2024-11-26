@@ -129,7 +129,7 @@ export default function AdminSuccesfullTransactions() {
                 return (
                   <tr key={success._id}>
                     <td className="px-4">{success._id}</td>
-                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2">
+                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
                       {success.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">

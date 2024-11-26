@@ -28,6 +28,7 @@ export default function AdminOrderTransact() {
               onChange={handleChangeComponent}
               name=""
               id=""
+              value={selectedComponent}
               className="border border-black outline-none p-2 rounded-[5px] bg-card w-[300px]"
             >
               <option value="successful">Succesful Transactions</option>

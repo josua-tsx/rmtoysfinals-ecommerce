@@ -6,6 +6,7 @@ import { setCookies } from "../utils/setCookies.js";
 import RefreshToken from "../models/refreshToken.model.js";
 
 import jwt from "jsonwebtoken";
+import { logAuditTrail } from "./audit.controller.js";
 
 const storeRefreshToken = async (userId, refreshToken) => {
   const token = new RefreshToken({
@@ -45,6 +46,17 @@ export const signup = async (req, res, next) => {
     setCookies(res, accessToken, refreshToken);
 
     await newUser.save();
+
+    await logAuditTrail({
+      action: "newly_created_user",
+      userId: newUser._id,
+      targetId: newUser._id,
+      targetType: "NewUser",
+      details: {
+        description: "New user created!"
+      },
+      role: "customer"
+    })
 
     res.status(201).json({
       _id: newUser._id,
@@ -172,6 +184,7 @@ export const getMe = async (req, res, next) => {
 
 export const addWorker = async (req, res, next) => {
   const { email, username, password, confirmPassword, role, jobDescription } = req.body; // Extract confirmPassword
+  const userId = req.user.id
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -195,14 +208,27 @@ export const addWorker = async (req, res, next) => {
       jobDescription,
     });
 
-    // Authenticate
-    const { accessToken, refreshToken } = generateTokens(newUser._id);
-    await storeRefreshToken(newUser._id, refreshToken);
+    // // Authenticate
+    // const { accessToken, refreshToken } = generateTokens(newUser._id);
+    // await storeRefreshToken(newUser._id, refreshToken);
 
     // Save the access/refresh token cookie
-    setCookies(res, accessToken, refreshToken);
+    // setCookies(res, accessToken, refreshToken);
 
     await newUser.save();
+
+    await logAuditTrail({
+      action: "admin_add_worker",
+      userId,
+      targetId: newUser._id,
+      targetType: "AddWorker",
+      details: {
+        email,
+        job: role,
+        jobDescription
+      },
+      role: "admin"
+    })
 
     res.status(201).json({
       _id: newUser._id,

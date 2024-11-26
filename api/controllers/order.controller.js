@@ -2,6 +2,7 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Order from "../models/order.model.js";
 import Stocks from "../models/stocks.model.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const userPlaceOrder = async (req, res, next) => {
   const userId = req.user.id;
@@ -37,8 +38,6 @@ export const userPlaceOrder = async (req, res, next) => {
     }
 
     if (paymentMethod === "Gcash") {
-    
-
       const newOrder = new Order({
         userId,
         orderItems: orderItemsWithQuantity,
@@ -67,6 +66,17 @@ export const userPlaceOrder = async (req, res, next) => {
       const userCart = await Cart.findOne({ userId });
       userCart.items = [];
       await userCart.save();
+
+      await logAuditTrail({
+        action: "user_add_order",
+        userId,
+        targetId: newOrder._id,
+        targetType: "UserOrder",
+        details: {
+          description: "Ordered using gcash",
+        },
+        role: "customer",
+      });
 
       res.status(200).json({ message: "Order placed!", newOrder });
     }
@@ -100,6 +110,17 @@ export const userPlaceOrder = async (req, res, next) => {
       userCart.items = [];
       await userCart.save();
 
+      await logAuditTrail({
+        action: "user_add_order",
+        userId,
+        targetId: newOrder._id,
+        targetType: "UserOrder",
+        details: {
+          description: "Ordered using cod",
+        },
+        role: "customer",
+      });
+
       res.status(200).json({ message: "Order placed!", newOrder });
     }
   } catch (error) {
@@ -114,7 +135,7 @@ export const getUserOrder = async (req, res, next) => {
     const userOrders = await Order.find({
       userId,
       status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
-    });
+    }).sort({createdAt: -1})
 
     if (!userOrders || userOrders.length === 0) {
       return res
@@ -133,14 +154,19 @@ export const getSingleUserOrder = async (req, res, next) => {
   const { orderId } = req.params;
 
   try {
-    const order = await Order.findOne({ _id: orderId }).populate({
-      path: "orderItems.productId",
-      select: "productName price quantity category productImages",
-      populate: {
-        path: "category",
-        select: "categoryName",
-      },
-    });
+    const order = await Order.findOne({ _id: orderId })
+      .populate({
+        path: "orderItems.productId",
+        select: "productName price quantity category productImages",
+        populate: {
+          path: "category",
+          select: "categoryName",
+        },
+      })
+      .populate({
+        path: "userId",
+        select: "email phoneNumber fullName",
+      });
 
     if (!order) return next(handleMakeError(400, "Order not foud!"));
 
@@ -347,6 +373,7 @@ export const getAllCancelled = async (req, res, next) => {
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
   const { status } = req.body;
+  const userId = req.user.id;
 
   try {
     const validStatuses = [
@@ -362,9 +389,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid delivery status." });
     }
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("userId");
 
     if (!order) return next(handleMakeError(400, "No order found!"));
+
+    const orderUserEmail = order.userId.email;
 
     if (status === "Cancelled" && order.status !== "Cancelled") {
       for (const item of order.orderItems) {
@@ -393,6 +422,71 @@ export const updateDeliveryStatus = async (req, res, next) => {
       runValidators: true,
     });
     if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
+
+    if (updatedOrder.status === "Delivered") {
+      await logAuditTrail({
+        action: "set_OrderStatus_delivered",
+        userId,
+        targetId: updatedOrder._id,
+        targetType: "OrderStatus",
+        details: {
+          email: orderUserEmail,
+        },
+        role: "admin",
+      });
+    }
+
+    if (updatedOrder.status === "Processing") {
+      await logAuditTrail({
+        action: "set_OrderStatus_Processing",
+        userId,
+        targetId: updatedOrder._id,
+        targetType: "OrderStatus",
+        details: {
+          email: orderUserEmail,
+        },
+        role: "admin",
+      });
+    }
+
+    if (updatedOrder.status === "Shipped") {
+      await logAuditTrail({
+        action: "set_OrderStatus_Shipped",
+        userId,
+        targetId: updatedOrder._id,
+        targetType: "OrderStatus",
+        details: {
+          email: orderUserEmail,
+        },
+        role: "admin",
+      });
+    }
+
+    if (updatedOrder.status === "Out for Delivery") {
+      await logAuditTrail({
+        action: "set_OrderStatus_OutforDelivery",
+        userId,
+        targetId: updatedOrder._id,
+        targetType: "OrderStatus",
+        details: {
+          email: orderUserEmail,
+        },
+        role: "admin",
+      });
+    }
+
+    if (updatedOrder.status === "Cancelled") {
+      await logAuditTrail({
+        action: "set_OrderStatus_Cancelled",
+        userId,
+        targetId: updatedOrder._id,
+        targetType: "OrderStatus",
+        details: {
+          email: orderUserEmail,
+        },
+        role: "admin",
+      });
+    }
 
     res.status(200).json({ message: "Delivery Status updated sucessfully" });
   } catch (error) {}
@@ -441,6 +535,7 @@ export const getUserCancelled = async (req, res, next) => {
 export const updatePaymentStatus = async (req, res, next) => {
   const { orderId } = req.params;
   const { paymentStatus } = req.body;
+  const userId = req.user.id;
 
   try {
     const validPaymentStatuses = ["Pending", "Paid", "Failed", "Refunded"];
@@ -449,6 +544,12 @@ export const updatePaymentStatus = async (req, res, next) => {
         .status(400)
         .json({ message: "Invalid payment status status." });
     }
+
+    const order = await Order.findById(orderId).populate("userId");
+
+    if (!order) return next(handleMakeError(400, "No order found!"));
+
+    const paymentStatusOrderEmail = order.userId?.email;
 
     // Set order status to "Processing" if payment status is "Failed"
     const orderUpdate = {
@@ -479,6 +580,45 @@ export const updatePaymentStatus = async (req, res, next) => {
 
     if (!updatedPaymentStatus)
       return next(handleMakeError(400, "status not found!"));
+
+    if (updatedPaymentStatus.paymentStatus === "Paid") {
+      await logAuditTrail({
+        action: "set_PaymentStatus_paid",
+        userId,
+        targetId: updatedPaymentStatus._id,
+        targetType: "PaymentStatus",
+        details: {
+          email: paymentStatusOrderEmail,
+        },
+        role: "admin",
+      });
+    }
+
+    if (updatedPaymentStatus.paymentStatus === "Failed") {
+      await logAuditTrail({
+        action: "set_PaymentStatus_Failed",
+        userId,
+        targetId: updatedPaymentStatus._id,
+        targetType: "PaymentStatus",
+        details: {
+          email: paymentStatusOrderEmail,
+        },
+        role: "admin",
+      });
+    }
+
+    if (updatedPaymentStatus.paymentStatus === "Refunded") {
+      await logAuditTrail({
+        action: "set_PaymentStatus_Refunded",
+        userId,
+        targetId: updatedPaymentStatus._id,
+        targetType: "PaymentStatus",
+        details: {
+          email: paymentStatusOrderEmail,
+        },
+        role: "admin",
+      });
+    }
 
     res.status(200).json({ message: "Payment Status updated sucessfully" });
   } catch (error) {
@@ -511,6 +651,7 @@ export const addReason = async (req, res, next) => {
 
 export const cancelSuccessTransact = async (req, res, next) => {
   const { orderId } = req.body;
+  const userId = req.user.id;
 
   try {
     const order = await Order.findByIdAndUpdate(
@@ -522,9 +663,22 @@ export const cancelSuccessTransact = async (req, res, next) => {
       {
         new: true,
       }
-    );
+    ).populate("userId");
 
     if (!order) return next(handleMakeError(400, "No order found!"));
+
+    const orderEmail = order.userId?.email;
+
+    await logAuditTrail({
+      action: "cancelled_Order_Transact",
+      userId,
+      targetId: order._id,
+      targetType: "CancelOrder_Transact",
+      details: {
+        email: orderEmail,
+      },
+      role: "admin",
+    });
 
     res.status(200).json({ message: "cancelled success transact", order });
   } catch (error) {
@@ -571,6 +725,17 @@ export const userCancelOrder = async (req, res, next) => {
     order.status = "Cancelled";
 
     await order.save();
+
+    await logAuditTrail({
+      action: "user_cancelled_order",
+      userId,
+      targetId: order._id,
+      targetType: "Order",
+      details: {
+        description: "User Cancelled an order!",
+      },
+      role: "customer",
+    });
 
     res.status(200).json({ message: "Order cancelled", order });
   } catch (error) {

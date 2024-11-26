@@ -1,8 +1,16 @@
+import { useState } from "react";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import AdminAdminLogs from "./AdminAdminLogs";
 import AdminCustomerLogs from "./AdminCustomerLogs";
 
 export default function AdminAuditTrailLogs() {
+  const [componenent, setComponent] = useState("admin");
+
+  const handleSelectChange = (e) => {
+    const changeComponent = e.target.value;
+    setComponent(changeComponent);
+  };
+
   return (
     <section className="bg-yellow h-screen">
       <AdminHeader title={"AUDIT TRAIL LOGS"} />
@@ -15,16 +23,17 @@ export default function AdminAuditTrailLogs() {
           <select
             name="audit"
             id="audit"
+            value={componenent}
+            onChange={handleSelectChange}
             className="border border-black outline-none p-2 rounded-[5px] bg-card w-[300px]"
           >
-            <option value="">Admin logs</option>
-            <option value="">Customer logs</option>
+            <option value="admin">Admin logs</option>
+            <option value="customer">Customer logs</option>
           </select>
         </div>
 
-        <AdminAdminLogs/>
-        {/* <AdminCustomerLogs/> */}
-
+        {componenent === "admin" && <AdminAdminLogs />}
+        {componenent === "customer" && <AdminCustomerLogs />}
       </div>
     </section>
   );

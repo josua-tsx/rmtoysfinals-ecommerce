@@ -24,7 +24,7 @@ export default function AdminCategoryTable() {
     },
   });
 
-  console.log(categories)
+  
 
 
   const {mutate: deleteCategoryMutation, isPending: isDeletedPending, isError: isDeletedError} = useMutation({
@@ -75,7 +75,7 @@ export default function AdminCategoryTable() {
               <th className="font-normal p-2 pb-5">ID</th>
               <th className="font-normal p-2 pb-5">Category Name</th>
               <th className="font-normal p-2 pb-5">Category Description</th>
-              <th className="font-normal p-2 pb-5">Products Count</th>
+              {/* <th className="font-normal p-2 pb-5">Products Count</th> */}
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>
@@ -92,9 +92,9 @@ export default function AdminCategoryTable() {
                   <td className="">
                     {category.categoryDescription}
                   </td>
-                  <td className="">
+                  {/* <td className="">
                     200
-                  </td>
+                  </td> */}
 
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
                     <button onClick={() => navigateToEdit(category._id)}
