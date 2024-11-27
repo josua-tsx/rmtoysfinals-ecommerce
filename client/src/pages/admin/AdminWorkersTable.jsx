@@ -2,9 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import { IoSearch } from "react-icons/io5";
 
 export default function AdminWorkersTable() {
   const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("")
 
   const {
     data: workers = [],
@@ -17,6 +20,19 @@ export default function AdminWorkersTable() {
       return res.data;
     },
   });
+
+  console.log(workers)
+
+  const arrayWorkers = Array.isArray(workers) ? workers : []
+
+  const filteredArrayWorkers = arrayWorkers.filter((worker) => (
+    worker.jobDescription.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    worker.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    worker.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    worker.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    worker._id.includes(searchTerm)
+
+  ))
 
   const { mutate: deleteWorkerMutation } = useMutation({
     mutationFn: async (workerId) => {
@@ -43,14 +59,16 @@ export default function AdminWorkersTable() {
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>WORKER TABLE</h1>
-        {/* <div className="flex items-center relative">
+        <div className="flex items-center relative">
           <input
             type="text"
-            placeholder="search products.."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="search worker emai, name, role, job description, id"
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
-        </div> */}
+        </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -66,9 +84,9 @@ export default function AdminWorkersTable() {
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700 ">
-            {workers.length > 0 ? (
-              workers.map((worker) => (
+          <tbody className="divide-y divide-gray-700 ">6745750aa0f0b627dc77037d
+            {filteredArrayWorkers.length > 0 ? (
+              filteredArrayWorkers.map((worker) => (
                 <tr key={worker._id}>
                   <td className="px-4 ">{worker._id}</td>
 

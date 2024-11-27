@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import AdminSideBar from "../components/admin/AdminSideBar";
-import { Toaster } from "react-hot-toast";
+import { Toaster} from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
 import { useEffect } from "react";
 
@@ -22,7 +22,9 @@ const RootLayout = () => {
       <main className="">
         <Outlet />
       </main>
-      <Toaster />
+      <Toaster position="bottom-right" />
+
+      
     </div>
   );
 };
@@ -42,7 +44,7 @@ const RequiredAuth = () => {
       <main className="">
         <Outlet />
       </main>
-      <Toaster />
+      <Toaster position="bottom-right" />
     </div>
   );
 };

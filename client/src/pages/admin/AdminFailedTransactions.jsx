@@ -3,11 +3,15 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import SingleOrderList from "../../components/SingleOrderList";
 import { useState } from "react";
+import { IoSearch } from "react-icons/io5";
 
 export default function AdminFailedTransactions() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
+  const [searchTerm, setSearchTerm] = useState("")
+  
+ 
   const queryClient = useQueryClient();
 
   const {
@@ -22,6 +26,8 @@ export default function AdminFailedTransactions() {
     },
   });
 
+  const arrayCustomerFailed = Array.isArray(failedCancelledData) ? failedCancelledData : []
+    
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -58,6 +64,16 @@ export default function AdminFailedTransactions() {
     setOpenModal(true);
   };
 
+
+  const filteredFailedOrder = arrayCustomerFailed.filter((failed) => (
+    failed._id.includes(searchTerm) ||
+    failed?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    failed.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    failed.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    failed.reason.toLowerCase().includes(searchTerm.toLowerCase()) 
+  ))
+
+
   console.log(failedCancelledData);
 
   if (isFailedCancelledPending) return <p>Loading...</p>;
@@ -74,14 +90,16 @@ export default function AdminFailedTransactions() {
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>FAILED TRANSACTIONS</h1>
-        {/* <div className="flex items-center relative">
+        <div className="flex items-center relative">
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search products.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
-        </div> */}
+        </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -102,8 +120,8 @@ export default function AdminFailedTransactions() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {failedCancelledData?.length > 0 ? (
-              failedCancelledData.map((failed) => {
+            {filteredFailedOrder?.length > 0 ? (
+              filteredFailedOrder.map((failed) => {
                 const totalItems =
                   failed.orderItems?.reduce(
                     (sum, item) => sum + (item.quantity || 0),

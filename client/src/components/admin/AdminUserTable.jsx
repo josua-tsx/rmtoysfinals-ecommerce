@@ -2,8 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
+import { useState } from "react";
 
 export default function AdminUserTable() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const {
     data: users = [],
     isPending,
@@ -16,7 +19,14 @@ export default function AdminUserTable() {
     },
   });
 
-  console.log(users);
+  const arrayCustomer = Array.isArray(users) ? users : [];
+
+  const filteredArrayCustomer = arrayCustomer.filter(
+    (customer) =>
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer._id.includes(searchTerm)
+  );
 
   if (isPending) {
     return <p>loading...</p>;
@@ -33,7 +43,9 @@ export default function AdminUserTable() {
         <div className="flex items-center relative">
           <input
             type="text"
-            placeholder="search products.."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="search user id, name, email"
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
@@ -53,8 +65,8 @@ export default function AdminUserTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {users.length > 0 &&
-              users.map((user) => (
+            {filteredArrayCustomer.length > 0 &&
+              filteredArrayCustomer.map((user) => (
                 <tr key={user._id}>
                   <td className="px-4 ">{user._id}</td>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2	">

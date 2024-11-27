@@ -50,6 +50,7 @@ export default function AdminEditProducts() {
     enabled: !!params.editProductId,
   });
 
+
   useEffect(() => {
     if (singleProduct) {
       setFilters(singleProduct.filters);
@@ -470,6 +471,7 @@ export default function AdminEditProducts() {
                           className="p-2 rounded-[5px] border border-black outline-none"
                           name={item.filterName}
                           id={item.filterName}
+                 
                           onChange={(e) =>
                             setFilters((prevFilters) => ({
                               ...prevFilters, // Keep existing filters intact

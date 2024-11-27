@@ -135,7 +135,7 @@ export const getUserOrder = async (req, res, next) => {
     const userOrders = await Order.find({
       userId,
       status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
-    }).sort({createdAt: -1})
+    }).sort({ createdAt: -1 });
 
     if (!userOrders || userOrders.length === 0) {
       return res
@@ -499,7 +499,7 @@ export const getUserDelivered = async (req, res, next) => {
     const orders = await Order.find({
       userId,
       status: "Delivered",
-    });
+    }).sort({ createdAt: -1 });
 
     if (!orders)
       return next(
@@ -519,7 +519,7 @@ export const getUserCancelled = async (req, res, next) => {
     const orders = await Order.find({
       userId,
       status: "Cancelled",
-    });
+    }).sort({ createdAt: -1 });
 
     if (!orders)
       return next(
@@ -595,6 +595,15 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     if (updatedPaymentStatus.paymentStatus === "Failed") {
+      // Update stock for each item in the order
+      for (const item of order.orderItems) {
+        await Stocks.findOneAndUpdate(
+          { product: item.productId },
+          { $inc: { stockQuantity: item.quantity } },
+          { new: true, runValidators: true }
+        );
+      }
+
       await logAuditTrail({
         action: "set_PaymentStatus_Failed",
         userId,
@@ -608,6 +617,15 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     if (updatedPaymentStatus.paymentStatus === "Refunded") {
+      // Update stock for each item in the order
+      for (const item of order.orderItems) {
+        await Stocks.findOneAndUpdate(
+          { product: item.productId },
+          { $inc: { stockQuantity: item.quantity } },
+          { new: true, runValidators: true }
+        );
+      }
+
       await logAuditTrail({
         action: "set_PaymentStatus_Refunded",
         userId,

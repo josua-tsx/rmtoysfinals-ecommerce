@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import { useState } from "react";
 import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
 import toast from "react-hot-toast";
+import { IoSearch } from "react-icons/io5";
 
 export default function AdminSuccesfullTransactions() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("")
 
   const queryClient = useQueryClient();
 
@@ -21,6 +24,10 @@ export default function AdminSuccesfullTransactions() {
       return res.data;
     },
   });
+
+  const arraySuccessOrder = Array.isArray(successOrderData) ? successOrderData : []
+
+  console.log(successOrderData)
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -68,6 +75,15 @@ export default function AdminSuccesfullTransactions() {
     },
   });
 
+  const filteredSuccessOrder = arraySuccessOrder.filter((success) => (
+    success?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    success?.userId?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    success?.userId._id.includes(searchTerm) ||
+    success?._id.includes(searchTerm) ||
+    success?.paymentMethod.toLowerCase().includes(searchTerm) ||
+    success?.status.toLowerCase().includes(searchTerm) 
+  ))
+
   const handleCancelSuccessTransact = (orderId) => {
     cancelSuccessMutation({ orderId });
   };
@@ -91,14 +107,16 @@ export default function AdminSuccesfullTransactions() {
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>SUCCESFUL TRANSACTIONS</h1>
-        {/* <div className="flex items-center relative">
+        <div className="flex items-center relative">
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search products.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
-        </div> */}
+        </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -118,8 +136,8 @@ export default function AdminSuccesfullTransactions() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {successOrderData.length > 0 ? (
-              successOrderData.map((success) => {
+            {filteredSuccessOrder.length > 0 ? (
+              filteredSuccessOrder.map((success) => {
                 const totalItemsBought =
                   success.orderItems?.reduce(
                     (sum, item) => sum + (item.quantity || 0),

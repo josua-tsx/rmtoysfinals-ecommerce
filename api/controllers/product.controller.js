@@ -3,6 +3,7 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import { logAuditTrail } from "./audit.controller.js";
+import Review from "../models/review.model.js";
 
 export const addProduct = async (req, res, next) => {
 
@@ -86,7 +87,11 @@ export const getProducts = async (req, res, next) => {
       }).populate({
         path: "stocks",
         select: "stockQuantity"
-      }).sort({createdAt: -1})
+      }).populate({
+        path: "reviews",
+        select: "commentReview rating"
+      })
+      .sort({createdAt: -1})
 
     res.status(200).json(products);
   } catch (error) {
@@ -127,8 +132,13 @@ export const deleteProduct = async (req, res, next) => {
     await Stocks.deleteMany({ product: productId });
 
     await Cart.deleteMany({"items.productId": productId})
+   
+    await Review.deleteMany({ productId: productId })
+
+    await Order.deleteMany({"orderItems.productId": productId})
 
     await Product.findByIdAndDelete(productId);
+
 
 
     await logAuditTrail({
@@ -218,6 +228,13 @@ export const getSingleProduct = async (req, res, next) => {
     }).populate({
       path: "stocks",
       select: "stockQuantity"
+    }).populate({
+      path: "reviews",
+      select: "commentReview rating", 
+      populate: { 
+        path: "userId",
+        select: "avatar username email"
+      }
     })
 
     if (!getSingleProduct)

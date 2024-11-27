@@ -8,7 +8,7 @@ import { useState } from "react";
 import EditReviewComponent from "./EditReviewComponent";
 import { useNavigate } from "react-router-dom";
 
-export default function ReviewCard({ review}) {
+export default function ReviewCardTwo({ review}) {
   console.log(review);
 
   const navigate = useNavigate()
@@ -79,25 +79,10 @@ export default function ReviewCard({ review}) {
 
       <div className="flex gap-4 flex-col justify-between  w-full">
         <div className="flex flex-col items-center gap-4 justify-between">
-       
-            <div className="flex gap-2 w-full justify-center md:mr-5 md:justify-end text-sm">
-              <button
-                onClick={() => handleOpenReviewEditModal(review)}
-                type="button"
-                className="text-green-600"
-              >
-                EDIT
-              </button>
-              <button
-                onClick={() => userDeleteReviewMutation(review._id)}
-                type="button"
-                className="text-red-600"
-              >
-                <MdDelete size={23} />
-              </button>
-            </div>
-       
-
+        
+            <button onClick={() => handleNavigate(review.productId)}
+            className="flex text-sm text-indigo-700 underline justify-end w-full">go to product!</button>
+         
           <div className="flex flex-col gap-4 items-center">
             <img
               src={review?.userId?.avatar}

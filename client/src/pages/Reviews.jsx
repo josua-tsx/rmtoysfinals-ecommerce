@@ -1,32 +1,46 @@
-import { FaStar } from "react-icons/fa";
 import { useState } from "react";
-import ReviewCard from "../components/ReviewCard";
+import OneStarReviews from "./OneStarReviews";
+import TwoStarReviews from "./TwoStarReviews";
+import ThreeStarReviews from "./ThreeStarReviews";
+import FourStarReviews from "./FourStarReviews";
+import FiveStarReviews from "./FiveStarReviews";
 
 export default function Reviews() {
-  const [hideImage, setHideImage] = useState(true);
+  const [selectedComponent, setSelectedComponent] = useState("fiveStar");
+  const [viewable, setViewable] = useState(false)
+
+  const handleChangeComponent = (e) => {
+    const newSelectedComponent = e.target.value;
+    setSelectedComponent(newSelectedComponent);
+  };
+
   return (
     <section className="pt-[130px] p-3 font-main">
       <div className="max-w-[1280px] mx-auto">
         <h1 className="text-3xl mb-5">REVIEWS</h1>
 
-        <div className="mb-5">
-          <p className="text-sm">REVIEWS{">LATEST"}</p>
-        </div>
-
-        <div className="flex gap-10 flex-col md:flex-row">
-          <div className="bg-card w-[90%] mx-auto md:w-[240px] md:items-start p-4 flex flex-col gap-2 md:h-[370px] rounded-[5px] border border-black">
-          
-
-
-
+        <div className="flex gap-10  flex-col md:flex-row">
+          <div className="text-center md:text-start">
+            <select
+              value={selectedComponent}
+              onChange={handleChangeComponent}
+              className="border w-[300px] text-center rounded-[5px] outline-none border-black p-1"
+            >
+              <option value="oneStar">1 STAR REVIEWS</option>
+              <option value="twoStar">2 STAR REVIEWS</option>
+              <option value="threeStar">3 STAR REVIEWS</option>
+              <option value="fourStar">4 STAR REVIEWS</option>
+              <option value="fiveStar">5 STAR REVIEWS</option>
+            </select>
           </div>
 
           {/* REVIEWS CONTAINER HERE */}
           <div className="flex-1 gap-10 flex flex-col">
-              <ReviewCard/>
-              <ReviewCard/>
-              <ReviewCard/>
-              <ReviewCard/>
+            {selectedComponent === "oneStar" && <OneStarReviews viewable={viewable} />}
+            {selectedComponent === "twoStar" && <TwoStarReviews viewable={viewable} />}
+            {selectedComponent === "threeStar" && <ThreeStarReviews viewable={viewable} />}
+            {selectedComponent === "fourStar" && <FourStarReviews viewable={viewable} />}
+            {selectedComponent === "fiveStar" && <FiveStarReviews viewable={viewable} />}
           </div>
         </div>
       </div>

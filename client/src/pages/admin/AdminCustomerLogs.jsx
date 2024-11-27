@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
+import { useState } from "react";
 
 const ACTION_TYPES = ["user_add_order", "newly_created_user"];
 
 export default function AdminCustomerLogs() {
+
+  const [searchTerm, setSearchTerm] = useState("")
 
   const {
     data: customerLogs = [],
@@ -16,6 +19,13 @@ export default function AdminCustomerLogs() {
       return res.data;
     },
   });
+
+  const arrayCustomerLogs = Array.isArray(customerLogs) ? customerLogs : []
+
+  const filteredArrayCustomerLogs = arrayCustomerLogs.filter((logs) => (
+    logs.action.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    logs.targetId.includes(searchTerm) 
+  ))
 
   console.log(customerLogs);
 
@@ -30,6 +40,8 @@ export default function AdminCustomerLogs() {
         <div className="flex items-center relative">
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search products.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
@@ -48,8 +60,8 @@ export default function AdminCustomerLogs() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {customerLogs.length > 0 ? (
-              customerLogs.map((customer) => (
+            {filteredArrayCustomerLogs.length > 0 ? (
+              filteredArrayCustomerLogs.map((customer) => (
                 <tr key={customer._id}>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2">
                     {new Date(customer.timestamp).toLocaleString()}

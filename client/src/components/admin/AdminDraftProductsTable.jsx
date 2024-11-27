@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import { IoSearch } from "react-icons/io5";
+import { useState } from "react";
 
 
 export default function AdminDraftProductsTable() {
 
   const queryClient = useQueryClient()
 
+  const [searchTerm, setSearchTerm] = useState("")
 
   const {data: drafts =[], isPending: isDraftsPending, isError: isDraftsError} = useQuery({
     queryKey: ['products'],
@@ -15,6 +18,16 @@ export default function AdminDraftProductsTable() {
       return res.data
     }
   })
+
+  const arrayDrafts = Array.isArray(drafts) ? drafts : []
+
+  const filteredArrayDrafts = arrayDrafts.filter((draft) => (
+    draft.productName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    draft._id.includes(searchTerm) || 
+    draft.category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) 
+  ))
+
+  console.log(drafts)
 
   const {mutate: deleteDraftMutation} = useMutation({
     mutationFn: async (draftId) => {
@@ -60,21 +73,23 @@ export default function AdminDraftProductsTable() {
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>DRAFTS TABLE</h1>
-        {/* <div className="flex items-center relative">
+        <div className="flex items-center relative">
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search products.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
-        </div> */}
+        </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">ID</th>
-              <th className="font-normal p-2 pb-5">NAME</th>
+              <th className="font-normal p-2 pb-5">PRODUCT NAME</th>
               <th className="font-normal p-2 pb-5">CATEGORY</th>
               <th className="font-normal p-2 pb-5">PRICE</th>
               <th className="font-normal p-2 pb-5">STATUS</th>
@@ -84,7 +99,7 @@ export default function AdminDraftProductsTable() {
           </thead>
           <tbody className="divide-y divide-gray-700 ">
             {
-              drafts.length > 0 ? drafts.map((draft) => (
+              filteredArrayDrafts.length > 0 ? filteredArrayDrafts.map((draft) => (
                 <tr key={draft._id}>
                 <td className="px-4 ">{draft._id}</td>
                 <td className="px-2 uppercase py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
@@ -101,7 +116,7 @@ export default function AdminDraftProductsTable() {
                 </td>
 
                 <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                  {draft.price}
+                  {draft.price} PHP
                 </td>
   
                 <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">

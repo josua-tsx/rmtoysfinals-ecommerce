@@ -5,12 +5,13 @@ import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function AdminCategoryTable() {
- 
 	const queryClient = useQueryClient()
-
   const navigate = useNavigate()
+
+  const [searchTerm, setSearchTerm] = useState("")
 
   const {
     data: categories = [],
@@ -24,8 +25,7 @@ export default function AdminCategoryTable() {
     },
   });
 
-  
-
+  const arrayCategories = Array.isArray(categories) ? categories: [];
 
   const {mutate: deleteCategoryMutation, isPending: isDeletedPending, isError: isDeletedError} = useMutation({
     mutationFn: async (categoryId) => {
@@ -41,6 +41,12 @@ export default function AdminCategoryTable() {
   const navigateToEdit = (categoryId) => {
     navigate(`/admin/editCategory/${categoryId}`)
   }
+
+
+  const filterdArrayCategories = arrayCategories.filter((category) => (
+    category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    category._id.includes(searchTerm)
+  ))
 
 
 
@@ -62,6 +68,8 @@ export default function AdminCategoryTable() {
         <div className="flex items-center relative">
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value) }
             placeholder="search category.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
@@ -80,8 +88,8 @@ export default function AdminCategoryTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {categories.length > 0 &&
-              categories.map((category) => (
+            {filterdArrayCategories.length > 0 &&
+              filterdArrayCategories.map((category) => (
                 <tr key={category._id}>
                   <td className="px-4 ">{category._id}</td>
 

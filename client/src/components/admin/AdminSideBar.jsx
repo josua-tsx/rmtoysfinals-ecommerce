@@ -37,10 +37,10 @@ const adminSideBarItems = [
         name: "Products Draft",
         path: "/admin/draftProducts",
       },
-      // {
-      //   name: "Products Reviews",
-      //   path: "/admin/addProducts",
-      // },
+      {
+        name: "Products Reviews",
+        path: "/admin/productReviews",
+      },
       
      
     ],

@@ -19,6 +19,7 @@ export default function UserFailedOrder() {
     },
   });
 
+  
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -32,6 +33,8 @@ export default function UserFailedOrder() {
     setOrderId(orderId._id);
     setOpenModal(true);
   };
+
+
 
   if (isPending) return <p>loading...</p>;
   if (isError) return <p>error</p>;
@@ -51,7 +54,7 @@ export default function UserFailedOrder() {
         {/* CARD GOES HERE */}
 
         {userFailed && userFailed.length > 0 ? (
-          userFailed.map((order) => (
+          userFailed.map((order) => ( 
             <div
               key={order._id}
               className="border flex p-2 gap-5 items-center border-black rounded-[5px]"

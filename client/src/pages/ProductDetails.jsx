@@ -15,6 +15,7 @@ export default function ProductDetails() {
   const [hideShowDetails, setHideShowDetails] = useState(true);
   const [showModalReview, setShowModalReview] = useState(false);
   const [rating, setRating] = useState(4);
+  const [viewable, setViewable] = useState(true)
 
   const {
     data: singleProduct,
@@ -29,8 +30,6 @@ export default function ProductDetails() {
     },
   });
 
-
-  console.log(singleProduct)
 
 
   const {mutate: addToCartMutation} = useMutation({
@@ -72,7 +71,6 @@ export default function ProductDetails() {
   }
 
 
-  console.log(singleProduct);
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading product...</p>;
@@ -87,7 +85,7 @@ export default function ProductDetails() {
 
   return (
     <section className="p-3 pt-[130px] font-main relative">
-      {showModalReview && <ReviewModal closeModal={CloseShowModal} />}
+      {showModalReview && <ReviewModal singleProduct={singleProduct} viewable={viewable}  closeModal={CloseShowModal} />}
 
       <div className="max-w-[1280px] mx-auto relative">
         <div className="mb-5">
@@ -188,7 +186,7 @@ export default function ProductDetails() {
                 onClick={() => ShowModal()}
                 className="uppercase underline text-indigo-500"
               >
-                see all reviews {"(3)"}
+                see all reviews ({singleProduct?.reviews?.length})
               </button>
               <button
                 onClick={() => ShowModal()}

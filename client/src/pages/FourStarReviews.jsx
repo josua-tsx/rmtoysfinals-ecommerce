@@ -1,0 +1,34 @@
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../lib/axios";
+import ReviewCardTwo from "../components/ReviewCardTwo";
+
+export default function FourStarReviews() {
+  const {
+    data: fourStarReviews = [],
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["fourStarReview"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/review/get-fourStar`);
+      return res.data;
+    },
+  });
+
+  console.log(fourStarReviews);
+
+  if (isPending) return <p>Loading...</p>;
+  if (isError) return <p>Error.</p>;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {fourStarReviews.length > 0 ? (
+        fourStarReviews?.map((four) => (
+          <ReviewCardTwo key={four._id} review={four} />
+        ))
+      ) : (
+        <p className="text-center">no four star review yet.</p>
+      )}
+    </div>
+  );
+}

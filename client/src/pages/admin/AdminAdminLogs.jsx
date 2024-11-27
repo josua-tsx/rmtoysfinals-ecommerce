@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
+import { useState } from "react";
+import { IoSearch } from "react-icons/io5";
 
 const ACTION_TYPES = [
   "create_product",
@@ -20,6 +22,9 @@ const ACTION_TYPES = [
 ];
 
 export default function AdminAdminLogs() {
+
+  const [searchTerm, setSearchTerm] = useState("")
+
   const {
     data: adminLogs = [],
     isPending,
@@ -32,6 +37,13 @@ export default function AdminAdminLogs() {
     },
   });
 
+  const arrayAdminLogs = Array.isArray(adminLogs) ? adminLogs : []
+
+  const filteredArrayAdminLogs = arrayAdminLogs.filter((logs) => (
+    logs.action.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    logs.targetId.includes(searchTerm) 
+  ))
+
   console.log(adminLogs);
 
   if (isPending) return <p>Loading...</p>;
@@ -41,14 +53,16 @@ export default function AdminAdminLogs() {
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>ADMIN LOGS</h1>
-        {/* <div className="flex items-center relative">
+        <div className="flex items-center relative">
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search products.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
-        </div> */}
+        </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -62,8 +76,8 @@ export default function AdminAdminLogs() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {adminLogs.length > 0 ? (
-              adminLogs.map((admin) => (
+            {filteredArrayAdminLogs.length > 0 ? (
+              filteredArrayAdminLogs.map((admin) => (
                 <tr key={admin._id}>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2">
                     {new Date(admin.timestamp).toLocaleString()}

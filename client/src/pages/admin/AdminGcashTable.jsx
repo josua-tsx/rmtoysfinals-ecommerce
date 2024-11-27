@@ -4,9 +4,11 @@ import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 export default function AdminGcashTable() {
   const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("")
 
   const {
     data: gcashInfo = [],
@@ -19,6 +21,8 @@ export default function AdminGcashTable() {
       return res.data;
     },
   });
+
+  const arrayGcash = Array.isArray(gcashInfo) ? gcashInfo : []
 
   const { mutate: deleteSingleGcash } = useMutation({
     mutationFn: async (orderId) => {
@@ -50,6 +54,12 @@ export default function AdminGcashTable() {
     },
   });
 
+  const filteredArrayGcash = arrayGcash.filter((gcash) => (
+    gcash.gcashName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    gcash.gcashStatus.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    gcash._id.includes(searchTerm)
+  ))
+
   const handleChangeStatus = (id, e) => {
     const newStatus = e.target.value;
 
@@ -68,7 +78,9 @@ export default function AdminGcashTable() {
         <div className="flex items-center relative">
           <input
             type="text"
-            placeholder="search products.."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="search gcash name, id, status"
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
@@ -87,8 +99,8 @@ export default function AdminGcashTable() {
           </thead>
 
           <tbody className="divide-y divide-gray-700 ">
-            {gcashInfo?.length > 0 ? (
-              gcashInfo.map((gcash) => (
+            {filteredArrayGcash?.length > 0 ? (
+              filteredArrayGcash.map((gcash) => (
                 <tr key={gcash._id}>
                   <td className="px-4 ">{gcash._id}</td>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">

@@ -5,11 +5,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function AdminProductsTable() {
   const queryClient = useQueryClient();
-
   const navigate = useNavigate();
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: products = [],
@@ -23,6 +25,8 @@ export default function AdminProductsTable() {
     },
   });
 
+  const productArray = Array.isArray(products) ? products : [];
+
   const { mutate: deleteProductMutation } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.delete(
@@ -32,6 +36,8 @@ export default function AdminProductsTable() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success("Successfully Deleted");
     },
     onError: (err) => {
@@ -39,9 +45,16 @@ export default function AdminProductsTable() {
     },
   });
 
+  const filteredProducts = productArray.filter((product) => (
+    product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product._id.includes(searchTerm)
+  ))
+
   const navigateToeditPage = (editId) => {
     navigate(`/admin/editProduct/${editId}`);
   };
+
+
 
   if (isPending) return <p>Loading...</p>;
   if (isError) return <p>Error loading filters</p>;
@@ -54,6 +67,8 @@ export default function AdminProductsTable() {
           <input
             type="text"
             placeholder="search products.."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
           <IoSearch className="absolute right-0" size={30} />
@@ -68,14 +83,15 @@ export default function AdminProductsTable() {
               <th className="font-normal p-2 pb-5">CATEGORY</th>
               <th className="font-normal p-2 pb-5">PRICE</th>
               <th className="font-normal p-2 pb-5">STATUS</th>
+              <th className="font-normal p-2 pb-5">REVIEWS</th>
               <th className="font-normal p-2 pb-5">DATE CREATED</th>
               {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {products.length > 0 ?
-              products.map((product) => (
+            {filteredProducts.length > 0 ?
+              filteredProducts.map((product) => (
                 <tr key={product._id}>
                   <td className="px-4 ">{product._id}</td>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
@@ -97,6 +113,10 @@ export default function AdminProductsTable() {
 
                   <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                     {product.status}
+                  </td>
+
+                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                    {product?.reviews?.length}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">

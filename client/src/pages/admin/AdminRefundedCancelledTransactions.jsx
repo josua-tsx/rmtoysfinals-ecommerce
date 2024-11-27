@@ -3,12 +3,15 @@ import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 // import toast from "react-hot-toast";
 import SingleOrderList from "../../components/SingleOrderList";
+import { IoSearch } from "react-icons/io5";
 
 export default function AdminRefundedCancelledTransactions() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
   // const queryClient = useQueryClient();
+
+  const [searchTerm, setSearchTerm] = useState("")
 
   const {
     data: refundedCancelled = [],
@@ -21,6 +24,8 @@ export default function AdminRefundedCancelledTransactions() {
       return res.data;
     },
   });
+
+  const arrayRefundedCancelled = Array.isArray(refundedCancelled) ? refundedCancelled: []
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -58,6 +63,14 @@ export default function AdminRefundedCancelledTransactions() {
     setOpenModal(true);
   };
 
+  const filteredRefundedOrder = arrayRefundedCancelled.filter((refunded) => (
+    refunded._id.includes(searchTerm) || 
+    refunded?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    refunded?.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    refunded?.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) 
+ 
+  ))
+
   console.log(refundedCancelled);
 
   if (isRefundedCancelledPending) return <p>Loading...</p>;
@@ -74,14 +87,16 @@ export default function AdminRefundedCancelledTransactions() {
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>REFUNDED/CANCELLED TRANSACTIONS</h1>
-        {/* <div className="flex items-center relative">
+        <div className="flex items-center relative">
         <input
           type="text"
+          value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="search products.."
           className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
         />
         <IoSearch className="absolute right-0" size={30} />
-      </div> */}
+      </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -102,8 +117,8 @@ export default function AdminRefundedCancelledTransactions() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {refundedCancelled?.length > 0 ? (
-              refundedCancelled.map((refund) => (
+            {filteredRefundedOrder?.length > 0 ? (
+              filteredRefundedOrder.map((refund) => (
                 <tr key={refund._id}>
                   <td className="px-4">{refund._id}</td>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">

@@ -49,6 +49,8 @@ import AdminGcash from "./pages/admin/AdminGcash.jsx";
 import AdminAddGcash from "./pages/admin/AdminAddGcash.jsx";
 import AdminOrderTransact from "./pages/admin/AdminOrderTransact.jsx";
 import AdminAuditTrailLogs from "./pages/admin/AdminAuditTrailLogs.jsx";
+import AdminProductReviewsTable from "./components/admin/AdminProductReviewsTable.jsx";
+import AdminProductReviews from "./pages/admin/AdminProductReviews.jsx";
 
 
 
@@ -185,6 +187,11 @@ const router = createBrowserRouter([
       {
         path: "/admin/draftProducts",
         element: <AdminDraftProduct />,
+      },
+
+      {
+        path: "/admin/productReviews",
+        element: <AdminProductReviews/> ,
       },
 
       // SUPPLIER

@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
+import { IoSearch } from "react-icons/io5";
 
 export default function AdminCancelledTransact() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // const queryClient = useQueryClient();
 
@@ -21,6 +23,10 @@ export default function AdminCancelledTransact() {
     },
   });
 
+  const arrayCancelledOrder = Array.isArray(cancelledOrder)
+    ? cancelledOrder
+    : [];
+
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -34,6 +40,15 @@ export default function AdminCancelledTransact() {
     setOrderId(orderId._id);
     setOpenModal(true);
   };
+
+  const filteredArrayCancelledOrder = arrayCancelledOrder.filter(
+    (cancelled) =>
+      cancelled._id.includes(searchTerm) ||
+      cancelled?.userId?.email
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      cancelled?.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   console.log(cancelledOrder);
 
@@ -51,14 +66,16 @@ export default function AdminCancelledTransact() {
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>REFUNDED/CANCELLED TRANSACTIONS</h1>
-        {/* <div className="flex items-center relative">
-        <input
-          type="text"
-          placeholder="search products.."
-          className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-        />
-        <IoSearch className="absolute right-0" size={30} />
-      </div> */}
+        <div className="flex items-center relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="search success id, email, payment method"
+            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+          />
+          <IoSearch className="absolute right-0" size={30} />
+        </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -74,8 +91,8 @@ export default function AdminCancelledTransact() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {cancelledOrder?.length > 0 ? (
-              cancelledOrder.map((cancel) => {
+            {filteredArrayCancelledOrder?.length > 0 ? (
+              filteredArrayCancelledOrder.map((cancel) => {
                 const totalItems =
                   cancel.orderItems?.reduce(
                     (sum, item) => sum + (item.quantity || 0),

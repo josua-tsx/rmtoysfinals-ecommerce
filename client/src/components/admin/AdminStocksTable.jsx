@@ -4,11 +4,15 @@ import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { IoSearch } from "react-icons/io5";
 
 export default function AdminStocksTable() {
   // const queryClient = useQueryClient();
 
   const navigate = useNavigate()
+
+  const [searchTerm, setSearchTerm] = useState("")
 
   const {
     data: stocks = [],
@@ -23,6 +27,8 @@ export default function AdminStocksTable() {
   });
 
   console.log(stocks)
+
+  const arrayStocks = Array.isArray(stocks) ? stocks : []
 
   // const { mutate: deleteStockMutation } = useMutation({
   //   mutationFn: async (stockId) => {
@@ -40,6 +46,13 @@ export default function AdminStocksTable() {
   //   },
   // });
 
+  const filteredArrayStocks = arrayStocks.filter((stock) => (
+    stock._id.includes(searchTerm) || 
+    stock?.product?.productName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    stock?.supplier?.supplierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    stock?.category?.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) 
+
+  ))
 
   const navigateToEdit = (stockId) => {
     navigate(`/admin/editStocks/${stockId}`)
@@ -58,6 +71,16 @@ export default function AdminStocksTable() {
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className="border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4">
         <h1>STOCKS TABLE</h1>
+        <div className="flex items-center relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="search stocks id, product name, supplier name, category name"
+            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+          />
+          <IoSearch className="absolute right-0" size={30} />
+        </div>
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -72,14 +95,14 @@ export default function AdminStocksTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {stocks.length === 0 ? (
+            {filteredArrayStocks.length === 0 ? (
               <tr>
                 <td colSpan="6" className="text-center">
                   No stocks available
                 </td>
               </tr>
             ) : (
-              stocks.map((stock) => (
+              filteredArrayStocks.map((stock) => (
                 <tr key={stock._id}>
                   <td className="px-4">{stock._id}</td>
                   <td className="flex items-center gap-2">
