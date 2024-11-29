@@ -164,10 +164,10 @@ const router = createBrowserRouter([
 
       // FILTER
 
-      {
-        path: "/admin/filter",
-        element: <AdminFilter />,
-      },
+      // {
+      //   path: "/admin/filter",
+      //   element: <AdminFilter />,
+      // },
 
       // PRODUCTS
 

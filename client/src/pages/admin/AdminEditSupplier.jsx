@@ -94,6 +94,11 @@ export default function AdminEditSupplier() {
     }
   };
 
+  const handleCancel = () => {
+    navigate(`/admin/supplier`)
+  }
+
+
   if (isSinglePending || isEditPending) {
     <p>loading...</p>;
   }
@@ -182,9 +187,16 @@ export default function AdminEditSupplier() {
             </div>
           </div>
 
-          <div className="flex flex-col p-2">
-            <button className="border bg-primary text-card rounded-[5px] border-black p-2">
+          <div className="flex gap-2 p-2">
+            <button className="border flex-1 bg-primary text-card rounded-[5px] border-black p-2">
               UPDATE SUPPLIER
+            </button>
+            <button
+              onClick={() => handleCancel()}
+              type="button"
+              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+            >
+              Cancel
             </button>
           </div>
         </form>

@@ -1,6 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Order from "../models/order.model.js";
+import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import { logAuditTrail } from "./audit.controller.js";
 
@@ -424,6 +425,18 @@ export const updateDeliveryStatus = async (req, res, next) => {
     if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
 
     if (updatedOrder.status === "Delivered") {
+      for (const item of updatedOrder.orderItems) {
+        const productId = item.productId; // Get the productId
+        const quantitySold = item.quantity; // Get the quantity sold
+
+        // Update the sold quantity in the Product collection
+        await Product.findByIdAndUpdate(
+          productId,
+          { $inc: { sold: quantitySold } }, // Increment the soldQuantity by the quantity sold
+          { new: true, runValidators: true }
+        );
+      }
+
       await logAuditTrail({
         action: "set_OrderStatus_delivered",
         userId,
@@ -687,6 +700,18 @@ export const cancelSuccessTransact = async (req, res, next) => {
 
     const orderEmail = order.userId?.email;
 
+    for (const item of order.orderItems) {
+      const productId = item.productId; // Get the productId
+      const quantitySold = item.quantity; // Get the quantity sold
+
+      // Update the sold quantity in the Product collection
+      await Product.findByIdAndUpdate(
+        productId,
+        { $inc: { sold: -quantitySold } }, // Increment the soldQuantity by the quantity sold
+        { new: true, runValidators: true }
+      );
+    }
+
     await logAuditTrail({
       action: "cancelled_Order_Transact",
       userId,
@@ -777,6 +802,18 @@ export const adminOrderRefund = async (req, res, next) => {
       }
     );
 
+    for (const item of order.orderItems) {
+      const productId = item.productId; // Get the productId
+      const quantitySold = item.quantity; // Get the quantity sold
+
+      // Update the sold quantity in the Product collection
+      await Product.findByIdAndUpdate(
+        productId,
+        { $inc: { sold: -quantitySold } }, // DECREMENT the soldQuantity by the quantity sold
+        { new: true, runValidators: true }
+      );
+    }
+
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     res.status(200).json({ message: "Refunded", order });
@@ -819,6 +856,184 @@ export const getUserFailed = async (req, res, next) => {
     }
 
     res.status(200).json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// MONTHLY SALES
+export const getMonthlySales = async (req, res, next) => {
+  try {
+    const { year } = req.query;
+    const currentYear = year ? parseInt(year) : new Date().getFullYear();
+
+    const sales = await Order.aggregate([
+      {
+        $match: {
+          status: "Delivered",
+          paymentStatus: "Paid",
+          createdAt: {
+            $gte: new Date(`${currentYear}-01-01`),
+            $lte: new Date(`${currentYear}-12-31`),
+          },
+        },
+      },
+      {
+        $project: {
+          month: {
+            $dateToString: {
+              format: "%Y-%m",
+              date: "$createdAt",
+              timezone: "UTC",
+            },
+          },
+          // Use totalPrice directly since it's already in the schema
+          totalSales: "$totalPrice",
+          orderCount: 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$month",
+          totalSales: { $sum: "$totalSales" },
+          orderCount: { $sum: 1 },
+          avgOrderValue: { $avg: "$totalSales" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id",
+          totalSales: { $round: ["$totalSales", 2] },
+          orderCount: 1,
+          avgOrderValue: { $round: ["$avgOrderValue", 2] },
+        },
+      },
+    ]);
+
+    // If no sales for the year, return empty array with 12 months
+    const allMonths = [
+      "2024-01",
+      "2024-02",
+      "2024-03",
+      "2024-04",
+      "2024-05",
+      "2024-06",
+      "2024-07",
+      "2024-08",
+      "2024-09",
+      "2024-10",
+      "2024-11",
+      "2024-12",
+    ];
+
+    const completeMonthlyData = allMonths.map((month) => {
+      const matchingMonth = sales.find((s) => s.month === month);
+      return (
+        matchingMonth || {
+          month,
+          totalSales: 0,
+          orderCount: 0,
+          avgOrderValue: 0,
+        }
+      );
+    });
+
+    res.status(200).json(completeMonthlyData);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getDailySales = async (req, res, next) => {};
+
+export const getLatestSuccessOrder = async (req, res, next) => {
+  try {
+    // Fetch all orders
+    const orders = await Order.findOne({
+      status: ["Delivered"],
+    })
+      .populate({
+        path: "orderItems.productId",
+        select: "productImages price paymentMethod productName",
+      })
+      .sort({ createdAt: -1 });
+
+    // if (orders.length === 0) {
+    //   return res.status(200).json([]);
+    // }
+
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLatestFailedOrder = async (req, res, next) => {
+  try {
+    // Fetch all orders
+    const orders = await Order.findOne({
+      paymentStatus: "Failed",
+      status: "Cancelled",
+    })
+      .populate({
+        path: "orderItems.productId",
+        select: "productImages price paymentMethod productName",
+      })
+      .sort({ createdAt: -1 });
+
+    // If no orders are found, return an empty array
+    // if (orders.length === 0) {
+    //   return res.status(200).json([]);
+    // }
+
+    // If orders are found, return them
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error); // Pass the error to the next middleware for error handling
+  }
+};
+
+export const getLatestRefundedOrder = async (req, res, next) => {
+  try {
+    // Fetch all orders
+    const orders = await Order.findOne({
+      $or: [{ paymentStatus: "Refunded" }, { status: "Refunded" }],
+    })
+      .populate({
+        path: "orderItems.productId",
+        select: "productImages price paymentMethod productName",
+      })
+      .sort({ createdAt: -1 });
+
+    // If no orders are found, return an empty array
+    // if (orders.length === 0) {
+    //   return res.status(200).json([]);
+    // }
+
+    // If orders are found, return them
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error); // Pass the error to the next middleware for error handling
+  }
+};
+
+export const getLatestCancelledOrder = async (req, res, next) => {
+  try {
+    const orders = await Order.findOne({
+      status: "Cancelled",
+    })
+      .populate({
+        path: "orderItems.productId",
+        select: "productImages price paymentMethod productName",
+      })
+      .sort({ createdAt: -1 });
+
+    // If orders are found, return them
+    res.status(200).json(orders);
   } catch (error) {
     next(error);
   }

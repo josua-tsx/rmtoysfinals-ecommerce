@@ -4,30 +4,25 @@ import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
+import formatPrice from "../../reusable/formatPrice";
 
-export default function AdminSuccesfullTransactions() {
+export default function AdminSuccesfullTransactions({
+  successOrderData,
+  isSuccessPending,
+  isSuccessError,
+}) {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   const queryClient = useQueryClient();
 
-  const {
-    data: successOrderData = [],
-    isPending: isSuccessPending,
-    isError: isSuccessError,
-  } = useQuery({
-    queryKey: ["successOrder"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-successOrder`);
-      return res.data;
-    },
-  });
+  const arraySuccessOrder = Array.isArray(successOrderData)
+    ? successOrderData
+    : [];
 
-  const arraySuccessOrder = Array.isArray(successOrderData) ? successOrderData : []
-
-  console.log(successOrderData)
+  console.log(successOrderData);
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -38,7 +33,7 @@ export default function AdminSuccesfullTransactions() {
     enabled: !!orderId,
   });
 
-  const {mutate: updateToRefundMutation} = useMutation({
+  const { mutate: updateToRefundMutation } = useMutation({
     mutationFn: async (orderId) => {
       const res = await axiosInstance.put(`/order/refund-order`, orderId);
       return res.data;
@@ -46,16 +41,16 @@ export default function AdminSuccesfullTransactions() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["successOrder"] });
       queryClient.invalidateQueries({ queryKey: ["refundedCancelled"] });
-      toast.success(`Updated to refunded`)
+      toast.success(`Updated to refunded`);
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!")
-    }
+      toast.error(err.response.data.message || "Something went wrong!");
+    },
   });
 
   const handleUpdateToRefunded = (orderId) => {
-    updateToRefundMutation({orderId})
-  }
+    updateToRefundMutation({ orderId });
+  };
 
   const { mutate: cancelSuccessMutation } = useMutation({
     mutationFn: async (orderId) => {
@@ -75,14 +70,17 @@ export default function AdminSuccesfullTransactions() {
     },
   });
 
-  const filteredSuccessOrder = arraySuccessOrder.filter((success) => (
-    success?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    success?.userId?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    success?.userId._id.includes(searchTerm) ||
-    success?._id.includes(searchTerm) ||
-    success?.paymentMethod.toLowerCase().includes(searchTerm) ||
-    success?.status.toLowerCase().includes(searchTerm) 
-  ))
+  const filteredSuccessOrder = arraySuccessOrder.filter(
+    (success) =>
+      success?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      success?.userId?.fullName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      success?.userId._id.includes(searchTerm) ||
+      success?._id.includes(searchTerm) ||
+      success?.paymentMethod.toLowerCase().includes(searchTerm) ||
+      success?.status.toLowerCase().includes(searchTerm)
+  );
 
   const handleCancelSuccessTransact = (orderId) => {
     cancelSuccessMutation({ orderId });
@@ -151,10 +149,10 @@ export default function AdminSuccesfullTransactions() {
                       {success.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {new Date(success.createdAt).toLocaleString()}
+                      {new Date(success.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {success.totalPrice} PHP
+                      {formatPrice(success.totalPrice)} PHP
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                       {success.userId?.phoneNumber}
@@ -192,8 +190,11 @@ export default function AdminSuccesfullTransactions() {
                         >
                           CANCEL
                         </button>
-                        <button onClick={() => handleUpdateToRefunded(success._id)}
-                        type="button" className="text-green-700">
+                        <button
+                          onClick={() => handleUpdateToRefunded(success._id)}
+                          type="button"
+                          className="text-green-700"
+                        >
                           REFUND
                         </button>
                       </div>

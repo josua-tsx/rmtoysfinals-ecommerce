@@ -109,12 +109,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
                   <div className="flex gap-1">
                     <button
                       type="submit"
-                      disabled={!commentReview || rating < 1}
-                      className={`border border-black ${
-                        !commentReview || rating < 1
-                          ? "bg-gray-300"
-                          : "bg-primary"
-                      }  text-card rounded-[5px] p-2`}
+                      className={`border border-black  bg-primary p-3 rounded-[5px]`}
                     >
                       <FaArrowTurnDown size={20} />
                     </button>

@@ -84,7 +84,7 @@ export default function AdminWorkersTable() {
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700 ">6745750aa0f0b627dc77037d
+          <tbody className="divide-y divide-gray-700 ">
             {filteredArrayWorkers.length > 0 ? (
               filteredArrayWorkers.map((worker) => (
                 <tr key={worker._id}>
@@ -126,7 +126,7 @@ export default function AdminWorkersTable() {
                 </tr>
               ))
             ) : (
-              <p>no worker found!</p>
+              <p className="text-center p-2">no worker found!</p>
             )}
           </tbody>
         </table>

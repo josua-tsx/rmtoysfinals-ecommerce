@@ -323,7 +323,7 @@ export default function GcashCheckOut() {
             SUBMIT
           </button>
           <button
-          onClick={() => navigate("/shop")}
+          onClick={() => navigate("/cart")}
           type="button"
             // disabled={isReceiptUploaded}
             className="border w-[20%] border-black rounded-[5px] bg-red-700 text-card py-1"

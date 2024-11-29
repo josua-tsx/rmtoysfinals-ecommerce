@@ -118,8 +118,8 @@ export default function AdminAddWorker() {
 
           </div>
 
-          <div className="flex flex-col">
-            <button className="border bg-primary text-card rounded-b-[5px] p-2">
+          <div className="flex p-2 flex-col">
+            <button className="border bg-primary text-card rounded-[5px] border-black p-2">
               ADD WORKER
             </button>
           </div>

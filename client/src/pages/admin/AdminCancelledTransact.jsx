@@ -4,24 +4,16 @@ import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
 import { IoSearch } from "react-icons/io5";
 
-export default function AdminCancelledTransact() {
+export default function AdminCancelledTransact({
+  cancelledOrder,
+  iscancelledOrderPending,
+  iscancelledOrderError,
+}) {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   // const queryClient = useQueryClient();
-
-  const {
-    data: cancelledOrder = [],
-    isPending: iscancelledOrderPending,
-    isError: iscancelledOrderError,
-  } = useQuery({
-    queryKey: ["cancelledOrder"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-cancelled`);
-      return res.data;
-    },
-  });
 
   const arrayCancelledOrder = Array.isArray(cancelledOrder)
     ? cancelledOrder

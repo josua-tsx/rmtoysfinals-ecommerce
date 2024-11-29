@@ -6,6 +6,7 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import formatPrice from "../../reusable/formatPrice";
 
 export default function AdminProductsTable() {
   const queryClient = useQueryClient();
@@ -25,7 +26,9 @@ export default function AdminProductsTable() {
     },
   });
 
-  const productArray = Array.isArray(products) ? products : [];
+  const productArray = Array.isArray(products.products) ? products.products : [];
+
+  console.log(productArray)
 
   const { mutate: deleteProductMutation } = useMutation({
     mutationFn: async (productId) => {
@@ -45,16 +48,15 @@ export default function AdminProductsTable() {
     },
   });
 
-  const filteredProducts = productArray.filter((product) => (
-    product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product._id.includes(searchTerm)
-  ))
+  const filteredProducts = productArray.filter(
+    (product) =>
+      product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product._id.includes(searchTerm)
+  );
 
   const navigateToeditPage = (editId) => {
     navigate(`/admin/editProduct/${editId}`);
   };
-
-
 
   if (isPending) return <p>Loading...</p>;
   if (isError) return <p>Error loading filters</p>;
@@ -84,13 +86,14 @@ export default function AdminProductsTable() {
               <th className="font-normal p-2 pb-5">PRICE</th>
               <th className="font-normal p-2 pb-5">STATUS</th>
               <th className="font-normal p-2 pb-5">REVIEWS</th>
+              <th className="font-normal p-2 pb-5">SOLD</th>
               <th className="font-normal p-2 pb-5">DATE CREATED</th>
               {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {filteredProducts.length > 0 ?
+            {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
                 <tr key={product._id}>
                   <td className="px-4 ">{product._id}</td>
@@ -108,7 +111,7 @@ export default function AdminProductsTable() {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {product.price.toFixed(2)} PHP
+                    {formatPrice(product?.price)} PHP
                   </td>
 
                   <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
@@ -119,8 +122,12 @@ export default function AdminProductsTable() {
                     {product?.reviews?.length}
                   </td>
 
+                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                    {product?.sold}
+                  </td>
+
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                  {new Date(product.createdAt).toLocaleString()}
+                    {new Date(product.createdAt).toLocaleString()}
                   </td>
 
                   {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
@@ -144,8 +151,10 @@ export default function AdminProductsTable() {
                     </button>
                   </td>
                 </tr>
-              )) : <p className="px-1">no products</p>
-            } 
+              ))
+            ) : (
+              <p className="px-1">no products</p>
+            )}
           </tbody>
         </table>
       </div>

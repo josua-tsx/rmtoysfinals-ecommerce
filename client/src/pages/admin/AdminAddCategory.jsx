@@ -84,8 +84,8 @@ export default function AdminAddCategory() {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <button className="border bg-primary text-card rounded-b-[5px] uppercase p-2">
+          <div className="flex flex-col p-2">
+            <button className="border border-black bg-primary text-card rounded-[5px] uppercase p-2">
               Add Category
             </button>
           </div>

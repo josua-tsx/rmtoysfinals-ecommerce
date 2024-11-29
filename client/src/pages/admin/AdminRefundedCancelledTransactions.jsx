@@ -1,31 +1,26 @@
-import {  useQuery,  } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 // import toast from "react-hot-toast";
 import SingleOrderList from "../../components/SingleOrderList";
 import { IoSearch } from "react-icons/io5";
+import formatPrice from "../../reusable/formatPrice";
 
-export default function AdminRefundedCancelledTransactions() {
+export default function AdminRefundedCancelledTransactions({
+  refundedCancelled,
+  isRefundedCancelledPending,
+  isRefundedCancelledError,
+}) {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
   // const queryClient = useQueryClient();
 
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const {
-    data: refundedCancelled = [],
-    isPending: isRefundedCancelledPending,
-    isError: isRefundedCancelledError,
-  } = useQuery({
-    queryKey: ["refundedCancelled"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-refundedCancelled`);
-      return res.data;
-    },
-  });
-
-  const arrayRefundedCancelled = Array.isArray(refundedCancelled) ? refundedCancelled: []
+  const arrayRefundedCancelled = Array.isArray(refundedCancelled)
+    ? refundedCancelled
+    : [];
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -63,13 +58,17 @@ export default function AdminRefundedCancelledTransactions() {
     setOpenModal(true);
   };
 
-  const filteredRefundedOrder = arrayRefundedCancelled.filter((refunded) => (
-    refunded._id.includes(searchTerm) || 
-    refunded?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    refunded?.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    refunded?.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) 
- 
-  ))
+  const filteredRefundedOrder = arrayRefundedCancelled.filter(
+    (refunded) =>
+      refunded._id.includes(searchTerm) ||
+      refunded?.userId?.email
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      refunded?.paymentStatus
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      refunded?.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   console.log(refundedCancelled);
 
@@ -79,24 +78,24 @@ export default function AdminRefundedCancelledTransactions() {
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
       {openModal && singleUserOrder && (
-      <SingleOrderList
-        order={singleUserOrder}
-        onClose={() => setOpenModal(false)}
-      />
-    )}
+        <SingleOrderList
+          order={singleUserOrder}
+          onClose={() => setOpenModal(false)}
+        />
+      )}
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>REFUNDED/CANCELLED TRANSACTIONS</h1>
         <div className="flex items-center relative">
-        <input
-          type="text"
-          value={searchTerm}
+          <input
+            type="text"
+            value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="search products.."
-          className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-        />
-        <IoSearch className="absolute right-0" size={30} />
-      </div>
+            placeholder="search products.."
+            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+          />
+          <IoSearch className="absolute right-0" size={30} />
+        </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -125,13 +124,13 @@ export default function AdminRefundedCancelledTransactions() {
                     {refund.userId?.email}
                   </td>
                   <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                  {new Date(refund.createdAt).toLocaleString()}
+                    {new Date(refund.createdAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                  {new Date(refund.updatedAt).toLocaleString()}
+                    {new Date(refund.updatedAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {refund.totalPrice}
+                    {formatPrice(refund.totalPrice)}
                   </td>
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                     32
@@ -154,7 +153,7 @@ export default function AdminRefundedCancelledTransactions() {
                   <td className=" whitespace-nowrap text-center text-sm">
                     <div className="flex gap-2">
                       <button
-                          onClick={() => handleOpenSingleOrder(refund)}
+                        onClick={() => handleOpenSingleOrder(refund)}
                         type="button"
                         className="text-green-700"
                       >
@@ -170,8 +169,7 @@ export default function AdminRefundedCancelledTransactions() {
                   No Refunded transactions.
                 </td>
               </tr>
-            )
-            }
+            )}
           </tbody>
         </table>
       </div>

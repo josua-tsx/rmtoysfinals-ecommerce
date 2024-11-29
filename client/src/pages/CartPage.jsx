@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useState } from "react";
 import OrderSummaryModal from "../components/OrderSummaryModal";
+import formatPrice from "../reusable/formatPrice";
 
 export default function CartPage() {
 
@@ -68,7 +69,7 @@ export default function CartPage() {
                 total items: <span>{cart?.items?.length}</span>
               </p>
               <p>
-                total price: <span className="text-indigo-500">{totalPrice} PHP</span>
+                total price: <span className="text-indigo-500">{formatPrice(totalPrice)} PHP</span>
               </p>
             </div>
             <div onClick={() => setOrderModal(true)}>

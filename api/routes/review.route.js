@@ -1,6 +1,6 @@
 import express from 'express'
 import {requireAuth, requireAdmin} from '../middleware/auth.middleware.js'
-import { adminDeleteReview, getAllFiveStarReview, getAllFourStarReview, getAllOneStarReview, getAllThreeStarReview, getAllTwoStarReview, getReviews, getSingleReview, userAddReview, userDeleteReview, userEditReview } from '../controllers/review.controller.js'
+import { adminDeleteReview, getAllFiveStarReview, getAllFourStarReview, getAllOneStarReview, getAllThreeStarReview, getAllTwoStarReview, getRecentReview, getReviews, getSingleReview, userAddReview, userDeleteReview, userEditReview } from '../controllers/review.controller.js'
 
 const router = express.Router()
 
@@ -11,6 +11,7 @@ router.delete(`/adminDelete/:reviewId`, requireAuth, requireAdmin, adminDeleteRe
 router.put(`/edit/:reviewId`, requireAuth, userEditReview)
 router.get(`/singleReview/:reviewId`, requireAuth, getSingleReview)
 
+router.get(`/get-latest-review`, getRecentReview)
 router.get(`/get-oneStar`, getAllOneStarReview)
 router.get(`/get-twoStar`, getAllTwoStarReview)
 router.get(`/get-threeStar`, getAllThreeStarReview)

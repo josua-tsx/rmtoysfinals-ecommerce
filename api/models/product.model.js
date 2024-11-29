@@ -39,10 +39,15 @@ const ProductModelSchema = new mongoose.Schema(
       default: false,
     },
 
-    filters: {
-      type: Array,
-      required: true,
+    sold: {
+      type: Number,
+      default: 0
     },
+
+    // filters: {
+    //   type: Array,
+    //   required: true,
+    // },
 
     status: {
       type: String,

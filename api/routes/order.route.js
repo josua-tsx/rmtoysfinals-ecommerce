@@ -9,6 +9,12 @@ import {
   getAllOrder,
   getAllRefunded,
   getAllSuccess,
+  getDailySales,
+  getLatestCancelledOrder,
+  getLatestFailedOrder,
+  getLatestRefundedOrder,
+  getLatestSuccessOrder,
+  getMonthlySales,
   getSingleUserOrder,
   getUserCancelled,
   getUserDelivered,
@@ -38,6 +44,18 @@ router.get(`/get-failedCancelled`, getAllFailed)
 router.get(`/get-refundedCancelled`, getAllRefunded)
 
 router.get(`/get-cancelled`, getAllCancelled)
+
+router.get(`/monthly/sales`, getMonthlySales)
+
+router.get(`/daily/sales`, getDailySales)
+
+router.get(`/latest/success`, getLatestSuccessOrder)
+
+router.get(`/latest/failed`, getLatestFailedOrder)
+
+router.get(`/latest/refunded`, getLatestRefundedOrder)
+
+router.get(`/latest/cancelled`, getLatestCancelledOrder)
 
 router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
 

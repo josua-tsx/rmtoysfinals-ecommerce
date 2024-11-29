@@ -109,11 +109,11 @@ const adminSideBarItems = [
     ]
   },
 
-  {
-    name: "Manage Filter",
-    path: "/admin/filter",
-    icon: <MdCategory size={20} />,
-  },
+  // {
+  //   name: "Manage Filter",
+  //   path: "/admin/filter",
+  //   icon: <MdCategory size={20} />,
+  // },
   {
     name: "Stocks",
     // path: "/admin/stocks",

@@ -25,7 +25,7 @@ export default function AdminAddProducts() {
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
-  const [filters, setFilters] = useState({});
+  // const [filters, setFilters] = useState({});
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("")
   const [supplier, setSupplier] = useState("")
@@ -34,13 +34,13 @@ export default function AdminAddProducts() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
 
-  const { data, isPending, isError } = useQuery({
-    queryKey: ["filters"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/filter/get-filters`);
-      return res.data;
-    },
-  });
+  // const { data, isPending, isError } = useQuery({
+  //   queryKey: ["filters"],
+  //   queryFn: async () => {
+  //     const res = await axiosInstance.get(`/filter/get-filters`);
+  //     return res.data;
+  //   },
+  // });
 
 
   const {data: categories = [], isPending: isCategoryPending, isError: isCategoryError} = useQuery({
@@ -71,6 +71,7 @@ export default function AdminAddProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ["products"]})
+      queryClient.invalidateQueries({queryKey: ["colors"]})
       setProductDescription("");
       setProductName("");
       setProductsDetailsArray([]);
@@ -113,7 +114,7 @@ export default function AdminAddProducts() {
       productDetails: productsDetailsArray,
       discount,
       productImages: images,
-      filters,
+      // filters,
       category: category,
       supplier: supplier
     });
@@ -132,7 +133,7 @@ export default function AdminAddProducts() {
       productDetails: productsDetailsArray,
       discount,
       productImages: images,
-      filters,
+      // filters,
       category: category,
       supplier: supplier
     });
@@ -189,11 +190,11 @@ export default function AdminAddProducts() {
     setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (isPending || isCategoryPending || isSuppliersPending) {
+  if (isCategoryPending || isSuppliersPending) {
     return <p>awdwad</p>;
   }
 
-  if (isError || isCategoryError || isSuppliersError) {
+  if (isCategoryError || isSuppliersError) {
     return <p>awdwad</p>;
   }
 
@@ -405,12 +406,12 @@ export default function AdminAddProducts() {
               </div>
                
 
-              <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
-                <h1 className="py-2">FILTERS</h1>
+              {/* <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
+                <h1 className="py-2">FILTERS (OPTIONAL)</h1>
 
                 <div className="flex gap-2 flex-wrap">
-                  {data &&
-                    data.map((item) => (
+                  {data.length > 0 ?
+                   ( data.map((item) => (
                       <div key={item.id} className="flex-1 flex flex-col">
                         <label className="pb-2" htmlFor={item.filterName}>
                           {item.filterName}
@@ -437,9 +438,10 @@ export default function AdminAddProducts() {
                             ))}
                         </select>
                       </div>
-                    ))}
+                    ))) : <p className="text-sm lowercase">no filter yet.</p>
+                  }
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-end gap-2">

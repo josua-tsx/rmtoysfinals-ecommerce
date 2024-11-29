@@ -3,10 +3,14 @@ import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { IoSearch } from "react-icons/io5";
+import formatPrice from "../../reusable/formatPrice";
 
 export default function AdminOrderStatusTable() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("")
 
   const queryClient = useQueryClient();
 
@@ -23,6 +27,15 @@ export default function AdminOrderStatusTable() {
   });
 
   console.log(allOrders)
+
+  const arrayAllOrders = Array.isArray(allOrders) ? allOrders : []
+
+  const filteredArrayAllOrders = arrayAllOrders.filter((order) => (
+    order._id.includes(searchTerm) || 
+    order.userId.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    order.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    order.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase()) 
+  ))
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -73,14 +86,16 @@ export default function AdminOrderStatusTable() {
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>ORDER TABLE</h1>
-        {/* <div className="flex items-center relative">
+        <div className="flex items-center relative">
         <input
           type="text"
-          placeholder="search products.."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="search order id, email, username, status, paymentStatus, method"
           className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
         />
         <IoSearch className="absolute right-0" size={30} />
-      </div> */}
+      </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         <table className="w-full divide-y divide-gray-700">
@@ -101,8 +116,8 @@ export default function AdminOrderStatusTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {allOrders?.length > 0 ? (
-              allOrders?.map((data) => (
+            {filteredArrayAllOrders?.length > 0 ? (
+              filteredArrayAllOrders?.map((data) => (
                 <tr key={data._id}>
                   <td className="px-4 ">{data._id}</td>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
@@ -113,18 +128,18 @@ export default function AdminOrderStatusTable() {
                     {data.userId.email}
                   </td>
                   <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                    {data.createdAt}
+                  {new Date(data.createdAt).toLocaleString()}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {data.totalPrice}
+                    {formatPrice(data.totalPrice)} PHP
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                     {data.paymentMethod}
                   </td>
 
-                  <td className="px-6 py-4  whitespace-nowrap text-center text-sm">
+                  <td className="px-6 py-4 uppercase  whitespace-nowrap text-center text-sm">
                     {(data.paymentStatus && data.paymentStatus === "Failed") ||
                     data.paymentStatus === "Refunded" ? (
                       <span className="text-red-700">{data.paymentStatus}</span>
@@ -135,7 +150,7 @@ export default function AdminOrderStatusTable() {
                     )}
                   </td>
 
-                  <td className="px-6 py-4  whitespace-nowrap text-center text-sm">
+                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                     {data.status && data.status === "Cancelled" ? (
                       <span className="text-red-700">{data.status}</span>
                     ) : (

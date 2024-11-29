@@ -7,15 +7,15 @@ import axiosInstance from "../lib/axios.js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import formatPrice from "../reusable/formatPrice.js";
 
 export default function ProductDetails() {
   const params = useParams();
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const [hideShowDetails, setHideShowDetails] = useState(true);
   const [showModalReview, setShowModalReview] = useState(false);
   const [rating, setRating] = useState(4);
-  const [viewable, setViewable] = useState(true)
 
   const {
     data: singleProduct,
@@ -30,54 +30,57 @@ export default function ProductDetails() {
     },
   });
 
+  console.log(singleProduct);
 
-
-  const {mutate: addToCartMutation} = useMutation({
+  const { mutate: addToCartMutation } = useMutation({
     mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/cart`, productId)
-      return res.data 
-    }, 
-    onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['cart']})
-      toast.success("Succesfully Added to cart")
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!")
-    }
-  })
-
-
-  const {mutate: addToWishListMutation} = useMutation({
-    mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/wish`, productId)
-      return res.data
+      const res = await axiosInstance.post(`/cart`, productId);
+      return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['wishlist']})
-      toast.success("Succesfully Added to Wishlist")
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      toast.success("Succesfully Added to cart");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!")
-    }
-  })
+      toast.error(err.response.data.message || "Something went wrong!");
+    },
+  });
 
+  const { mutate: addToWishListMutation } = useMutation({
+    mutationFn: async (productId) => {
+      const res = await axiosInstance.post(`/wish`, productId);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      toast.success("Succesfully Added to Wishlist");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "Something went wrong!");
+    },
+  });
 
   const handleAddToCart = (productId) => {
-    addToCartMutation({productId})
-  }
+    addToCartMutation({ productId });
+  };
 
   const handleAddToWishList = (productId) => {
-    addToWishListMutation({productId})
-  }
+    addToWishListMutation({ productId });
+  };
 
+  const sumOfRating = singleProduct?.reviews.reduce(
+    (sum, review) => sum + review.rating,
+    0
+  );
+  const averageRating = sumOfRating / singleProduct?.reviews.length;
 
+  console.log(averageRating);
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading product...</p>;
   if (!singleProduct || Object.keys(singleProduct).length === 0) {
-      return <p>No product found.</p>;
+    return <p>No product found.</p>;
   }
-  
 
   const ShowModal = () => setShowModalReview(true);
 
@@ -85,11 +88,16 @@ export default function ProductDetails() {
 
   return (
     <section className="p-3 pt-[130px] font-main relative">
-      {showModalReview && <ReviewModal singleProduct={singleProduct} viewable={viewable}  closeModal={CloseShowModal} />}
+      {showModalReview && (
+        <ReviewModal
+          singleProduct={singleProduct}
+          closeModal={CloseShowModal}
+        />
+      )}
 
       <div className="max-w-[1280px] mx-auto relative">
         <div className="mb-5">
-          <p>{`SHOP>MEN>${singleProduct?.category?.categoryName}`}</p>
+          <p className="uppercase text-sm">{`SHOP>${singleProduct?.productName}>${singleProduct?.category?.categoryName}`}</p>
         </div>
 
         <div className="flex flex-col md:flex-row flex-wrap gap-3">
@@ -130,30 +138,33 @@ export default function ProductDetails() {
               </div>
 
               {/* STARS */}
-              <div className="">
-                <StarsRating rating={rating} />
+              <div className="flex gap-2 items-center">
+                <StarsRating rating={averageRating} />
+                <p>({averageRating ? averageRating.toFixed(2) : 0} average)</p>
               </div>
 
               <div className="uppercase flex flex-col gap-2">
                 <div className="flex items-center gap-3">
                   <p>PRICE:</p>
                   <span className="text-lg text-indigo-500">
-                    {singleProduct.price}
+                    {formatPrice(singleProduct.price)} PHP
                   </span>
                 </div>
-               {
-                singleProduct?.stocks ?  <div className="flex items-center gap-3">
-                <p>Stocks:</p>
-                <span className="text-lg text-indigo-500">{singleProduct?.stocks?.stockQuantity}</span>
-              </div> : ""
-               }
+                {singleProduct?.stocks ? (
+                  <div className="flex items-center gap-3">
+                    <p>Stocks:</p>
+                    <span className="text-lg text-indigo-500">
+                      {formatPrice(singleProduct?.stocks?.stockQuantity)}
+                    </span>
+                  </div>
+                ) : (
+                  ""
+                )}
                 <div className="flex items-center gap-3">
                   <p>category:</p>
-                  <span className="text-lg text-indigo-500">{singleProduct?.category?.categoryName}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <p> color:</p>
-                  <span className="text-lg text-red-700">red</span>
+                  <span className="text-lg text-indigo-500">
+                    {singleProduct?.category?.categoryName}
+                  </span>
                 </div>
               </div>
 
@@ -171,7 +182,7 @@ export default function ProductDetails() {
               >
                 {singleProduct.productDetails.length > 0 &&
                   singleProduct.productDetails.map((detail, index) => (
-                    <div key={index} className="flex gap-3">
+                    <div key={index} className="flex uppercase gap-3">
                       <p className="uppercase">{detail.label}:</p>
                       <span>{detail.value}</span>
                     </div>
@@ -199,7 +210,10 @@ export default function ProductDetails() {
 
           {/* BUY AND ADD BUTTON*/}
           <div className="border w-[327px] md:w-full lg:w-[210px] mx-auto flex flex-col gap-2 h-full border-black bg-card rounded-[5px] p-4">
-            <div onClick={() => handleAddToCart(singleProduct._id)} className="">
+            <div
+              onClick={() => handleAddToCart(singleProduct._id)}
+              className=""
+            >
               <Buttons buttonName={"Add to cart"} />
             </div>
             <div onClick={() => handleAddToWishList(singleProduct._id)}>

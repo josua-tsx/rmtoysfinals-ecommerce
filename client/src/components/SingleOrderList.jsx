@@ -5,6 +5,7 @@ import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import AdminAddReasonModal from "./admin/AdminAddReasonModal";
 import { useState } from "react";
+import formatPrice from "../reusable/formatPrice";
 
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -66,17 +67,17 @@ export default function SingleOrderList({ order, onClose }) {
               </div>
               <div className="flex gap-2">
                 <p>Taxes: </p>
-                <span className="text-indigo-700">{order.taxPrice}</span>
+                <span className="text-indigo-700">{formatPrice(order.taxPrice)}</span>
               </div>
               <div className="flex gap-2">
                 <p>Shipping Price: </p>
                 <span className="text-indigo-700">
-                  {order.shippingPrice} PHP
+                  {formatPrice(order.shippingPrice)} PHP
                 </span>
               </div>
               <div className="flex gap-2">
                 <p>Discount: </p>
-                <span className="text-indigo-700">{order.discount} PHP</span>
+                <span className="text-indigo-700">{formatPrice(order.discount)} PHP</span>
               </div>
               <div className="flex gap-2">
                 <p>To Ship: </p>
@@ -96,11 +97,11 @@ export default function SingleOrderList({ order, onClose }) {
             <div className="flex flex-col text-sm">
               <div className="flex gap-2">
                 <p>Subtotal: </p>
-                <span className="text-indigo-700">{order.subtotal} PHP</span>
+                <span className="text-indigo-700">{formatPrice(order.subtotal)} PHP</span>
               </div>
               <div className="flex gap-2">
                 <p>Total Price: </p>
-                <span className="text-indigo-700">{order.totalPrice} PHP</span>
+                <span className="text-indigo-700">{formatPrice(order.totalPrice)} PHP</span>
               </div>
               <div className="flex gap-2">
                 <p>Status: </p>

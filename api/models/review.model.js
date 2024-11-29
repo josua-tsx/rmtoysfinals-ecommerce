@@ -14,7 +14,7 @@ const ReviewSchemaModel = new mongoose.Schema(
     },
     commentReview: {
       type: String,
-      required: true,
+      // required: true,
     },
     rating: {
       type: Number,

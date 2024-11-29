@@ -110,7 +110,7 @@ export default function AdminEditProducts() {
     },
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["products"] });
-
+      queryClient.invalidateQueries({queryKey: ["colors"]})
       setProductDescription("");
       setProductName("");
       setProductsDetailsArray([]);
@@ -162,7 +162,9 @@ export default function AdminEditProducts() {
 
   // }
 
-
+  const handleCancel = () => {
+    navigate(`/admin/products`)
+  }
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -507,6 +509,8 @@ export default function AdminEditProducts() {
                 UPDATE THIS PRODUCT
                 <FaCheckCircle />
               </button>
+              <button onClick={() => handleCancel()}
+            type="button" className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card ">Cancel</button>
             </div>
           </div>
 

@@ -17,9 +17,6 @@ export default function Cart() {
     },
   });
   
-
-  console.log(cart);
-
   if (isLoading) return <p>loading..</p>;
   if (isError) return <p>loading..</p>;
 

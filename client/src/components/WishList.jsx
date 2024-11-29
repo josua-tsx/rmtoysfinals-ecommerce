@@ -16,7 +16,7 @@ export default function WishList() {
     },
   });
 
-  console.log(wishlist);
+ 
 
   if (isPending) return <p>loading...</p>;
   if (isError) return <p>error</p>;

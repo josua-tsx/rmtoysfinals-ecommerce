@@ -5,29 +5,24 @@ import SingleOrderList from "../../components/SingleOrderList";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
 
-export default function AdminFailedTransactions() {
+import formatPrice from "../../reusable/formatPrice";
+
+export default function AdminFailedTransactions({
+  failedCancelledData,
+  isFailedCancelledPending,
+  isFailedCancelledError,
+}) {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("")
-  
- 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const queryClient = useQueryClient();
 
-  const {
-    data: failedCancelledData = [],
-    isPending: isFailedCancelledPending,
-    isError: isFailedCancelledError,
-  } = useQuery({
-    queryKey: ["failedCancelled"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-failedCancelled`);
-      return res.data;
-    },
-  });
+  const arrayCustomerFailed = Array.isArray(failedCancelledData)
+    ? failedCancelledData
+    : [];
 
-  const arrayCustomerFailed = Array.isArray(failedCancelledData) ? failedCancelledData : []
-    
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -64,15 +59,14 @@ export default function AdminFailedTransactions() {
     setOpenModal(true);
   };
 
-
-  const filteredFailedOrder = arrayCustomerFailed.filter((failed) => (
-    failed._id.includes(searchTerm) ||
-    failed?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    failed.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    failed.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    failed.reason.toLowerCase().includes(searchTerm.toLowerCase()) 
-  ))
-
+  const filteredFailedOrder = arrayCustomerFailed.filter(
+    (failed) =>
+      failed._id.includes(searchTerm) ||
+      failed?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      failed.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      failed.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      failed.reason.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   console.log(failedCancelledData);
 
@@ -135,13 +129,13 @@ export default function AdminFailedTransactions() {
                       {failed.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {new Date(failed.createdAt).toLocaleString()}
+                      {new Date(failed.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {failed.updatedAt}
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {failed.totalPrice}
+                      {formatPrice(failed.totalPrice)} PHP
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                       {failed.userId?.phoneNumber}
@@ -163,26 +157,31 @@ export default function AdminFailedTransactions() {
                     </td>
                     <td className=" whitespace-nowrap px-4 text-center text-sm">
                       <div className="flex gap-2">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleOpenSingleOrder(failed)}
-                          type="button"
-                          className="text-green-700"
-                        >
-                          VIEW
-                        </button>
-                        <button onClick={() => handleCancelSuccessTransact(failed._id)}
-                        type="button" className="text-red-700">
-                          CANCEL
-                        </button>
-                      </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleOpenSingleOrder(failed)}
+                            type="button"
+                            className="text-green-700"
+                          >
+                            VIEW
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleCancelSuccessTransact(failed._id)
+                            }
+                            type="button"
+                            className="text-red-700"
+                          >
+                            CANCEL
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
                 );
               })
             ) : (
-                <tr>
+              <tr>
                 <td colSpan="11" className="text-center py-4">
                   No failed transactions.
                 </td>

@@ -74,6 +74,10 @@ export default function AdminCategoryEdit() {
     });
   };
 
+  const handleCancel = () => {
+    navigate(`/admin/category`);
+  };
+
   if (isSinglePending || isEditPending) {
     <p>loading...</p>;
   }
@@ -121,9 +125,16 @@ export default function AdminCategoryEdit() {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <button className="border bg-primary text-card rounded-b-[5px] uppercase p-2">
+          <div className="flex p-2 gap-2 flex-row">
+            <button className="flex-1 border border-black bg-primary text-card rounded-[5px] uppercase p-2">
               UPDATE Category
+            </button>
+            <button
+              onClick={() => handleCancel()}
+              type="button"
+              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+            >
+              Cancel
             </button>
           </div>
         </form>

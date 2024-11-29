@@ -57,6 +57,7 @@ export default function AdminSupplierTable() {
       supplier._id.includes(searchTerm)
   );
 
+
   if (isSupplierPending || isSuppDeletePending) {
     <p>loading....</p>;
   }

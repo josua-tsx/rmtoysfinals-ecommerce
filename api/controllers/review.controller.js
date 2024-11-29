@@ -54,6 +54,22 @@ export const getReviews = async (req, res, next) => {
   }
 };
 
+export const getRecentReview = async (req, res, next) => {
+  try {
+    const reviews = await Review.findOne()
+      .populate({
+        path: "userId",
+        select: "avatar username email",
+      })
+      .sort({ createdAt: -1 });
+      
+    if (!reviews) return res.status(200).json([]);
+    res.status(200).json(reviews);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const userDeleteReview = async (req, res, next) => {
   const userId = req.user.id;
   const { reviewId } = req.params;

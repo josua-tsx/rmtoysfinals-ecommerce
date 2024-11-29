@@ -3,6 +3,7 @@ import { FaHeart } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+import formatPrice from "../reusable/formatPrice";
 
 export default function WishlistCard({productWish}) {
 
@@ -72,7 +73,7 @@ export default function WishlistCard({productWish}) {
       <div className="flex-1 p-2 border-t rounded-t-none border-black rounded-[5px] flex flex-col bg-white w-full">
         <div className="flex flex-col gap-2 justify-between">
           <h1 className="text-sm">{productWish?.productId?.productName}</h1>
-          <p className="text-sm">{productWish?.productId?.price} PHP</p>
+          <p className="text-sm">{formatPrice(productWish?.productId?.price)} PHP</p>
         </div>
       </div>
 

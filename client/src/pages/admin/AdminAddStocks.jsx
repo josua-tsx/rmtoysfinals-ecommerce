@@ -98,12 +98,14 @@ export default function AdminAddStocks() {
             </div>
           </div>
 
-          <button
+         <div className="flex p-2">
+         <button
             type="submit"
-            className="bg-primary text-card p-2 rounded-b-[5px]"
+            className="bg-primary flex-1 border border-black text-card p-2 rounded-[5px]"
           >
             Add Stocks
           </button>
+         </div>
         </form>
       </div>
     </section>

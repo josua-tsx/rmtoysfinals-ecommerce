@@ -15,7 +15,7 @@ export default {
         "primary" : "#08bb69", // text and bg-colors for butttons and etc.
         "secondary" : "#ebd93e", // for products and forms back ground
         "card" : "#f4f4fc", // for products and forms back ground
-        "yellow": "#fffdf6"
+        "yellow": "#fffdf6",
       }
     },
   },

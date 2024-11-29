@@ -6,10 +6,13 @@ import StarsRating from "./StarsRating";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+import formatPrice from "../reusable/formatPrice";
 
 export default function ShopProductCards({product}) {
 
   const queryClient = useQueryClient()
+
+  console.log(product)
 
   const {mutate: addToCartMutation} = useMutation({
     mutationFn: async (productId) => {
@@ -39,6 +42,14 @@ export default function ShopProductCards({product}) {
       toast.error(err.response.data.message || "Something went wrong!")
     }
   })
+
+  const sumOfRating = product?.reviews.reduce((sum, review) => sum + review.rating, 0)
+  const averageRating = sumOfRating / product?.reviews.length
+
+  const colorDetail = product?.productDetails?.find(
+    (detail) => detail.label === "color"
+  );
+
 
 
   const handleAddToCart = (productId) => {
@@ -86,19 +97,24 @@ export default function ShopProductCards({product}) {
 
       <div className="p-2 flex flex-col  justify-between bg-card border-t-gray-300 border rounded-b-[5px] h-[200px]  w-full relative">
         <div className="flex w-full justify-between">
-          <p>{product.productName}</p>
-          <p className="uppercase">PHP{product.price}</p>
+          <p className="uppercase">{product.productName}</p>
+          <p className="uppercase">{formatPrice(product.price)} PHP</p>
         </div>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span
               className="w-[10px] h-[10px] rounded-full"
-              style={{ backgroundColor: "blue" }}
+              style={{ backgroundColor: colorDetail?.value }}
             ></span>
-            <p>BLUE</p>
+            <p className="uppercase">{colorDetail?.value}</p>
           </div>
 
-          <StarsRating rating={3}/>
+          <div className="flex gap-2 items-center">
+          <StarsRating rating={averageRating}/>
+          {
+            averageRating ? <p>({(averageRating).toFixed(2)} average)</p> : ""
+          }
+          </div>
         </div>
       </div>
     </div>

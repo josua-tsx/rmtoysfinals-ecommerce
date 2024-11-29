@@ -202,13 +202,15 @@ export default function AdminAddGcash() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="bg-primary text-card p-2 rounded-b-[5px]"
-            disabled={uploading}
-          >
-            {uploading ? "loading.." : "ADD GCASH"}
-          </button>
+          <div className="flex p-2">
+            <button
+              type="submit"
+              className="bg-primary flex-1 text-card p-2 rounded-[5px] border border-black"
+              disabled={uploading}
+            >
+              {uploading ? "loading.." : "ADD GCASH"}
+            </button>
+          </div>
         </form>
       </div>
     </section>

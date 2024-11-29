@@ -94,14 +94,14 @@ export default function AdminCategoryTable() {
                   <td className="px-4 ">{category._id}</td>
 
                   <td className="	">
-                    {category.categoryName}
+                    {category?.categoryName}
                   </td>
 
                   <td className="">
-                    {category.categoryDescription}
+                    {category?.categoryDescription}
                   </td>
                   {/* <td className="">
-                    200
+                    {category?.products.length}
                   </td> */}
 
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">

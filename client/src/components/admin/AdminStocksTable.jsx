@@ -1,11 +1,14 @@
 import {  useQuery} from "@tanstack/react-query";
 import { CiEdit } from "react-icons/ci";
-import { MdDelete } from "react-icons/md";
+// import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
+
+import formatPrice from "../../reusable/formatPrice";
+
 
 export default function AdminStocksTable() {
   // const queryClient = useQueryClient();
@@ -108,16 +111,16 @@ export default function AdminStocksTable() {
                   <td className="flex items-center gap-2">
                     <img
                       src={
-                        stock.product.productImages[0] || "fallback-image-url"
+                        stock?.product?.productImages[0] || "fallback-image-url"
                       } // Optional fallback
                       className="w-[30px]"
                       alt={stock.product.productName}
                     />
                     {stock.product.productName}
                   </td>
-                  <td>{stock.product.supplier?.supplierName}</td>
-                  <td>{stock.product?.category?.categoryName}</td>
-                  <td>{stock.stockQuantity}</td>
+                  <td>{stock?.product.supplier?.supplierName}</td>
+                  <td>{stock?.product?.category?.categoryName}</td>
+                  <td>{formatPrice(stock?.stockQuantity)}</td>
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
                     <button onClick={() => navigateToEdit(stock._id)}
                     className="text-green-600 hover:text-indigo-300 mr-2">

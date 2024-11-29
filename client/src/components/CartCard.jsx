@@ -3,6 +3,7 @@ import { MdDelete } from "react-icons/md";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { PiShareFatFill } from "react-icons/pi";
+import formatPrice from "../reusable/formatPrice";
 
 export default function CartCard({ productCart }) {
   const queryClient = useQueryClient();
@@ -87,7 +88,7 @@ export default function CartCard({ productCart }) {
         <div className="flex  gap-10 justify-between items-center">
           <p>
             <span className="text-indigo-500 text-xl">
-              {productCart.productId.price} PHP
+              {formatPrice(productCart.productId.price)} PHP
             </span>
           </p>
          
