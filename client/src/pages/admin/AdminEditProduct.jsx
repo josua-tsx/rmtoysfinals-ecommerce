@@ -10,6 +10,7 @@ import axiosInstance from "../../lib/axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminEditProducts() {
   const params = useParams();
@@ -33,7 +34,6 @@ export default function AdminEditProducts() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
 
-
   const {
     data: singleProduct,
     isPending: isProductPending,
@@ -50,7 +50,6 @@ export default function AdminEditProducts() {
     enabled: !!params.editProductId,
   });
 
-
   useEffect(() => {
     if (singleProduct) {
       setFilters(singleProduct.filters);
@@ -65,13 +64,13 @@ export default function AdminEditProducts() {
     }
   }, [singleProduct]);
 
-  const { data, isPending, isError } = useQuery({
-    queryKey: ["filters"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/filter/get-filters`);
-      return res.data;
-    },
-  });
+  // const { data, isPending, isError } = useQuery({
+  //   queryKey: ["filters"],
+  //   queryFn: async () => {
+  //     const res = await axiosInstance.get(`/filter/get-filters`);
+  //     return res.data;
+  //   },
+  // });
 
   const {
     data: categories = [],
@@ -97,9 +96,7 @@ export default function AdminEditProducts() {
     },
   });
 
-  const {
-    mutate: editProductMutation,
-  } = useMutation({
+  const { mutate: editProductMutation } = useMutation({
     mutationFn: async (data) => {
       const { editProductId } = params;
       const res = await axiosInstance.put(
@@ -110,16 +107,16 @@ export default function AdminEditProducts() {
     },
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({queryKey: ["colors"]})
+      queryClient.invalidateQueries({ queryKey: ["colors"] });
       setProductDescription("");
       setProductName("");
       setProductsDetailsArray([]);
       setImages([]);
-      setCategory("")
-      setSupplier("")
-      setPrice(0)
+      setCategory("");
+      setSupplier("");
+      setPrice(0);
       setDiscount(0);
-      navigate(`/admin/products`)
+      navigate(`/admin/products`);
       toast.success("Successfully edited");
     },
     onError: (err) => {
@@ -130,8 +127,8 @@ export default function AdminEditProducts() {
   // const {mutate: addDraftProductMutation} = useMutation({
   //   mutationFn: async (data) => {
   //     const res = await axiosInstance.post(`/product/add-draft`, data)
-  //     return res.data 
-  //   }, 
+  //     return res.data
+  //   },
   //   onSuccess: () => {
   //     queryClient.invalidateQueries({queryKey: ["products"]})
   //     setProductDescription("");
@@ -163,8 +160,8 @@ export default function AdminEditProducts() {
   // }
 
   const handleCancel = () => {
-    navigate(`/admin/products`)
-  }
+    navigate(`/admin/products`);
+  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -233,21 +230,11 @@ export default function AdminEditProducts() {
     setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (
-    isPending ||
-    isCategoryPending ||
-    isSuppliersPending ||
-    isProductPending 
-  ) {
+  if (isCategoryPending || isSuppliersPending || isProductPending) {
     return <p>awdwad</p>;
   }
 
-  if (
-    isError ||
-    isCategoryError ||
-    isSuppliersError ||
-    isProductError 
-  ) {
+  if (isCategoryError || isSuppliersError || isProductError) {
     return <p>awdwad</p>;
   }
 
@@ -269,7 +256,7 @@ export default function AdminEditProducts() {
                   name="productName"
                   id="productName"
                   value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
+                  onChange={handleInputChange(setProductName)}
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
               </div>
@@ -280,7 +267,7 @@ export default function AdminEditProducts() {
                   className="border border-black w-full p-2 h-[100px] resize-none outline-none rounded-[5px]"
                   name="productDescription"
                   id="productDescription"
-                  onChange={(e) => setProductDescription(e.target.value)}
+                  onChange={handleInputChange(setProductDescription)}
                   value={productDescription}
                 ></textarea>
               </div>
@@ -296,16 +283,16 @@ export default function AdminEditProducts() {
                         type="text"
                         placeholder="label"
                         value={label}
-                        onChange={(e) => setLabel(e.target.value)}
-                        className="w-[100px] px-2 border border-black rounded-[5px]"
+                        onChange={handleInputChange(setLabel)}
+                        className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />
                       <label htmlFor="value">VALUE</label>
                       <input
                         type="text"
                         placeholder="value"
                         value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                        className="w-[100px] px-2 border border-black rounded-[5px]"
+                        onChange={handleInputChange(setValue)}
+                        className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />
                     </div>
                     <div
@@ -459,7 +446,7 @@ export default function AdminEditProducts() {
                 </div>
               </div>
 
-              <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
+              {/* <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
                 <h1 className="py-2">FILTERS</h1>
 
                 <div className="flex gap-2 flex-wrap">
@@ -494,7 +481,7 @@ export default function AdminEditProducts() {
                       </div>
                     ))}
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-end gap-2">
@@ -509,8 +496,13 @@ export default function AdminEditProducts() {
                 UPDATE THIS PRODUCT
                 <FaCheckCircle />
               </button>
-              <button onClick={() => handleCancel()}
-            type="button" className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card ">Cancel</button>
+              <button
+                onClick={() => handleCancel()}
+                type="button"
+                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              >
+                Cancel
+              </button>
             </div>
           </div>
 

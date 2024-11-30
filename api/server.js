@@ -19,6 +19,7 @@ import orderRoutes from "../api/routes/order.route.js";
 import gcashRoute from '../api/routes/gcash.route.js'
 import auditRoute from '../api/routes/audit.route.js'
 import reviewRoute from '../api/routes/review.route.js'
+import notificationRoute from '../api/routes/notifications.route.js'
 //
 import cors from "cors";
 
@@ -59,6 +60,7 @@ app.use(`/api/order`, orderRoutes);
 app.use(`/api/gcash`, gcashRoute);
 app.use(`/api/audit`, auditRoute);
 app.use(`/api/review`, reviewRoute)
+app.use(`/api/notification`, notificationRoute)
 
 app.use(handleError);
 

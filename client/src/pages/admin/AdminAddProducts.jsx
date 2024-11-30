@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminAddProducts() {
 
@@ -216,7 +217,7 @@ export default function AdminAddProducts() {
                   name="productName"
                   id="productName"
                   value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
+                  onChange={handleInputChange(setProductName)}
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
               </div>
@@ -227,7 +228,7 @@ export default function AdminAddProducts() {
                   className="border border-black w-full p-2 h-[100px] resize-none outline-none rounded-[5px]"
                   name="productDescription"
                   id="productDescription"
-                  onChange={(e) => setProductDescription(e.target.value)}
+                  onChange={handleInputChange(setProductDescription)}
                   value={productDescription}
                 ></textarea>
               </div>
@@ -243,16 +244,16 @@ export default function AdminAddProducts() {
                         type="text"
                         placeholder="label"
                         value={label}
-                        onChange={(e) => setLabel(e.target.value)}
-                        className="w-[100px] px-2 border border-black rounded-[5px]"
+                        onChange={handleInputChange(setLabel)}
+                        className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />
                       <label htmlFor="value">VALUE</label>
                       <input
                         type="text"
                         placeholder="value"
                         value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                        className="w-[100px] px-2 border border-black rounded-[5px]"
+                        onChange={handleInputChange(setValue)}
+                        className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />
                     </div>
                     <div

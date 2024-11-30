@@ -2,10 +2,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminAddSupplier() {
+  const queryClient = useQueryClient();
 
-  const queryClient = useQueryClient()
+  const [supplierName, setSupplierName] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [supplierPay, setSupplierPay] = useState("");
+  const [supplierAddress, setSupplierAddress] = useState("");
 
   const {
     mutate: addSupplierMutation,
@@ -17,8 +24,13 @@ export default function AdminAddSupplier() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['supplier']})
+      queryClient.invalidateQueries({ queryKey: ["supplier"] });
       toast.success("Added Successfully!");
+      setSupplierName("")
+      setContactPerson("")
+      setContactNumber("")
+      setSupplierPay("")
+      setSupplierAddress("")
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong");
@@ -38,19 +50,15 @@ export default function AdminAddSupplier() {
       supplierPay,
       supplierAddress,
     } = inputs;
+    addSupplierMutation({
+      supplierName,
+      contactPerson,
+      contactNumber,
+      supplierPay,
+      supplierAddress,
+    });
 
-    try {
-      addSupplierMutation({
-        supplierName,
-        contactPerson,
-        contactNumber,
-        supplierPay,
-        supplierAddress,
-      });
-      e.target.reset();
-    } catch (error) {
-      console.log(error);
-    }
+    
   };
 
   if (isSupplierPending) {
@@ -79,17 +87,21 @@ export default function AdminAddSupplier() {
                 type="text"
                 name="supplierName"
                 id="supplierName"
+                value={supplierName}
+                onChange={handleInputChange(setSupplierName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
-                Contact Person :{" "}
+                Contact Person Fulllname :{" "}
               </label>
               <input
                 type="text"
                 name="contactPerson"
                 id="contactPerson"
+                value={contactPerson}
+                onChange={handleInputChange(setContactPerson)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
@@ -103,6 +115,8 @@ export default function AdminAddSupplier() {
                 min={0}
                 name="contactNumber"
                 id="contactNumber"
+                value={contactNumber}
+                onChange={handleInputChange(setContactNumber)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
@@ -114,6 +128,8 @@ export default function AdminAddSupplier() {
                 type="text"
                 name="supplierPay"
                 id="supplierPay"
+                value={supplierPay}
+                onChange={handleInputChange(setSupplierPay)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
@@ -125,6 +141,8 @@ export default function AdminAddSupplier() {
                 type="text"
                 name="supplierAddress"
                 id="supplierAddress"
+                value={supplierAddress}
+                onChange={handleInputChange(setSupplierAddress)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>

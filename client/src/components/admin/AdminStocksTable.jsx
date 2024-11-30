@@ -1,4 +1,4 @@
-import {  useQuery} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { CiEdit } from "react-icons/ci";
 // import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
@@ -9,13 +9,12 @@ import { IoSearch } from "react-icons/io5";
 
 import formatPrice from "../../reusable/formatPrice";
 
-
 export default function AdminStocksTable() {
   // const queryClient = useQueryClient();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: stocks = [],
@@ -29,9 +28,9 @@ export default function AdminStocksTable() {
     },
   });
 
-  console.log(stocks)
+  console.log(stocks);
 
-  const arrayStocks = Array.isArray(stocks) ? stocks : []
+  const arrayStocks = Array.isArray(stocks) ? stocks : [];
 
   // const { mutate: deleteStockMutation } = useMutation({
   //   mutationFn: async (stockId) => {
@@ -49,17 +48,23 @@ export default function AdminStocksTable() {
   //   },
   // });
 
-  const filteredArrayStocks = arrayStocks.filter((stock) => (
-    stock._id.includes(searchTerm) || 
-    stock?.product?.productName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    stock?.supplier?.supplierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stock?.category?.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) 
-
-  ))
+  const filteredArrayStocks = arrayStocks.filter(
+    (stock) =>
+      stock._id.includes(searchTerm) ||
+      stock?.product?.productName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      stock?.supplier?.supplierName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      stock?.category?.categoryName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+  );
 
   const navigateToEdit = (stockId) => {
-    navigate(`/admin/editStocks/${stockId}`)
-  }
+    navigate(`/admin/editStocks/${stockId}`);
+  };
 
   if (isStocksPending) {
     return <p>Loading...</p>;
@@ -120,10 +125,27 @@ export default function AdminStocksTable() {
                   </td>
                   <td>{stock?.product.supplier?.supplierName}</td>
                   <td>{stock?.product?.category?.categoryName}</td>
-                  <td>{formatPrice(stock?.stockQuantity)}</td>
+                  <td>
+                    <div className="flex gap-2 items-center w-[56px] justify-between">
+                      <p>{formatPrice(stock?.stockQuantity)} </p>
+                      {stock?.stockQuantity > 50 ? (
+                        <div className="border border-black bg-green-400 rounded-full w-[20px] h-[20px]"></div> // High Stock
+                      ) : stock?.stockQuantity > 30 &&
+                        stock?.stockQuantity <= 50 ? (
+                        <div className="border border-black bg-orange-400 rounded-full w-[20px] h-[20px]"></div> // Medium Stock
+                      ) : stock?.stockQuantity >= 1 &&
+                        stock?.stockQuantity <= 30 ? (
+                        <div className="border border-black bg-red-400 rounded-full w-[20px] h-[20px]"></div> // Low Stock
+                      ) : stock?.stockQuantity === 0 ? (
+                        <div className="border border-black bg-gray-400 rounded-full w-[20px] h-[20px]"></div> // Out of Stock
+                      ) : null}
+                    </div>
+                  </td>
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button onClick={() => navigateToEdit(stock._id)}
-                    className="text-green-600 hover:text-indigo-300 mr-2">
+                    <button
+                      onClick={() => navigateToEdit(stock._id)}
+                      className="text-green-600 hover:text-indigo-300 mr-2"
+                    >
                       <CiEdit size={25} />
                     </button>
                     {/* <button

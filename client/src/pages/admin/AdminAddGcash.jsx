@@ -12,6 +12,7 @@ import { BiSolidImageAdd } from "react-icons/bi";
 import { MdDelete } from "react-icons/md";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminAddGcash() {
   const fileInputRef = useRef(); // Reference to the file input element
@@ -196,8 +197,8 @@ export default function AdminAddGcash() {
                 type="text"
                 name="gcashName"
                 id="gcashName"
-                onChange={(e) => setGcashName(e.target.value)}
                 value={gcashName}
+                onChange={handleInputChange(setGcashName)}
               />
             </div>
           </div>

@@ -74,7 +74,7 @@ export default function ProductDetails() {
   );
   const averageRating = sumOfRating / singleProduct?.reviews.length;
 
-  console.log(averageRating);
+
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading product...</p>;
@@ -164,6 +164,12 @@ export default function ProductDetails() {
                   <p>category:</p>
                   <span className="text-lg text-indigo-500">
                     {singleProduct?.category?.categoryName}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <p>SOLD:</p>
+                  <span className="text-lg text-indigo-500">
+                    {singleProduct?.sold}
                   </span>
                 </div>
               </div>

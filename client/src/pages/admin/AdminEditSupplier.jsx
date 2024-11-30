@@ -4,13 +4,21 @@ import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../lib/axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminEditSupplier() {
   const queryClient = useQueryClient();
   const params = useParams();
   const navigate = useNavigate();
 
-  const [currentSupplier, setCurrentSupplier] = useState({});
+
+
+  const [supplierName, setSupplierName] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [supplierPay, setSupplierPay] = useState("");
+  const [supplierAddress, setSupplierAddress] = useState("");
+
 
   const {
     data: singleSupplier,
@@ -31,7 +39,11 @@ export default function AdminEditSupplier() {
 
   useEffect(() => {
     if (singleSupplier) {
-      setCurrentSupplier(singleSupplier);
+      setSupplierName(singleSupplier.supplierName)
+      setContactPerson(singleSupplier.contactPerson)
+      setContactNumber(singleSupplier.contactNumber)
+      setSupplierPay(singleSupplier.supplierPay)
+      setSupplierAddress(singleSupplier.supplierAddress)
     }
   }, [singleSupplier]);
 
@@ -59,12 +71,7 @@ export default function AdminEditSupplier() {
     },
   });
 
-  const handleChange = (e) => {
-    setCurrentSupplier({
-      ...currentSupplier,
-      [e.target.name]: e.target.value,
-    });
-  };
+
 
   const handleEditSupplierSubmit = (e) => {
     e.preventDefault();
@@ -126,21 +133,21 @@ export default function AdminEditSupplier() {
                 type="text"
                 name="supplierName"
                 id="supplierName"
-                value={currentSupplier.supplierName}
-                onChange={handleChange}
+                value={supplierName}
+                onChange={handleInputChange(setSupplierName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
-                Contact Person :{" "}
+                Contact Person Fullname :{" "}
               </label>
               <input
                 type="text"
                 name="contactPerson"
                 id="contactPerson"
-                value={currentSupplier.contactPerson}
-                onChange={handleChange}
+                value={contactPerson}
+                onChange={handleInputChange(setContactPerson)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
@@ -154,8 +161,8 @@ export default function AdminEditSupplier() {
                 min={0}
                 name="contactNumber"
                 id="contactNumber"
-                value={currentSupplier.contactNumber}
-                onChange={handleChange}
+                value={contactNumber}
+                onChange={handleInputChange(setContactNumber)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
@@ -167,8 +174,8 @@ export default function AdminEditSupplier() {
                 type="text"
                 name="supplierPay"
                 id="supplierPay"
-                value={currentSupplier.supplierPay}
-                onChange={handleChange}
+                value={supplierPay}
+                onChange={handleInputChange(setSupplierPay)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
@@ -180,8 +187,8 @@ export default function AdminEditSupplier() {
                 type="text"
                 name="supplierAddress"
                 id="supplierAddress"
-                value={currentSupplier.supplierAddress}
-                onChange={handleChange}
+                value={supplierAddress}
+                onChange={handleInputChange(setSupplierAddress)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>

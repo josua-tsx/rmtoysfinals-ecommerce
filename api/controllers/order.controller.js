@@ -4,6 +4,7 @@ import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { logNotification } from "./notifications.controller.js";
 
 export const userPlaceOrder = async (req, res, next) => {
   const userId = req.user.id;
@@ -68,6 +69,14 @@ export const userPlaceOrder = async (req, res, next) => {
       userCart.items = [];
       await userCart.save();
 
+      await logNotification({
+        notificationType: "order",
+        notificationDetails: {
+          description: "new order arrived!"
+        },
+        targetId: newOrder._id
+      })
+
       await logAuditTrail({
         action: "user_add_order",
         userId,
@@ -110,6 +119,14 @@ export const userPlaceOrder = async (req, res, next) => {
       const userCart = await Cart.findOne({ userId });
       userCart.items = [];
       await userCart.save();
+
+      await logNotification({
+        notificationType: "order",
+        notificationDetails: {
+          description: "new order arrived!"
+        },
+        targetId: newOrder._id
+      })
 
       await logAuditTrail({
         action: "user_add_order",

@@ -2,9 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import formatPrice from "../../reusable/formatPrice";
 import { useNavigate } from "react-router-dom";
+import { useUserStore } from "../../stores/useUserStore";
 
 export default function AdminRecentSuccessOrder() {
   const navigate = useNavigate();
+
+  const currentUser = useUserStore((state) => state.currentUser)
 
   const {
     data: latestOrder = [],
@@ -70,7 +73,7 @@ export default function AdminRecentSuccessOrder() {
           </div>
           <div className="text-xs flex flex-col gap-1">
             <button
-              onClick={() => navigate(`/admin/orderTransact`)}
+              onClick={() => navigate(`${currentUser.role === "admin" ? `/admin/orderTransact` : '/validator/orderTransact'}`)}
               className="underline text-indigo-700"
             >
               redirect to order

@@ -76,7 +76,7 @@ export default function AdminSuccesfullTransactions({
       success?.userId?.fullName
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      success?.userId._id.includes(searchTerm) ||
+      success?.userId?._id.includes(searchTerm) ||
       success?._id.includes(searchTerm) ||
       success?.paymentMethod.toLowerCase().includes(searchTerm) ||
       success?.status.toLowerCase().includes(searchTerm)
@@ -143,10 +143,10 @@ export default function AdminSuccesfullTransactions({
                   ) || 0;
 
                 return (
-                  <tr key={success._id}>
-                    <td className="px-4">{success._id}</td>
+                  <tr key={success?._id}>
+                    <td className="px-4">{success?._id}</td>
                     <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
-                      {success.userId?.email}
+                      {success?.userId?.email}
                     </td>
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
                       {new Date(success.createdAt).toLocaleString()}

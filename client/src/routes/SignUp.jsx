@@ -4,6 +4,8 @@ import ShoesBg from "../reusable/ShoesBg";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
+import { useState } from "react";
+import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 // import { useUserStore } from "../stores/useUserStore";
 
 export default function SignUp() {
@@ -11,12 +13,29 @@ export default function SignUp() {
 
   // const {setCurrentUser} = useUserStore()
 
+  // State to manage password visibility
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Toggle the password visibility
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   const { mutate: signUpMutation, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post("/auth/signup", data);
       return res.data;
     },
     onSuccess: () => {
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
       navigate(`/sign-in`);
       toast.success("Account created Successfully");
     },
@@ -27,16 +46,10 @@ export default function SignUp() {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const inputs = Object.fromEntries(formData);
-
-    const { username, email, password, confirmPassword } = inputs;
-
     signUpMutation({ username, email, password, confirmPassword });
   };
   return (
-    <section className="mt-[180px] p-4 font-main text-primary">
+    <section className="mt-[180px] p-4 font-main">
       <div className="max-w-[600px] mx-auto overflow-hidden">
         <div className="relative px-2  mb-4 flex justify-end w-full">
           <div className="relative flex-1">
@@ -55,9 +68,11 @@ export default function SignUp() {
               Email:{" "}
             </label>
             <input
-              type="email"
+              type="text"
               name="email"
               id="email"
+              value={email}
+              onChange={handleInputChange(setEmail)}
               className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
             />
           </div>
@@ -69,6 +84,8 @@ export default function SignUp() {
               type="text"
               name="username"
               id="username"
+              value={username}
+              onChange={handleInputChange(setUsername)}
               className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
             />
           </div>
@@ -76,12 +93,29 @@ export default function SignUp() {
             <label htmlFor="password" className="uppercase mb-2 ">
               Password:{" "}
             </label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
-            />
+            <div className="flex flex-col gap-2 relative w-full">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                id="password"
+                value={password}
+                onChange={handleInputChange(setPassword)}
+                className=" outline-none p-3 bg-transparent w-full border-[#313031] border rounded-[5px]"
+              />
+              <label
+                htmlFor=""
+                className="absolute right-2 top-4 flex items-center gap-2"
+              >
+                <p className="text-xs">SHOW PASSWORD</p>
+                <input
+                  type="checkbox"
+                  onChange={togglePassword}
+                  checked={showPassword}
+                  className="border  size-[20px]  border-black"
+                />
+              </label>
+              <p className="text-sm text-green-700">(Password must be at least 8 characters, include one uppercase letter, one number, and one special character.)</p>
+            </div>
           </div>
           <div className="flex justify-between flex-col">
             <label htmlFor="password2" className="uppercase mb-2 ">
@@ -91,6 +125,8 @@ export default function SignUp() {
               type="password"
               name="confirmPassword"
               id="confirmPassword"
+              value={confirmPassword}
+              onChange={handleInputChange(setConfirmPassword)}
               className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
             />
           </div>
@@ -98,7 +134,7 @@ export default function SignUp() {
           <div className="flex justify-center mt-10 gap-2">
             <button
               disabled={isPending}
-              className="border p-2 px-5  bg-primary w-[100px] border-none  hover:opacity-95  uppercase font-medium text-white rounded-[5px]"
+              className="border p-2 px-5  bg-primary w-[100px] border-black  hover:opacity-95  uppercase font-medium text-white rounded-[5px]"
             >
               sign up
             </button>

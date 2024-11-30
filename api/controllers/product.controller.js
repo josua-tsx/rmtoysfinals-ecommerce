@@ -6,6 +6,7 @@ import { logAuditTrail } from "./audit.controller.js";
 import Review from "../models/review.model.js";
 import Category from "../models/category.model.js";
 import Order from "../models/order.model.js";
+import { isValidText1, isValidText2 } from "../utils/validations.js";
 
 export const addProduct = async (req, res, next) => {
   const userId = req.user.id;
@@ -15,10 +16,8 @@ export const addProduct = async (req, res, next) => {
     price,
     productDescription,
     productDetails,
-    stocks,
     discount,
     productImages,
-    // filters,
     category,
     supplier,
   } = req.body;
@@ -26,6 +25,28 @@ export const addProduct = async (req, res, next) => {
   if (!category || !supplier) {
     return next(
       handleMakeError(400, "You need category or supplier to add product!")
+    );
+  }
+
+  if (!productName || !productDescription) {
+    return next(handleMakeError(400, "Please input required fields"));
+  }
+
+  if (!isValidText1(productName)) {
+    return next(
+      handleMakeError(
+        400,
+        "Product name should nin 5 characters, max 50 characters, no double spaces, uppercase letters allowed"
+      )
+    );
+  }
+
+  if (!isValidText2(productDescription)) {
+    return next(
+      handleMakeError(
+        400,
+        "Product description should max 200 characters, no double spaces, uppercase letters allowed."
+      )
     );
   }
 
@@ -69,10 +90,8 @@ export const addProduct = async (req, res, next) => {
       price,
       productDescription,
       productDetails,
-      stocks,
       discount,
       productImages,
-      // filters,
       category,
       supplier,
     });
@@ -355,14 +374,41 @@ export const editProduct = async (req, res, next) => {
     productDetails,
     discount,
     productImages,
-    filters,
     category,
     supplier,
   } = req.body;
 
   try {
+    if (!category || !supplier) {
+      return next(
+        handleMakeError(400, "You need category or supplier to add product!")
+      );
+    }
+
     if (price <= 0) {
       return next(handleMakeError(400, "Price cannot be 0 or negative!"));
+    }
+
+    if (!productName || !productDescription) {
+      return next(handleMakeError(400, "Please input required fields"));
+    }
+
+    if (!isValidText1(productName)) {
+      return next(
+        handleMakeError(
+          400,
+          "Product name should min 5 characters, max 50 characters, no double spaces, uppercase letters allowed"
+        )
+      );
+    }
+
+    if (!isValidText2(productDescription)) {
+      return next(
+        handleMakeError(
+          400,
+          "Product description should max 200 characters, no double spaces, uppercase letters allowed."
+        )
+      );
     }
 
     // Lowercasing all labels and values in the productDetails array
@@ -393,7 +439,6 @@ export const editProduct = async (req, res, next) => {
         productDetails,
         discount,
         productImages,
-        // filters,
         category,
         status: "published",
         category,

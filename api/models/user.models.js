@@ -12,7 +12,7 @@ const UserModelSchema = new mongoose.Schema(
     },
 
     fullName: {
-      type: String, 
+      type: String,
     },
 
     username: {
@@ -36,20 +36,28 @@ const UserModelSchema = new mongoose.Schema(
       type: String,
     },
 
-    address: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address"
-    }],
+    status: {
+      type: String,
+      enum: ["active", "blocked"],
+      default: "active",
+    },
+
+    address: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+      },
+    ],
 
     role: {
       type: String,
-      enum: ["customer", "admin", "staff"],
+      enum: ["customer", "admin", "staff", "validatorStaff"],
       default: "customer",
     },
 
     jobDescription: {
       type: String,
-    }
+    },
   },
   {
     timestamps: true,

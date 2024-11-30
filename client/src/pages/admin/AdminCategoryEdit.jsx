@@ -4,13 +4,16 @@ import axiosInstance from "../../lib/axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminCategoryEdit() {
   const params = useParams();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const [currentCategory, setCurrentCategory] = useState({});
+
+  const [categoryName, setCategoryName] = useState("")
+  const [categoryDescription, setCategoryDescription] = useState("")
 
   const {
     data: singleCategory,
@@ -23,14 +26,15 @@ export default function AdminCategoryEdit() {
       const res = await axiosInstance.get(
         `/category/get-single/${editCategoryId}`
       );
-      setCurrentCategory(res.data);
+      return res.data
     },
     enabled: !!params.editCategoryId,
   });
 
   useEffect(() => {
     if (singleCategory) {
-      setCurrentCategory(singleCategory);
+        setCategoryName(singleCategory.categoryName)
+        setCategoryDescription(singleCategory.categoryDescription)
     }
   }, [singleCategory]);
 
@@ -67,13 +71,6 @@ export default function AdminCategoryEdit() {
     editCategoryMutation({ categoryName, categoryDescription });
   };
 
-  const handleChange = (e) => {
-    setCurrentCategory({
-      ...currentCategory,
-      [e.target.name]: e.target.value,
-    });
-  };
-
   const handleCancel = () => {
     navigate(`/admin/category`);
   };
@@ -105,8 +102,8 @@ export default function AdminCategoryEdit() {
                 type="text"
                 name="categoryName"
                 id="categoryName"
-                value={currentCategory.categoryName}
-                onChange={handleChange}
+                value={categoryName}
+                onChange={handleInputChange(setCategoryName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
               />
             </div>
@@ -118,8 +115,8 @@ export default function AdminCategoryEdit() {
                 type="text"
                 name="categoryDescription"
                 id="categoryDescription"
-                value={currentCategory.categoryDescription}
-                onChange={handleChange}
+                value={categoryDescription}
+                onChange={handleInputChange(setCategoryDescription)}
                 className="border resize-none border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
               />
             </div>

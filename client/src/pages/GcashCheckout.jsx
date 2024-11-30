@@ -14,26 +14,34 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import useOrderStore from "../stores/useOrderStore";
 import { useNavigate } from "react-router-dom";
+import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 
 export default function GcashCheckOut() {
   const queryClient = useQueryClient();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const currentOrder = useOrderStore((state) => state.currentOrder);
   const clearOrder = useOrderStore((state) => state.clearOrder);
- 
 
   const [receipt, setReceipt] = useState(null); // Store the uploaded image URL
   const [file, setFile] = useState(null); // Store the actual file to be uploaded
-
-
 
   const [selectedGcash, setSelectedGcash] = useState(null);
 
   const [gcashName, setGcashName] = useState("");
   const [gcashNo, setGcashNo] = useState("");
   const [gcashRefNo, setGcashRefNo] = useState("");
+
+  const validateGcashNumber = (value) => {
+    // Check if value starts with '09' and is 11 characters long
+    return value.startsWith("09") && value.length <= 11;
+  };
+
+  const validateRefNumber = (value) => {
+    // Check if value starts with '6023' and is 13 characters long
+    return value.startsWith("6023") && value.length <= 13;
+  };
 
   // const [isReceiptUploaded, setIsReceiptUploaded] = useState(false);
 
@@ -57,8 +65,8 @@ export default function GcashCheckOut() {
       return res.data;
     },
     onSuccess: () => {
-      clearOrder()
-      navigate("/shop")
+      clearOrder();
+      navigate("/shop");
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
@@ -72,7 +80,19 @@ export default function GcashCheckOut() {
     e.preventDefault();
 
     if (!gcashName || !gcashRefNo || !gcashNo || !receipt) {
-      return toast.error("Please input required fields!")
+      return toast.error("Please input required fields!");
+    }
+
+    if (!validateGcashNumber(gcashNo)) {
+      return toast.error(
+        "Please use valid number. Number should start with 09 and exact 11 digits"
+      );
+    }
+
+    if (!validateRefNumber(gcashRefNo)) {
+      return toast.error(
+        "Please input valid ref no. Ref number should always start with 6023 and exact 13 digits"
+      );
     }
 
     try {
@@ -100,7 +120,6 @@ export default function GcashCheckOut() {
       }
       // Place the order
       placeOrder(orderData);
-
     } catch (error) {
       toast.error(error.message || "Failed to place order");
     }
@@ -239,7 +258,7 @@ export default function GcashCheckOut() {
                 <input
                   type="text"
                   value={gcashName}
-                  onChange={(e) => setGcashName(e.target.value)}
+                  onChange={handleInputChange(setGcashName)}
                   className="border px-2 border-black outline-none rounded-[5px]"
                 />
               </div>
@@ -315,22 +334,22 @@ export default function GcashCheckOut() {
             </div>
           </div>
 
-         <div className="flex gap-2">
-         <button
-            // disabled={isReceiptUploaded}
-            className="border flex-1   border-black rounded-[5px] bg-primary text-card py-1"
-          >
-            SUBMIT
-          </button>
-          <button
-          onClick={() => navigate("/cart")}
-          type="button"
-            // disabled={isReceiptUploaded}
-            className="border w-[20%] border-black rounded-[5px] bg-red-700 text-card py-1"
-          >
-            CANCEL
-          </button>
-         </div>
+          <div className="flex gap-2">
+            <button
+              // disabled={isReceiptUploaded}
+              className="border flex-1   border-black rounded-[5px] bg-primary text-card py-1"
+            >
+              SUBMIT
+            </button>
+            <button
+              onClick={() => navigate("/cart")}
+              type="button"
+              // disabled={isReceiptUploaded}
+              className="border w-[20%] border-black rounded-[5px] bg-red-700 text-card py-1"
+            >
+              CANCEL
+            </button>
+          </div>
         </form>
       </div>
     </section>

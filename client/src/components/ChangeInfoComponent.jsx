@@ -19,8 +19,15 @@ export default function ChangeInfoComponent() {
   const [file, setFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [fileError, setFileError] = useState(false)
+  const [fileError, setFileError] = useState(false);
 
+  // State to manage password visibility
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Toggle the password visibility
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
@@ -39,13 +46,13 @@ export default function ChangeInfoComponent() {
     onSuccess: (data) => {
       console.log(data);
       setCurrentUser(data);
+      setShowPassword(false)
       toast.success("Profile Updated Successfully");
     },
     onError: (err) => {
       toast.error(err.response.data.message);
     },
   });
-
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -62,7 +69,7 @@ export default function ChangeInfoComponent() {
         password,
         avatar: imageUrl ? imageUrl : currentUser.avatar,
         phoneNumber,
-        fullName
+        fullName,
       });
     } catch (error) {
       console.log(error);
@@ -101,12 +108,12 @@ export default function ChangeInfoComponent() {
       (error) => {
         setFileError(true);
         console.log("Upload failed", error);
-        toast.error(error)
+        toast.error(error);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
           setFileError(false);
-          toast.success(`Avatar uploaded`)
+          toast.success(`Avatar uploaded`);
           setImageUrl(downloadUrl);
         });
       }
@@ -202,13 +209,26 @@ export default function ChangeInfoComponent() {
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="password">password: </label>
                 <div className="flex items-center  justify-between gap-5">
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="password"
-                    id="password"
-                    className="border border-black px-5 py-2 w-[85%] bg-gray-200 rounded-[5px] outline-none"
-                  />
+                  <div className="flex relative bg-gray-200  w-[85%]">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      id="password"
+                      className=" outline-none p-3 bg-transparent w-full  border-[#313031] border rounded-[5px]"
+                    />
+                    <label
+                      htmlFor=""
+                      className="absolute right-2 top-4 flex items-center gap-2"
+                    >
+                      <p className="text-xs">SHOW PASSWORD</p>
+                      <input
+                        type="checkbox"
+                        onChange={togglePassword}
+                        checked={showPassword}
+                        className="border  size-[20px]  border-black"
+                      />
+                    </label>
+                  </div>
                   <button type="button">
                     <CiEdit size={35} className="text-primary" />
                   </button>

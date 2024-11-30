@@ -3,16 +3,70 @@ import User from "../models/user.models.js";
 import bcypt from "bcryptjs";
 import { generateTokens } from "../utils/generateToken.js";
 import { logAuditTrail } from "./audit.controller.js";
+import {
+  isValidEmail,
+  isValidFullName,
+  isValidPassword,
+  isValidPhoneNumber,
+  isValidUsername,
+} from "../utils/validations.js";
+
+import Address from "../models/address.models.js";
+import Review from "../models/review.model.js";
 
 export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
+  const { username, email, password, avatar, phoneNumber, fullName } = req.body;
+
+  if (!isValidEmail(email)) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid email format or email should be all lowercase."
+      )
+    );
+  }
+
+  if (!isValidUsername(username)) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid username or email should be at least 10 characters."
+      )
+    );
+  }
+
+  if (!isValidPhoneNumber(phoneNumber)) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid number or phone number should always start with 09 and exact 11 numbers."
+      )
+    );
+  }
+
+  if (fullName) {
+    if (!isValidFullName(fullName)) {
+      return next(
+        handleMakeError(
+          400,
+          "Full name must be all lowercase, contain no uppercase letters, no numbers, and be between 6 and 50 characters long. also no double spaces"
+        )
+      );
+    }
+  }
 
   try {
-    const { username, email, password, avatar, phoneNumber, fullName } =
-      req.body;
-
     let hashedPassword;
     if (password) {
+      if (!isValidPassword(password)) {
+        return next(
+          handleMakeError(
+            400,
+            "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+          )
+        );
+      }
       hashedPassword = await bcypt.hash(password, 10);
     }
 
@@ -40,10 +94,12 @@ export const updateProfile = async (req, res, next) => {
 
 export const getAll = async (req, res, next) => {
   try {
-    const users = await User.find().populate({
-      path: "address",
-      select: "fullAddress isActive",
-    }).sort({createdAt: -1})
+    const users = await User.find()
+      .populate({
+        path: "address",
+        select: "fullAddress isActive",
+      })
+      .sort({ createdAt: -1 });
     res.status(201).json(users);
   } catch (error) {
     next(error);
@@ -52,10 +108,12 @@ export const getAll = async (req, res, next) => {
 
 export const getAllCustomer = async (req, res, next) => {
   try {
-    const findAllCustomer = await User.find({ role: "customer" }).populate({
-      path: "address",
-      select: "fullAddress isActive",
-    }).sort({createdAt: -1})
+    const findAllCustomer = await User.find({ role: "customer" })
+      .populate({
+        path: "address",
+        select: "fullAddress isActive",
+      })
+      .sort({ createdAt: -1 });
     if (!findAllCustomer) return next(handleMakeError(400, "Not found!"));
     res.status(200).json(findAllCustomer);
   } catch (error) {
@@ -67,11 +125,13 @@ export const getAllWorkers = async (req, res, next) => {
   try {
     const workers = await User.find({
       role: { $ne: "customer" },
-      _id: { $ne: "66f11dabdd976c6253f3f24c" },
-    }).populate({
-      path: "address",
-      select: "fullAddress isActive",
-    }).sort({createdAt: -1})
+      _id: { $ne: "674a8b6e31d97896a7d5e9e2" },
+    })
+      .populate({
+        path: "address",
+        select: "fullAddress isActive",
+      })
+      .sort({ createdAt: -1 });
 
     // Check if no workers were found
     if (workers.length === 0) {
@@ -126,6 +186,148 @@ export const getSingleUser = async (req, res, next) => {
     if (!singleUser) return next(handleMakeError(400, "no user found!"));
 
     res.status(200).json(singleUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editWorker = async (req, res, next) => {
+  const { userId } = req.params;
+  const { email, username, password, role, jobDescription } = req.body;
+
+  if (!username || !email || !password || !role || !jobDescription) {
+    return next(handleMakeError(400, "Please input required fields"));
+  }
+
+  if (!isValidEmail(email)) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid email format or email should be all lowercase."
+      )
+    );
+  }
+
+  if (!isValidPassword(password)) {
+    return next(
+      handleMakeError(
+        400,
+        "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+      )
+    );
+  }
+
+  if (!isValidUsername(username)) {
+    return next(
+      handleMakeError(400, "Invalid username. Username does not allow number.")
+    );
+  }
+
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return next(handleMakeError(400, "User already exists"));
+  }
+
+  try {
+    let hashedPassword;
+    if (password) {
+      if (!isValidPassword(password)) {
+        return next(
+          handleMakeError(
+            400,
+            "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+          )
+        );
+      }
+      hashedPassword = await bcypt.hash(password, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        email,
+        username,
+        password: hashedPassword,
+        role,
+        jobDescription,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!user) return next(handleMakeError(400, "worker not found!"));
+
+    await logAuditTrail({
+      action: "admin_edit_worker",
+      userId,
+      targetId: user._id,
+      targetType: "EditWorker",
+      details: {
+        email,
+        job: role,
+        jobDescription,
+      },
+      role: "admin",
+    });
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const adminUpdateUserStatus = async (req, res, next) => {
+  const { customerId } = req.params;
+  const { status } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const validStatuses = ["active", "blocked"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status." });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      customerId,
+      {
+        status,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) return next(handleMakeError(400, "user not found!"));
+
+    if (status === "blocked") {
+      await Address.deleteMany({ userId: user._id });
+      await Review.deleteMany({ userId: user._id });
+
+      await logAuditTrail({
+        action: "admin_blocked_user",
+        userId,
+        targetId: user._id,
+        targetType: "User",
+        details: {
+          description: "User blocked a user",
+        },
+        role: "admin",
+      });
+    }
+
+    if (status === "active") {
+      await logAuditTrail({
+        action: "admin_set_to_active_a_user",
+        userId,
+        targetId: user._id,
+        targetType: "User",
+        details: {
+          description: "User blocked a user",
+        },
+        role: "admin",
+      });
+    }
+
+    res.status(200).json(user);
   } catch (error) {
     next(error);
   }

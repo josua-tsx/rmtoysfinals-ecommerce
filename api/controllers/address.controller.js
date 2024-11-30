@@ -1,6 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Address from "../models/address.models.js";
 import User from "../models/user.models.js";
+import { validateNoDoubleSpaces } from "../utils/validations.js";
 
 export const addAddress = async (req, res, next) => {
   const userId = req.user.id;
@@ -25,6 +26,13 @@ export const addAddress = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
+  if (
+    !validateNoDoubleSpaces(barangay) ||
+    !validateNoDoubleSpaces(streetBuildingHouseNum)
+  ) {
+    return next(handleMakeError(400, "Double spaces is not allowed."));
+  }
+
   try {
     // Construct full address string
     const fullAddress =
@@ -33,7 +41,7 @@ export const addAddress = async (req, res, next) => {
     // Check if the address already exists for this user
     const existingAddress = await Address.findOne({
       userId,
-      fullAddress
+      fullAddress,
     });
 
     if (existingAddress) {
@@ -115,6 +123,13 @@ export const editAddress = async (req, res, next) => {
     fullAddress,
     streetBuildingHouseNum,
   } = req.body;
+
+  if (
+    !validateNoDoubleSpaces(barangay) ||
+    !validateNoDoubleSpaces(streetBuildingHouseNum)
+  ) {
+    return next(handleMakeError(400, "Double spaces is not allowed."));
+  }
 
   try {
     const existingAddress = await Address.findOne({ fullAddress });

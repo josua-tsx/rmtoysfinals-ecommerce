@@ -2,9 +2,15 @@ import toast from "react-hot-toast";
 import axiosInstance from "../../lib/axios";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminAddCategory() {
   const queryClient = useQueryClient();
+
+  const [categoryName, setCategoryName] = useState("")
+  const [categoryDescription, setCategoryDescription] = useState("")
+
 
   const {
     mutate: addCategoryMutation,
@@ -17,6 +23,8 @@ export default function AdminAddCategory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setCategoryDescription("")
+      setCategoryName("")
       toast.success("Category Added");
     },
     onError: (err) => {
@@ -26,11 +34,6 @@ export default function AdminAddCategory() {
 
   const handleCategorySubmit = (e) => {
     e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const inputs = Object.fromEntries(formData);
-
-    const { categoryName, categoryDescription } = inputs;
 
     try {
       addCategoryMutation({ categoryName, categoryDescription });
@@ -68,6 +71,8 @@ export default function AdminAddCategory() {
                 type="text"
                 name="categoryName"
                 id="categoryName"
+                value={categoryName}
+                onChange={handleInputChange(setCategoryName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
@@ -79,6 +84,8 @@ export default function AdminAddCategory() {
                 type="text"
                 name="categoryDescription"
                 id="categoryDescription"
+                value={categoryDescription}
+                onChange={handleInputChange(setCategoryDescription)}
                 className="border resize-none border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>

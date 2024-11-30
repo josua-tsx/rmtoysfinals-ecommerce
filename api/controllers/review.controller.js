@@ -1,6 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Review from "../models/review.model.js";
 import Product from "../models/product.model.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const userAddReview = async (req, res, next) => {
   const userId = req.user.id;
@@ -32,6 +33,17 @@ export const userAddReview = async (req, res, next) => {
       { new: true }
     );
 
+    await logAuditTrail({
+      action: "user_added_review",
+      userId,
+      targetId: populatedReview._id,
+      targetType: "Review",
+      details: {
+        description: "User added a review!",
+      },
+      role: "customer",
+    });
+
     res.status(200).json({
       message: `Added a review in ${productId} product`,
       populatedReview,
@@ -62,7 +74,7 @@ export const getRecentReview = async (req, res, next) => {
         select: "avatar username email",
       })
       .sort({ createdAt: -1 });
-      
+
     if (!reviews) return res.status(200).json([]);
     res.status(200).json(reviews);
   } catch (error) {
@@ -89,6 +101,17 @@ export const userDeleteReview = async (req, res, next) => {
       $pull: { reviews: reviewId },
     });
 
+    await logAuditTrail({
+      action: "user_deleted_review",
+      userId,
+      targetId: review._id,
+      targetType: "Review",
+      details: {
+        description: "User deleted a review!",
+      },
+      role: "customer",
+    });
+
     res.status(200).json({ message: "Deleted review!", review });
   } catch (error) {
     next(error);
@@ -97,6 +120,7 @@ export const userDeleteReview = async (req, res, next) => {
 
 export const adminDeleteReview = async (req, res, next) => {
   const { reviewId } = req.params;
+  const userId = req.user.id
 
   try {
     const review = await Review.findById(reviewId);
@@ -106,6 +130,17 @@ export const adminDeleteReview = async (req, res, next) => {
 
     await Product.findByIdAndUpdate(review.productId, {
       $pull: { reviews: reviewId },
+    });
+
+    await logAuditTrail({
+      action: "admin_deleted_review",
+      userId,
+      targetId: review._id,
+      targetType: "Review",
+      details: {
+        description: "admin deleted a review of a user!",
+      },
+      role: "admin",
     });
 
     res.status(200).json({ message: "Deleted review!", review });

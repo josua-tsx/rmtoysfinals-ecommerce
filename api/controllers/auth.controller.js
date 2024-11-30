@@ -1,4 +1,4 @@
-import { handleMakeError } from "../middleware/handleError.js";
+  import { handleMakeError } from "../middleware/handleError.js";
 import User from "../models/user.models.js";
 import { generateTokens } from "../utils/generateToken.js";
 import { setCookies } from "../utils/setCookies.js";
@@ -7,6 +7,7 @@ import RefreshToken from "../models/refreshToken.model.js";
 
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
+import { isValidEmail, isValidPassword, isValidUsername } from "../utils/validations.js";
 
 const storeRefreshToken = async (userId, refreshToken) => {
   const token = new RefreshToken({
@@ -20,16 +21,31 @@ const storeRefreshToken = async (userId, refreshToken) => {
 export const signup = async (req, res, next) => {
   const { username, email, password, confirmPassword } = req.body;
 
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return next(handleMakeError(400, "User already exist"));
-  }
 
   if (!username || !email || !password || !confirmPassword)
     return next(handleMakeError(400, "Please input required fields"));
 
+
+  if (!isValidEmail(email)) {
+    return next(handleMakeError(400, "Invalid email format or email should be all lowercase."))
+  }
+
+  if(!isValidPassword(password)) {
+    return next(handleMakeError(400, "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."))
+  }
+
+  if(!isValidUsername(username)) {
+    return next(handleMakeError(400, "Invalid username or email should be at least 10 characters."))
+  }
+
   if (password !== confirmPassword)
-    return next(handleMakeError(400, "passwords are not equal "));
+    return next(handleMakeError(400, "Passwords are not equal "));
+
+
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return next(handleMakeError(400, "User already exist"));
+  }
 
   try {
     const newUser = new User({
@@ -186,17 +202,32 @@ export const addWorker = async (req, res, next) => {
   const { email, username, password, confirmPassword, role, jobDescription } = req.body; // Extract confirmPassword
   const userId = req.user.id
 
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return next(handleMakeError(400, "User already exists"));
-  }
 
   if (!username || !email || !password || !confirmPassword) {
     return next(handleMakeError(400, "Please input required fields"));
   }
 
+  
+  if (!isValidEmail(email)) {
+    return next(handleMakeError(400, "Invalid email format or email should be all lowercase."))
+  }
+
+  if(!isValidPassword(password)) {
+    return next(handleMakeError(400, "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."))
+  }
+
+  if(!isValidUsername(username)) {
+    return next(handleMakeError(400, "Invalid username. Username does not allow number."))
+  }
+
   if (password !== confirmPassword) {
     return next(handleMakeError(400, "Passwords do not match"));
+  }
+
+
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return next(handleMakeError(400, "User already exists"));
   }
 
   try {
@@ -207,13 +238,6 @@ export const addWorker = async (req, res, next) => {
       role,
       jobDescription,
     });
-
-    // // Authenticate
-    // const { accessToken, refreshToken } = generateTokens(newUser._id);
-    // await storeRefreshToken(newUser._id, refreshToken);
-
-    // Save the access/refresh token cookie
-    // setCookies(res, accessToken, refreshToken);
 
     await newUser.save();
 

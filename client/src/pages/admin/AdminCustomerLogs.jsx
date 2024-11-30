@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 
-const ACTION_TYPES = ["user_add_order", "newly_created_user"];
+const ACTION_TYPES = ["user_add_order", "newly_created_user", "user_added_review"];
 
 export default function AdminCustomerLogs() {
 
@@ -107,6 +107,26 @@ export default function AdminCustomerLogs() {
 
                         {/* /////////////////////////////// */}
                         {customer.action === "newly_created_user" &&
+                          customer.details?.description&&
+                         (
+                            <div className="flex gap-2">
+                              <p className="text-blue-700">{customer.details?.description}</p>
+                             
+                            </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {customer.action === "user_added_review" &&
+                          customer.details?.description&&
+                         (
+                            <div className="flex gap-2">
+                              <p className="text-blue-700">{customer.details?.description}</p>
+                             
+                            </div>
+                          )}
+
+                        {/* /////////////////////////////// */}
+                        {customer.action === "user_deleted_review" &&
                           customer.details?.description&&
                          (
                             <div className="flex gap-2">

@@ -4,10 +4,14 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
+import { CiEdit } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminWorkersTable() {
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const navigate = useNavigate()
 
   const {
     data: workers = [],
@@ -21,18 +25,16 @@ export default function AdminWorkersTable() {
     },
   });
 
-  console.log(workers)
+  const arrayWorkers = Array.isArray(workers) ? workers : [];
 
-  const arrayWorkers = Array.isArray(workers) ? workers : []
-
-  const filteredArrayWorkers = arrayWorkers.filter((worker) => (
-    worker.jobDescription.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    worker.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    worker.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    worker.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    worker._id.includes(searchTerm)
-
-  ))
+  const filteredArrayWorkers = arrayWorkers?.filter(
+    (worker) =>
+      worker.jobDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      worker.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      worker.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      worker?.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      worker._id.includes(searchTerm)
+  );
 
   const { mutate: deleteWorkerMutation } = useMutation({
     mutationFn: async (workerId) => {
@@ -85,8 +87,8 @@ export default function AdminWorkersTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 ">
-            {filteredArrayWorkers.length > 0 ? (
-              filteredArrayWorkers.map((worker) => (
+            {filteredArrayWorkers?.length > 0 ? (
+              filteredArrayWorkers?.map((worker) => (
                 <tr key={worker._id}>
                   <td className="px-4 ">{worker._id}</td>
 
@@ -99,14 +101,20 @@ export default function AdminWorkersTable() {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {!worker.phoneNumber
-                      ? <span className="text-red-700">not updated yet</span>
-                      : worker.phoneNumber}
+                    {!worker.phoneNumber ? (
+                      <span className="text-red-700">not updated yet</span>
+                    ) : (
+                      worker.phoneNumber
+                    )}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                  {!worker?.address[0]?.fullAddress ? <span className="text-red-700">not updated yet</span> : worker?.address[0]?.fullAddress }
-                </td>
+                    {!worker?.address[0]?.fullAddress ? (
+                      <span className="text-red-700">not updated yet</span>
+                    ) : (
+                      worker?.address[0]?.fullAddress
+                    )}
+                  </td>
                   <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
                     {worker.role}
                   </td>
@@ -116,7 +124,14 @@ export default function AdminWorkersTable() {
                   </td>
 
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button onClick={() => deleteWorkerMutation(worker._id)}
+                    <button onClick={() => navigate(`/admin/editWorker/${worker._id}`)}
+                      // onClick={() => navigateToeditPage(product._id)}
+                      className="text-green-600 hover:text-indigo-300 mr-2"
+                    >
+                      <CiEdit size={25} />
+                    </button>
+                    <button
+                      onClick={() => deleteWorkerMutation(worker._id)}
                       type="button"
                       className="text-red-600 hover:text-red-300"
                     >

@@ -1,11 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IoSearch } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function AdminUserTable() {
   const [searchTerm, setSearchTerm] = useState("");
+
+  const queryClient = useQueryClient();
 
   const {
     data: users = [],
@@ -19,13 +21,36 @@ export default function AdminUserTable() {
     },
   });
 
+  const { mutate: updateUserStatusMutation } = useMutation({
+    mutationFn: async ({ id, status }) => {
+      const res = await axiosInstance.put(`/user/update-status/${id}`, {
+        status,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success(`Successfully updated status!`);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong");
+    },
+  });
+
+  const handleStatusChange = (id, e) => {
+    const newStatus = e.target.value;
+
+    updateUserStatusMutation({ id, status: newStatus });
+  };
+
   const arrayCustomer = Array.isArray(users) ? users : [];
 
   const filteredArrayCustomer = arrayCustomer.filter(
     (customer) =>
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer._id.includes(searchTerm)
+      customer._id.includes(searchTerm) ||
+      customer.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isPending) {
@@ -60,6 +85,7 @@ export default function AdminUserTable() {
               <th className="font-normal p-2 pb-5">Username</th>
               <th className="font-normal p-2 pb-5">Phone Number</th>
               <th className="font-normal p-2 pb-5">Active Address</th>
+              <th className="font-normal p-2 pb-5">Status</th>
               <th className="font-normal p-2 pb-5">Role</th>
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
@@ -92,13 +118,22 @@ export default function AdminUserTable() {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    {user.status}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {user.role}
                   </td>
 
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button className="text-red-600 hover:text-red-300">
-                      BLOCK
-                    </button>
+                    <select
+                      value={user.status}
+                      onChange={(e) => handleStatusChange(user._id, e)}
+                      className="border border-black p-1 outline-none rounded-[5px]"
+                    >
+                      <option value="active">ACTIVE</option>
+                      <option value="blocked">BLOCKED</option>
+                    </select>
                   </td>
                 </tr>
               ))}

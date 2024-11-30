@@ -2,7 +2,13 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { AdminLayout, RequiredAuth, RequiredAuthGcashPage, RootLayout } from "./layout/RootLayout.jsx";
+import {
+  AdminLayout,
+  RequiredAuth,
+  RequiredAuthGcashPage,
+  RootLayout,
+  ValidatorStaffLayout,
+} from "./layout/RootLayout.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import SignIn from "./routes/SignIn.jsx";
 import SignUp from "./routes/SignUp.jsx";
@@ -21,7 +27,6 @@ import { ProtectedAdminRoute } from "./routes/ProtectedRoutes/ProtectedAdminRout
 import AdminOverview from "./pages/admin/AdminOverview.jsx";
 import AdminProducts from "./pages/admin/AdminProducts.jsx";
 import AdminAddProducts from "./pages/admin/AdminAddProducts.jsx";
-import AdminFilter from "./pages/admin/AdminFilter.jsx";
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PublicRoute } from "./routes/PurblicRoute.jsx";
@@ -49,10 +54,9 @@ import AdminGcash from "./pages/admin/AdminGcash.jsx";
 import AdminAddGcash from "./pages/admin/AdminAddGcash.jsx";
 import AdminOrderTransact from "./pages/admin/AdminOrderTransact.jsx";
 import AdminAuditTrailLogs from "./pages/admin/AdminAuditTrailLogs.jsx";
-import AdminProductReviewsTable from "./components/admin/AdminProductReviewsTable.jsx";
 import AdminProductReviews from "./pages/admin/AdminProductReviews.jsx";
-
-
+import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedValidatorStaffRoute.jsx";
+import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
 
 const queryClient = new QueryClient();
 
@@ -60,7 +64,7 @@ const router = createBrowserRouter([
   {
     element: (
       <ProtectedCustomerRoute>
-        <RequiredAuthGcashPage/>
+        <RequiredAuthGcashPage />
       </ProtectedCustomerRoute>
     ),
     children: [
@@ -144,12 +148,12 @@ const router = createBrowserRouter([
       </ProtectedAdminRoute>
     ),
     children: [
+      // OVERVIEW
+
       {
         path: "",
         element: <AdminOverview />,
       },
-
-      // OVERVIEW
 
       {
         path: "/admin/overview",
@@ -172,6 +176,12 @@ const router = createBrowserRouter([
       // PRODUCTS
 
       {
+        path: "/admin/editWorker/:userId",
+        element: <AdminEditWorker/>
+      },
+
+
+      {
         path: "/admin/products",
         element: <AdminProducts />,
       },
@@ -191,7 +201,7 @@ const router = createBrowserRouter([
 
       {
         path: "/admin/productReviews",
-        element: <AdminProductReviews/> ,
+        element: <AdminProductReviews />,
       },
 
       // SUPPLIER
@@ -255,32 +265,61 @@ const router = createBrowserRouter([
         element: <AdminAddWorker />,
       },
 
-
       // GCASH
 
       {
         path: "/admin/gcash",
-        element: <AdminGcash/>
+        element: <AdminGcash />,
       },
 
       {
         path: "/admin/addGcash",
-        element: <AdminAddGcash/>
+        element: <AdminAddGcash />,
       },
-
 
       // AUDIT
 
       {
         path: `/admin/audit`,
-        element: <AdminAuditTrailLogs/>
+        element: <AdminAuditTrailLogs />,
       },
 
       {
         path: `/admin/orderTransact`,
-        element: <AdminOrderTransact/>
-      }
+        element: <AdminOrderTransact />,
+      },
+    ],
+  },
 
+  {
+    path: "validator",
+    element: (
+      <ProtectedValidatorStaffRoute>
+        <ValidatorStaffLayout />
+      </ProtectedValidatorStaffRoute>
+    ),
+    children: [
+      {
+        path: "",
+        element: <AdminOverview />,
+      },
+      {
+        path: "overview",
+        element: <AdminOverview />,
+      },
+      {
+        path: "orderStatus",
+        element: <AdminOrderStatus />,
+      },
+      {
+        path: "audit",
+        element: <AdminAuditTrailLogs />,
+      },
+
+      {
+        path: `orderTransact`,
+        element: <AdminOrderTransact />,
+      },
     ],
   },
 ]);

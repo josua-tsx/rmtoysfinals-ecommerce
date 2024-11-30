@@ -1,7 +1,6 @@
-import { handleMakeError } from "../middleware/handleError.js"
-import Audit from "../models/audit.model.js"
+import Audit from "../models/audit.model.js";
 
-export const logAuditTrail = async({
+export const logAuditTrail = async ({
   action,
   userId,
   targetId,
@@ -9,46 +8,56 @@ export const logAuditTrail = async({
   details,
   role,
 }) => {
-    try {
-        const auditEntry = new Audit({
-            action,
-            userId,
-            targetId,
-            targetType,
-            details,
-            role,
-        })
+  try {
+    const auditEntry = new Audit({
+      action,
+      userId,
+      targetId,
+      targetType,
+      details,
+      role,
+    });
 
-        await auditEntry.save()
-    } catch (error) {
-        console.log(error)
-    }
-}
+    await auditEntry.save();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteAllAuditLogs = async (req, res, next) => {
+  try {
+    const logs = await Audit.deleteMany({});
+
+    return res.status(200).json(logs);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getAdminLogs = async (req, res, next) => {
-    try {
-        const logs = await Audit.find({role: "admin"})
-        .populate({
-            path: "userId",
-            select: "email"
-        })
-        .sort({timestamp: -1})
-        res.status(200).json(logs)
-    } catch (error) {
-        next(error)
-    }
-}
+  try {
+    const logs = await Audit.find({ role: "admin" })
+      .populate({
+        path: "userId",
+        select: "email",
+      })
+      .sort({ timestamp: -1 });
+    res.status(200).json(logs);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getCustomerLogs = async (req, res, next) => {
-    try {
-        const logs = await Audit.find({role: "customer"})
-        .populate({
-            path: "userId",
-            select: "email"
-        })
-        .sort({timestamp: -1})
-        res.status(200).json(logs)
-    } catch (error) {
-        next(error)
-    }
-}
+  try {
+    const logs = await Audit.find({ role: "customer" })
+      .populate({
+        path: "userId",
+        select: "email",
+      })
+      .sort({ timestamp: -1 });
+    res.status(200).json(logs);
+  } catch (error) {
+    next(error);
+  }
+};

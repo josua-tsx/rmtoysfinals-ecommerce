@@ -7,16 +7,34 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import EditReviewComponent from "./EditReviewComponent";
 import { useNavigate } from "react-router-dom";
+import { useUserStore } from "../stores/useUserStore";
 
-export default function ReviewCard({ review}) {
-  console.log(review);
+export default function ReviewCard({ review }) {
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
+  const currentUser = useUserStore((state) => state.currentUser);
+
+  console.log(currentUser);
 
   const [editReviewId, setEditReviewId] = useState(null);
   const [openEditModal, setOpenEditModal] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const { mutate: adminDeleteReviewMutation } = useMutation({
+    mutationFn: async (reviewId) => {
+      const res = await axiosInstance.delete(`/review/adminDelete/${reviewId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["review"] });
+      toast.success("Deleted review!");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong.");
+    },
+  });
 
   const { mutate: userDeleteReviewMutation } = useMutation({
     mutationFn: async (reviewId) => {
@@ -49,8 +67,8 @@ export default function ReviewCard({ review}) {
   });
 
   const handleNavigate = (productId) => {
-    navigate(`/product/${productId}`)
-  }
+    navigate(`/product/${productId}`);
+  };
 
   const handleOpenReviewEditModal = (reviewId) => {
     if (reviewId && reviewId._id !== null) {
@@ -79,15 +97,23 @@ export default function ReviewCard({ review}) {
 
       <div className="flex gap-4 flex-col justify-between  w-full">
         <div className="flex flex-col items-center gap-4 justify-between">
-       
-            <div className="flex gap-2 w-full justify-center md:mr-5 md:justify-end text-sm">
+          <div className="flex gap-2 w-full justify-center md:mr-5 md:justify-end text-sm">
+            <button
+              onClick={() => handleOpenReviewEditModal(review)}
+              type="button"
+              className="text-green-600"
+            >
+              EDIT
+            </button>
+            {currentUser.role === "admin" ? (
               <button
-                onClick={() => handleOpenReviewEditModal(review)}
+                onClick={() => adminDeleteReviewMutation(review._id)}
                 type="button"
-                className="text-green-600"
+                className="text-red-600"
               >
-                EDIT
+                <MdDelete size={23} />
               </button>
+            ) : (
               <button
                 onClick={() => userDeleteReviewMutation(review._id)}
                 type="button"
@@ -95,8 +121,8 @@ export default function ReviewCard({ review}) {
               >
                 <MdDelete size={23} />
               </button>
-            </div>
-       
+            )}
+          </div>
 
           <div className="flex flex-col gap-4 items-center">
             <img

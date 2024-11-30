@@ -6,12 +6,26 @@ import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 
 export default function SignIn() {
 
   const navigate = useNavigate()
 
   const {setCurrentUser} = useUserStore()
+
+    // State to manage password visibility
+    const [showPassword, setShowPassword] = useState(false);
+
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+
+
+    // Toggle the password visibility
+    const togglePassword = () => {
+      setShowPassword(!showPassword);
+    };
 
   const {mutate: loginMutation, isPending} = useMutation({
     mutationFn: async (userData) => {
@@ -20,7 +34,8 @@ export default function SignIn() {
     },
     onSuccess: (userData) => {
       setCurrentUser(userData)
-      console.log(userData)
+      setEmail("")
+      setPassword("")
       navigate(`/`)
 
     },
@@ -35,11 +50,6 @@ export default function SignIn() {
     e.preventDefault()
 
    try {
-    const formData = new FormData(e.target)
-    const inputs = Object.fromEntries(formData)
-
-    const {email, password} = inputs
-
     loginMutation({email, password})
    } catch (error) {
     console.log(error)
@@ -48,7 +58,7 @@ export default function SignIn() {
   }
 
   return (
-    <section className="mt-[180px] p-4 font-main text-primary">
+    <section className="mt-[180px] p-4 font-main ">
       <div className="max-w-[600px] mx-auto overflow-hidden">
 
       <div className="relative px-2  mb-4 flex justify-end w-full">
@@ -66,15 +76,36 @@ export default function SignIn() {
          
           <div className="flex justify-between flex-col">
             <label htmlFor="email" className="uppercase mb-2">Email: </label>
-            <input type="email" name="email" id="email" className="outline-none p-3 bg-transparent border-black border rounded-[5px]" />
+            <input type="text" name="email" id="email" value={email} onChange={handleInputChange(setEmail)} className="outline-none p-3 bg-transparent border-black border rounded-[5px]" />
           </div>
           <div className="flex justify-between flex-col">
             <label htmlFor="password" className="uppercase mb-2">Password: </label>
-            <input type="password" name="password" id="password" className="outline-none p-3 bg-transparent border-black border rounded-[5px]" />
+            <div className="flex relative w-full">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                id="password"
+                value={password}
+                onChange={handleInputChange(setPassword)}
+                className=" outline-none p-3 bg-transparent w-full border-[#313031] border rounded-[5px]"
+              />
+              <label
+                htmlFor=""
+                className="absolute right-2 top-4 flex items-center gap-2"
+              >
+                <p className="text-xs">SHOW PASSWORD</p>
+                <input
+                  type="checkbox"
+                  onChange={togglePassword}
+                  checked={showPassword}
+                  className="border  size-[20px]  border-black"
+                />
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-center gap-2">
-            <button disabled={isPending} className="border w-[100px] p-2 px-5 mt-10 border-none bg-primary hover:opacity-95  uppercase font-medium text-white rounded-[5px]">
+            <button disabled={isPending} className="border w-[100px] p-2 px-5 mt-10  bg-primary border-black hover:opacity-95  uppercase font-medium text-white rounded-[5px]">
               {
                 isPending ? "Loading.." : "sign in"
               }

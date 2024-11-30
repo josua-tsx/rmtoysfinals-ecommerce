@@ -2,6 +2,7 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { logNotification } from "./notifications.controller.js";
 
 export const addStocks = async (req, res, next) => {
   const { productId, stockQuantity } = req.body;
@@ -47,7 +48,7 @@ export const addStocks = async (req, res, next) => {
       targetId: newStock._id,
       targetType: "Product_Stock",
       details: {
-       quantity: stockQuantity
+        quantity: stockQuantity,
       },
       role: "admin",
     });
@@ -61,23 +62,79 @@ export const addStocks = async (req, res, next) => {
 export const getStocks = async (req, res, next) => {
   try {
     // Find all stocks and populate product, supplier, and category
-    const getStocks = await Stocks.find().populate({
-      path: "product", // Populate the product field
-      select: "productImages productName", // Include fields to select from product
-      populate: [
-        // Use an array for nested populations
-        {
-          path: "category",
-          select: "categoryName",
-        },
-        {
-          path: "supplier", // Populate the supplier field in product
-          select: "supplierName",
-        },
-      ],
-    }).sort({createdAt: -1})
+    const getStocks = await Stocks.find()
+      .populate({
+        path: "product", // Populate the product field
+        select: "productImages productName", // Include fields to select from product
+        populate: [
+          // Use an array for nested populations
+          {
+            path: "category",
+            select: "categoryName",
+          },
+          {
+            path: "supplier", // Populate the supplier field in product
+            select: "supplierName",
+          },
+        ],
+      })
+      .sort({ createdAt: -1 });
 
     res.status(200).json(getStocks);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+export const getStockLevels = async (req, res, next) => {
+  try {
+    // Query for stocks based on the stock levels
+    const highStock = await Stocks.find({
+      stockQuantity: { $gte: 50 },
+    })
+      .populate({
+        path: "product",
+        select: "productImages productName",
+      })
+      .sort({ createdAt: -1 });
+
+    const mediumStock = await Stocks.find({
+      stockQuantity: { $gte: 30, $lt: 50 },
+    })
+      .populate({
+        path: "product",
+        select: "productImages productName",
+      })
+      .sort({ createdAt: -1 });
+
+   
+
+    const lowStock = await Stocks.find({ stockQuantity: { $gt: 1, $lt: 30 } })
+      .populate({
+        path: "product",
+        select: "productImages productName",
+      })
+      .sort({ createdAt: -1 });
+
+
+    const outOfStock = await Stocks.find({ stockQuantity: 0 })
+      .populate({
+        path: "product",
+        select: "productImages productName",
+      })
+      .sort({ createdAt: -1 });
+
+   
+
+    // Return a response with categorized stock levels
+    res.status(200).json({
+      highStock,
+      mediumStock,
+      lowStock,
+      outOfStock,
+    });
   } catch (error) {
     next(error);
   }
@@ -98,7 +155,7 @@ export const getStocks = async (req, res, next) => {
 // };
 
 export const editStock = async (req, res, next) => {
-  const userId = req.user.id 
+  const userId = req.user.id;
 
   const { stockId } = req.params;
   const { productId, stockQuantity } = req.body;
@@ -128,10 +185,10 @@ export const editStock = async (req, res, next) => {
       targetId: updateStock._id,
       targetType: "PRODUCT STOCKQUANTITY",
       details: {
-        quantity: stockQuantity
+        quantity: stockQuantity,
       },
-      role: "admin"
-    })
+      role: "admin",
+    });
 
     res
       .status(200)
@@ -148,8 +205,8 @@ export const getSingleStock = async (req, res, next) => {
   try {
     const singleStock = await Stocks.findById(stockId).populate({
       path: "product",
-      select: "productName"
-    })
+      select: "productName",
+    });
     if (!singleStock) return next(handleMakeError(400, "stock not found"));
     res.status(200).json(singleStock);
   } catch (error) {

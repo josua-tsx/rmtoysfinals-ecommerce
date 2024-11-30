@@ -86,7 +86,7 @@ export default function AdminSupplierTable() {
             <tr className="">
               <th className="font-normal p-2 pb-5">ID</th>
               <th className="font-normal p-2 pb-5">Supplier Name</th>
-              <th className="font-normal p-2 pb-5">Contact Person</th>
+              <th className="font-normal p-2 pb-5">Contact Person Fullname</th>
               <th className="font-normal p-2 pb-5">Contact Number</th>
               <th className="font-normal p-2 pb-5">Method</th>
               <th className="font-normal p-2 pb-5">Supplier Address</th>
