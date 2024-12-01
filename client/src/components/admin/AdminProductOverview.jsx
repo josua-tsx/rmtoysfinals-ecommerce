@@ -76,6 +76,15 @@ export default function AdminProductOverview() {
 
   const topSingleBestRatingProduct = singleBestRatingProduct[0];
 
+  const sumOfRating = topSingleBestRatingProduct?.reviews?.reduce(
+    (sum, review) => sum + review.rating,
+    0
+  );
+  const averageRating =
+    sumOfRating / topSingleBestRatingProduct?.reviews?.length;
+
+  console.log(topSingleBestRatingProduct);
+
   //   TOP 4 MOST REVIEWS PRODUCTS
 
   const {
@@ -93,7 +102,7 @@ export default function AdminProductOverview() {
   const topSingleMostReviewsProduct = singleMostReviewsProduct[0];
 
   const {
-    data: latestReview,
+    data: latestReview = [],
     isPending: isLatestReviewPending,
     isError: isLatestReviewError,
   } = useQuery({
@@ -166,7 +175,10 @@ export default function AdminProductOverview() {
           title={"TOTAL SUPPLIERS"}
           value={allSuppliers.length > 0 ? allSuppliers.length : 0}
         />
-        <AdminStatCard title={"TOTAL PRODUCTS REVIEWS"} value={allReviews.length > 0 ? allReviews.length : 0} />
+        <AdminStatCard
+          title={"TOTAL PRODUCTS REVIEWS"}
+          value={allReviews.length > 0 ? allReviews.length : 0}
+        />
       </div>
 
       <div className="flex flex-col md:flex-row justify-between gap-16 md:gap-4">
@@ -192,72 +204,122 @@ export default function AdminProductOverview() {
           </ResponsiveContainer>
         </div>
         <div className="w-full md:w-[50%] grid grid-cols-1 md:grid-cols-2 gap-5 relative">
-          <AdminProductOverviewCard
-            singleBestSoldProduct={topSingleBestProduct}
-            value1={"TOP 1 PRODUCT"}
-            value2={`${
-              topSingleBestProduct ? topSingleBestProduct?.sold : 0
-            } sold`}
-            onClick={() => navigate(`/product/${topSingleBestProduct._id}`)}
-          />
-          <AdminProductOverviewCard
-            singleBestSoldProduct={topSingleBestRatingProduct}
-            value1={"TOP 1 IN RATING"}
-            value2={
-              <StarsRating rating={topSingleBestRatingProduct.averageRating} />
-            }
-            onClick={() =>
-              navigate(`/product/${topSingleBestRatingProduct._id}`)
-            }
-          />
-          <AdminProductOverviewCard
-            singleBestSoldProduct={topSingleMostReviewsProduct}
-            value1={"MOST REVIEWS"}
-            value2={`${
-              topSingleMostReviewsProduct
-                ? topSingleMostReviewsProduct.reviewCount
-                : 0
-            } reviews`}
-            onClick={() =>
-              navigate(`/product/${topSingleMostReviewsProduct._id}`)
-            }
-          />
+          {topSingleBestProduct ? (
+            <AdminProductOverviewCard
+              singleBestSoldProduct={topSingleBestProduct}
+              value1={"TOP 1 PRODUCT"}
+              value2={`${
+                topSingleBestProduct ? topSingleBestProduct?.sold : 0
+              } sold`}
+              onClick={() => navigate(`/product/${topSingleBestProduct._id}`)}
+            />
+          ) : (
+            <p className="bg-card border border-black text-center rounded-[5px] flex flex-col relative justify-center">
+              <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
+                <div className="  w-[15px] h-[15px] rounded-full">
+                  <div className="absolute -top-6 right-[-65%]">
+                    <TbPinnedFilled size={30} />
+                  </div>
+                </div>
+              </div>
+              no product yet.
+            </p>
+          )}
 
-          {
-            latestReview ? (
-              <div className="border border-black flex justify-center items-center rounded-[5px] relative bg-card">
-            <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
-              <div className="  w-[15px] h-[15px] rounded-full">
-                <div className="absolute -top-6 right-[-65%]">
-                  <TbPinnedFilled size={30} />
+          {topSingleBestRatingProduct ? (
+            <AdminProductOverviewCard
+              singleBestSoldProduct={topSingleBestRatingProduct}
+              value1={"TOP 1 IN RATING"}
+              value2={<StarsRating rating={averageRating} />}
+              onClick={() =>
+                navigate(`/product/${topSingleBestRatingProduct._id}`)
+              }
+            />
+          ) : (
+            <p className="bg-card border border-black text-center rounded-[5px] flex flex-col justify-center relative">
+              <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
+                <div className="  w-[15px] h-[15px] rounded-full">
+                  <div className="absolute -top-6 right-[-65%]">
+                    <TbPinnedFilled size={30} />
+                  </div>
+                </div>
+              </div>
+              no product yet.
+            </p>
+          )}
+
+          {topSingleMostReviewsProduct ? (
+            <AdminProductOverviewCard
+              singleBestSoldProduct={topSingleMostReviewsProduct}
+              value1={"MOST REVIEWS"}
+              value2={`${
+                topSingleMostReviewsProduct
+                  ? topSingleMostReviewsProduct.reviewCount
+                  : 0
+              } reviews`}
+              onClick={() =>
+                navigate(`/product/${topSingleMostReviewsProduct._id}`)
+              }
+            />
+          ) : (
+            <p className="bg-card border border-black text-center rounded-[5px] flex flex-col justify-center relative">
+              <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
+                <div className="  w-[15px] h-[15px] rounded-full">
+                  <div className="absolute -top-6 right-[-65%]">
+                    <TbPinnedFilled size={30} />
+                  </div>
+                </div>
+              </div>
+              no product yet.
+            </p>
+          )}
+
+          {latestReview.length > 0 ? (
+            <div className="border border-black flex justify-center items-center rounded-[5px] relative bg-card">
+              <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
+                <div className="  w-[15px] h-[15px] rounded-full">
+                  <div className="absolute -top-6 right-[-65%]">
+                    <TbPinnedFilled size={30} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 text-sm flex flex-col gap-3 items-center">
+                <p className="text-lg">LATEST REVIEW</p>
+                <p> {new Date(latestReview.createdAt).toLocaleString()}</p>
+                <img
+                  src={latestReview?.userId?.avatar}
+                  alt="avatar"
+                  className=" h-[70px] w-auto rounded-full border border-black"
+                />
+                <div className="w-[200px] truncate flex flex-col justify-center items-center gap-3">
+                  <p>{latestReview.commentReview}</p>
+                  <p>
+                    <StarsRating rating={latestReview.rating} />
+                  </p>
+                  <button
+                    className="border text-xs border-black bg-primary text-card p-1 rounded-[5px]"
+                    onClick={() =>
+                      navigate(`/product/${latestReview.productId}`)
+                    }
+                  >
+                    GO TO PRODUCT
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div className="p-4 text-sm flex flex-col gap-3 items-center">
-              <p className="text-lg">LATEST REVIEW</p>
-              <p> {new Date(latestReview.createdAt).toLocaleString()}</p>
-              <img
-                src={latestReview?.userId?.avatar}
-                alt="avatar"
-                className=" h-[70px] w-auto rounded-full border border-black"
-              />
-              <div className="w-[200px] truncate flex flex-col justify-center items-center gap-3">
-                <p>{latestReview.commentReview}</p>
-                <p>
-                  <StarsRating rating={latestReview.rating} />
-                </p>
-                <button
-                  className="border text-xs border-black bg-primary text-card p-1 rounded-[5px]"
-                  onClick={() => navigate(`/product/${latestReview.productId}`)}
-                >
-                  GO TO PRODUCT
-                </button>
+          ) : (
+            <p className="bg-card border border-black text-center rounded-[5px] flex flex-col justify-center relative">
+              <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
+                <div className="  w-[15px] h-[15px] rounded-full">
+                  <div className="absolute -top-6 right-[-65%]">
+                    <TbPinnedFilled size={30} />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-            ) : <p>no review.</p>
-          }
+              no review yet.
+            </p>
+          )}
         </div>
       </div>
     </div>

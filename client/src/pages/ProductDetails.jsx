@@ -74,8 +74,6 @@ export default function ProductDetails() {
   );
   const averageRating = sumOfRating / singleProduct?.reviews.length;
 
-
-
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading product...</p>;
   if (!singleProduct || Object.keys(singleProduct).length === 0) {
@@ -146,16 +144,28 @@ export default function ProductDetails() {
               <div className="uppercase flex flex-col gap-2">
                 <div className="flex items-center gap-3">
                   <p>PRICE:</p>
-                  <span className="text-lg text-indigo-500">
-                    {formatPrice(singleProduct.price)} PHP
-                  </span>
+                  <div className="text-lg flex relative  text-indigo-500">
+                    {formatPrice(singleProduct.price)} PHP 
+                    {
+                      singleProduct?.discount ? (
+                        <p className="text-sm text-red-400 absolute -right-16">
+                         (-{formatPrice(singleProduct?.discount)}PHP)
+                        </p>
+                      ) : ""
+                    }
+                  </div>
                 </div>
                 {singleProduct?.stocks ? (
                   <div className="flex items-center gap-3">
                     <p>Stocks:</p>
-                    <span className="text-lg text-indigo-500">
-                      {formatPrice(singleProduct?.stocks?.stockQuantity)}
-                    </span>
+
+                    {singleProduct?.stocks?.stockQuantity > 0 ? (
+                      <span className="text-lg text-indigo-500">
+                        {formatPrice(singleProduct?.stocks?.stockQuantity)}
+                      </span>
+                    ) : (
+                      <p>Out of stock</p>
+                    )}
                   </div>
                 ) : (
                   ""

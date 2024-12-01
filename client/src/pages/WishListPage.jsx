@@ -47,7 +47,7 @@ export default function WishListPage() {
             
           </div>
 
-          <div className="border md:w-[270px] h-[200px] gap-2 flex flex-col bg-card rounded-[5px] p-3 border-black">
+          <div className="border md:w-[270px] h-[100px] gap-2 flex flex-col bg-card rounded-[5px] p-3 border-black">
             <h1 className="uppercase text-xl mb-3">Wishlist Summary</h1>
             <div className="flex flex-1 flex-col gap-1">
               <p>
@@ -55,9 +55,9 @@ export default function WishListPage() {
                 <span className="text-indigo-500">{wishlist?.items?.length}</span>
               </p>
             </div>
-            <div>
+            {/* <div>
               <Buttons buttonName={"ADD ALL TO CART"} />
-            </div>
+            </div> */}
           </div>
         </form>
       </div>

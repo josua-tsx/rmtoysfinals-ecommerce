@@ -1,5 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
+import Notification from "../models/notifications.model.js";
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
@@ -39,6 +40,18 @@ export const userPlaceOrder = async (req, res, next) => {
       );
     }
 
+    // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
+    for (const item of orderItemsWithQuantity) {
+      const productStock = await Stocks.findOne({ product: item.productId });
+
+      if (!productStock || productStock.stockQuantity < item.quantity) {
+        // If stock is insufficient
+        return next(
+          handleMakeError(400, `Not enough stock for ${item.productId.productName}`)
+        );
+      }
+    }
+
     if (paymentMethod === "Gcash") {
       const newOrder = new Order({
         userId,
@@ -72,10 +85,10 @@ export const userPlaceOrder = async (req, res, next) => {
       await logNotification({
         notificationType: "order",
         notificationDetails: {
-          description: "new order arrived!"
+          description: "new order arrived!",
         },
-        targetId: newOrder._id
-      })
+        targetId: newOrder._id,
+      });
 
       await logAuditTrail({
         action: "user_add_order",
@@ -123,10 +136,10 @@ export const userPlaceOrder = async (req, res, next) => {
       await logNotification({
         notificationType: "order",
         notificationDetails: {
-          description: "new order arrived!"
+          description: "new order arrived!",
         },
-        targetId: newOrder._id
-      })
+        targetId: newOrder._id,
+      });
 
       await logAuditTrail({
         action: "user_add_order",
@@ -454,6 +467,8 @@ export const updateDeliveryStatus = async (req, res, next) => {
         );
       }
 
+      await Notification.deleteMany({});
+
       await logAuditTrail({
         action: "set_OrderStatus_delivered",
         userId,
@@ -480,6 +495,8 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Shipped") {
+      await Notification.deleteMany({});
+
       await logAuditTrail({
         action: "set_OrderStatus_Shipped",
         userId,
@@ -493,6 +510,8 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Out for Delivery") {
+      await Notification.deleteMany({});
+
       await logAuditTrail({
         action: "set_OrderStatus_OutforDelivery",
         userId,
@@ -506,6 +525,8 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Cancelled") {
+      await Notification.deleteMany({});
+
       await logAuditTrail({
         action: "set_OrderStatus_Cancelled",
         userId,

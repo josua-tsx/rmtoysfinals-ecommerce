@@ -7,10 +7,14 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import formatPrice from "../../reusable/formatPrice";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminProductsTable() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deleteProductId, setDeleteProductId] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -26,9 +30,25 @@ export default function AdminProductsTable() {
     },
   });
 
-  const productArray = Array.isArray(products.products) ? products.products : [];
+  const productArray = Array.isArray(products.products)
+    ? products.products
+    : [];
 
-  console.log(productArray)
+  const { mutate: addToSlider } = useMutation({
+    mutationFn: async (productId) => {
+      const res = await axiosInstance.put(
+        `/product/add-to-slider/${productId}`
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Succesfully updated!");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong!");
+    },
+  });
 
   const { mutate: deleteProductMutation } = useMutation({
     mutationFn: async (productId) => {
@@ -48,6 +68,23 @@ export default function AdminProductsTable() {
     },
   });
 
+  const handleDeleteClick = (productId) => {
+    setDeleteProductId(productId); 
+    setIsConfirmModalOpen(true); 
+  };
+
+  const confirmDelete = () => {
+    if (deleteProductId) {
+      deleteProductMutation(deleteProductId); 
+      cancelDelete()
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteProductId(null); 
+    setIsConfirmModalOpen(false); 
+  };
+
   const filteredProducts = productArray.filter(
     (product) =>
       product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -63,6 +100,15 @@ export default function AdminProductsTable() {
 
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>PRODUCTS TABLE</h1>
         <div className="flex items-center relative">
@@ -87,6 +133,7 @@ export default function AdminProductsTable() {
               <th className="font-normal p-2 pb-5">STATUS</th>
               <th className="font-normal p-2 pb-5">REVIEWS</th>
               <th className="font-normal p-2 pb-5">SOLD</th>
+              <th className="font-normal p-2 pb-5">DISCOUNT</th>
               <th className="font-normal p-2 pb-5">DATE CREATED</th>
               {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
               <th className="font-normal p-2 pb-5">ACTIONS</th>
@@ -126,6 +173,12 @@ export default function AdminProductsTable() {
                     {product?.sold}
                   </td>
 
+                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                    {product?.discount
+                      ? formatPrice(product?.discount)
+                      : "no discount"}
+                  </td>
+
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {new Date(product.createdAt).toLocaleString()}
                   </td>
@@ -141,13 +194,18 @@ export default function AdminProductsTable() {
                       <CiEdit size={25} />
                     </button>
                     <button
-                      onClick={() => deleteProductMutation(product._id)}
+                      onClick={() => handleDeleteClick(product._id)}
                       className="text-red-600 hover:text-red-300"
                     >
                       <MdDelete size={25} />
                     </button>
-                    <button className="text-red-600 hover:text-red-300">
-                      ADD TO SLIDER
+                    <button
+                      onClick={() => addToSlider(product._id)}
+                      className="text-red-600 hover:text-red-300"
+                    >
+                      {!product?.isBestProduct
+                        ? "ADD TO SLIDER"
+                        : "REMOVE FROM SLIDER"}
                     </button>
                   </td>
                 </tr>

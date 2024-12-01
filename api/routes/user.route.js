@@ -25,7 +25,7 @@ router.delete(
 );
 
 
-router.put(`/edit-worker/:userId`, editWorker)
+router.put(`/edit-worker/:workerId`, requireAuth, requireAdmin, editWorker)
 
 router.put(
   `/update-status/:customerId`,

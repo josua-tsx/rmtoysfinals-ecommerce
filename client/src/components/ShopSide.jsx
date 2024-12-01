@@ -234,7 +234,7 @@ export default function ShopSide({
           {/* COLORS */}
 
           <FilterSection title={"colors"}>
-            <div className={`flex gap-5 pt-3  flex-wrap `}>
+            <div className={` flex flex-col gap-2`}>
               {productColors &&
                 productColors.map((color) => (
                   <label key={color} className="flex items-center space-x-2">
@@ -245,8 +245,8 @@ export default function ShopSide({
                       checked={filterColor.includes(color)}
                       onChange={(e) => setFilterColor(e.target.value)}
                     />
-                    <span
-                      className={`border w-[55px] text-center border-black text-${color}-600 rounded-[5px] bg-${color}-600 cursor-pointer p-2`}
+                    <span className="uppercase"
+                    
                     >
                       {color}
                     </span>

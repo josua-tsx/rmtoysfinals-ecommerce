@@ -57,6 +57,7 @@ import AdminAuditTrailLogs from "./pages/admin/AdminAuditTrailLogs.jsx";
 import AdminProductReviews from "./pages/admin/AdminProductReviews.jsx";
 import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedValidatorStaffRoute.jsx";
 import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
+import AdminEditGcash from "./pages/admin/AdminEditGcash.jsx";
 
 const queryClient = new QueryClient();
 
@@ -276,6 +277,13 @@ const router = createBrowserRouter([
         path: "/admin/addGcash",
         element: <AdminAddGcash />,
       },
+
+
+      {
+        path: `/admin/editGcash/:gcashId`,
+        element: <AdminEditGcash/>
+      },
+
 
       // AUDIT
 

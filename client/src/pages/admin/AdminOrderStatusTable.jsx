@@ -53,6 +53,7 @@ export default function AdminOrderStatusTable() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({queryKey: ['notificationLogs']})
       queryClient.invalidateQueries({ queryKey: ["deliveredCancelled"] });
       toast.success("Sucessfully Updated Status!");
     },

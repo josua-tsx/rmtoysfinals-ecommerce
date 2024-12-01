@@ -4,7 +4,6 @@ import { HiShoppingBag } from "react-icons/hi2";
 import ImageSlider from "../components/ImageSlider/ImageSlider";
 
 export default function LandingPage() {
-
   return (
     <section className="h-screen font-main  relative overflow-hidden">
       <div className="relative z-2 h-screen overflow-y-auto max-w-[1280px] mx-auto p-4">
@@ -16,13 +15,12 @@ export default function LandingPage() {
               </h2>
             </div>
             <div className="relative z-10  md:w-[700px] lg:w-[690px]">
-              <h1 className="font-main text-2xl mx-auto leading-tight md:leading-tight lg:leading-tight  md:text-4xl  lg:text-5xl md:text-center lg:text-start ">
-                Your <span className="text-[#fe0002]">Style</span>, Redefined:
-                Discover Timeless{" "}
-                <span className="text-[#f88609]">Elegance</span> and{" "}
-                <span className="text-[#0156ff]">Modern</span> <span className="text-[#9742e7]">Comfort</span> in Every
-                Purchase, Curated Just for{" "}
-                <span className="text-[#f3e03a]">You</span>
+              <h1 className="font-main text-2xl mx-auto leading-tight md:leading-tight lg:leading-tight  md:text-5xl  md:text-center lg:text-start ">
+                <span className="text-green-600">Discover</span> a{" "}
+                <span className="text-red-600">toy</span> that{" "}
+                <span className="text-orange-600">empowers</span> your child to{" "}
+                <span className="text-blue-600">unleash</span> their
+                imagination. Let's get <span className="text-violet-600">creative</span> and let their <span className="text-secondary">imagination</span> grow!
               </h1>
             </div>
 
@@ -42,16 +40,17 @@ export default function LandingPage() {
 
           <div className=" w-full overflow-hidden  md:text-center  flex flex-col gap-6 ">
             <div className="flex flex-col gap-3 items-center">
-              <h1 className="text-lg md:text-xl uppercase text-center">
-                Check these best products 
+              <h1 className="text-md md:text-lg  text-center">
+                The Better Toy Store – For better toys.
+                <br /> Check these amazing products <br /> for you!
               </h1>
-
+              {/* 
               <div className="flex justify-center gap-3">
                 <p className="text-xs md:text-sm">JACKET</p>
                 <p className="text-xs md:text-sm">SHORTS</p>
                 <p className="text-xs md:text-sm">SHIRTS</p>
                 <p className="text-xs md:text-sm">PANTS</p>
-              </div>
+              </div> */}
             </div>
 
             <div className="w-[350px]  md:w-[600px] items-center mx-auto">

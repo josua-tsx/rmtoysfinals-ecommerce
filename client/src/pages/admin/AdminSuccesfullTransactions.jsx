@@ -5,6 +5,7 @@ import SingleOrderList from "../../components/SingleOrderList";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminSuccesfullTransactions({
   successOrderData,
@@ -14,6 +15,9 @@ export default function AdminSuccesfullTransactions({
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const queryClient = useQueryClient();
@@ -21,8 +25,6 @@ export default function AdminSuccesfullTransactions({
   const arraySuccessOrder = Array.isArray(successOrderData)
     ? successOrderData
     : [];
-
-  console.log(successOrderData);
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -48,8 +50,23 @@ export default function AdminSuccesfullTransactions({
     },
   });
 
-  const handleUpdateToRefunded = (orderId) => {
-    updateToRefundMutation({ orderId });
+  const handleRefundClick = (orderId) => {
+    setSelectedId(orderId);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateToRefunded = () => {
+    if (selectedId) {
+      {
+        updateToRefundMutation({ orderId: selectedId });
+        setIsModalOpen(false);
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    setSelectedId(null);
+    setIsModalOpen(false);
   };
 
   const { mutate: cancelSuccessMutation } = useMutation({
@@ -102,6 +119,16 @@ export default function AdminSuccesfullTransactions({
           onClose={() => setOpenModal(false)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        title={"Update to refund"}
+        message={
+          "Are you sure you want to refund this order? This action can not be undone."
+        }
+        onConfirm={handleUpdateToRefunded}
+        onCancel={handleCancel}
+      />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>SUCCESFUL TRANSACTIONS</h1>
@@ -191,7 +218,7 @@ export default function AdminSuccesfullTransactions({
                           CANCEL
                         </button>
                         <button
-                          onClick={() => handleUpdateToRefunded(success._id)}
+                          onClick={() => handleRefundClick(success._id)}
                           type="button"
                           className="text-green-700"
                         >

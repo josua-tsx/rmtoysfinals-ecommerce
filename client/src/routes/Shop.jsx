@@ -68,7 +68,8 @@ export default function Shop() {
       product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.productDetails?.some((detail) =>
         detail.value.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      ) ||
+      (product.discount && product.discount.toString().includes(searchTerm.toLowerCase()))
   );
 
   useEffect(() => {

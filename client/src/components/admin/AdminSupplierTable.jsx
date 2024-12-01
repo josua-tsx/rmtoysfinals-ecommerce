@@ -6,12 +6,16 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminSupplierTable() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
   const {
     data: suppliers = [],
@@ -47,6 +51,23 @@ export default function AdminSupplierTable() {
     },
   });
 
+  const handleClickDelete = (supplierId) => {
+    setSelectedId(supplierId);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (selectedId) {
+      deleteSupplierMutation(selectedId)
+      setIsModalOpen(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setSelectedId(null);
+    setIsModalOpen(false);
+  };
+
   const navigateToEditSupplier = (supplierId) => {
     navigate(`/admin/editSupplier/${supplierId}`);
   };
@@ -57,7 +78,6 @@ export default function AdminSupplierTable() {
       supplier._id.includes(searchTerm)
   );
 
-
   if (isSupplierPending || isSuppDeletePending) {
     <p>loading....</p>;
   }
@@ -66,6 +86,16 @@ export default function AdminSupplierTable() {
   }
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
+      <ConfirmModal
+        isOpen={isModalOpen}
+        title={"Confirm delete"}
+        message={
+          "Are you sure you want to delete this supplier? This action cannot be undone."
+        }
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>PRODUCTS TABLE</h1>
@@ -124,7 +154,7 @@ export default function AdminSupplierTable() {
                       <CiEdit size={25} />
                     </button>
                     <button
-                      onClick={() => deleteSupplierMutation(supplier._id)}
+                      onClick={() => handleClickDelete(supplier._id)}
                       className="text-red-600 hover:text-red-300"
                     >
                       <MdDelete size={25} />

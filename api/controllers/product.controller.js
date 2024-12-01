@@ -225,78 +225,80 @@ export const getNoStocksProducts = async (req, res, next) => {
 // BASICALLY FETCHING THE BEST 4 SOLD PRODUCTS
 export const getBestSoldProducts = async (req, res, next) => {
   try {
-    const bestSoldProduct = await Product.aggregate([
-      { $sort: { sold: -1 } },
-      {
-        $limit: 4,
-      },
-    ]);
+    // Sorting by most sold products (descending order of 'sold')
+    const sortOptions = { sold: -1 }; // Sort by sold in descending order
 
-    if (bestSoldProduct.length === 0) return res.status(200).json([]);
+    // Find the top 4 products, populated with supplier, category, stocks, and reviews
+    const bestSoldProducts = await Product.find()
+      .populate({
+        path: "supplier",
+        select: "supplierName",
+      })
+      .populate({
+        path: "category",
+        select: "categoryName",
+      })
+      .populate({
+        path: "stocks",
+        select: "stockQuantity",
+      })
+      .populate({
+        path: "reviews",
+        select: "commentReview rating",
+      })
+      .sort(sortOptions)
+      .limit(4); // Limit to the top 4 most sold products
 
-    res.status(200).json(bestSoldProduct);
+    // Send response with best sold products
+    res.status(200).json(bestSoldProducts);
   } catch (error) {
     next(error);
   }
 };
 
-export const getBestRatingProducts = async (req, res, next) => {
+export const getBestRatedProducts = async (req, res, next) => {
   try {
-    const topRatedProducts = await Product.aggregate([
-      // Step 1: Lookup reviews for each product
-      {
-        $lookup: {
-          from: "reviews", // Collection name for reviews
-          localField: "_id", // Local field in Product model
-          foreignField: "productId", // Field in Review model
-          as: "reviews", // Output array of reviews
-        },
-      },
+    // Sorting by highest rating, we need to sort by the average rating of reviews
+    // But since we can't calculate average directly in the query without aggregation,
+    // we will fetch products and manually calculate the average rating afterward.
 
-      // Step 2: Calculate the average rating for each product
-      {
-        $addFields: {
-          averageRating: {
-            $avg: "$reviews.rating", // Calculate average rating based on reviews
-          },
-        },
-      },
+    const bestRatedProducts = await Product.find()
+      .populate({
+        path: "supplier",
+        select: "supplierName", // Populate supplierName
+      })
+      .populate({
+        path: "category",
+        select: "categoryName", // Populate categoryName
+      })
+      .populate({
+        path: "reviews",
+        select: "rating", // Populate only the rating from reviews
+      });
 
-      // Step 3: Sort products by average rating in descending order
-      {
-        $sort: { averageRating: -1 },
-      },
+    bestRatedProducts.forEach((product) => {
+      if (product.reviews.length > 0) {
+        const totalRating = product.reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        );
+        const averageRating = totalRating / product.reviews.length;
+        product.averageRating = averageRating; // Add the averageRating property to the product
+      } else {
+        product.averageRating = 0; // If no reviews, set rating to 0
+      }
+    });
 
-      // Step 4: Limit to the top 4 products
-      {
-        $limit: 4,
-      },
+    // Sort products by average rating in descending order
+    bestRatedProducts.sort((a, b) => b.averageRating - a.averageRating);
 
-      // Optional Step 5: Project the necessary fields to return
-      {
-        $project: {
-          _id: 1,
-          productName: 1,
-          averageRating: 1, // Include the average rating in the response
-          price: 1,
-          productDescription: 1,
-          productDetails: 1,
-          productImages: 1,
-          isBestProduct: 1,
-        },
-      },
-    ]);
+    // Limit to the top 4 most rated products
+    const topRatedProducts = bestRatedProducts.slice(0, 4);
 
-    // Check if any products were found and return the result
-    if (topRatedProducts.length === 0) {
-      return res.status(200).json([]); // Return empty array if no products found
-    }
-
-    // Send the top rated products in the response
+    // Send response with best rated products
     res.status(200).json(topRatedProducts);
   } catch (error) {
-    // Handle any error that occurs
-    next(error);
+    next(error); // Handle errors
   }
 };
 
@@ -613,3 +615,50 @@ export const publishDraft = async (req, res, next) => {
     next(error);
   }
 };
+
+export const toggleBestProduct = async (req, res, next) => {
+  const { productId } = req.params;
+  try {
+    // Find the product that the user wants to toggle
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (!product.isBestProduct) {
+      const bestProductsCount = await Product.countDocuments({
+        isBestProduct: true,
+      });
+
+      if (bestProductsCount >= 4) {
+        return res
+          .status(400)
+          .json({ message: "You can only have up to 4 best products." });
+      }
+    }
+
+    product.isBestProduct = !product.isBestProduct;
+
+    await product.save();
+
+    res.status(200).json({
+      message: `Product ${
+        product.isBestProduct ? "added to" : "removed from"
+      } best products`,
+      product,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBestProducts = async (req, res, next) => {
+  try {
+    const product = await Product.find({isBestProduct: true})
+    if (product.length === 0) return res.status(200).json([]);
+    res.status(200).json(product)
+  } catch (error) {
+    next(error)
+  }
+}

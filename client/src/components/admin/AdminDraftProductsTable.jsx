@@ -3,6 +3,8 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import { useState } from "react";
+import { MdDelete } from "react-icons/md";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 
 export default function AdminDraftProductsTable() {
@@ -10,6 +12,9 @@ export default function AdminDraftProductsTable() {
   const queryClient = useQueryClient()
 
   const [searchTerm, setSearchTerm] = useState("")
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deleteProductId, setDeleteProductId] = useState(null);
 
   const {data: drafts =[], isPending: isDraftsPending, isError: isDraftsError} = useQuery({
     queryKey: ['products'],
@@ -27,8 +32,6 @@ export default function AdminDraftProductsTable() {
     draft.category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) 
   ))
 
-  console.log(drafts)
-
   const {mutate: deleteDraftMutation} = useMutation({
     mutationFn: async (draftId) => {
       const res = await axiosInstance.delete(`/product/delete-draft/${draftId}`)
@@ -43,6 +46,23 @@ export default function AdminDraftProductsTable() {
     }
   })
 
+  
+  const handleDeleteClick = (productId) => {
+    setDeleteProductId(productId); 
+    setIsConfirmModalOpen(true); 
+  };
+
+  const confirmDelete = () => {
+    if (deleteProductId) {
+      deleteDraftMutation(deleteProductId); 
+      cancelDelete()
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteProductId(null); 
+    setIsConfirmModalOpen(false); 
+  };
 
   const {mutate: publishDraftMutation} = useMutation({
     mutationFn: async (draftId) => {
@@ -71,6 +91,17 @@ export default function AdminDraftProductsTable() {
 
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
+
+
+     {/* Confirmation Modal */}
+     <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>DRAFTS TABLE</h1>
         <div className="flex items-center relative">
@@ -126,10 +157,10 @@ export default function AdminDraftProductsTable() {
                     {product.stocks}
                   </td> */}
                 <td className=" whitespace-nowrap gap-3 text-sm flex justify-center">
-                  <button onClick={() => deleteDraftMutation(draft._id)}
+                  <button onClick={() => handleDeleteClick(draft._id)}
                   type="button" 
                   className="text-red-600 hover:text-red-300">
-                    DELETE
+                     <MdDelete size={25} />
                   </button>
                   <button onClick={() => publishDraftMutation(draft._id)}
                   className="text-green-600 hover:text-indigo-300 mr-2">

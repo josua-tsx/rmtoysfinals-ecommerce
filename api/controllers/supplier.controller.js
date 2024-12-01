@@ -12,12 +12,13 @@ export const addSupplier = async (req, res, next) => {
   const userId = req.user.id;
 
   const {
-    supplierName,
-    contactPerson,
     contactNumber,
     supplierPay,
     supplierAddress,
   } = req.body;
+
+  const supplierName = req.body.supplierName.toLowerCase()
+  const contactPerson = req.body.contactPerson.toLowerCase()
 
   if (
     !supplierName ||

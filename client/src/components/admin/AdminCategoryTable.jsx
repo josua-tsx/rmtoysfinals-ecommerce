@@ -6,12 +6,16 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminCategoryTable() {
 	const queryClient = useQueryClient()
   const navigate = useNavigate()
 
   const [searchTerm, setSearchTerm] = useState("")
+
+  const [isOpenModal, setIsOpenModal] = useState(false)
+  const [selectedId, setSelectedId] = useState(null)
 
   const {
     data: categories = [],
@@ -38,6 +42,25 @@ export default function AdminCategoryTable() {
     }
   })
 
+
+  const handleClickDelete = (categoryId) => {
+    setSelectedId(categoryId)
+    setIsOpenModal(true)
+  }
+
+  const handleConfirm = () => {
+    if (setSelectedId) {
+      deleteCategoryMutation(selectedId)
+      setIsOpenModal(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setSelectedId(null)
+    setIsOpenModal(false)
+  }
+
+
   const navigateToEdit = (categoryId) => {
     navigate(`/admin/editCategory/${categoryId}`)
   }
@@ -63,6 +86,16 @@ export default function AdminCategoryTable() {
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
        <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
        {/* CARD */}
+
+      <ConfirmModal
+        isOpen={isOpenModal}
+        title={"Confirm delete"}
+        message={"Are you sure you want to delete this category? This action cannot be undone."}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+     
+
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>Category Table</h1>
         <div className="flex items-center relative">
@@ -109,7 +142,7 @@ export default function AdminCategoryTable() {
                     className="text-green-600 hover:text-indigo-300 mr-2">
                       <CiEdit size={25} />
                     </button>
-                    <button onClick={() => deleteCategoryMutation(category._id)}
+                    <button onClick={() => handleClickDelete(category._id)}
                     className="text-red-600 hover:text-red-300">
                       <MdDelete size={25} />
                     </button>

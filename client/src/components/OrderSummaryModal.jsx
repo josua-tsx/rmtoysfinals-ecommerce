@@ -49,12 +49,21 @@ export default function OrderSummaryModal({ onClose }) {
     }
   }, [cart]);
 
+
+
+ // Calculate total discount for all products
+ const totalDiscount = cart?.items?.reduce((total, item) => {
+  const productDiscount = item.productId.discount || 0;
+  return total + (productDiscount * item.quantity);
+}, 0);
+
   // Calculate subtotal if cart is not empty
   const subtotal = cart?.items?.reduce((total, item) => {
-    return total + item.productId.price * item.quantity;
+    return total + item.productId.price  * item.quantity;
   }, 0);
 
-  const totalPrice = subtotal + shippingFee + taxes;
+
+  const totalPrice = subtotal + shippingFee + taxes - totalDiscount;
 
   const { mutate: placeOrder } = useMutation({
     mutationFn: async (data) => {
@@ -94,7 +103,7 @@ export default function OrderSummaryModal({ onClose }) {
           paymentMethod,
           taxPrice: taxes,
           shippingPrice: shippingFee,
-          discount,
+          discount: totalDiscount,
           subtotal,
           totalPrice,
           notes,
@@ -116,7 +125,7 @@ export default function OrderSummaryModal({ onClose }) {
         paymentMethod,
         taxPrice: taxes,
         shippingPrice: shippingFee,
-        discount,
+        discount: totalDiscount,
         subtotal,
         totalPrice,
         notes,
@@ -183,8 +192,8 @@ export default function OrderSummaryModal({ onClose }) {
                 id="paymentMethod"
                 className="border outline-none border-black rounded-[5px] p-1"
               >
-                <option value="Gcash">Gcash</option>
                 <option value="Cod">Cash on delivery</option>
+                <option value="Gcash">Gcash</option>
               </select>
             </div>
 
@@ -226,11 +235,11 @@ export default function OrderSummaryModal({ onClose }) {
             </div>
             {/* <div className="flex justify-between">
             <p>TAX: </p>
-            <p>35 PHP</p>
+            <p>0</p>
            </div> */}
             <div className="flex justify-between">
               <p>DISCOUNT</p>
-              <p>0 PHP</p>
+              <p>{totalDiscount ? totalDiscount : 0}</p>
             </div>
 
             <div className="flex justify-between">

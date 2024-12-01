@@ -18,12 +18,12 @@ const ACTION_TYPES = [
   "set_OrderStatus_Processing",
   "set_OrderStatus_Shipped",
   "set_OrderStatus_OutforDelivery",
-  "admin_add_worker"
+  "admin_add_worker",
+  "admin_edit_worker",
 ];
 
 export default function AdminAdminLogs() {
-
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: adminLogs = [],
@@ -37,12 +37,13 @@ export default function AdminAdminLogs() {
     },
   });
 
-  const arrayAdminLogs = Array.isArray(adminLogs) ? adminLogs : []
+  const arrayAdminLogs = Array.isArray(adminLogs) ? adminLogs : [];
 
-  const filteredArrayAdminLogs = arrayAdminLogs.filter((logs) => (
-    logs.action.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    logs.targetId.includes(searchTerm) 
-  ))
+  const filteredArrayAdminLogs = arrayAdminLogs.filter(
+    (logs) =>
+      logs.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      logs.targetId.includes(searchTerm)
+  );
 
   console.log(adminLogs);
 
@@ -179,14 +180,20 @@ export default function AdminAdminLogs() {
                         {/* /////////////////////////////// */}
                         {admin.action === "delete_category" &&
                           admin.details?.categoryName && (
-                            <p> Deleted {admin.details?.categoryName} category</p>
+                            <p>
+                              {" "}
+                              Deleted {admin.details?.categoryName} category
+                            </p>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "update_category" &&
                           admin.details?.categoryName && (
-                            <p> Updated {admin.details?.categoryName} category</p>
+                            <p>
+                              {" "}
+                              Updated {admin.details?.categoryName} category
+                            </p>
                           )}
                         {/* /////////////////////////////// */}
 
@@ -206,113 +213,134 @@ export default function AdminAdminLogs() {
 
                         {/* /////////////////////////////// */}
                         {admin.action === "update_gcashStatus" &&
-                          admin.details?.gcashName && admin.details?.gcashStatus && (
-                           <div>
-                               <p> Updated {admin.details?.gcashName}</p>
-                               <p> Status to {admin.details?.gcashStatus}</p>
-                           </div>
+                          admin.details?.gcashName &&
+                          admin.details?.gcashStatus && (
+                            <div>
+                              <p> Updated {admin.details?.gcashName}</p>
+                              <p> Status to {admin.details?.gcashStatus}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_OrderStatus_delivered" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_OrderStatus_Processing" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_OrderStatus_Shipped" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_OrderStatus_OutforDelivery" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_OrderStatus_Cancelled" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_PaymentStatus_paid" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_PaymentStatus_Failed" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "set_PaymentStatus_Refunded" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "cancelled_Order_Transact" &&
-                          admin.details?.email &&  (
-                           <div>
-                               <p> Order of {admin.details?.email}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div>
+                              <p> Order of {admin.details?.email}</p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "admin_add_worker" &&
-                          admin.details?.email &&  (
-                           <div className="text-sm">
-                               <p> Added {admin.details?.email}</p>
-                               <p> job: {admin.details?.job}</p>
-                               <p> jobDescription: {admin.details?.jobDescription}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div className="text-sm">
+                              <p> Added {admin.details?.email}</p>
+                              <p> job: {admin.details?.job}</p>
+                              <p>
+                                {" "}
+                                jobDescription: {admin.details?.jobDescription}
+                              </p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
 
                         {/* /////////////////////////////// */}
                         {admin.action === "admin_delete_worker" &&
-                          admin.details?.email &&  (
-                           <div className="text-sm">
-                               <p> Added {admin.details?.email}</p>
-                               <p> job: {admin.details?.job}</p>
-                               <p> jobDescription: {admin.details?.jobDescription}</p>
-                           </div>
+                          admin.details?.email && (
+                            <div className="text-sm">
+                              <p> Added {admin.details?.email}</p>
+                              <p> job: {admin.details?.job}</p>
+                              <p>
+                                {" "}
+                                jobDescription: {admin.details?.jobDescription}
+                              </p>
+                            </div>
+                          )}
+                        {/* /////////////////////////////// */}
+
+                        {/* /////////////////////////////// */}
+                        {admin.action === "admin_edit_worker" &&
+                          admin.details?.email && (
+                            <div className="text-sm">
+                              <p> Added {admin.details?.email}</p>
+                              <p> job: {admin.details?.job}</p>
+                              <p>
+                                {" "}
+                                jobDescription: {admin.details?.jobDescription}
+                              </p>
+                            </div>
                           )}
                         {/* /////////////////////////////// */}
                       </div>

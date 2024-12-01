@@ -192,8 +192,9 @@ export const getSingleUser = async (req, res, next) => {
 };
 
 export const editWorker = async (req, res, next) => {
-  const { userId } = req.params;
+  const { workerId } = req.params;
   const { email, username, password, role, jobDescription } = req.body;
+  const userId = req.user.id
 
   if (!username || !email || !password || !role || !jobDescription) {
     return next(handleMakeError(400, "Please input required fields"));
@@ -243,7 +244,7 @@ export const editWorker = async (req, res, next) => {
     }
 
     const user = await User.findByIdAndUpdate(
-      userId,
+      workerId,
       {
         email,
         username,

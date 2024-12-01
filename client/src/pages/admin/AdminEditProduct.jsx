@@ -57,12 +57,13 @@ export default function AdminEditProducts() {
       setProductDescription(singleProduct.productDescription || "");
       setPrice(singleProduct.price || 0);
       setDiscount(singleProduct.discount || 0);
-      setCategory(singleProduct.category || "");
+      setCategory(singleProduct?.category?._id || ""); 
       setSupplier(singleProduct.supplier || "");
       setProductsDetailsArray(singleProduct.productDetails || []);
       setImages(singleProduct.productImages || []);
     }
   }, [singleProduct]);
+
 
   // const { data, isPending, isError } = useQuery({
   //   queryKey: ["filters"],
@@ -106,7 +107,6 @@ export default function AdminEditProducts() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["colors"] });
       setProductDescription("");
       setProductName("");
@@ -116,8 +116,8 @@ export default function AdminEditProducts() {
       setSupplier("");
       setPrice(0);
       setDiscount(0);
-      navigate(`/admin/products`);
       toast.success("Successfully edited");
+      navigate(`/admin/products`);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong");
@@ -412,7 +412,7 @@ export default function AdminEditProducts() {
                   <select
                     name="category"
                     id="category"
-                    value={category}
+                    value={category} // This should be set to the category _id, not categoryName
                     onChange={(e) => setCategory(e.target.value)}
                     className="-2 rounded-[5px] py-2 border border-black outline-none"
                   >

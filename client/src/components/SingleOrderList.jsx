@@ -197,7 +197,7 @@ export default function SingleOrderList({ order, onClose }) {
               </div>
             </div>
 
-            {currentUser.role === "admin" && (
+            {currentUser.role === "admin" || currentUser.role === "validatorStaff" && (
               <div className="w-full flex gap-2 ">
                 <select
                   onChange={(e) => handleChangePaymentStatus(order._id, e)}

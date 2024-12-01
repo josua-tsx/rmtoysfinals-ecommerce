@@ -14,6 +14,8 @@ export default function AdminAddWorker() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [jobDescription, setJobDescription] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const { mutate: addWorkerMutation } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/auth/add-worker`, data);
@@ -32,6 +34,11 @@ export default function AdminAddWorker() {
       toast.error(err.response.data.message || "something went wrong!");
     },
   });
+
+  
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleAddWorkerFormSubmit = (e) => {
     e.preventDefault();
@@ -75,6 +82,9 @@ export default function AdminAddWorker() {
                 onChange={handleInputChange(setEmail)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
+              <p className="text-sm pt-1 text-green-700">
+              (Enter a valid email. Only letters, numbers, and ., _, %, + are allowed before '@'.)
+            </p>
             </div>
             <div className="flex justify-between flex-col">
               <label htmlFor="username" className="uppercase mb-2 ">
@@ -88,20 +98,41 @@ export default function AdminAddWorker() {
                 onChange={handleInputChange(setUsername)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
+               <p className="text-sm pt-1 text-green-700">
+              (Username must be 5-50 letters and contain no numbers or special characters.)
+            </p>
             </div>
 
             <div className="flex justify-between flex-col">
               <label htmlFor="password" className="uppercase mb-2 ">
                 Password:{" "}
               </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                value={password}
-                onChange={handleInputChange(setPassword)}
-                className=" outline-none p-1  border-[#313031] border rounded-[5px]"
-              />
+              <div className="flex flex-col  gap-2 relative w-full">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  id="password"
+                  value={password}
+                  onChange={handleInputChange(setPassword)}
+                  className=" outline-none p-2 w-full border-[#313031] border rounded-[5px]"
+                />
+                <label
+                  htmlFor=""
+                  className="absolute right-2 top-3 flex items-center gap-2"
+                >
+                  <p className="text-xs">SHOW PASSWORD</p>
+                  <input
+                    type="checkbox"
+                    onChange={togglePassword}
+                    checked={showPassword}
+                    className="border  size-[20px] border-black"
+                  />
+                </label>
+                <p className="text-sm text-green-700">
+                  (Password must be at least 8 characters, include one uppercase
+                  letter, one number, and one special character.)
+                </p>
+              </div>
             </div>
 
             <div className="flex justify-between flex-col">

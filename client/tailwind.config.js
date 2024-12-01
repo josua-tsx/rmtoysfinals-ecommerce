@@ -13,7 +13,7 @@ export default {
       },
       colors: {
         "primary" : "#08bb69", // text and bg-colors for butttons and etc.
-        "secondary" : "#ebd93e", // for products and forms back ground
+        "secondary" : "#f7d91b", // for products and forms back ground
         "card" : "#f4f4fc", // for products and forms back ground
         "yellow": "#fffdf6",
       }

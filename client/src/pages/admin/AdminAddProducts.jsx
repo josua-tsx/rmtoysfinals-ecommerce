@@ -13,14 +13,12 @@ import toast from "react-hot-toast";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminAddProducts() {
-
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const [images, setImages] = useState([]);
 
   const [label, setLabel] = useState("");
   const [value, setValue] = useState("");
-
 
   const [discount, setDiscount] = useState(0);
   const [productName, setProductName] = useState("");
@@ -28,30 +26,23 @@ export default function AdminAddProducts() {
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
   // const [filters, setFilters] = useState({});
   const [price, setPrice] = useState(0);
-  const [category, setCategory] = useState("")
-  const [supplier, setSupplier] = useState("")
-
+  const [category, setCategory] = useState("");
+  const [supplier, setSupplier] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
 
-  // const { data, isPending, isError } = useQuery({
-  //   queryKey: ["filters"],
-  //   queryFn: async () => {
-  //     const res = await axiosInstance.get(`/filter/get-filters`);
-  //     return res.data;
-  //   },
-  // });
-
-
-  const {data: categories = [], isPending: isCategoryPending, isError: isCategoryError} = useQuery({
-    queryKey: ['categories'],
+  const {
+    data: categories = [],
+    isPending: isCategoryPending,
+    isError: isCategoryError,
+  } = useQuery({
+    queryKey: ["categories"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/category/get-categories`)
-      return res.data 
-    }
-
-  })
+      const res = await axiosInstance.get(`/category/get-categories`);
+      return res.data;
+    },
+  });
 
   const {
     data: suppliers = [],
@@ -71,8 +62,8 @@ export default function AdminAddProducts() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["products"]})
-      queryClient.invalidateQueries({queryKey: ["colors"]})
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["colors"] });
       setProductDescription("");
       setProductName("");
       setProductsDetailsArray([]);
@@ -85,13 +76,13 @@ export default function AdminAddProducts() {
     },
   });
 
-  const {mutate: addDraftProductMutation} = useMutation({
+  const { mutate: addDraftProductMutation } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/product/add-draft`, data)
-      return res.data 
-    }, 
+      const res = await axiosInstance.post(`/product/add-draft`, data);
+      return res.data;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["products"]})
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       setProductDescription("");
       setProductName("");
       setProductsDetailsArray([]);
@@ -102,12 +93,9 @@ export default function AdminAddProducts() {
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong");
     },
-  })
-
-
+  });
 
   const handleFormDraftSubmit = () => {
-
     addDraftProductMutation({
       productName,
       price,
@@ -117,12 +105,9 @@ export default function AdminAddProducts() {
       productImages: images,
       // filters,
       category: category,
-      supplier: supplier
+      supplier: supplier,
     });
-
-  }
-
-
+  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -136,7 +121,7 @@ export default function AdminAddProducts() {
       productImages: images,
       // filters,
       category: category,
-      supplier: supplier
+      supplier: supplier,
     });
   };
 
@@ -220,10 +205,20 @@ export default function AdminAddProducts() {
                   onChange={handleInputChange(setProductName)}
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
+                <p className="text-sm pt-1  text-green-700">
+                  (Product name should nin 5 characters, max 50 characters, no
+                  double spaces, uppercase letters allowed)
+                </p>
               </div>
 
               <div className="mb-3">
-                <h1 className="mb-3">DESCRIPTION: </h1>
+                <div className="flex flex-col md:flex-row md:gap-2">
+                  <h1 className="mb-3">DESCRIPTION: </h1>
+                  <p className="text-sm pt-1  text-green-700">
+                    (Product description should max 200 characters, no double
+                    spaces, uppercase letters allowed.)
+                  </p>
+                </div>
                 <textarea
                   className="border border-black w-full p-2 h-[100px] resize-none outline-none rounded-[5px]"
                   name="productDescription"
@@ -234,9 +229,14 @@ export default function AdminAddProducts() {
               </div>
 
               <div className="mb-3">
-                <h1 className="mb-3">PRODUCT DETAILS: </h1>
-
-                <div className=" flex flex-col gap-5 ">
+                <div className="flex flex-col md:gap-2 md:flex-row">
+                  <h1 className="mb-3">PRODUCT DETAILS: </h1>
+                  <p className="text-sm pt-1  text-green-700">
+                    (Always include COLOR for LABEL and COLOR for VALUE EX:
+                    LABEL: COLOR VALUE: RED)
+                  </p>
+                </div>
+                <div className=" flex flex-col gap-5 pt-4 md:pt-0 ">
                   <div className="flex md:items-center flex-col md:flex-row md:justify-between gap-5 ">
                     <div className="flex flex-col md:flex-row gap-2  md:gap-5">
                       <label htmlFor="label">LABEL</label>
@@ -335,13 +335,14 @@ export default function AdminAddProducts() {
                 </div>
                 <div className="flex flex-col flex-1">
                   <label htmlFor="discount" className="pb-2">
-                    Discount
+                    Discount (OPTIONAL)
                   </label>
                   <input
                     type="number"
                     className="p-2 rounded-[5px] border border-black outline-none"
                     name="discount"
                     id="discount"
+                    min={0}
                     value={discount}
                     onChange={(e) => setDiscount(e.target.value)}
                   />
@@ -350,7 +351,7 @@ export default function AdminAddProducts() {
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <div className="flex flex-col flex-1">
                   <label htmlFor="discountType" className="pb-2">
-                    Discount type
+                    Discount type (OPTIONAL)
                   </label>
                   <select
                     disabled
@@ -361,51 +362,50 @@ export default function AdminAddProducts() {
                     <option value="chineseNewYear">None</option>
                     <option value="chineseNewYear">Chinese New Year</option>
                     <option value="christmas">Christmas</option>
-                    <option value="mothersDay">mothers day</option>
                     <option value="holloween">holloween</option>
                   </select>
                 </div>
               </div>
 
               <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
-               
-
                 <div className="flex flex-col">
                   <h1 className="py-2">Categories</h1>
                   <select
-                  name="category"
-                   id="category"
-                   value={category}
-                   onChange={(e) => setCategory(e.target.value)}
-                  className="-2 rounded-[5px] py-2 border border-black outline-none">
+                    name="category"
+                    id="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="-2 rounded-[5px] py-2 border border-black outline-none"
+                  >
                     <option value="">Select Category</option>
-                    {
-                      categories.length > 0 && categories.map((category) => (
-                        <option key={category._id} value={category._id} >{category.categoryName}</option>
-                      ))
-                    }
+                    {categories.length > 0 &&
+                      categories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.categoryName}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
                 <div className="flex flex-col">
                   <h1 className="py-2">Suppliers</h1>
-                  <select 
-                   name="supplier"
-                   id="supplier"
-                   value={supplier}
-                   onChange={(e) => setSupplier(e.target.value)}
-                  className="-2 rounded-[5px] py-2 border border-black outline-none">
+                  <select
+                    name="supplier"
+                    id="supplier"
+                    value={supplier}
+                    onChange={(e) => setSupplier(e.target.value)}
+                    className="-2 rounded-[5px] py-2 border border-black outline-none"
+                  >
                     <option value="">Select Supplier</option>
-                    {
-                      suppliers.length > 0 && suppliers.map(supplier => (
-                        <option key={supplier._id} value={supplier._id}>{supplier.supplierName}</option>
-                      ))
-                    }
+                    {suppliers.length > 0 &&
+                      suppliers.map((supplier) => (
+                        <option key={supplier._id} value={supplier._id}>
+                          {supplier.supplierName}
+                        </option>
+                      ))}
                   </select>
                 </div>
-
               </div>
-               
 
               {/* <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
                 <h1 className="py-2">FILTERS (OPTIONAL)</h1>
@@ -450,7 +450,11 @@ export default function AdminAddProducts() {
                 onClick={() => handleFormDraftSubmit()}
                 className="w-[100px] md:w-[200px]"
               >
-                <Buttons buttonType={"button"} buttonName={"draft"} icon={<IoArchive />} />
+                <Buttons
+                  buttonType={"button"}
+                  buttonName={"draft"}
+                  icon={<IoArchive />}
+                />
               </div>
 
               <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">

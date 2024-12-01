@@ -6,16 +6,20 @@ import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminWorkersTable() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedId, setIsSelectedId] = useState(null)
+
   const navigate = useNavigate()
 
   const {
     data: workers = [],
-    isPending: isWorkersPending,
+    isPending: isWorkersPending, 
     isError: isWorkersError,
   } = useQuery({
     queryKey: ["worker"],
@@ -50,6 +54,23 @@ export default function AdminWorkersTable() {
     },
   });
 
+  const handleClickDelete = (workerId) => {
+    setIsSelectedId(workerId)
+    setIsModalOpen(true)
+  }
+
+  const handleConfirm = () => {
+    if (selectedId) {
+      deleteWorkerMutation(selectedId)
+      setIsModalOpen(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setIsSelectedId(null)
+    setIsModalOpen(false)
+  }
+
   if (isWorkersPending) {
     <p>loading...</p>;
   }
@@ -59,6 +80,15 @@ export default function AdminWorkersTable() {
 
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        title={"Confirm delete"}
+        message={"Are you sure you want to delete this worker? This action can not be undone."}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>WORKER TABLE</h1>
         <div className="flex items-center relative">
@@ -131,7 +161,7 @@ export default function AdminWorkersTable() {
                       <CiEdit size={25} />
                     </button>
                     <button
-                      onClick={() => deleteWorkerMutation(worker._id)}
+                      onClick={() => handleClickDelete(worker._id)}
                       type="button"
                       className="text-red-600 hover:text-red-300"
                     >

@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 export default function AdminEditWorker() {
   const queryClient = useQueryClient();
   const params = useParams();
-  const navigate = useNavigate("")
+  const navigate = useNavigate("");
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -54,13 +54,14 @@ export default function AdminEditWorker() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["worker"] });
-      setEmail("")
-      setUsername("")
-      setJobDescription("")
-      setRole("")
-      setPassword("")
+      // queryClient.invalidateQueries({ queryKey: ["worker"] });
+      setEmail("");
+      setUsername("");
+      setJobDescription("");
+      setRole("");
+      setPassword("");
       toast.success("Successfully worker updated!");
+      navigate(`/admin/worker`);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -88,7 +89,7 @@ export default function AdminEditWorker() {
 
       <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col">
         <form
-            onSubmit={handleSubmitForm}
+          onSubmit={handleSubmitForm}
           className="border flex flex-col gap-5 relative rounded-[5px] border-black bg-card"
         >
           <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
@@ -105,6 +106,10 @@ export default function AdminEditWorker() {
                 onChange={handleInputChange(setEmail)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
+              <p className="text-sm pt-1 text-green-700">
+                (Enter a valid email. Only letters, numbers, and ., _, %, + are
+                allowed before '@'.)
+              </p>
             </div>
             <div className="flex justify-between flex-col">
               <label htmlFor="username" className="uppercase mb-2 ">
@@ -118,6 +123,10 @@ export default function AdminEditWorker() {
                 onChange={handleInputChange(setUsername)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
+              <p className="text-sm pt-1 text-green-700">
+                (Username must be 5-50 letters and contain no numbers or special
+                characters.)
+              </p>
             </div>
 
             <div className="flex justify-between flex-col">
@@ -151,7 +160,6 @@ export default function AdminEditWorker() {
                 </p>
               </div>
             </div>
-
 
             <div className="flex justify-between flex-col">
               <label htmlFor="password" className="uppercase mb-2 ">
@@ -189,8 +197,13 @@ export default function AdminEditWorker() {
             <button className="border flex-1 bg-primary text-card rounded-[5px] border-black p-2">
               UPDATE
             </button>
-            <button onClick={() => navigate(`/admin/worker`)}
-            type="button" className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card ">Cancel</button>
+            <button
+              onClick={() => navigate(`/admin/worker`)}
+              type="button"
+              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>

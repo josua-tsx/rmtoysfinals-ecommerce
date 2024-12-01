@@ -1,4 +1,4 @@
-  import { handleMakeError } from "../middleware/handleError.js";
+import { handleMakeError } from "../middleware/handleError.js";
 import User from "../models/user.models.js";
 import { generateTokens } from "../utils/generateToken.js";
 import { setCookies } from "../utils/setCookies.js";
@@ -7,7 +7,11 @@ import RefreshToken from "../models/refreshToken.model.js";
 
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
-import { isValidEmail, isValidPassword, isValidUsername } from "../utils/validations.js";
+import {
+  isValidEmail,
+  isValidPassword,
+  isValidUsername,
+} from "../utils/validations.js";
 
 const storeRefreshToken = async (userId, refreshToken) => {
   const token = new RefreshToken({
@@ -19,28 +23,43 @@ const storeRefreshToken = async (userId, refreshToken) => {
 
 // REGISTER
 export const signup = async (req, res, next) => {
-  const { username, email, password, confirmPassword } = req.body;
+  const { password, confirmPassword } = req.body;
 
+  const email = req.body.email.toLowerCase();
+  const username = req.body.username.toLowerCase();
 
   if (!username || !email || !password || !confirmPassword)
     return next(handleMakeError(400, "Please input required fields"));
 
-
   if (!isValidEmail(email)) {
-    return next(handleMakeError(400, "Invalid email format or email should be all lowercase."))
+    return next(
+      handleMakeError(
+        400,
+        "Invalid email format or email should be all lowercase."
+      )
+    );
   }
 
-  if(!isValidPassword(password)) {
-    return next(handleMakeError(400, "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."))
+  if (!isValidPassword(password)) {
+    return next(
+      handleMakeError(
+        400,
+        "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+      )
+    );
   }
 
-  if(!isValidUsername(username)) {
-    return next(handleMakeError(400, "Invalid username or email should be at least 10 characters."))
+  if (!isValidUsername(username)) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid username or email should be at least 10 characters."
+      )
+    );
   }
 
   if (password !== confirmPassword)
     return next(handleMakeError(400, "Passwords are not equal "));
-
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -69,10 +88,10 @@ export const signup = async (req, res, next) => {
       targetId: newUser._id,
       targetType: "NewUser",
       details: {
-        description: "New user created!"
+        description: "New user created!",
       },
-      role: "customer"
-    })
+      role: "customer",
+    });
 
     res.status(201).json({
       _id: newUser._id,
@@ -189,41 +208,51 @@ export const refreshToken = async (req, res, next) => {
 
 export const getMe = async (req, res, next) => {
   try {
-    res.json(req.user)
+    res.json(req.user);
   } catch (error) {
-    next(error)
-    console.log(error)
+    next(error);
+    console.log(error);
   }
 };
 
 // ADD WORKER
 
 export const addWorker = async (req, res, next) => {
-  const { email, username, password, confirmPassword, role, jobDescription } = req.body; // Extract confirmPassword
-  const userId = req.user.id
-
+  const { email, username, password, confirmPassword, role, jobDescription } =
+    req.body; // Extract confirmPassword
+  const userId = req.user.id;
 
   if (!username || !email || !password || !confirmPassword) {
     return next(handleMakeError(400, "Please input required fields"));
   }
 
-  
   if (!isValidEmail(email)) {
-    return next(handleMakeError(400, "Invalid email format or email should be all lowercase."))
+    return next(
+      handleMakeError(
+        400,
+        "Invalid email format or email should be all lowercase."
+      )
+    );
   }
 
-  if(!isValidPassword(password)) {
-    return next(handleMakeError(400, "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."))
+  if (!isValidPassword(password)) {
+    return next(
+      handleMakeError(
+        400,
+        "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+      )
+    );
   }
 
-  if(!isValidUsername(username)) {
-    return next(handleMakeError(400, "Invalid username. Username does not allow number."))
+  if (!isValidUsername(username)) {
+    return next(
+      handleMakeError(400, "Invalid username. Username does not allow number.")
+    );
   }
 
   if (password !== confirmPassword) {
     return next(handleMakeError(400, "Passwords do not match"));
   }
-
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -249,10 +278,10 @@ export const addWorker = async (req, res, next) => {
       details: {
         email,
         job: role,
-        jobDescription
+        jobDescription,
       },
-      role: "admin"
-    })
+      role: "admin",
+    });
 
     res.status(201).json({
       _id: newUser._id,
@@ -266,5 +295,3 @@ export const addWorker = async (req, res, next) => {
     next(error);
   }
 };
-
-

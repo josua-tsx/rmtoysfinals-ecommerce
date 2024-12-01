@@ -46,7 +46,7 @@ export default function ChangeInfoComponent() {
     onSuccess: (data) => {
       console.log(data);
       setCurrentUser(data);
-      setShowPassword(false)
+      setShowPassword(false);
       toast.success("Profile Updated Successfully");
     },
     onError: (err) => {
@@ -163,11 +163,9 @@ export default function ChangeInfoComponent() {
                     name="email"
                     defaultValue={currentUser.email}
                     id="email"
-                    className="border border-black px-5 py-2 w-[85%] bg-gray-200 rounded-[5px] outline-none"
+                    className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                  <button type="button">
-                    <CiEdit size={35} className="text-primary" />
-                  </button>
+                
                 </div>
               </div>
             </div>
@@ -180,11 +178,9 @@ export default function ChangeInfoComponent() {
                     name="username"
                     defaultValue={currentUser.username}
                     id="username"
-                    className="border border-black px-5 py-2 w-[85%] bg-gray-200 rounded-[5px] outline-none"
+                    className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                  <button type="button">
-                    <CiEdit size={35} className="text-primary" />
-                  </button>
+                
                 </div>
               </div>
             </div>
@@ -197,11 +193,9 @@ export default function ChangeInfoComponent() {
                     name="fullName"
                     defaultValue={currentUser.fullName}
                     id="fullName"
-                    className="border border-black px-5 py-2 w-[85%] bg-gray-200 rounded-[5px] outline-none"
+                    className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                  <button type="button">
-                    <CiEdit size={35} className="text-primary" />
-                  </button>
+                
                 </div>
               </div>
             </div>
@@ -209,7 +203,7 @@ export default function ChangeInfoComponent() {
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="password">password: </label>
                 <div className="flex items-center  justify-between gap-5">
-                  <div className="flex relative bg-gray-200  w-[85%]">
+                  <div className="flex relative bg-gray-200  w-full">
                     <input
                       type={showPassword ? "text" : "password"}
                       name="password"
@@ -229,9 +223,7 @@ export default function ChangeInfoComponent() {
                       />
                     </label>
                   </div>
-                  <button type="button">
-                    <CiEdit size={35} className="text-primary" />
-                  </button>
+                
                 </div>
               </div>
             </div>
@@ -239,17 +231,21 @@ export default function ChangeInfoComponent() {
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="phoneNum">phone number: </label>
                 <div className="flex items-center  justify-between gap-5">
-                  <input
-                    type="number"
-                    name="phoneNumber"
-                    id="phoneNumber"
-                    placeholder="phone number"
-                    defaultValue={currentUser.phoneNumber}
-                    className="border border-black px-5 py-2 w-[85%] bg-gray-200 rounded-[5px] outline-none"
-                  />
-                  <button type="button">
-                    <CiEdit size={35} className="text-primary" />
-                  </button>
+                  <div className="flex w-full flex-col gap-1">
+                    <input
+                      type="number"
+                      name="phoneNumber"
+                      id="phoneNumber"
+                      placeholder="phone number"
+                      defaultValue={currentUser.phoneNumber}
+                      className="border border-black px-5 py-2  bg-gray-200 rounded-[5px] outline-none"
+                    />
+                    <p className="text-sm pt-1 lowercase text-green-700">
+                      (Category name do not allow spaces and number. It should
+                      be between 3 to 50 max characters.)
+                    </p>
+                  </div>
+
                 </div>
               </div>
             </div>

@@ -4,12 +4,25 @@ import 'swiper/css';
 import 'swiper/css/scrollbar';
 
 
-
-import jacket1 from '../../assets/jacket1.png'
 import car from '../../assets/car.png'
 import ImageCard from "./ImageCard";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../../lib/axios";
 
 export default function ImageSlider() {
+
+  const {data: bestProducts =[], isPending, isError} = useQuery({
+    queryKey: ["bestProducts"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/product/get-bestProducts`)
+      return res.data
+    }
+  })
+
+
+  if (isPending) return <p>Loading...</p>
+  if (isError) return <p>Error.</p>
+
   return (
   
 <Swiper
@@ -30,18 +43,18 @@ export default function ImageSlider() {
   modules={[EffectCoverflow]}
   initialSlide={2} // Center the second slide initially
 >
-  <SwiperSlide>
-    <ImageCard picture={car} />
-  </SwiperSlide>
-  <SwiperSlide>
-    <ImageCard picture={car} />
-  </SwiperSlide>
-  <SwiperSlide>
-    <ImageCard picture={car} />
-  </SwiperSlide>
-  <SwiperSlide>
-    <ImageCard picture={car} />
-  </SwiperSlide>
+ 
+  {
+    bestProducts.length > 0 ? (
+      bestProducts.map((best) => (
+        <SwiperSlide key={best._id}>
+        <ImageCard product={best} />
+      </SwiperSlide>
+     
+      ))
+    ) : <p>No products yet.</p>
+  }
+
 </Swiper>
 
   );

@@ -49,6 +49,71 @@ export const addGcash = async (req, res, next) => {
   }
 };
 
+export const getSingleGcash = async (req, res, next) => {
+  const { gcashId } = req.params;
+  try {
+    const gcash = await Gcash.findById(gcashId);
+    if (!gcash) return next(handleMakeError(400, "No Gcash found!"));
+
+    res.status(200).json(gcash);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editGcash = async (req, res, next) => {
+  const { gcashUrl, gcashName } = req.body;
+  const { gcashId } = req.params;
+  const userId = req.user.id;
+
+  if (!gcashUrl || !gcashName) {
+    return next(handleMakeError(400, "Please input required fields!"));
+  }
+
+  if (!gcashName.trim()) {
+    return next(handleMakeError(400, "Gcash name do not allow only spaces!"));
+  }
+
+  if (!isValidTextAllowNumbers(gcashName)) {
+    return next(
+      handleMakeError(
+        400,
+        "Gcash name do not allow double spaces. It should be 3 between 50 characters long."
+      )
+    );
+  }
+
+  try {
+    const gcash = await Gcash.findByIdAndUpdate(
+      gcashId,
+      {
+        gcashUrl,
+        gcashName,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!gcash) return next(handleMakeError(400, "No gcash found!"));
+
+    await logAuditTrail({
+      action: "edit_gcashQR",
+      userId,
+      targetId: gcash._id,
+      targetType: "Gcash",
+      details: {
+        gcashName,
+      },
+      role: "admin",
+    });
+
+    res.status(200).json(gcash);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAllGcash = async (req, res, next) => {
   try {
     const gcash = await Gcash.find();
@@ -127,7 +192,9 @@ export const updateGcashStatus = async (req, res, next) => {
 
 export const getGcashActive = async (req, res, next) => {
   try {
-    const gcash = await Gcash.find({ gcashStatus: "Active" });
+    const gcash = await Gcash.find({ gcashStatus: "Active" }).sort({
+      createdAt: -1,
+    });
     if (!gcash) return next(handleMakeError(400, "gcash not found!"));
     res.status(200).json(gcash);
   } catch (error) {

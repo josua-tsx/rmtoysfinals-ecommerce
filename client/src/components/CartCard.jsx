@@ -105,7 +105,7 @@ export default function CartCard({ productCart }) {
               +
             </button>
 
-            <div className="absolute right-20  lg:-right-24 text-sm w-[90px]">
+            <div className="text-sm w-[90px]">
               (STOCKS {productCart?.productId?.stocks?.stockQuantity})
             </div>
 

@@ -6,9 +6,10 @@ export const isEmpty = (value) => !value || value.trim() === "";
 // EMAIL SHOULD NOT HAVE NUMBER AFTER @
 // EMAIL SHOULD HAVE DOMAIN
 export const isValidEmail = (email) => {
-  const regex = /^[a-z0-9._%+-]+@[a-z]+(\.[a-z]+)+$/;
+  const regex = /^[A-Za-z0-9._%+-]+@[a-z]+\.[a-z]+(\.[a-z]+)*$/;
   return regex.test(email);
 };
+
 
 // PASSWORD SHOULD BE AT LEAST 8 CHARACTERS WITH ONE UPPERCASE AT LEAST ONE NUMBER AND SPECIAL CHARACTER
 export const isValidPassword = (password) => {
@@ -18,9 +19,10 @@ export const isValidPassword = (password) => {
 };
 
 export const isValidUsername = (username) => {
-  const regex = /^[a-z]{10,}$/;
+  const regex = /^[a-zA-Z]{5,50}$/;
   return regex.test(username);
 };
+
 
 //   console.log(isValidUsername("alllowercaseuser"));   // true (meets all criteria)
 //   console.log(isValidUsername("AllLowerCaseUser"));   // false (contains uppercase letters)
@@ -69,3 +71,11 @@ export const isValidTextAllowNumbers = (text) => {
     const regex = /^[A-Za-z0-9 ]{3,50}$/; // Only letters, numbers, and spaces allowed, length between 5 and 50 characters
     return regex.test(text) && !/\s{2,}/.test(text);; // Matches letters, numbers, and spaces, and ensures no double spaces
   };
+
+  
+
+  export const isValidCategoryName = (name) => {
+    const regex = /^[a-zA-Z\s'-]{3,50}$/;
+    return regex.test(name);
+  };
+  

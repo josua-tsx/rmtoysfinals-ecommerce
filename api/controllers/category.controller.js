@@ -1,7 +1,7 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import { isValidTextNoNumbers } from "../utils/validations.js";
+import { isValidCategoryName} from "../utils/validations.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
@@ -19,14 +19,15 @@ export const addCategory = async (req, res, next) => {
     return next(handleMakeError(400, "Only spaces not allowed."));
   }
 
-  if (!isValidTextNoNumbers(categoryName)) {
+  if (!isValidCategoryName(categoryName)) {
     return next(
       handleMakeError(
         400,
-        "Category name do not allow spaces and number. It should be between 3 to 50 max characters."
+        "Category name must be 3-50 letters and may include spaces, hyphens (-), and apostrophes (')"
       )
     );
   }
+
 
   try {
     const newCategory = new Category({
@@ -113,11 +114,11 @@ export const editCategory = async (req, res, next) => {
     return next(handleMakeError(400, "Only spaces not allowed."));
   }
 
-  if (!isValidTextNoNumbers(categoryName)) {
+  if (!isValidCategoryName(categoryName)) {
     return next(
       handleMakeError(
         400,
-        "Category name do not allow spaces and number. It should be between 3 to 50 max characters."
+        "Category name must be 3-50 letters and may include spaces, hyphens (-), and apostrophes (')"
       )
     );
   }

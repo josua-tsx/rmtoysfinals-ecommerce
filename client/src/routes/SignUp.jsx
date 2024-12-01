@@ -75,6 +75,9 @@ export default function SignUp() {
               onChange={handleInputChange(setEmail)}
               className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
             />
+            <p className="text-sm pt-1 text-green-700">
+              (Enter a valid email. Only letters, numbers, and ., _, %, + are allowed before '@'.)
+            </p>
           </div>
           <div className="flex justify-between flex-col">
             <label htmlFor="username" className="uppercase mb-2 ">
@@ -88,6 +91,9 @@ export default function SignUp() {
               onChange={handleInputChange(setUsername)}
               className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
             />
+             <p className="text-sm pt-1 text-green-700">
+              (Username must be 5-50 letters and contain no numbers or special characters.)
+            </p>
           </div>
           <div className="flex justify-between flex-col">
             <label htmlFor="password" className="uppercase mb-2 ">
@@ -114,7 +120,10 @@ export default function SignUp() {
                   className="border  size-[20px]  border-black"
                 />
               </label>
-              <p className="text-sm text-green-700">(Password must be at least 8 characters, include one uppercase letter, one number, and one special character.)</p>
+              <p className="text-sm text-green-700">
+                (Password must be at least 8 characters, include one uppercase
+                letter, one number, and one special character.)
+              </p>
             </div>
           </div>
           <div className="flex justify-between flex-col">
