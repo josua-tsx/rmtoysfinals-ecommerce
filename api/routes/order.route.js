@@ -9,7 +9,6 @@ import {
   getAllOrder,
   getAllRefunded,
   getAllSuccess,
-  getDailySales,
   getLatestCancelledOrder,
   getLatestFailedOrder,
   getLatestRefundedOrder,
@@ -46,8 +45,6 @@ router.get(`/get-refundedCancelled`, getAllRefunded)
 router.get(`/get-cancelled`, getAllCancelled)
 
 router.get(`/monthly/sales`, getMonthlySales)
-
-router.get(`/daily/sales`, getDailySales)
 
 router.get(`/latest/success`, getLatestSuccessOrder)
 

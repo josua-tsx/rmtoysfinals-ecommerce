@@ -6,18 +6,17 @@ import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import EditReviewComponent from "./EditReviewComponent";
-import { useNavigate } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
+import { ConfirmModal } from "../reusable/ConfirmModal";
 
 export default function ReviewCard({ review }) {
-  const navigate = useNavigate();
-
   const currentUser = useUserStore((state) => state.currentUser);
-
-  console.log(currentUser);
 
   const [editReviewId, setEditReviewId] = useState(null);
   const [openEditModal, setOpenEditModal] = useState(false);
+
+  const [selectedId, setSelectedId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -35,6 +34,35 @@ export default function ReviewCard({ review }) {
       toast.error(err.response.data.message || "something went wrong.");
     },
   });
+
+  const handleDeleteClick = (reviewId) => {
+    setSelectedId(reviewId);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteClick2 =  (reviewId) => {
+    setSelectedId(reviewId);
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setSelectedId(null);
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmAdmin = async () => {
+    if (selectedId) {
+      adminDeleteReviewMutation(selectedId);
+      userDeleteReviewMutation(selectedId);
+      setIsModalOpen(false);
+    }
+  };
+  const handleConfirmCustomer = () => {
+    if (selectedId) {
+    userDeleteReviewMutation(selectedId);
+      setIsModalOpen(false);
+    }
+  };
 
   const { mutate: userDeleteReviewMutation } = useMutation({
     mutationFn: async (reviewId) => {
@@ -66,10 +94,6 @@ export default function ReviewCard({ review }) {
     enabled: !!editReviewId,
   });
 
-  const handleNavigate = (productId) => {
-    navigate(`/product/${productId}`);
-  };
-
   const handleOpenReviewEditModal = (reviewId) => {
     if (reviewId && reviewId._id !== null) {
       setEditReviewId(reviewId._id);
@@ -78,7 +102,7 @@ export default function ReviewCard({ review }) {
   };
 
   return (
-    <div className="relative border flex flex-col gap-3 w-full mx-auto px-2 md:px-5 py-4 rounded-[5px] bg-card border-black ">
+    <div className="relative border font-main flex flex-col gap-3 w-full mx-auto px-2 md:px-5 py-4 rounded-[5px] bg-card border-black ">
       {/* <EditReviewComponent/> */}
       {openEditModal && singleReview && !isPending && !isError && (
         <EditReviewComponent
@@ -86,6 +110,21 @@ export default function ReviewCard({ review }) {
           onClose={() => setOpenEditModal(false)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        title={"Delete confirm"}
+        message={
+          "Are you sure you want delete this review? This action can not be undone."
+        }
+        onConfirm={() =>
+          currentUser.role === "admin"
+            ? handleConfirmAdmin()
+            : handleConfirmCustomer()
+        }
+        onCancel={handleCancel}
+      />
+
       {/* PIN */}
       <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
         <div className="  w-[15px] h-[15px] rounded-full">
@@ -107,7 +146,7 @@ export default function ReviewCard({ review }) {
             </button>
             {currentUser.role === "admin" ? (
               <button
-                onClick={() => adminDeleteReviewMutation(review._id)}
+                onClick={() => handleDeleteClick(review._id)}
                 type="button"
                 className="text-red-600"
               >
@@ -115,7 +154,7 @@ export default function ReviewCard({ review }) {
               </button>
             ) : (
               <button
-                onClick={() => userDeleteReviewMutation(review._id)}
+                onClick={() => handleDeleteClick2(review._id)}
                 type="button"
                 className="text-red-600"
               >

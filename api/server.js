@@ -39,7 +39,6 @@ app.use(
   })
 );
 
-export const paymongoClient = Paymongo(process.env.PAYMONGO_SECRET_KEY);
 
 console.log(process.env.CLIENT_URL);
 app.use(express.json());

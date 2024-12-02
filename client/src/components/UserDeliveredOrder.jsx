@@ -4,6 +4,7 @@ import SingleOrderList from "./SingleOrderList";
 import { useQuery } from "@tanstack/react-query";
 import RefundModal from "./RefundModal";
 
+
 export default function UserDeliveredOrder() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
@@ -29,6 +30,8 @@ export default function UserDeliveredOrder() {
     },
     enabled: !!orderId,
   });
+
+  console.log(userDelivered)
 
 
   const handleOpenSingleOrder = (orderId) => {
@@ -111,17 +114,23 @@ export default function UserDeliveredOrder() {
                 </div>
 
                 {/* ACTIONS */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-row md:flex-col gap-2">
                   {/* <button>Cancel</button> */}
-                  <button onClick={() => handleOpenSingleOrder(order)}>
+                  <button className="flex-1" onClick={() => handleOpenSingleOrder(order)}>
                     View Details
                   </button>
-                  <button
+                  <button 
                     onClick={() => handleRefundSingle(order)}
-                    className="text-green-700"
+                    className="text-green-700 flex-1"
                   >
                     Ask For Refund
                   </button>
+                 {
+                  order.status === "Delivered" ? (
+                    <button onClick={() => handleOpenSingleOrder(order)}
+                    className="flex-1 text-indigo-700">Write a review</button>
+                  ) : ""
+                 }
                 </div>
               </div>
             </div>

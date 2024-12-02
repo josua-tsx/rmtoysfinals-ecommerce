@@ -97,7 +97,7 @@ export default function AdminCategoryTable() {
      
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>Category Table</h1>
+        <h1>CATEGORY TABLE</h1>
         <div className="flex items-center relative">
           <input
             type="text"

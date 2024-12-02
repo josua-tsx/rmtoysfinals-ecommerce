@@ -90,7 +90,6 @@ export default function AdminSalesOverview() {
   function getDailySales(orders) {
     const dailySales = {};
 
-    // Loop through each order
     orders.forEach((order) => {
       // Parse the date (ignore the time part)
       const date = new Date(order.createdAt).toISOString().split("T")[0]; // Format: YYYY-MM-DD
@@ -115,7 +114,6 @@ export default function AdminSalesOverview() {
 
   // Get daily sales
   const dailySales = getDailySales(successOrderData);
-  console.log();
 
   if (
     isMonthlyPending ||

@@ -8,8 +8,12 @@ import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import formatPrice from "../reusable/formatPrice";
 
+import { CgUnavailable } from "react-icons/cg";
+
 export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
+
+  console.log(product)
 
   const { mutate: addToCartMutation } = useMutation({
     mutationFn: async (productId) => {
@@ -68,12 +72,23 @@ export default function ShopProductCards({ product }) {
       </div>
 
       {product?.discount && product?.discount ? (
-        <div className="absolute  text-xs border top-5 z-10 bg-red-700 text-card p-1 rounded-[5px] -right-[33px] border-black">
+        <div className="absolute  text-xs border top-5 -right-[33px] z-10 bg-red-700 text-card p-1 rounded-[5px]  border-black">
           DISCOUNTED
         </div>
       ) : (
         ""
       )}
+
+      {
+        product?.stocks?.stockQuantity === 0 ? (
+          <div className="absolute flex gap-1 items-center  text-sm border top-[-15px] -left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">
+          <span><CgUnavailable size={20} /></span>
+          OUT OF STOCK 
+        </div>
+        ) : (
+          ""
+        )
+      }
 
       <div className="w-full h-[700px] flex justify-center relative overflow-hidden group-hover:bg-primary rounded-t-[5px]">
         <img src={product?.productImages} className="w-auto" />

@@ -2,6 +2,6 @@
 export const navItems = [
     { name: "Shop", path: "/shop" },
     { name: "Popular", path: "/popular" },
-    { name: "Contacts", path: "/contacts" },
+    { name: "Contacts", path: "/contact" },
     { name: "Reviews", path: "/reviews" },
 ];

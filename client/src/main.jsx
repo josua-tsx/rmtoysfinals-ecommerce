@@ -58,6 +58,7 @@ import AdminProductReviews from "./pages/admin/AdminProductReviews.jsx";
 import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedValidatorStaffRoute.jsx";
 import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
 import AdminEditGcash from "./pages/admin/AdminEditGcash.jsx";
+import Contact from "./pages/Contact.jsx";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +109,10 @@ const router = createBrowserRouter([
         path: `/popular`,
         element: <PopularPage />,
       },
+      {
+        path: `/contact`,
+        element: <Contact/>
+      }
     ],
   },
 

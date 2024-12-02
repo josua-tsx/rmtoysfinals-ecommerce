@@ -3,10 +3,13 @@ import axiosInstance from "../../lib/axios";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminAddStocks() {
   const [productId, setProductId] = useState("");
   const [stockQuantity, setStockQuantity] = useState(0);
+
+  const navigate = useNavigate()
 
   const {
     data: products = [],
@@ -27,9 +30,10 @@ export default function AdminAddStocks() {
       return res.data;
     },
     onSuccess: () => {
-      toast.success("Successfully Added stock");
       setStockQuantity(0)
       setProductId("")
+      toast.success("Successfully Added stock");
+      // navigate(`/admin/stocks`)
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -98,13 +102,20 @@ export default function AdminAddStocks() {
             </div>
           </div>
 
-         <div className="flex p-2">
+         <div className="flex gap-2 p-2">
          <button
             type="submit"
             className="bg-primary flex-1 border border-black text-card p-2 rounded-[5px]"
           >
             Add Stocks
           </button>
+          <button
+                onClick={() => navigate(`/admin/stocks`)}
+                type="button"
+                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              >
+                Cancel
+              </button>
          </div>
         </form>
       </div>

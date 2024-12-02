@@ -7,6 +7,7 @@ import Review from "../models/review.model.js";
 import Category from "../models/category.model.js";
 import Order from "../models/order.model.js";
 import { isValidText1, isValidText2 } from "../utils/validations.js";
+import Wishlist from "../models/wishlist.models.js";
 
 export const addProduct = async (req, res, next) => {
   const userId = req.user.id;
@@ -229,7 +230,7 @@ export const getBestSoldProducts = async (req, res, next) => {
     const sortOptions = { sold: -1 }; // Sort by sold in descending order
 
     // Find the top 4 products, populated with supplier, category, stocks, and reviews
-    const bestSoldProducts = await Product.find()
+    const bestSoldProducts = await Product.find({ status: "published" })
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -262,7 +263,7 @@ export const getBestRatedProducts = async (req, res, next) => {
     // But since we can't calculate average directly in the query without aggregation,
     // we will fetch products and manually calculate the average rating afterward.
 
-    const bestRatedProducts = await Product.find()
+    const bestRatedProducts = await Product.find({status: "published"})
       .populate({
         path: "supplier",
         select: "supplierName", // Populate supplierName
@@ -340,6 +341,8 @@ export const deleteProduct = async (req, res, next) => {
     await Stocks.deleteMany({ product: productId });
 
     await Cart.deleteMany({ "items.productId": productId });
+
+    await Wishlist.deleteMany({ "items.productId": productId });
 
     await Review.deleteMany({ productId: productId });
 
@@ -655,10 +658,10 @@ export const toggleBestProduct = async (req, res, next) => {
 
 export const getBestProducts = async (req, res, next) => {
   try {
-    const product = await Product.find({isBestProduct: true})
+    const product = await Product.find({ isBestProduct: true });
     if (product.length === 0) return res.status(200).json([]);
-    res.status(200).json(product)
+    res.status(200).json(product);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};

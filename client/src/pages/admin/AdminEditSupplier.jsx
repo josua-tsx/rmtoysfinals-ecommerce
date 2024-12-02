@@ -11,14 +11,11 @@ export default function AdminEditSupplier() {
   const params = useParams();
   const navigate = useNavigate();
 
-
-
   const [supplierName, setSupplierName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [supplierPay, setSupplierPay] = useState("");
   const [supplierAddress, setSupplierAddress] = useState("");
-
 
   const {
     data: singleSupplier,
@@ -39,14 +36,13 @@ export default function AdminEditSupplier() {
 
   useEffect(() => {
     if (singleSupplier) {
-      setSupplierName(singleSupplier.supplierName)
-      setContactPerson(singleSupplier.contactPerson)
-      setContactNumber(singleSupplier.contactNumber)
-      setSupplierPay(singleSupplier.supplierPay)
-      setSupplierAddress(singleSupplier.supplierAddress)
+      setSupplierName(singleSupplier.supplierName);
+      setContactPerson(singleSupplier.contactPerson);
+      setContactNumber(singleSupplier.contactNumber);
+      setSupplierPay(singleSupplier.supplierPay);
+      setSupplierAddress(singleSupplier.supplierAddress);
     }
   }, [singleSupplier]);
-
 
   const {
     mutate: editSupplierMutation,
@@ -71,8 +67,6 @@ export default function AdminEditSupplier() {
     },
   });
 
-
-
   const handleEditSupplierSubmit = (e) => {
     e.preventDefault();
 
@@ -95,16 +89,15 @@ export default function AdminEditSupplier() {
         supplierPay,
         supplierAddress,
       });
-      e.target.reset()
+      e.target.reset();
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleCancel = () => {
-    navigate(`/admin/supplier`)
-  }
-
+    navigate(`/admin/supplier`);
+  };
 
   if (isSinglePending || isEditPending) {
     <p>loading...</p>;
@@ -137,6 +130,10 @@ export default function AdminEditSupplier() {
                 onChange={handleInputChange(setSupplierName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Supplier name do not allow double spaces, and number. it should
+                be between 3 and 50 characters.)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
@@ -150,6 +147,9 @@ export default function AdminEditSupplier() {
                 onChange={handleInputChange(setContactPerson)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Contact person full name does not allow double spaces.)
+              </p>
             </div>
 
             <div className="flex gap-2 flex-col">
@@ -165,6 +165,10 @@ export default function AdminEditSupplier() {
                 onChange={handleInputChange(setContactNumber)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Phone number should be valid number. It should start with 09
+                and exact 11 numbers)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
@@ -178,6 +182,10 @@ export default function AdminEditSupplier() {
                 onChange={handleInputChange(setSupplierPay)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Supplier pay do not allow double sapces. It should be between 3
+                and 50 characters.)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
@@ -192,6 +200,10 @@ export default function AdminEditSupplier() {
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
+            <p className="text-sm pt-1 lowercase text-green-700">
+              (Supplier address do not allow double spaces and is between 5 and
+              200 max characters long.)
+            </p>
           </div>
 
           <div className="flex gap-2 p-2">

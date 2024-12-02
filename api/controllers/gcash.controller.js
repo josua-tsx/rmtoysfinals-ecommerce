@@ -11,7 +11,7 @@ export const addGcash = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
-  if (!gcashName.trim()) {
+  if (!gcashName) {
     return next(handleMakeError(400, "Gcash name do not allow only spaces!"));
   }
 

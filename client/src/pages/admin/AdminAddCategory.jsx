@@ -4,12 +4,15 @@ import AdminHeader from "../../reusable/Admin/AdminHeader";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminAddCategory() {
   const queryClient = useQueryClient();
 
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
+
+  const navigate = useNavigate()
 
   const {
     mutate: addCategoryMutation,
@@ -95,10 +98,17 @@ export default function AdminAddCategory() {
             </div>
           </div>
 
-          <div className="flex flex-col p-2">
-            <button className="border border-black bg-primary text-card rounded-[5px] uppercase p-2">
+          <div className="flex  gap-2 p-2">
+            <button className="border flex-1 border-black bg-primary text-card rounded-[5px] uppercase p-2">
               Add Category
             </button>
+            <button
+                onClick={() => navigate(`/admin/category`)}
+                type="button"
+                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              >
+                Cancel
+              </button>
           </div>
         </form>
       </div>

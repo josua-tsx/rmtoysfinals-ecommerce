@@ -4,9 +4,12 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminAddSupplier() {
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate()
 
   const [supplierName, setSupplierName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
@@ -26,11 +29,11 @@ export default function AdminAddSupplier() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["supplier"] });
       toast.success("Added Successfully!");
-      setSupplierName("")
-      setContactPerson("")
-      setContactNumber("")
-      setSupplierPay("")
-      setSupplierAddress("")
+      setSupplierName("");
+      setContactPerson("");
+      setContactNumber("");
+      setSupplierPay("");
+      setSupplierAddress("");
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong");
@@ -57,8 +60,6 @@ export default function AdminAddSupplier() {
       supplierPay,
       supplierAddress,
     });
-
-    
   };
 
   if (isSupplierPending) {
@@ -91,6 +92,10 @@ export default function AdminAddSupplier() {
                 onChange={handleInputChange(setSupplierName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Supplier name do not allow double spaces, and number. it should
+                be between 3 and 50 characters.)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
@@ -104,6 +109,9 @@ export default function AdminAddSupplier() {
                 onChange={handleInputChange(setContactPerson)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Contact person full name does not allow double spaces.)
+              </p>
             </div>
 
             <div className="flex gap-2 flex-col">
@@ -119,6 +127,10 @@ export default function AdminAddSupplier() {
                 onChange={handleInputChange(setContactNumber)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Phone number should be valid number. It should start with 09
+                and exact 11 numbers)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
@@ -132,6 +144,10 @@ export default function AdminAddSupplier() {
                 onChange={handleInputChange(setSupplierPay)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
+              <p className="text-sm pt-1 lowercase text-green-700">
+                (Supplier pay do not allow double sapces. It should be between 3
+                and 50 characters.)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
@@ -146,12 +162,23 @@ export default function AdminAddSupplier() {
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
+            <p className="text-sm pt-1 lowercase text-green-700">
+              (Supplier address do not allow double spaces and is between 5 and
+              200 max characters long.)
+            </p>
           </div>
 
-          <div className="flex flex-col p-2">
-            <button className="border border-black rounded-[5px] bg-primary text-card p-2">
+          <div className="flex gap-2 p-2">
+            <button className="border flex-1 border-black rounded-[5px] bg-primary text-card p-2">
               ADD SUPPLIER
             </button>
+            <button
+                onClick={() => navigate(`/admin/supplier`)}
+                type="button"
+                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              >
+                Cancel
+              </button>
           </div>
         </form>
       </div>

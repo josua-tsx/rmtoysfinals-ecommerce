@@ -159,9 +159,6 @@ export default function AdminEditProducts() {
 
   // }
 
-  const handleCancel = () => {
-    navigate(`/admin/products`);
-  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -259,10 +256,20 @@ export default function AdminEditProducts() {
                   onChange={handleInputChange(setProductName)}
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
+                   <p className="text-sm pt-1  text-green-700">
+                  (Product name should nin 5 characters, max 50 characters, no
+                  double spaces, uppercase letters allowed)
+                </p>
               </div>
 
               <div className="mb-3">
-                <h1 className="mb-3">DESCRIPTION: </h1>
+              <div className="flex flex-col md:flex-row md:gap-2">
+                  <h1 className="mb-3">DESCRIPTION: </h1>
+                  <p className="text-sm pt-1  text-green-700">
+                    (Product description should max 200 characters, no double
+                    spaces, uppercase letters allowed.)
+                  </p>
+                </div>
                 <textarea
                   className="border border-black w-full p-2 h-[100px] resize-none outline-none rounded-[5px]"
                   name="productDescription"
@@ -273,7 +280,13 @@ export default function AdminEditProducts() {
               </div>
 
               <div className="mb-3">
-                <h1 className="mb-3">PRODUCT DETAILS: </h1>
+              <div className="flex flex-col md:gap-2 md:flex-row">
+                  <h1 className="mb-3">PRODUCT DETAILS: </h1>
+                  <p className="text-sm pt-1  text-green-700">
+                    (Always include COLOR for LABEL and COLOR for VALUE EX:
+                    LABEL: COLOR VALUE: RED)
+                  </p>
+                </div>
 
                 <div className=" flex flex-col gap-5 ">
                   <div className="flex md:items-center flex-col md:flex-row md:justify-between gap-5 ">
@@ -497,7 +510,7 @@ export default function AdminEditProducts() {
                 <FaCheckCircle />
               </button>
               <button
-                onClick={() => handleCancel()}
+                onClick={() => navigate(`/admin/products`)}
                 type="button"
                 className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
               >

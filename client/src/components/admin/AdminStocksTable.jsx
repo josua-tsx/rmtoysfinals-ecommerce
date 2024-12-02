@@ -59,7 +59,11 @@ export default function AdminStocksTable() {
         .includes(searchTerm.toLowerCase()) ||
       stock?.category?.categoryName
         .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+        .includes(searchTerm.toLowerCase()) ||
+      stock?.stockQuantity
+        .toString()
+        .toLowerCase()
+        .includes(searchTerm.toString().toLowerCase())
   );
 
   const navigateToEdit = (stockId) => {

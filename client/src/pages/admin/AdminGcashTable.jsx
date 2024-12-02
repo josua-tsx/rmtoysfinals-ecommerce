@@ -107,7 +107,7 @@ export default function AdminGcashTable() {
       />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>USERS TABLE</h1>
+        <h1>GCASH TABLE</h1>
         <div className="flex items-center relative">
           <input
             type="text"

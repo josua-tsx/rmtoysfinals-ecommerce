@@ -8,7 +8,7 @@ export const ConfirmModal = ({
   if (!isOpen) return null; // Do not render if modal is not open
 
   return (
-    <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-sm z-50">
+    <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-sm px-5 z-50">
       <div className="bg-card border flex flex-col justify-between border-black h-[210px] p-5 rounded-[5px] w-[400px]">
        <div className="flex flex-col gap-5">
        <h2 className="">{title}</h2>

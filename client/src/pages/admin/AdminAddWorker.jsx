@@ -4,9 +4,12 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminAddWorker() {
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate()
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -179,10 +182,17 @@ export default function AdminAddWorker() {
             </div>
           </div>
 
-          <div className="flex p-2 flex-col">
-            <button className="border bg-primary text-card rounded-[5px] border-black p-2">
+          <div className="flex p-2 gap-2">
+            <button className="border flex-1 bg-primary text-card rounded-[5px] border-black p-2">
               ADD WORKER
             </button>
+            <button
+                onClick={() => navigate(`/admin/worker`)}
+                type="button"
+                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              >
+                Cancel
+              </button>
           </div>
         </form>
       </div>

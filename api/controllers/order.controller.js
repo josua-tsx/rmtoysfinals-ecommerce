@@ -4,6 +4,7 @@ import Notification from "../models/notifications.model.js";
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
+import { sendEmail } from "../nodemailer/nodemailer.js";
 import { logAuditTrail } from "./audit.controller.js";
 import { logNotification } from "./notifications.controller.js";
 
@@ -47,7 +48,10 @@ export const userPlaceOrder = async (req, res, next) => {
       if (!productStock || productStock.stockQuantity < item.quantity) {
         // If stock is insufficient
         return next(
-          handleMakeError(400, `Not enough stock for ${item.productId.productName}`)
+          handleMakeError(
+            400,
+            `Not enough stock for ${item.productId.productName}`
+          )
         );
       }
     }
@@ -422,6 +426,8 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     const order = await Order.findById(orderId).populate("userId");
 
+    const userEmail = order?.userId.email;
+
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     const orderUserEmail = order.userId.email;
@@ -442,12 +448,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
       paymentStatus: status === "Delivered" ? "Paid" : "Pending",
     };
 
-    // if (status === "Delivered") {
-    //   orderUpdate.paymentStatus = "Paid";
-    // } else {
-    //   orderUpdate.paymentStatus = "Pending";
-    // }
-
     const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
       new: true,
       runValidators: true,
@@ -455,6 +455,23 @@ export const updateDeliveryStatus = async (req, res, next) => {
     if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
 
     if (updatedOrder.status === "Delivered") {
+      //////////////////////////////////////
+      // sending a email message to a user using nodemailer!!
+      const deliveredSubject = `Your Order ${updatedOrder._id} Has been Delivered!`;
+
+      const deliveredMessage = `We're happy to let you know that your order has been successfully delivered! 
+      We hope you enjoy your purchase. If you have any questions or need assistance, 
+      feel free to contact our support team. Thank you for shopping with us!`;
+
+      try {
+        await sendEmail(userEmail, deliveredSubject, deliveredMessage);
+        console.log(`Delivery email sent to ${orderUserEmail}`);
+      } catch (emailError) {
+        console.error("Error sending delivery email:", emailError);
+      }
+
+      ///////////////
+
       for (const item of updatedOrder.orderItems) {
         const productId = item.productId; // Get the productId
         const quantitySold = item.quantity; // Get the quantity sold
@@ -482,6 +499,18 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Processing") {
+      const processingSubject = `Your ${updatedOrder._id} is on processing.`;
+      const processingMessage = `Thank you for your order! We are currently processing it and will have it ready for shipment shortly. 
+        You will receive an update once it's on its way. 
+        If you have any questions, feel free to contact our support team!`;
+
+      try {
+        await sendEmail(userEmail, processingSubject, processingMessage);
+        console.log(`Delivery email sent to ${orderUserEmail}`);
+      } catch (emailError) {
+        console.error("Error sending delivery email:", emailError);
+      }
+
       await logAuditTrail({
         action: "set_OrderStatus_Processing",
         userId,
@@ -495,8 +524,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Shipped") {
-      await Notification.deleteMany({});
+      const shippedSubject = `Your ${updatedOrder._id} is shipped!`;
+      const shippedMessage = `Great news! Your order has been shipped and is on its way to you.  
+      Thank you for shopping with us, and we hope you enjoy your purchase!`;
 
+      await sendEmail(userEmail, shippedSubject, shippedMessage);
+
+      await Notification.deleteMany({});
       await logAuditTrail({
         action: "set_OrderStatus_Shipped",
         userId,
@@ -510,6 +544,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Out for Delivery") {
+
+      const outForDeliverySubject = `Your order ${updatedOrder._id} is Out for Delivery!`
+      const outForDeliveryMessage = `Exciting news! Your order is out for delivery and should arrive soon. Keep an eye out for the delivery,
+       and thank you for choosing us. If you have any questions, feel free to contact our support team!`
+
+      await sendEmail(userEmail, outForDeliverySubject, outForDeliveryMessage)
+
       await Notification.deleteMany({});
 
       await logAuditTrail({
@@ -525,6 +566,15 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Cancelled") {
+
+      const cancelledSubject = `Your order ${updatedOrder._id} has been cancelled by RM TOYS`
+      const cancelledMessage = `We regret to inform you that your order has 
+      been canceled due to a system error. If you'd like more details or clarification, 
+      please contact us, and make sure to include your order ID when reaching out.
+      We apologize for any inconvenience caused and are here to assist you further.`
+
+      await sendEmail(userEmail, cancelledSubject, cancelledMessage)
+
       await Notification.deleteMany({});
 
       await logAuditTrail({
@@ -646,6 +696,13 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     if (updatedPaymentStatus.paymentStatus === "Failed") {
+
+      const failedSubject = `Your Order Gcash method ${updatedPaymentStatus._id} has been failed!`
+      const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
+      Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`
+
+      await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage )
+
       // Update stock for each item in the order
       for (const item of order.orderItems) {
         await Stocks.findOneAndUpdate(
@@ -668,6 +725,13 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     if (updatedPaymentStatus.paymentStatus === "Refunded") {
+
+      const failedSubject = `Your Order Gcash method  ${updatedPaymentStatus._id} has been refunded!`
+      const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
+      Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`
+
+      await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage )
+
       // Update stock for each item in the order
       for (const item of order.orderItems) {
         await Stocks.findOneAndUpdate(
@@ -985,8 +1049,6 @@ export const getMonthlySales = async (req, res, next) => {
     next(error);
   }
 };
-
-export const getDailySales = async (req, res, next) => {};
 
 export const getLatestSuccessOrder = async (req, res, next) => {
   try {

@@ -95,8 +95,12 @@ export default function AdminCategoryEdit() {
 
           <div className="flex gap-2 p-2 flex-col">
             <div className="flex gap-2 flex-col">
-              <label htmlFor="" className="uppercase">
-                Category Name:{" "}
+              <label htmlFor="" className="">
+                CATEGORY NAME:{" "}
+                <p className="text-sm pt-1  text-green-700">
+                  (Category name do not allow spaces and number. It should be
+                  between 3 to 50 max characters.)
+                </p>
               </label>
               <input
                 type="text"
@@ -108,8 +112,8 @@ export default function AdminCategoryEdit() {
               />
             </div>
             <div className="flex gap-2 flex-col">
-              <label htmlFor="" className="uppercase">
-                Category Description :{" "}
+              <label htmlFor="" className="">
+                CATEGORY DESCRIPTION :{" "}
               </label>
               <textarea
                 type="text"

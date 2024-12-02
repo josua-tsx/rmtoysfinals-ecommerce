@@ -60,6 +60,7 @@ export default function AdminProductsTable() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success("Successfully Deleted");
     },
@@ -175,7 +176,7 @@ export default function AdminProductsTable() {
 
                   <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                     {product?.discount
-                      ? formatPrice(product?.discount)
+                      ? formatPrice(product?.discount) 
                       : "no discount"}
                   </td>
 

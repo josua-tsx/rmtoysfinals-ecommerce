@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
+import { PiWarningCircleFill } from "react-icons/pi";
 
 import app from "../firebase/firebase";
 
@@ -153,11 +154,16 @@ export default function ChangeInfoComponent() {
             <h1 className="my-5">PERSONAL INFORMATION</h1>
           </div>
 
+          <div className="flex items-center flex-col md:flex-row gap-2">
+          <PiWarningCircleFill size={20} />
+          <p className="text-sm text-green-700 uppercase">NOTE: Email address must be valid. THIS IS WHERE ALL THE ORDER STATUS UPDATES WILL BE SENT.</p>
+          </div>
+
           <div className="flex flex-col gap-3">
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="email">Email: </label>
-                <div className="flex items-center  justify-between gap-5">
+                <div className="flex flex-col ">
                   <input
                     type="email"
                     name="email"
@@ -165,14 +171,17 @@ export default function ChangeInfoComponent() {
                     id="email"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                
+                  <p className="text-sm pt-1 lowercase text-green-700">
+                    (Enter a valid email. Only letters, numbers, and ., _, %, +
+                    are allowed before '@'.)
+                  </p>
                 </div>
               </div>
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="username">username: </label>
-                <div className="flex items-center  justify-between gap-5">
+                <div className="flex flex-col">
                   <input
                     type="text"
                     name="username"
@@ -180,14 +189,17 @@ export default function ChangeInfoComponent() {
                     id="username"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                
+                  <p className="text-sm pt-1 lowercase text-green-700">
+                    (Username must be 5-50 letters and contain no numbers or
+                    special characters.)
+                  </p>
                 </div>
               </div>
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="fullName">full name: </label>
-                <div className="flex items-center  justify-between gap-5">
+                <div className="flex flex-col">
                   <input
                     type="text"
                     name="fullName"
@@ -195,7 +207,11 @@ export default function ChangeInfoComponent() {
                     id="fullName"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                
+                  <p className="text-sm pt-1 lowercase text-green-700">
+                    (Full name must be all lowercase, contain no uppercase
+                    letters, no numbers, and be between 6 and 50 characters
+                    long. also no double spaces)
+                  </p>
                 </div>
               </div>
             </div>
@@ -203,13 +219,19 @@ export default function ChangeInfoComponent() {
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="password">password: </label>
                 <div className="flex items-center  justify-between gap-5">
-                  <div className="flex relative bg-gray-200  w-full">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      id="password"
-                      className=" outline-none p-3 bg-transparent w-full  border-[#313031] border rounded-[5px]"
-                    />
+                  <div className="flex relative  w-full">
+                    <div className="flex flex-col w-full">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        id="password"
+                        className=" outline-none p-3  w-full bg-gray-200   border-[#313031] border rounded-[5px]"
+                      />
+                      <p className="text-sm pt-1 lowercase text-green-700">
+                        (Phone number should be valid number. It should start
+                        with 09 and exact 11 numbers)
+                      </p>
+                    </div>
                     <label
                       htmlFor=""
                       className="absolute right-2 top-4 flex items-center gap-2"
@@ -223,7 +245,6 @@ export default function ChangeInfoComponent() {
                       />
                     </label>
                   </div>
-                
                 </div>
               </div>
             </div>
@@ -241,11 +262,10 @@ export default function ChangeInfoComponent() {
                       className="border border-black px-5 py-2  bg-gray-200 rounded-[5px] outline-none"
                     />
                     <p className="text-sm pt-1 lowercase text-green-700">
-                      (Category name do not allow spaces and number. It should
-                      be between 3 to 50 max characters.)
+                      (Phone number should be valid number. It should start with
+                      09 and exact 11 numbers)
                     </p>
                   </div>
-
                 </div>
               </div>
             </div>

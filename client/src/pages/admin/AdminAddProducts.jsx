@@ -11,9 +11,12 @@ import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminAddProducts() {
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate()
 
   const [images, setImages] = useState([]);
 
@@ -177,11 +180,11 @@ export default function AdminAddProducts() {
   };
 
   if (isCategoryPending || isSuppliersPending) {
-    return <p>awdwad</p>;
+    return <p>Loading...</p>;
   }
 
   if (isCategoryError || isSuppliersError) {
-    return <p>awdwad</p>;
+    return <p>Error.</p>;
   }
 
   return (
@@ -460,6 +463,13 @@ export default function AdminAddProducts() {
               <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
                 ADD THIS PRODUCT
                 <FaCheckCircle />
+              </button>
+              <button
+                onClick={() => navigate(`/admin/products`)}
+                type="button"
+                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              >
+                Cancel
               </button>
             </div>
           </div>

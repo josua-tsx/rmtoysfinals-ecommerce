@@ -4,8 +4,7 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import QrCode from "../assets/QRCODE.jpg";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import app from "../firebase/firebase";
 import toast from "react-hot-toast";
 import { BiSolidImageAdd } from "react-icons/bi";
@@ -59,6 +58,16 @@ export default function GcashCheckOut() {
     },
   });
 
+  // WITHOUT THIS USEFFECT. IT WILL NOT SHOW THE GCASH URL EVEN THE DATA IS FETCHED BECAUSE 
+  // IN ORDER TO USE THE SELECT FUNCTION CHANGE, CUSTOMER NEEDS TO USE IT ONCE
+  // SO IN DEFAULT IT IF GCASH ACTIVE IS ACTIVE OR ITEM MORE THAN 0 THEN SET THE DEFAULT SELECTEDGCASH TO THAT GCASH. 
+  useEffect(() => {
+    if (gcashActive && gcashActive.length > 0) {
+      // Select the first item by default
+      setSelectedGcash(gcashActive[0]?.gcashUrl || "");
+    }
+  }, [gcashActive]);
+
   const { mutate: placeOrder } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/order/place-order`, data);
@@ -75,6 +84,11 @@ export default function GcashCheckOut() {
       toast.error(err.response.data.message || "something went wrong!");
     },
   });
+
+  const handleCancel = () => {
+    clearOrder();
+    navigate(`/shop`);
+  };
 
   const handleOrderFormSubmit = (e) => {
     e.preventDefault();
@@ -191,13 +205,10 @@ export default function GcashCheckOut() {
     const selectedItem = gcashActive.find(
       (item) => item.gcashName === selectedGcashName
     );
+    setSelectedGcash(selectedItem ? selectedItem?.gcashUrl : "");
 
-    // setSelectedGcash(selectedItem ? selectedItem.gcashImage : "")
     console.log(selectedItem);
-    setSelectedGcash(selectedItem ? selectedItem.gcashUrl : "");
   };
-
-  console.log(selectedGcash);
 
   if (isGcashPending) return <p>loading..</p>;
   if (isGcashError) return <p>Error</p>;
@@ -212,7 +223,8 @@ export default function GcashCheckOut() {
               onChange={handleSelectChange}
               className="w-full border bg-card border-black rounded-[5px] p-1 outline-none"
             >
-              {gcashActive?.length > 0 &&
+              {gcashActive &&
+                gcashActive?.length > 0 &&
                 gcashActive.map((item) => (
                   <option key={item._id} value={item.gcashName}>
                     {item.gcashName}
@@ -223,18 +235,14 @@ export default function GcashCheckOut() {
 
           <div className="w-full flex items-center flex-col">
             {/* RENDER THE IMAGE HERE */}
-            {selectedGcash ? (
+            {gcashActive && selectedGcash ? (
               <img
                 src={selectedGcash}
                 alt="gcash qr code"
                 className="rounded-[5px] w-[400px] md:w-[430px] h-auto"
               />
             ) : (
-              <img
-                src={QrCode}
-                alt=""
-                className="rounded-[5px] w-[400px] md:w-[430px] h-auto"
-              />
+              <p>GCASH PAYMENT METHOD IS NOT AVAILABLE YET.</p>
             )}
           </div>
         </div>
@@ -342,7 +350,7 @@ export default function GcashCheckOut() {
               SUBMIT
             </button>
             <button
-              onClick={() => navigate("/cart")}
+              onClick={() => handleCancel()}
               type="button"
               // disabled={isReceiptUploaded}
               className="border w-[20%] border-black rounded-[5px] bg-red-700 text-card py-1"

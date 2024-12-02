@@ -13,6 +13,7 @@ import { MdDelete } from "react-icons/md";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminAddGcash() {
   const fileInputRef = useRef(); // Reference to the file input element
@@ -23,7 +24,8 @@ export default function AdminAddGcash() {
   const [file, setFile] = useState(null); // Store the actual file to be uploaded
   const [uploading, setUploading] = useState(false);
 
-  console.log(gcashName);
+ 
+  const navigate = useNavigate()
 
   const { mutate: addGcashMutation } = useMutation({
     mutationFn: async (data) => {
@@ -203,7 +205,7 @@ export default function AdminAddGcash() {
             </div>
           </div>
 
-          <div className="flex p-2">
+          <div className="flex gap-2 p-2">
             <button
               type="submit"
               className="bg-primary flex-1 text-card p-2 rounded-[5px] border border-black"
@@ -211,6 +213,13 @@ export default function AdminAddGcash() {
             >
               {uploading ? "loading.." : "ADD GCASH"}
             </button>
+            <button
+                onClick={() => navigate(`/admin/gcash`)}
+                type="button"
+                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              >
+                Cancel
+              </button>
           </div>
         </form>
       </div>

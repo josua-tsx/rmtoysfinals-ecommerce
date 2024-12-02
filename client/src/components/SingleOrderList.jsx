@@ -6,13 +6,18 @@ import toast from "react-hot-toast";
 import AdminAddReasonModal from "./admin/AdminAddReasonModal";
 import { useState } from "react";
 import formatPrice from "../reusable/formatPrice";
+import { useNavigate } from "react-router-dom";
 
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
 
+  console.log(currentUser)
+
   const [reasonModal, setReasonModal] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate()
 
   const { mutate: updatePaymentStatusMutation } = useMutation({
     mutationFn: async ({ id, paymentStatus }) => {
@@ -37,7 +42,7 @@ export default function SingleOrderList({ order, onClose }) {
   };
 
   return (
-    <section className="inset-0 z-40 fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
+    <section className="inset-0 z-40 font-main fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
       {reasonModal && (
         <AdminAddReasonModal
           singleOrderData={order}
@@ -93,6 +98,15 @@ export default function SingleOrderList({ order, onClose }) {
                   {!order.notes ? "No notes provided" : order.notes}
                 </span>
               </div>
+              {(order?.paymentStatus === "Failed" ||
+                  order?.paymentStatus === "Refunded") && (
+                  <div className="flex gap-2 items-center">
+                    <p>Reasons: </p>
+                    <p className="w-full text-red-700" >
+                        {order?.reason}
+                    </p>
+                  </div>
+                )}
             </div>
             <div className="flex flex-col text-sm">
               <div className="flex gap-2">
@@ -153,6 +167,12 @@ export default function SingleOrderList({ order, onClose }) {
                         <p>Quantity: </p>
                         <span>{item?.quantity}</span>
                       </div>
+                      {
+                        order?.status === "Delivered" ? (
+                          <button onClick={() => navigate(`/product/${item?.productId._id}`)}
+                      className="text-indigo-700 underline">Click to write a review</button>
+                        ) : ""
+                      }
                     </div>
                   </div>
                 </div>
@@ -184,20 +204,11 @@ export default function SingleOrderList({ order, onClose }) {
                   <p>Gcash Name:</p>
                   <p>{order.gcashAdditionalDetails.gcashName}</p>
                 </div>
-
-                {(order?.paymentStatus === "Failed" ||
-                  order?.paymentStatus === "Refunded") && (
-                  <div className="flex flex-col md:flex-row gap-2">
-                    <p>Reasons: </p>
-                    <textarea className="w-full border border-black p-2 rounded-[5px] text-red-700" value={order?.reason} disabled>
-
-                    </textarea>
-                  </div>
-                )}
               </div>
             </div>
 
-            {currentUser.role === "admin" || currentUser.role === "validatorStaff" && (
+
+            {(currentUser.role === "admin" || currentUser.role === "validatorStaff") && (
               <div className="w-full flex gap-2 ">
                 <select
                   onChange={(e) => handleChangePaymentStatus(order._id, e)}
@@ -223,6 +234,7 @@ export default function SingleOrderList({ order, onClose }) {
                 )}
               </div>
             )}
+            
           </div>
         )}
       </div>

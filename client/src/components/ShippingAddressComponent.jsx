@@ -12,6 +12,8 @@ import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import EditAddress from "../pages/EditAddress";
 import { useUserStore } from "../stores/useUserStore";
+import { ConfirmModal } from "../reusable/ConfirmModal";
+import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 
 export default function ShippingAddressComponent() {
   const queryClient = useQueryClient();
@@ -31,6 +33,10 @@ export default function ShippingAddressComponent() {
   const [editAddressId, setEditAddressId] = useState(null);
 
   const currentUser = useUserStore((state) => state.currentUser);
+
+
+  const [selectedId, setSelectedId] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const {
     data: currentUserAddress,
@@ -91,6 +97,23 @@ export default function ShippingAddressComponent() {
     },
   });
 
+  const handleDeleteclick = (addressId) => {
+    setSelectedId(addressId)
+    setIsModalOpen(true)
+  }
+
+  const handleConfirm = () => {
+    if (selectedId) {
+      deleteAddressMutation(selectedId)
+      setIsModalOpen(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setSelectedId(null)
+    setIsModalOpen(false)
+  }
+
   const handleAddressSubmit = (e) => {
     e.preventDefault();
 
@@ -149,6 +172,14 @@ export default function ShippingAddressComponent() {
           onClose={() => setOpenModal(false)} // Close modal function
         />
       )}
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        title={"Delete confirm"}
+        message={"Are you sure you want to delete this address? This action can not be undone."}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
 
       <h1 className="text-xl">SHIPPING ADDRESS</h1>
       <div className="w-[90%] md:w-[80%] mx-auto my-5">
@@ -226,10 +257,10 @@ export default function ShippingAddressComponent() {
 
           <AddressSection title={"Barangay (Ex: Lower bicutan)"}>
             <input
-              value={barangay}
-              onChange={(e) => setBarangay(e.target.value)}
               type="text"
-              className="bg-gray-200  p-2 border border-black rounded-[5px]"
+              value={barangay}
+              onChange={handleInputChange(setBarangay)}
+              className="bg-gray-200 outline-none p-2 border border-black rounded-[5px]"
               name="barangay"
               id="barangay"
               placeholder="input barangay"
@@ -241,8 +272,8 @@ export default function ShippingAddressComponent() {
           >
             <input
               value={streetBuildingHouseNum}
-              onChange={(e) => setStreetBuildingHouseNum(e.target.value)}
-              className="bg-gray-200  p-2 border border-black rounded-[5px]"
+              onChange={handleInputChange(setStreetBuildingHouseNum)}
+              className="bg-gray-200 outline-none p-2 border border-black rounded-[5px]"
               placeholder="Street Name, Building, House No."
               type="text"
               id="streetBuildingHouseNum"
@@ -277,7 +308,7 @@ export default function ShippingAddressComponent() {
                         Edit
                       </button>
                       <button
-                        onClick={() => deleteAddressMutation(add._id)}
+                        onClick={() => handleDeleteclick(add._id)}
                         className="text-red-600"
                       >
                         Delete
