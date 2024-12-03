@@ -48,7 +48,7 @@ export default function CartPage() {
                 <CartCard key={item?._id} productCart={item} />
               ))
             ) : (
-              <p>No products found.</p>
+              <p>No products found</p>
             )}
           </div>
 
