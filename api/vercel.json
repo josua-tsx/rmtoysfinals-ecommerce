@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "name" : "node-shop-api",
+    "name" : "rm-toys-updated",
     "builds" : [
         {
             "src": "server.js",
