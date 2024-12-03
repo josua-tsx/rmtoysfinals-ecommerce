@@ -1,10 +1,11 @@
 import express from "express";
 import { config } from "dotenv";
 import cookieParser from "cookie-parser";
+import cors from "cors"; // Uncomment this line
 import { connectDb } from "./lib/db.js";
 import { handleError } from "./middleware/handleError.js";
 
-// routes
+// routes import
 import authRoutes from "../api/routes/auth.route.js";
 import productRoutes from "../api/routes/product.route.js";
 import userRoutes from "../api/routes/user.route.js";
@@ -16,14 +17,10 @@ import addressRoutes from "../api/routes/address.route.js";
 import cartRoutes from "../api/routes/cart.route.js";
 import wishlistRoutes from "../api/routes/wishlist.route.js";
 import orderRoutes from "../api/routes/order.route.js";
-import gcashRoute from '../api/routes/gcash.route.js'
-import auditRoute from '../api/routes/audit.route.js'
-import reviewRoute from '../api/routes/review.route.js'
-import notificationRoute from '../api/routes/notifications.route.js'
-//
-import cors from "cors";
-
-import Paymongo from "paymongo-node";
+import gcashRoute from '../api/routes/gcash.route.js';
+import auditRoute from '../api/routes/audit.route.js';
+import reviewRoute from '../api/routes/review.route.js';
+import notificationRoute from '../api/routes/notifications.route.js';
 
 // Load environment variables from .env file
 config();
@@ -31,7 +28,7 @@ config();
 const app = express();
 const PORT = process.env.PORT;
 
-// Verify that the environment variables are loaded
+// CORS configuration
 app.use(
   cors({
     origin: process.env.CLIENT_URL, // Make sure this matches the frontend origin
@@ -39,12 +36,12 @@ app.use(
   })
 );
 
-
 console.log(process.env.CLIENT_URL);
-app.use(express.json());
 
+app.use(express.json());
 app.use(cookieParser());
 
+// Route configurations
 app.use(`/api/auth`, authRoutes);
 app.use(`/api/product`, productRoutes);
 app.use(`/api/user`, userRoutes);
@@ -58,11 +55,13 @@ app.use(`/api/wish`, wishlistRoutes);
 app.use(`/api/order`, orderRoutes);
 app.use(`/api/gcash`, gcashRoute);
 app.use(`/api/audit`, auditRoute);
-app.use(`/api/review`, reviewRoute)
-app.use(`/api/notification`, notificationRoute)
+app.use(`/api/review`, reviewRoute);
+app.use(`/api/notification`, notificationRoute);
 
+// Error handling middleware
 app.use(handleError);
 
+// Server startup
 app.listen(PORT, () => {
   connectDb();
   console.log(`Server running on ${PORT}`);
