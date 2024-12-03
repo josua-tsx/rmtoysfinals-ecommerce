@@ -7,9 +7,7 @@ import OrderSummaryModal from "../components/OrderSummaryModal";
 import formatPrice from "../reusable/formatPrice";
 
 export default function CartPage() {
-
-  const [openOrderModal, setOrderModal] = useState(false)
-
+  const [openOrderModal, setOrderModal] = useState(false);
 
   const {
     data: cart = [],
@@ -24,25 +22,17 @@ export default function CartPage() {
   });
 
   const totalPrice = cart?.items?.reduce((total, item) => {
-    return total + item.productId.price * item.quantity
-  }, 0)
-
-
+    return total + item.productId.price * item.quantity;
+  }, 0);
 
   if (isPending) return <div>Loading...</div>;
   if (isError) return <div>Error loading cart.</div>;
 
-
   return (
     <section className="pt-[130px] font-main p-3">
-
-      {
-        openOrderModal && (
-          <OrderSummaryModal onClose={() => setOrderModal(false)}/>
-        )
-      }
-
-
+      {openOrderModal && (
+        <OrderSummaryModal onClose={() => setOrderModal(false)} />
+      )}
 
       <div className="max-w-[1280px] mx-auto">
         <div className="flex w-full  mb-5 ">
@@ -66,10 +56,14 @@ export default function CartPage() {
             <h1 className="uppercase text-xl mb-3">order summary</h1>
             <div className="flex flex-1 flex-col gap-1">
               <p>
-                total items: <span>{cart?.items?.length}</span>
+                TOTAL ITEMS: <span>{cart?.items?.length}</span>
               </p>
               <p>
-                total price: <span className="text-indigo-500">{formatPrice(totalPrice)} PHP</span>
+                TOTAL PRICE:{" "}
+                <span className="text-indigo-500">
+                  {" "}
+                  {cart?.items ? formatPrice(totalPrice) : 0} PHP
+                </span>
               </p>
             </div>
             <div onClick={() => setOrderModal(true)}>
