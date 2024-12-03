@@ -1,7 +1,7 @@
 {
     "version": 2,
-    "name" : "rm_toys_updated",
-    "builds" : [
+    "name": "rm_toys_updated",
+    "builds": [
         {
             "src": "server.js",
             "use": "@vercel/node"
@@ -9,8 +9,12 @@
     ],
     "routes": [
         {
-            "src": "/(.*)",
+            "src": "/api/(.*)",
             "dest": "/server.js"
+        },
+        {
+            "src": "/public/(.*)",
+            "dest": "/public/$1"
         }
     ]
 }
