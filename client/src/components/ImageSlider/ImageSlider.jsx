@@ -52,7 +52,7 @@ export default function ImageSlider() {
       </SwiperSlide>
      
       ))
-    ) : <p>No products yet.</p>
+    ) : <p>No slider products yet.</p>
   }
 
 </Swiper>
