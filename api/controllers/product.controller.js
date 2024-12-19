@@ -55,6 +55,15 @@ export const addProduct = async (req, res, next) => {
     return next(handleMakeError(400, "Price cannot be 0 or negative!"));
   }
 
+  if (price < discount) {
+    return next(
+      handleMakeError(
+        400,
+        "Discount price should not be greater than product price!"
+      )
+    );
+  }
+
   // Lowercasing all labels and values in the productDetails array
   if (productDetails && Array.isArray(productDetails)) {
     for (let i = 0; i < productDetails.length; i++) {
@@ -263,7 +272,7 @@ export const getBestRatedProducts = async (req, res, next) => {
     // But since we can't calculate average directly in the query without aggregation,
     // we will fetch products and manually calculate the average rating afterward.
 
-    const bestRatedProducts = await Product.find({status: "published"})
+    const bestRatedProducts = await Product.find({ status: "published" })
       .populate({
         path: "supplier",
         select: "supplierName", // Populate supplierName
