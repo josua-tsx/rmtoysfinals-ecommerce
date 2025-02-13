@@ -42,7 +42,6 @@ export default function ShippingAddressComponent() {
     data: currentUserAddress,
     isPending,
     isError,
-    error
   } = useQuery({
     queryKey: ["address", currentUser._id],
     queryFn: async () => {
