@@ -49,15 +49,12 @@ import AdminAddWorker from "./pages/admin/AdminAddWorker.jsx";
 import OrderSummaryModal from "./components/OrderSummaryModal.jsx";
 import SingleOrderList from "./components/SingleOrderList.jsx";
 import AdminOrderStatus from "./pages/admin/AdminOrderStatus.jsx";
-import GcashCheckOut from "./pages/GcashCheckOut.jsx";
-import AdminGcash from "./pages/admin/AdminGcash.jsx";
-import AdminAddGcash from "./pages/admin/AdminAddGcash.jsx";
 import AdminOrderTransact from "./pages/admin/AdminOrderTransact.jsx";
 import AdminAuditTrailLogs from "./pages/admin/AdminAuditTrailLogs.jsx";
 import AdminProductReviews from "./pages/admin/AdminProductReviews.jsx";
 import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedValidatorStaffRoute.jsx";
 import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
-import AdminEditGcash from "./pages/admin/AdminEditGcash.jsx";
+
 import Contact from "./pages/Contact.jsx";
 
 const queryClient = new QueryClient();
@@ -69,12 +66,7 @@ const router = createBrowserRouter([
         <RequiredAuthGcashPage />
       </ProtectedCustomerRoute>
     ),
-    children: [
-      {
-        path: `/gcashPage`,
-        element: <GcashCheckOut />,
-      },
-    ],
+
   },
 
   {
@@ -271,23 +263,6 @@ const router = createBrowserRouter([
         element: <AdminAddWorker />,
       },
 
-      // GCASH
-
-      {
-        path: "/admin/gcash",
-        element: <AdminGcash />,
-      },
-
-      {
-        path: "/admin/addGcash",
-        element: <AdminAddGcash />,
-      },
-
-
-      {
-        path: `/admin/editGcash/:gcashId`,
-        element: <AdminEditGcash/>
-      },
 
 
       // AUDIT

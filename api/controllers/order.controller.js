@@ -1,12 +1,10 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
-import Notification from "../models/notifications.model.js";
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import { sendEmail } from "../nodemailer/nodemailer.js";
 import { logAuditTrail } from "./audit.controller.js";
-import { logNotification } from "./notifications.controller.js";
 
 export const userPlaceOrder = async (req, res, next) => {
   const userId = req.user.id;
@@ -86,14 +84,6 @@ export const userPlaceOrder = async (req, res, next) => {
       userCart.items = [];
       await userCart.save();
 
-      await logNotification({
-        notificationType: "order",
-        notificationDetails: {
-          description: "new order arrived!",
-        },
-        targetId: newOrder._id,
-      });
-
       await logAuditTrail({
         action: "user_add_order",
         userId,
@@ -136,14 +126,6 @@ export const userPlaceOrder = async (req, res, next) => {
       const userCart = await Cart.findOne({ userId });
       userCart.items = [];
       await userCart.save();
-
-      await logNotification({
-        notificationType: "order",
-        notificationDetails: {
-          description: "new order arrived!",
-        },
-        targetId: newOrder._id,
-      });
 
       await logAuditTrail({
         action: "user_add_order",
@@ -544,12 +526,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Out for Delivery") {
-
-      const outForDeliverySubject = `Your order ${updatedOrder._id} is Out for Delivery!`
+      const outForDeliverySubject = `Your order ${updatedOrder._id} is Out for Delivery!`;
       const outForDeliveryMessage = `Exciting news! Your order is out for delivery and should arrive soon. Keep an eye out for the delivery,
-       and thank you for choosing us. If you have any questions, feel free to contact our support team!`
+       and thank you for choosing us. If you have any questions, feel free to contact our support team!`;
 
-      await sendEmail(userEmail, outForDeliverySubject, outForDeliveryMessage)
+      await sendEmail(userEmail, outForDeliverySubject, outForDeliveryMessage);
 
       await Notification.deleteMany({});
 
@@ -566,14 +547,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     if (updatedOrder.status === "Cancelled") {
-
-      const cancelledSubject = `Your order ${updatedOrder._id} has been cancelled by RM TOYS`
+      const cancelledSubject = `Your order ${updatedOrder._id} has been cancelled by RM TOYS`;
       const cancelledMessage = `We regret to inform you that your order has 
       been canceled due to a system error. If you'd like more details or clarification, 
       please contact us, and make sure to include your order ID when reaching out.
-      We apologize for any inconvenience caused and are here to assist you further.`
+      We apologize for any inconvenience caused and are here to assist you further.`;
 
-      await sendEmail(userEmail, cancelledSubject, cancelledMessage)
+      await sendEmail(userEmail, cancelledSubject, cancelledMessage);
 
       await Notification.deleteMany({});
 
@@ -696,12 +676,11 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     if (updatedPaymentStatus.paymentStatus === "Failed") {
-
-      const failedSubject = `Your Order Gcash method ${updatedPaymentStatus._id} has been failed!`
+      const failedSubject = `Your Order Gcash method ${updatedPaymentStatus._id} has been failed!`;
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
-      Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`
+      Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage )
+      await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage);
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {
@@ -725,12 +704,11 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     if (updatedPaymentStatus.paymentStatus === "Refunded") {
-
-      const failedSubject = `Your Order Gcash method  ${updatedPaymentStatus._id} has been refunded!`
+      const failedSubject = `Your Order Gcash method  ${updatedPaymentStatus._id} has been refunded!`;
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
-      Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`
+      Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage )
+      await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage);
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {

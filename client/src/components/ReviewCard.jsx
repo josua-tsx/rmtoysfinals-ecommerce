@@ -118,7 +118,7 @@ export default function ReviewCard({ review }) {
           "Are you sure you want delete this review? This action can not be undone."
         }
         onConfirm={() =>
-          currentUser.role === "admin"
+          currentUser?.role === "admin"
             ? handleConfirmAdmin()
             : handleConfirmCustomer()
         }
@@ -144,7 +144,7 @@ export default function ReviewCard({ review }) {
             >
               EDIT
             </button>
-            {currentUser.role === "admin" ? (
+            {currentUser?.role === "admin" ? (
               <button
                 onClick={() => handleDeleteClick(review._id)}
                 type="button"

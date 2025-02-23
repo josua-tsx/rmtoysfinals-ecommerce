@@ -15,7 +15,7 @@ export default function ProductDetails() {
 
   const [hideShowDetails, setHideShowDetails] = useState(true);
   const [showModalReview, setShowModalReview] = useState(false);
-  const [rating, setRating] = useState(4);
+
 
   const {
     data: singleProduct,

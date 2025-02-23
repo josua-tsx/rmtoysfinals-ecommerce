@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 export default function ImageCard({ product }) {
   const navigate = useNavigate();
 
-  console.log(product);
-
   return (
     <div className="w-[200px] flex flex-col justify-between relative min-h-[200px] md:min-h-[290px] md:w-[300px] mx-auto rounded-[10px] p-2 group border border-black bg-card">
       <div className="absolute top-2 right-0">

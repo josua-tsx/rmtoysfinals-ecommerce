@@ -9,7 +9,6 @@ import { handleError } from "./middleware/handleError.js";
 import authRoutes from "../api/routes/auth.route.js";
 import productRoutes from "../api/routes/product.route.js";
 import userRoutes from "../api/routes/user.route.js";
-import filterRoutes from "../api/routes/filter.route.js";
 import supplierRoutes from "../api/routes/supplier.route.js";
 import categoryRoutes from "../api/routes/category.route.js";
 import stocksRoutes from "../api/routes/stocks.route.js";
@@ -17,10 +16,9 @@ import addressRoutes from "../api/routes/address.route.js";
 import cartRoutes from "../api/routes/cart.route.js";
 import wishlistRoutes from "../api/routes/wishlist.route.js";
 import orderRoutes from "../api/routes/order.route.js";
-import gcashRoute from '../api/routes/gcash.route.js';
-import auditRoute from '../api/routes/audit.route.js';
-import reviewRoute from '../api/routes/review.route.js';
-import notificationRoute from '../api/routes/notifications.route.js';
+import auditRoute from "../api/routes/audit.route.js";
+import reviewRoute from "../api/routes/review.route.js";
+
 
 // Load environment variables from .env file
 config();
@@ -45,7 +43,6 @@ app.use(cookieParser());
 app.use(`/api/auth`, authRoutes);
 app.use(`/api/product`, productRoutes);
 app.use(`/api/user`, userRoutes);
-app.use(`/api/filter`, filterRoutes);
 app.use(`/api/supplier`, supplierRoutes);
 app.use(`/api/category`, categoryRoutes);
 app.use(`/api/stocks`, stocksRoutes);
@@ -53,10 +50,9 @@ app.use(`/api/address`, addressRoutes);
 app.use(`/api/cart`, cartRoutes);
 app.use(`/api/wish`, wishlistRoutes);
 app.use(`/api/order`, orderRoutes);
-app.use(`/api/gcash`, gcashRoute);
 app.use(`/api/audit`, auditRoute);
 app.use(`/api/review`, reviewRoute);
-app.use(`/api/notification`, notificationRoute);
+
 
 // Error handling middleware
 app.use(handleError);

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import ArrowLine from "../reusable/ArrowLine";
-import ShoesBg from "../reusable/ShoesBg";
+
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
@@ -170,12 +170,7 @@ export default function SignUp() {
           </div>
         </div>
       </div>
-      <ShoesBg botPosition={"5px"} rotatePosition={"45deg"} />
-      <ShoesBg
-        topPosition={"60px"}
-        rightPosition={"30px"}
-        rotatePosition={"-20deg"}
-      />
+ 
     </section>
   );
 }

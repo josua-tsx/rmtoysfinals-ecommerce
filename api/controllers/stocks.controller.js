@@ -2,7 +2,7 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import { logAuditTrail } from "./audit.controller.js";
-import { logNotification } from "./notifications.controller.js";
+
 
 export const addStocks = async (req, res, next) => {
   const { productId, stockQuantity } = req.body;

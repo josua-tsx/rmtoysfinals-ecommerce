@@ -3,7 +3,7 @@ import User from "../models/user.models.js";
 import { generateTokens } from "../utils/generateToken.js";
 import { setCookies } from "../utils/setCookies.js";
 // refresh token model
-import RefreshToken from "../models/refreshToken.model.js";
+// import RefreshToken from "../models/refreshToken.model.js";
 
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
@@ -13,13 +13,13 @@ import {
   isValidUsername,
 } from "../utils/validations.js";
 
-const storeRefreshToken = async (userId, refreshToken) => {
-  const token = new RefreshToken({
-    userId,
-    token: refreshToken,
-  });
-  await token.save();
-};
+// const storeRefreshToken = async (userId, refreshToken) => {
+//   const token = new RefreshToken({
+//     userId,
+//     token: refreshToken,
+//   });
+//   await token.save();
+// };
 
 // REGISTER
 export const signup = async (req, res, next) => {
@@ -74,11 +74,17 @@ export const signup = async (req, res, next) => {
     });
 
     // authenticate
-    const { accessToken, refreshToken } = generateTokens(newUser._id);
-    await storeRefreshToken(newUser._id, refreshToken);
+    // const { accessToken, refreshToken } = generateTokens(newUser._id);
+    // await storeRefreshToken(newUser._id, refreshToken);
+
+    // // saving the access/refresh token cookie
+    // setCookies(res, accessToken, refreshToken);
+
+    const { accessToken } = generateTokens(newUser._id);
+    await storeRefreshToken(newUser._id);
 
     // saving the access/refresh token cookie
-    setCookies(res, accessToken, refreshToken);
+    setCookies(res, accessToken);
 
     await newUser.save();
 
@@ -116,9 +122,14 @@ export const signin = async (req, res, next) => {
     if (!validUser) return next(handleMakeError(404, "Invalid Credentials!"));
 
     if (validUser && (await validUser.comparePassword(password))) {
-      const { accessToken, refreshToken } = generateTokens(validUser._id);
-      await storeRefreshToken(validUser._id, refreshToken);
-      setCookies(res, accessToken, refreshToken);
+      // const { accessToken, refreshToken } = generateTokens(validUser._id);
+      // await storeRefreshToken(validUser._id, refreshToken);
+      // setCookies(res, accessToken, refreshToken);
+
+      const { accessToken} = generateTokens(validUser._id);
+      // await storeRefreshToken(validUser._id, refreshToken);
+      setCookies(res, accessToken);
+
 
       // EXCLUDING THE PASSWORD WITH THIS METHOD INSTEAD OF .select("-password") is wild
       // JOKES ON YOU I CANT USE .select("-password") in this messy code because if i put that after User.FindOne -
@@ -136,21 +147,21 @@ export const signin = async (req, res, next) => {
 
 export const signout = async (req, res, next) => {
   try {
-    const { refreshToken } = req.cookies;
+    // const { refreshToken } = req.cookies;
 
-    if (refreshToken) {
-      const decoded = jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET
-      );
-      await RefreshToken.deleteOne({
-        userId: decoded.userId,
-        token: refreshToken,
-      });
-    }
+    // if (refreshToken) {
+    //   const decoded = jwt.verify(
+    //     refreshToken,
+    //     process.env.REFRESH_TOKEN_SECRET
+    //   );
+    //   await RefreshToken.deleteOne({
+    //     userId: decoded.userId,
+    //     token: refreshToken,
+    //   });
+    // }
 
     res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    // res.clearCookie("refreshToken");
     res.status(200).json({ message: "Logged out successfully!" });
   } catch (error) {
     next(error);
@@ -159,52 +170,52 @@ export const signout = async (req, res, next) => {
 
 // REFRESH TOKEN
 
-export const refreshToken = async (req, res, next) => {
-  const { refreshToken } = req.cookies;
+// export const refreshToken = async (req, res, next) => {
+//   const { refreshToken } = req.cookies;
 
-  if (!refreshToken)
-    return next(handleMakeError("401", "No refresh token provided"));
+//   if (!refreshToken)
+//     return next(handleMakeError("401", "No refresh token provided"));
 
-  try {
-    // check if token is valid, if token is valid then it will return the data inside the token that is saved in decoded: the data will be
-    // userId
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const storedToken = await RefreshToken.findOne({
-      userId: decoded.userId,
-      token: refreshToken,
-    });
-    //  THE TTL IN THE SCHEMA WILL AUTOMATICALLY DELETE THE EXPIRED TOKEN ONCE THEIR DUE FILLED, SO I DONT HAVE TO USE THE OR || but to make sure
-    // im just going to use it anyway
-    if (!storedToken || storedToken.expiresAt < new Date()) {
-      return next(handleMakeError(401, "Invalid token or expired token"));
-    }
+//   try {
+//     // check if token is valid, if token is valid then it will return the data inside the token that is saved in decoded: the data will be
+//     // userId
+//     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+//     const storedToken = await RefreshToken.findOne({
+//       userId: decoded.userId,
+//       token: refreshToken,
+//     });
+//     //  THE TTL IN THE SCHEMA WILL AUTOMATICALLY DELETE THE EXPIRED TOKEN ONCE THEIR DUE FILLED, SO I DONT HAVE TO USE THE OR || but to make sure
+//     // im just going to use it anyway
+//     if (!storedToken || storedToken.expiresAt < new Date()) {
+//       return next(handleMakeError(401, "Invalid token or expired token"));
+//     }
 
-    // GENERATE NEW ACCESS TOKEN
-    // OPTIONALLY: GENERATE NEW REFRESH TOKEN (TOKEN ROTATING?? IDK THE NAME)
-    const newAccessToken = jwt.sign(
-      { userId: decoded.userId },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
-    );
-    const newRefreshToken = jwt.sign(
-      { userId: decoded.userId },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "7d" }
-    );
+//     // GENERATE NEW ACCESS TOKEN
+//     // OPTIONALLY: GENERATE NEW REFRESH TOKEN (TOKEN ROTATING?? IDK THE NAME)
+//     const newAccessToken = jwt.sign(
+//       { userId: decoded.userId },
+//       process.env.ACCESS_TOKEN_SECRET,
+//       { expiresIn: "15m" }
+//     );
+//     const newRefreshToken = jwt.sign(
+//       { userId: decoded.userId },
+//       process.env.REFRESH_TOKEN_SECRET,
+//       { expiresIn: "7d" }
+//     );
 
-    setCookies(res, newAccessToken, newRefreshToken);
+//     setCookies(res, newAccessToken, newRefreshToken);
 
-    // optional updating the new refresh token in the database
-    await RefreshToken.updateOne(
-      { userId: decoded.userId, token: refreshToken },
-      { token: newRefreshToken } // 7 days
-    );
+//     // optional updating the new refresh token in the database
+//     await RefreshToken.updateOne(
+//       { userId: decoded.userId, token: refreshToken },
+//       { token: newRefreshToken } // 7 days
+//     );
 
-    res.json({ message: "successfully generated new tokens" });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.json({ message: "successfully generated new tokens" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const getMe = async (req, res, next) => {
   try {

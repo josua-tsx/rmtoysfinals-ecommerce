@@ -1,6 +1,6 @@
 import ArrowLine from "../reusable/ArrowLine";
 import { Link, useNavigate } from "react-router-dom";
-import ShoesBg from "../reusable/ShoesBg";
+
 
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
@@ -130,8 +130,7 @@ export default function SignIn() {
         </div>
       </div>
 
-      <ShoesBg botPosition={"30px"} rotatePosition={"45deg"}/>
-      <ShoesBg  topPosition={"60px"} rightPosition={"30px"} rotatePosition={"-20deg"}/>
+
     </section>
   );
 }

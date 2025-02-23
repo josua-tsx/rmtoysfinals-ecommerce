@@ -7,7 +7,7 @@ import FiveStarReviews from "./FiveStarReviews";
 
 export default function Reviews() {
   const [selectedComponent, setSelectedComponent] = useState("fiveStar");
-  const [viewable, setViewable] = useState(false)
+
 
   const handleChangeComponent = (e) => {
     const newSelectedComponent = e.target.value;
@@ -36,11 +36,11 @@ export default function Reviews() {
 
           {/* REVIEWS CONTAINER HERE */}
           <div className="flex-1 gap-10 flex flex-col">
-            {selectedComponent === "oneStar" && <OneStarReviews viewable={viewable} />}
-            {selectedComponent === "twoStar" && <TwoStarReviews viewable={viewable} />}
-            {selectedComponent === "threeStar" && <ThreeStarReviews viewable={viewable} />}
-            {selectedComponent === "fourStar" && <FourStarReviews viewable={viewable} />}
-            {selectedComponent === "fiveStar" && <FiveStarReviews viewable={viewable} />}
+            {selectedComponent === "oneStar" && <OneStarReviews  />}
+            {selectedComponent === "twoStar" && <TwoStarReviews  />}
+            {selectedComponent === "threeStar" && <ThreeStarReviews  />}
+            {selectedComponent === "fourStar" && <FourStarReviews  />}
+            {selectedComponent === "fiveStar" && <FiveStarReviews  />}
           </div>
         </div>
       </div>
