@@ -97,21 +97,7 @@ export default function AdminSideBar() {
         },
       ],
     },
-    {
-      name: "Gcash Maintenance",
-      icon: <MdCategory size={20} />,
-      allowedRoles: ["admin"],
-      inner: [
-        {
-          name: "Gcash Table",
-          path: "/admin/gcash",
-        },
-        {
-          name: "Add Gcash",
-          path: `/admin/addGcash`,
-        },
-      ],
-    },
+ 
     {
       name: "Stocks",
       icon: <MdCategory size={20} />,
