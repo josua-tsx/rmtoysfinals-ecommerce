@@ -37,7 +37,7 @@ export const addProduct = async (req, res, next) => {
     return next(
       handleMakeError(
         400,
-        "Product name should nin 5 characters, max 50 characters, no double spaces, uppercase letters allowed"
+        "Product name should min 5 characters, max 50 characters, no double spaces, uppercase letters allowed"
       )
     );
   }
