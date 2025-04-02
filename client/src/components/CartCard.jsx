@@ -8,6 +8,8 @@ import formatPrice from "../reusable/formatPrice";
 export default function CartCard({ productCart }) {
   const queryClient = useQueryClient();
 
+  console.log(productCart)
+
   const { mutate: removeCartMutation } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.delete(`/cart/delete`, {
@@ -88,25 +90,25 @@ export default function CartCard({ productCart }) {
         <div className="flex  gap-10 justify-between items-center">
           <p>
             <span className="text-indigo-500 text-xl">
-              {formatPrice(productCart.productId.price)} PHP
+              {formatPrice(productCart?.productId?.price)} PHP
             </span>
           </p>
          
         </div>
         <div className="flex md:flex-row items-center gap-2 relative">
-            <button onClick={() => handleUpdateQuantity(productCart.productId._id, productCart.quantity - 1)}
+            <button onClick={() => handleUpdateQuantity(productCart?.productId?._id, productCart.quantity - 1)}
             type="button" className="text-3xl">
               -
             </button>
             <p className="">{productCart.quantity}</p>
 
-            <button onClick={() => handleUpdateQuantity(productCart.productId._id, productCart.quantity + 1)}
+            <button onClick={() => handleUpdateQuantity(productCart?.productId?._id, productCart.quantity + 1)}
              type="button" className="text-3xl">
               +
             </button>
 
             <div className="text-sm w-[90px]">
-              (STOCKS {productCart?.productId?.stocks?.stockQuantity})
+              (STOCKS {productCart?.productId?.stocks?.quantity})
             </div>
 
           </div>

@@ -1,24 +1,20 @@
 import Supplier from "../models/supplier.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import {
-  isValidFullName,
-  isValidPhoneNumber,
-  isValidText1,
-  isValidText2,
-} from "../utils/validations.js";
+// import {
+//   isValidFullName,
+//   isValidPhoneNumber,
+//   isValidText1,
+//   isValidText2,
+// } from "../utils/validations.js";
 
 export const addSupplier = async (req, res, next) => {
   const userId = req.user.id;
 
-  const {
-    contactNumber,
-    supplierPay,
-    supplierAddress,
-  } = req.body;
+  const { contactNumber, supplierPay, supplierAddress } = req.body;
 
-  const supplierName = req.body.supplierName.toLowerCase()
-  const contactPerson = req.body.contactPerson.toLowerCase()
+  const supplierName = req.body.supplierName.toLowerCase();
+  const contactPerson = req.body.contactPerson.toLowerCase();
 
   if (
     !supplierName ||
@@ -30,14 +26,6 @@ export const addSupplier = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
-  if (!isValidText1(supplierName)) {
-    return next(
-      handleMakeError(
-        400,
-        "Supplier name do not allow double spaces, and number. it should be between 3 and 50 characters."
-      )
-    );
-  }
 
   if (
     !contactPerson.trim() ||
@@ -46,42 +34,6 @@ export const addSupplier = async (req, res, next) => {
     !supplierName.trim()
   ) {
     return next(handleMakeError(400, "Input fields do not allow only spaces!"));
-  }
-
-  if (!isValidFullName(contactPerson)) {
-    return next(
-      handleMakeError(
-        400,
-        "Contact person full name does not allow double spaces."
-      )
-    );
-  }
-
-  if (!isValidText1(supplierPay)) {
-    return next(
-      handleMakeError(
-        400,
-        "Supplier pay do not allow double sapces. It should be between 3 and 50 characters."
-      )
-    );
-  }
-
-  if (!isValidPhoneNumber(contactNumber)) {
-    return next(
-      handleMakeError(
-        400,
-        "Phone number should be valid number. It should start with 09 and exact 11 numbers"
-      )
-    );
-  }
-
-  if (!isValidText2(supplierAddress)) {
-    return next(
-      handleMakeError(
-        400,
-        "Supplier address do not allow double spaces and is between 5 and 200 max characters long."
-      )
-    );
   }
 
   try {
@@ -167,15 +119,6 @@ export const editSupplier = async (req, res, next) => {
     supplierAddress,
   } = req.body;
 
-  if (!isValidText1(supplierName)) {
-    return next(
-      handleMakeError(
-        400,
-        "Supplier name do not allow double spaces, and number. it should be between 3 and 50 characters."
-      )
-    );
-  }
-
   if (
     !contactPerson.trim() ||
     !supplierPay.trim() ||
@@ -183,42 +126,6 @@ export const editSupplier = async (req, res, next) => {
     !supplierName.trim()
   ) {
     return next(handleMakeError(400, "Input fields do not allow only spaces!"));
-  }
-
-  if (!isValidFullName(contactPerson)) {
-    return next(
-      handleMakeError(
-        400,
-        "Contact person full name does not allow double spaces."
-      )
-    );
-  }
-
-  if (!isValidText1(supplierPay)) {
-    return next(
-      handleMakeError(
-        400,
-        "Supplier pay do not allow double sapces. It should be between 3 and 50 characters."
-      )
-    );
-  }
-
-  if (!isValidPhoneNumber(contactNumber)) {
-    return next(
-      handleMakeError(
-        400,
-        "Phone number should be valid number. It should start with 09 and exact 11 numbers"
-      )
-    );
-  }
-
-  if (!isValidText2(supplierAddress)) {
-    return next(
-      handleMakeError(
-        400,
-        "Supplier address do not allow double spaces and is between 5 and 200 max characters long."
-      )
-    );
   }
 
   try {

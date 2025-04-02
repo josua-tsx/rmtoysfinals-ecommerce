@@ -1,7 +1,6 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import { isValidCategoryName} from "../utils/validations.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
@@ -19,14 +18,7 @@ export const addCategory = async (req, res, next) => {
     return next(handleMakeError(400, "Only spaces not allowed."));
   }
 
-  if (!isValidCategoryName(categoryName)) {
-    return next(
-      handleMakeError(
-        400,
-        "Category name must be 3-50 letters and may include spaces, hyphens (-), and apostrophes (')"
-      )
-    );
-  }
+
 
 
   try {
@@ -114,14 +106,7 @@ export const editCategory = async (req, res, next) => {
     return next(handleMakeError(400, "Only spaces not allowed."));
   }
 
-  if (!isValidCategoryName(categoryName)) {
-    return next(
-      handleMakeError(
-        400,
-        "Category name must be 3-50 letters and may include spaces, hyphens (-), and apostrophes (')"
-      )
-    );
-  }
+
 
   try {
     const updateCategory = await Category.findByIdAndUpdate(categoryId, {

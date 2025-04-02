@@ -7,11 +7,7 @@ import { setCookies } from "../utils/setCookies.js";
 
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
-import {
-  isValidEmail,
-  isValidPassword,
-  isValidUsername,
-} from "../utils/validations.js";
+
 
 // const storeRefreshToken = async (userId, refreshToken) => {
 //   const token = new RefreshToken({
@@ -31,32 +27,7 @@ export const signup = async (req, res, next) => {
   if (!username || !email || !password || !confirmPassword)
     return next(handleMakeError(400, "Please input required fields"));
 
-  if (!isValidEmail(email)) {
-    return next(
-      handleMakeError(
-        400,
-        "Invalid email format or email should be all lowercase."
-      )
-    );
-  }
 
-  if (!isValidPassword(password)) {
-    return next(
-      handleMakeError(
-        400,
-        "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-      )
-    );
-  }
-
-  if (!isValidUsername(username)) {
-    return next(
-      handleMakeError(
-        400,
-        "Invalid username or email should be at least 10 characters."
-      )
-    );
-  }
 
   if (password !== confirmPassword)
     return next(handleMakeError(400, "Passwords are not equal "));
@@ -235,30 +206,6 @@ export const addWorker = async (req, res, next) => {
 
   if (!username || !email || !password || !confirmPassword) {
     return next(handleMakeError(400, "Please input required fields"));
-  }
-
-  if (!isValidEmail(email)) {
-    return next(
-      handleMakeError(
-        400,
-        "Invalid email format or email should be all lowercase."
-      )
-    );
-  }
-
-  if (!isValidPassword(password)) {
-    return next(
-      handleMakeError(
-        400,
-        "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-      )
-    );
-  }
-
-  if (!isValidUsername(username)) {
-    return next(
-      handleMakeError(400, "Invalid username. Username does not allow number.")
-    );
   }
 
   if (password !== confirmPassword) {

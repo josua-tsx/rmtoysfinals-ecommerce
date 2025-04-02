@@ -6,7 +6,6 @@ import { logAuditTrail } from "./audit.controller.js";
 import Review from "../models/review.model.js";
 import Category from "../models/category.model.js";
 import Order from "../models/order.model.js";
-import { isValidText1, isValidText2 } from "../utils/validations.js";
 import Wishlist from "../models/wishlist.models.js";
 
 export const addProduct = async (req, res, next) => {
@@ -14,16 +13,21 @@ export const addProduct = async (req, res, next) => {
 
   const {
     productName,
-    price,
     productDescription,
     productDetails,
     discount,
     productImages,
     category,
-    supplier,
+    // supplier,
   } = req.body;
 
-  if (!category || !supplier) {
+  // if (!category || !supplier) {
+  //   return next(
+  //     handleMakeError(400, "You need category or supplier to add product!")
+  //   );
+  // }
+
+  if (!category) {
     return next(
       handleMakeError(400, "You need category or supplier to add product!")
     );
@@ -31,37 +35,6 @@ export const addProduct = async (req, res, next) => {
 
   if (!productName || !productDescription) {
     return next(handleMakeError(400, "Please input required fields"));
-  }
-
-  if (!isValidText1(productName)) {
-    return next(
-      handleMakeError(
-        400,
-        "Product name should min 5 characters, max 50 characters, no double spaces, uppercase letters allowed"
-      )
-    );
-  }
-
-  if (!isValidText2(productDescription)) {
-    return next(
-      handleMakeError(
-        400,
-        "Product description should max 200 characters, no double spaces, uppercase letters allowed."
-      )
-    );
-  }
-
-  if (price <= 0) {
-    return next(handleMakeError(400, "Price cannot be 0 or negative!"));
-  }
-
-  if (price < discount) {
-    return next(
-      handleMakeError(
-        400,
-        "Discount price should not be greater than product price!"
-      )
-    );
   }
 
   // Lowercasing all labels and values in the productDetails array
@@ -97,13 +70,12 @@ export const addProduct = async (req, res, next) => {
 
     const newProduct = new Product({
       productName,
-      price,
       productDescription,
       productDetails,
       discount,
       productImages,
       category,
-      supplier,
+      status: "pending"
     });
 
     await newProduct.save();
@@ -124,7 +96,6 @@ export const addProduct = async (req, res, next) => {
       targetType: "Product",
       details: {
         productName,
-        price,
       },
       role: "admin",
     });
@@ -210,9 +181,32 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
-export const getNoStocksProducts = async (req, res, next) => {
+// export const getNoStocksProducts = async (req, res, next) => {
+//   try {
+//     const products = await Product.find({ status: { $ne: "draft" } })
+//       .populate({
+//         path: "supplier",
+//         select: "supplierName",
+//       })
+//       .populate({
+//         path: "category",
+//         select: "categoryName",
+//       })
+//       .populate({
+//         path: "stocks",
+//         select: "stockQuantity",
+//       });
+
+//     res.status(200).json(products);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+export const getStockStatusPendings = async (req, res, next) => {
   try {
-    const products = await Product.find({ status: { $ne: "draft" } })
+    const products = await Product.find({ status: "pending"   })
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -389,13 +383,12 @@ export const editProduct = async (req, res, next) => {
     discount,
     productImages,
     category,
-    supplier,
   } = req.body;
 
   try {
-    if (!category || !supplier) {
+    if (!category) {
       return next(
-        handleMakeError(400, "You need category or supplier to add product!")
+        handleMakeError(400, "You need category")
       );
     }
 
@@ -407,23 +400,8 @@ export const editProduct = async (req, res, next) => {
       return next(handleMakeError(400, "Please input required fields"));
     }
 
-    if (!isValidText1(productName)) {
-      return next(
-        handleMakeError(
-          400,
-          "Product name should min 5 characters, max 50 characters, no double spaces, uppercase letters allowed"
-        )
-      );
-    }
+  
 
-    if (!isValidText2(productDescription)) {
-      return next(
-        handleMakeError(
-          400,
-          "Product description should max 200 characters, no double spaces, uppercase letters allowed."
-        )
-      );
-    }
 
     // Lowercasing all labels and values in the productDetails array
     if (productDetails && Array.isArray(productDetails)) {
@@ -456,7 +434,6 @@ export const editProduct = async (req, res, next) => {
         category,
         status: "published",
         category,
-        supplier,
       },
       {
         new: true,
@@ -496,7 +473,7 @@ export const getSingleProduct = async (req, res, next) => {
       })
       .populate({
         path: "stocks",
-        select: "stockQuantity",
+        select: "quantity",
       })
       .populate({
         path: "reviews",
@@ -505,7 +482,8 @@ export const getSingleProduct = async (req, res, next) => {
           path: "userId",
           select: "avatar username email",
         },
-      });
+      })
+   
 
     if (!getSingleProduct)
       return next(handleMakeError(400, "Product not found"));
@@ -534,10 +512,6 @@ export const addDraft = async (req, res, next) => {
     supplier,
   } = req.body;
 
-  if (!category || !supplier)
-    return next(
-      handleMakeError(400, "You need category or supplier to add product!")
-    );
 
   try {
     const newDraft = new Product({
@@ -551,7 +525,6 @@ export const addDraft = async (req, res, next) => {
       filters,
       status: "draft",
       category,
-      supplier,
     });
 
     await newDraft.save();

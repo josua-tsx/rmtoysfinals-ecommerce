@@ -75,7 +75,7 @@ export const userPlaceOrder = async (req, res, next) => {
       for (const item of orderItemsWithQuantity) {
         await Stocks.findOneAndUpdate(
           { product: item.productId },
-          { $inc: { stockQuantity: -item.quantity } },
+          { $inc: { quantity: -item.quantity } },
           { new: true, runValidators: true }
         );
       }
@@ -118,7 +118,7 @@ export const userPlaceOrder = async (req, res, next) => {
       for (const item of orderItemsWithQuantity) {
         await Stocks.findOneAndUpdate(
           { product: item.productId },
-          { $inc: { stockQuantity: -item.quantity } },
+          { $inc: { quantity: -item.quantity } },
           { new: true, runValidators: true }
         );
       }
@@ -480,94 +480,47 @@ export const updateDeliveryStatus = async (req, res, next) => {
       });
     }
 
-    if (updatedOrder.status === "Processing") {
-      const processingSubject = `Your ${updatedOrder._id} is on processing.`;
-      const processingMessage = `Thank you for your order! We are currently processing it and will have it ready for shipment shortly. 
-        You will receive an update once it's on its way. 
-        If you have any questions, feel free to contact our support team!`;
-
-      try {
-        await sendEmail(userEmail, processingSubject, processingMessage);
-        console.log(`Delivery email sent to ${orderUserEmail}`);
-      } catch (emailError) {
-        console.error("Error sending delivery email:", emailError);
+      // Handle different status updates
+      switch (updatedOrder.status) {
+        case "Delivered":
+          await sendEmail(userEmail, `Your Order ${updatedOrder._id} Has been Delivered!`, 
+            "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
+          );
+          await Promise.all(
+            updatedOrder.orderItems.map(item =>
+              Product.findByIdAndUpdate(
+                item.productId,
+                { $inc: { sold: item.quantity } },
+                { new: true, runValidators: true }
+              )
+            )
+          );
+          break;
+  
+        case "Processing":
+          await sendEmail(userEmail, `Your ${updatedOrder._id} is on Processing.`, 
+            "Your order is being processed. We will notify you once it is shipped."
+          );
+          break;
+  
+        case "Shipped":
+          await sendEmail(userEmail, `Your ${updatedOrder._id} is Shipped!`, 
+            "Your order is now on its way to you!"
+          );
+          break;
+  
+        case "Out for Delivery":
+          await sendEmail(userEmail, `Your order ${updatedOrder._id} is Out for Delivery!`, 
+            "Your order is on the way. Expect delivery soon!"
+          );
+          break;
+  
+        case "Cancelled":
+          await sendEmail(userEmail, `Your order ${updatedOrder._id} has been Cancelled`, 
+            "Unfortunately, your order has been canceled. Please contact support for further assistance."
+          );
+          break;
       }
-
-      await logAuditTrail({
-        action: "set_OrderStatus_Processing",
-        userId,
-        targetId: updatedOrder._id,
-        targetType: "OrderStatus",
-        details: {
-          email: orderUserEmail,
-        },
-        role: "admin",
-      });
-    }
-
-    if (updatedOrder.status === "Shipped") {
-      const shippedSubject = `Your ${updatedOrder._id} is shipped!`;
-      const shippedMessage = `Great news! Your order has been shipped and is on its way to you.  
-      Thank you for shopping with us, and we hope you enjoy your purchase!`;
-
-      await sendEmail(userEmail, shippedSubject, shippedMessage);
-
-      await Notification.deleteMany({});
-      await logAuditTrail({
-        action: "set_OrderStatus_Shipped",
-        userId,
-        targetId: updatedOrder._id,
-        targetType: "OrderStatus",
-        details: {
-          email: orderUserEmail,
-        },
-        role: "admin",
-      });
-    }
-
-    if (updatedOrder.status === "Out for Delivery") {
-      const outForDeliverySubject = `Your order ${updatedOrder._id} is Out for Delivery!`;
-      const outForDeliveryMessage = `Exciting news! Your order is out for delivery and should arrive soon. Keep an eye out for the delivery,
-       and thank you for choosing us. If you have any questions, feel free to contact our support team!`;
-
-      await sendEmail(userEmail, outForDeliverySubject, outForDeliveryMessage);
-
-      await Notification.deleteMany({});
-
-      await logAuditTrail({
-        action: "set_OrderStatus_OutforDelivery",
-        userId,
-        targetId: updatedOrder._id,
-        targetType: "OrderStatus",
-        details: {
-          email: orderUserEmail,
-        },
-        role: "admin",
-      });
-    }
-
-    if (updatedOrder.status === "Cancelled") {
-      const cancelledSubject = `Your order ${updatedOrder._id} has been cancelled by RM TOYS`;
-      const cancelledMessage = `We regret to inform you that your order has 
-      been canceled due to a system error. If you'd like more details or clarification, 
-      please contact us, and make sure to include your order ID when reaching out.
-      We apologize for any inconvenience caused and are here to assist you further.`;
-
-      await sendEmail(userEmail, cancelledSubject, cancelledMessage);
-
-      await Notification.deleteMany({});
-
-      await logAuditTrail({
-        action: "set_OrderStatus_Cancelled",
-        userId,
-        targetId: updatedOrder._id,
-        targetType: "OrderStatus",
-        details: {
-          email: orderUserEmail,
-        },
-        role: "admin",
-      });
-    }
 
     res.status(200).json({ message: "Delivery Status updated sucessfully" });
   } catch (error) {}

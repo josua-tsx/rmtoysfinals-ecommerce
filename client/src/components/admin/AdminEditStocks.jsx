@@ -3,15 +3,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AdminEditStocks() {
   const params = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // const [newProductId, setNewProductId] = useState("");
   const [newStockQuantity, setNewStockQuantity] = useState(0);
+  const [supplierPrice, setSupplierPrice] = useState(0);
+  const [shippingPrice, setShippingPrice] = useState(0);
+  const [totalCost, setTotalCost] = useState(0);
 
   const {
     data: singleStock,
@@ -48,22 +50,41 @@ export default function AdminEditStocks() {
     },
   });
 
+  const supplierTimesQuantity = supplierPrice * newStockQuantity;
+  const costOfTotal = Number(supplierTimesQuantity) + Number(shippingPrice);
+
+  useEffect(() => {
+    setTotalCost(costOfTotal);
+  }, [costOfTotal]);
+
+
+  useEffect(() => {
+    if (singleStock) {
+      setSupplierPrice(singleStock?.supplierPrice)
+      setShippingPrice(singleStock?.shippingPrice)
+      setTotalCost(singleStock?.totalCost)
+    }
+  }, [singleStock?._id])
+
   const handleEditStock = (e) => {
     e.preventDefault();
     editStockMutation({
       productId: singleStock.product._id,
       stockQuantity: newStockQuantity,
+      supplierPrice,
+      shippingPrice,
+      totalCost
     });
   };
 
   const handleCancel = () => {
-    navigate("/admin/stocks")
-  }
+    navigate("/admin/stocks");
+  };
 
   if (isStockPending) {
     return <p>loading...</p>;
   }
-  if (isStockError ) {
+  if (isStockError) {
     return <p>loading...</p>;
   }
 
@@ -90,20 +111,46 @@ export default function AdminEditStocks() {
                 value={singleStock.product.productName}
               >
                 <option value="">Select Product</option>
-                      <option value={singleStock.product.productName}>
-                      {singleStock.product.productName}
-                      </option>
-                  
+                <option value={singleStock.product.productName}>
+                  {singleStock.product.productName}
+                </option>
               </select>
             </div>
 
             <div className="flex flex-col justify-between">
-             <div className="flex gap-2 items-center">
-             <label className="p-2 uppercase" htmlFor="stockQuantity">
-                Stock Quantity:{" "}
+              <label className="p-2 uppercase" htmlFor="supplierName">
+                Supplier Name:
               </label>
-              <p className="text-indigo-700">CURRENT STOCK: {singleStock.stockQuantity}</p>
-             </div>
+              <input
+                className="border p-1 w-full outline-none border-black rounded-[5px]"
+                type="text"
+                value={singleStock.product?.supplier?.supplierName || ""}
+                disabled
+              />
+            </div>
+
+            <div className="flex flex-col justify-between">
+              <label className="p-2 uppercase" htmlFor="categoryName">
+                Category Name:
+              </label>
+              <input
+                className="border p-1 w-full outline-none border-black rounded-[5px]"
+                type="text"
+                value={singleStock.product?.category?.categoryName || ""}
+                disabled
+              />
+            </div>
+
+            
+            <div className="flex flex-col justify-between">
+              <div className="flex gap-2 items-center">
+                <label className="p-2 uppercase" htmlFor="stockQuantity">
+                  Stock Quantity:{" "}
+                </label>
+                <p className="text-indigo-700">
+                  CURRENT STOCK: {singleStock.stockQuantity}
+                </p>
+              </div>
               <input
                 className="border p-1 w-full outline-none  border-black rounded-[5px]"
                 type="number"
@@ -114,6 +161,53 @@ export default function AdminEditStocks() {
                 onChange={(e) => setNewStockQuantity(e.target.value)}
               />
             </div>
+
+            <div className="flex flex-col justify-between">
+              <label className="p-2 uppercase" htmlFor="stockQuantity">
+                Supplier Price:{" "}
+              </label>
+              <input
+                className="border p-1 w-full outline-none  border-black rounded-[5px]"
+                type="number"
+                min={0}
+                name="supplierPrice"
+                id="supplierPrice"
+                value={supplierPrice}
+                onChange={(e) => setSupplierPrice(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col justify-between">
+              <label className="p-2 uppercase" htmlFor="stockQuantity">
+                Shipping Price:{" "}
+              </label>
+              <input
+                className="border p-1 w-full outline-none  border-black rounded-[5px]"
+                type="number"
+                min={0}
+                name="shippingPrice"
+                id="shippingPrice"
+                value={shippingPrice}
+                onChange={(e) => setShippingPrice(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col ">
+              <label className="p-2 uppercase " htmlFor="stockQuantity">
+                Total Cost ((unit price * stock quantity) + shipping price):{" "}
+              </label>
+
+              <input
+                className="border p-1 w-full outline-none  border-black rounded-[5px]"
+                type="number"
+                min={0}
+                name="totalCost"
+                id="totalCost"
+                value={totalCost}
+                disabled
+              />
+            </div>
+
           </div>
 
           <div className="flex p-2 gap-2">
@@ -123,9 +217,13 @@ export default function AdminEditStocks() {
             >
               Update Stocks
             </button>
-            <button onClick={() => handleCancel()}
-            type="button" className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card ">Cancel</button>
-
+            <button
+              onClick={() => handleCancel()}
+              type="button"
+              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>

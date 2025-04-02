@@ -29,7 +29,7 @@ export default function AdminEditProducts() {
   const [filters, setFilters] = useState({});
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("");
-  const [supplier, setSupplier] = useState("");
+  // const [supplier, setSupplier] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
@@ -58,7 +58,7 @@ export default function AdminEditProducts() {
       setPrice(singleProduct.price || 0);
       setDiscount(singleProduct.discount || 0);
       setCategory(singleProduct?.category?._id || ""); 
-      setSupplier(singleProduct.supplier || "");
+      // setSupplier(singleProduct.supplier || "");
       setProductsDetailsArray(singleProduct.productDetails || []);
       setImages(singleProduct.productImages || []);
     }
@@ -85,17 +85,7 @@ export default function AdminEditProducts() {
     },
   });
 
-  const {
-    data: suppliers = [],
-    isPending: isSuppliersPending,
-    isError: isSuppliersError,
-  } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/supplier/get-suppliers`);
-      return res.data;
-    },
-  });
+
 
   const { mutate: editProductMutation } = useMutation({
     mutationFn: async (data) => {
@@ -113,7 +103,7 @@ export default function AdminEditProducts() {
       setProductsDetailsArray([]);
       setImages([]);
       setCategory("");
-      setSupplier("");
+      // setSupplier("");
       setPrice(0);
       setDiscount(0);
       toast.success("Successfully edited");
@@ -124,40 +114,7 @@ export default function AdminEditProducts() {
     },
   });
 
-  // const {mutate: addDraftProductMutation} = useMutation({
-  //   mutationFn: async (data) => {
-  //     const res = await axiosInstance.post(`/product/add-draft`, data)
-  //     return res.data
-  //   },
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({queryKey: ["products"]})
-  //     setProductDescription("");
-  //     setProductName("");
-  //     setProductsDetailsArray([]);
-  //     setImages([]);
-  //     setDiscount(0);
-  //     toast.success("Saved As Draft");
-  //   },
-  //   onError: (err) => {
-  //     toast.error(err.response.data.message || "Something went wrong");
-  //   },
-  // })
-
-  // const handleFormDraftSubmit = () => {
-
-  //   addDraftProductMutation({
-  //     productName,
-  //     price,
-  //     productDescription,
-  //     productDetails: productsDetailsArray,
-  //     discount,
-  //     productImages: images,
-  //     filters,
-  //     category: category,
-  //     supplier: supplier
-  //   });
-
-  // }
+  
 
 
   const handleFormSubmit = (e) => {
@@ -172,7 +129,7 @@ export default function AdminEditProducts() {
       productImages: images,
       filters,
       category: category,
-      supplier: supplier,
+      // supplier: supplier,
     });
   };
 
@@ -227,11 +184,11 @@ export default function AdminEditProducts() {
     setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (isCategoryPending || isSuppliersPending || isProductPending) {
+  if (isCategoryPending ||  isProductPending) {
     return <p>awdwad</p>;
   }
 
-  if (isCategoryError || isSuppliersError || isProductError) {
+  if (isCategoryError ||  isProductError) {
     return <p>awdwad</p>;
   }
 
@@ -439,7 +396,7 @@ export default function AdminEditProducts() {
                   </select>
                 </div>
 
-                <div className="flex flex-col">
+                {/* <div className="flex flex-col">
                   <h1 className="py-2">Suppliers</h1>
                   <select
                     name="supplier"
@@ -456,7 +413,7 @@ export default function AdminEditProducts() {
                         </option>
                       ))}
                   </select>
-                </div>
+                </div> */}
               </div>
 
               {/* <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">

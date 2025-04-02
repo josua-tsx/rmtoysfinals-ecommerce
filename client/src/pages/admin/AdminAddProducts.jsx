@@ -28,9 +28,9 @@ export default function AdminAddProducts() {
   const [productDescription, setProductDescription] = useState("");
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
   // const [filters, setFilters] = useState({});
-  const [price, setPrice] = useState(0);
+
   const [category, setCategory] = useState("");
-  const [supplier, setSupplier] = useState("");
+  // const [supplier, setSupplier] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
@@ -47,17 +47,6 @@ export default function AdminAddProducts() {
     },
   });
 
-  const {
-    data: suppliers = [],
-    isPending: isSuppliersPending,
-    isError: isSuppliersError,
-  } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/supplier/get-suppliers`);
-      return res.data;
-    },
-  });
 
   const { mutate: addProductMutation } = useMutation({
     mutationFn: async (data) => {
@@ -101,14 +90,14 @@ export default function AdminAddProducts() {
   const handleFormDraftSubmit = () => {
     addDraftProductMutation({
       productName,
-      price,
+
       productDescription,
       productDetails: productsDetailsArray,
       discount,
       productImages: images,
       // filters,
       category: category,
-      supplier: supplier,
+      // supplier: supplier,
     });
   };
 
@@ -117,14 +106,14 @@ export default function AdminAddProducts() {
 
     addProductMutation({
       productName,
-      price,
+
       productDescription,
       productDetails: productsDetailsArray,
       discount,
       productImages: images,
       // filters,
       category: category,
-      supplier: supplier,
+      // supplier: supplier,
     });
   };
 
@@ -179,11 +168,11 @@ export default function AdminAddProducts() {
     setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (isCategoryPending || isSuppliersPending) {
+  if (isCategoryPending) {
     return <p>Loading...</p>;
   }
 
-  if (isCategoryError || isSuppliersError) {
+  if (isCategoryError) {
     return <p>Error.</p>;
   }
 
@@ -323,19 +312,7 @@ export default function AdminAddProducts() {
                     onChange={(e) => setStocks(e.target.value)}
                   />
                 </div> */}
-                <div className="flex flex-col flex-1">
-                  <label htmlFor="price" className="pb-2">
-                    price
-                  </label>
-                  <input
-                    type="number"
-                    className="p-2 rounded-[5px] border border-black outline-none"
-                    name="price"
-                    id="price"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
-                </div>
+                
                 <div className="flex flex-col flex-1">
                   <label htmlFor="discount" className="pb-2">
                     Discount (OPTIONAL)
@@ -390,7 +367,7 @@ export default function AdminAddProducts() {
                   </select>
                 </div>
 
-                <div className="flex flex-col">
+                {/* <div className="flex flex-col">
                   <h1 className="py-2">Suppliers</h1>
                   <select
                     name="supplier"
@@ -407,7 +384,7 @@ export default function AdminAddProducts() {
                         </option>
                       ))}
                   </select>
-                </div>
+                </div> */}
               </div>
 
               {/* <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">

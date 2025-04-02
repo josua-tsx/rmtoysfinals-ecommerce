@@ -9,9 +9,10 @@ import {
   getBestRatedProducts,
   getBestSoldProducts,
   getDrafts,
-  getNoStocksProducts,
+  // getNoStocksProducts,
   getProducts,
   getSingleProduct,
+  getStockStatusPendings,
   mostReviewsProducts,
   publishDraft,
   toggleBestProduct,
@@ -23,7 +24,9 @@ const router = express.Router();
 router.post(`/add-product`, requireAuth, requireAdmin, addProduct);
 router.get(`/get-products`, getProducts);
 
-router.get(`/get-nostockProducts`, getNoStocksProducts);
+// router.get(`/get-nostockProducts`, getNoStocksProducts);
+
+router.get(`/get-stockStatus-pendings`, getStockStatusPendings)
 
 router.get(`/best-rating-product`, getBestRatedProducts)
 

@@ -11,7 +11,6 @@ const ProductModelSchema = new mongoose.Schema(
     price: {
       type: Number,
       min: 0,
-      required: true,
     },
 
     productDescription: {
@@ -44,14 +43,9 @@ const ProductModelSchema = new mongoose.Schema(
       default: 0
     },
 
-    // filters: {
-    //   type: Array,
-    //   required: true,
-    // },
-
     status: {
       type: String,
-      enum: ["draft", "published"],
+      enum: ["draft", "pending" ,"processing" ,"published"],
       // default: "draft"
     },
 

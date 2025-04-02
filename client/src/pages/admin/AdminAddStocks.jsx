@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../../lib/axios";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -8,8 +8,18 @@ import { useNavigate } from "react-router-dom";
 export default function AdminAddStocks() {
   const [productId, setProductId] = useState("");
   const [stockQuantity, setStockQuantity] = useState(0);
+  const [supplierPrice, setSupplierPrice] = useState(0);
+  const [shippingPrice, setShippingPrice] = useState(0);
+  const [totalCost, setTotalCost] = useState(0);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const supplierTimesQuantity = supplierPrice * stockQuantity;
+  const costOfTotal = Number(supplierTimesQuantity) + Number(shippingPrice);
+
+  useEffect(() => {
+    setTotalCost(costOfTotal);
+  }, [costOfTotal]);
 
   const {
     data: products = [],
@@ -23,6 +33,11 @@ export default function AdminAddStocks() {
     },
   });
 
+  const findProductThroughId = products.find(
+    (product) => product._id === productId
+  );
+
+  console.log(findProductThroughId);
 
   const { mutate: addStocksMutation } = useMutation({
     mutationFn: async (data) => {
@@ -30,8 +45,8 @@ export default function AdminAddStocks() {
       return res.data;
     },
     onSuccess: () => {
-      setStockQuantity(0)
-      setProductId("")
+      setStockQuantity(0);
+      setProductId("");
       toast.success("Successfully Added stock");
       // navigate(`/admin/stocks`)
     },
@@ -43,7 +58,13 @@ export default function AdminAddStocks() {
   const handleSubmitForm = (e) => {
     e.preventDefault();
 
-    addStocksMutation({ productId, stockQuantity });
+    addStocksMutation({
+      productId,
+      stockQuantity,
+      supplierPrice,
+      shippingPrice,
+      totalCost,
+    });
   };
 
   if (isProductsPending) {
@@ -86,9 +107,37 @@ export default function AdminAddStocks() {
               </select>
             </div>
 
+            {findProductThroughId ? (
+              <>
+                <div className="flex flex-col justify-between">
+                  <label className="p-2 uppercase" htmlFor="supplierName">
+                    Supplier Name:
+                  </label>
+                  <input
+                    className="border p-1 w-full outline-none border-black rounded-[5px]"
+                    type="text"
+                    value={findProductThroughId.supplier?.supplierName || ""}
+                    disabled
+                  />
+                </div>
+
+                <div className="flex flex-col justify-between">
+                  <label className="p-2 uppercase" htmlFor="categoryName">
+                    Category Name:
+                  </label>
+                  <input
+                    className="border p-1 w-full outline-none border-black rounded-[5px]"
+                    type="text"
+                    value={findProductThroughId.category?.categoryName || ""}
+                    disabled
+                  />
+                </div>
+              </>
+            ) : null}
+
             <div className="flex flex-col justify-between">
               <label className="p-2 uppercase" htmlFor="stockQuantity">
-                Stock Quantity:{" "}
+                Stocks Quantity:{" "}
               </label>
               <input
                 className="border p-1 w-full outline-none  border-black rounded-[5px]"
@@ -100,23 +149,69 @@ export default function AdminAddStocks() {
                 onChange={(e) => setStockQuantity(e.target.value)}
               />
             </div>
+
+            <div className="flex flex-col justify-between">
+              <label className="p-2 uppercase" htmlFor="stockQuantity">
+                Supplier Price:{" "}
+              </label>
+              <input
+                className="border p-1 w-full outline-none  border-black rounded-[5px]"
+                type="number"
+                min={0}
+                name="supplierPrice"
+                id="supplierPrice"
+                value={supplierPrice}
+                onChange={(e) => setSupplierPrice(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col justify-between">
+              <label className="p-2 uppercase" htmlFor="stockQuantity">
+                Shipping Price:{" "}
+              </label>
+              <input
+                className="border p-1 w-full outline-none  border-black rounded-[5px]"
+                type="number"
+                min={0}
+                name="shippingPrice"
+                id="shippingPrice"
+                value={shippingPrice}
+                onChange={(e) => setShippingPrice(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col ">
+              <label className="p-2 uppercase " htmlFor="stockQuantity">
+                Total Cost ((unit price * stock quantity) + shipping price):{" "}
+              </label>
+
+              <input
+                className="border p-1 w-full outline-none  border-black rounded-[5px]"
+                type="number"
+                min={0}
+                name="totalCost"
+                id="totalCost"
+                value={totalCost}
+                disabled
+              />
+            </div>
           </div>
 
-         <div className="flex gap-2 p-2">
-         <button
-            type="submit"
-            className="bg-primary flex-1 border border-black text-card p-2 rounded-[5px]"
-          >
-            Add Stocks
-          </button>
-          <button
-                onClick={() => navigate(`/admin/stocks`)}
-                type="button"
-                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
-              >
-                Cancel
-              </button>
-         </div>
+          <div className="flex gap-2 p-2">
+            <button
+              type="submit"
+              className="bg-primary flex-1 border border-black text-card p-2 rounded-[5px]"
+            >
+              Add Stocks
+            </button>
+            <button
+              onClick={() => navigate(`/admin/stocks`)}
+              type="button"
+              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </section>

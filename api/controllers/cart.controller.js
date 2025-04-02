@@ -60,7 +60,7 @@ export const getCarts = async (req, res, next) => {
       select: "productName price productDescription productImages discount",
       populate: {
         path: "stocks",
-        select: "stockQuantity",
+        select: "quantity",
       },
     });
 

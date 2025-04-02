@@ -108,11 +108,27 @@ export default function AdminSideBar() {
           path: "/admin/stocks",
         },
         {
-          name: "Add Stocks",
-          path: "/admin/addStocks",
+          name: "Pending Stocks",
+          path: "/admin/pendingStocks",
+        },
+        // {
+        //   name: "Add Stocks",
+        //   path: "/admin/addStocks",
+        // },
+        // {
+        //   name: "Pending Stocks",
+        //   path: "/admin/addStocks",
+        // },
+        {
+          name: "Stocks Delivery",
+          path: "/admin/stocksDelivery",
         },
       ],
     },
+
+ 
+
+
     {
       name: "Audit Trail",
       path: "/admin/audit",
@@ -125,6 +141,10 @@ export default function AdminSideBar() {
         },
       ],
     },
+
+
+
+
     {
       name: "return to shop",
       path: "/shop",

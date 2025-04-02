@@ -30,6 +30,8 @@ export default function ProductDetails() {
     },
   });
 
+  console.log(singleProduct)
+
   console.log(singleProduct);
 
   const { mutate: addToCartMutation } = useMutation({
@@ -159,9 +161,9 @@ export default function ProductDetails() {
                   <div className="flex items-center gap-3">
                     <p>Stocks:</p>
 
-                    {singleProduct?.stocks?.stockQuantity > 0 ? (
+                    {singleProduct?.stocks?.quantity > 0 ? (
                       <span className="text-lg text-indigo-500">
-                        {formatPrice(singleProduct?.stocks?.stockQuantity)}
+                        {formatPrice(singleProduct?.stocks?.quantity)}
                       </span>
                     ) : (
                       <p>Out of stock</p>

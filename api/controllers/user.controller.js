@@ -3,13 +3,13 @@ import User from "../models/user.models.js";
 import bcypt from "bcryptjs";
 import { generateTokens } from "../utils/generateToken.js";
 import { logAuditTrail } from "./audit.controller.js";
-import {
-  isValidEmail,
-  isValidFullName,
-  isValidPassword,
-  isValidPhoneNumber,
-  isValidUsername,
-} from "../utils/validations.js";
+// import {
+//   isValidEmail,
+//   isValidFullName,
+//   isValidPassword,
+//   isValidPhoneNumber,
+//   isValidUsername,
+// } from "../utils/validations.js";
 
 import Address from "../models/address.models.js";
 import Review from "../models/review.model.js";
@@ -18,55 +18,30 @@ export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
   const { username, email, password, avatar, phoneNumber, fullName } = req.body;
 
-  if (!isValidEmail(email)) {
-    return next(
-      handleMakeError(
-        400,
-        "Invalid email format or email should be all lowercase."
-      )
-    );
-  }
 
-  if (!isValidUsername(username)) {
-    return next(
-      handleMakeError(
-        400,
-        "Invalid username or email should be at least 10 characters."
-      )
-    );
-  }
 
-  if (!isValidPhoneNumber(phoneNumber)) {
-    return next(
-      handleMakeError(
-        400,
-        "Invalid number or phone number should always start with 09 and exact 11 numbers."
-      )
-    );
-  }
-
-  if (fullName) {
-    if (!isValidFullName(fullName)) {
-      return next(
-        handleMakeError(
-          400,
-          "Full name must be all lowercase, contain no uppercase letters, no numbers, and be between 6 and 50 characters long. also no double spaces"
-        )
-      );
-    }
-  }
+  // if (fullName) {
+  //   if (!isValidFullName(fullName)) {
+  //     return next(
+  //       handleMakeError(
+  //         400,
+  //         "Full name must be all lowercase, contain no uppercase letters, no numbers, and be between 6 and 50 characters long. also no double spaces"
+  //       )
+  //     );
+  //   }
+  // }
 
   try {
     let hashedPassword;
     if (password) {
-      if (!isValidPassword(password)) {
-        return next(
-          handleMakeError(
-            400,
-            "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-          )
-        );
-      }
+      // if (!isValidPassword(password)) {
+      //   return next(
+      //     handleMakeError(
+      //       400,
+      //       "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+      //     )
+      //   );
+      // }
       hashedPassword = await bcypt.hash(password, 10);
     }
 
@@ -200,29 +175,29 @@ export const editWorker = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields"));
   }
 
-  if (!isValidEmail(email)) {
-    return next(
-      handleMakeError(
-        400,
-        "Invalid email format or email should be all lowercase."
-      )
-    );
-  }
+  // if (!isValidEmail(email)) {
+  //   return next(
+  //     handleMakeError(
+  //       400,
+  //       "Invalid email format or email should be all lowercase."
+  //     )
+  //   );
+  // }
 
-  if (!isValidPassword(password)) {
-    return next(
-      handleMakeError(
-        400,
-        "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-      )
-    );
-  }
+  // if (!isValidPassword(password)) {
+  //   return next(
+  //     handleMakeError(
+  //       400,
+  //       "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+  //     )
+  //   );
+  // }
 
-  if (!isValidUsername(username)) {
-    return next(
-      handleMakeError(400, "Invalid username. Username does not allow number.")
-    );
-  }
+  // if (!isValidUsername(username)) {
+  //   return next(
+  //     handleMakeError(400, "Invalid username. Username does not allow number.")
+  //   );
+  // }
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -232,14 +207,14 @@ export const editWorker = async (req, res, next) => {
   try {
     let hashedPassword;
     if (password) {
-      if (!isValidPassword(password)) {
-        return next(
-          handleMakeError(
-            400,
-            "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-          )
-        );
-      }
+      // if (!isValidPassword(password)) {
+      //   return next(
+      //     handleMakeError(
+      //       400,
+      //       "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
+      //     )
+      //   );
+      // }
       hashedPassword = await bcypt.hash(password, 10);
     }
 

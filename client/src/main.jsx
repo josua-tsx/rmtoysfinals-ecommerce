@@ -56,6 +56,8 @@ import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedVali
 import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
 
 import Contact from "./pages/Contact.jsx";
+import AdminStocksDelivery from "./components/admin/AdminStocksDelivery.jsx";
+import AdminStocksPending from "./pages/admin/AdminStocksPending.jsx";
 
 const queryClient = new QueryClient();
 
@@ -238,15 +240,26 @@ const router = createBrowserRouter([
         path: "/admin/stocks",
         element: <AdminStocks />,
       },
-
+  
       {
         path: "/admin/addStocks",
         element: <AdminAddStocks />,
+      },
+
+      {
+        path: "/admin/pendingStocks",
+        element: <AdminStocksPending/>,
       },
       {
         path: "/admin/editStocks/:stockId",
         element: <AdminEditStocks />,
       },
+
+      {
+        path: "/admin/stocksDelivery",
+        element: <AdminStocksDelivery/>,
+      },
+
 
       // USER MAINTENANCE
 
