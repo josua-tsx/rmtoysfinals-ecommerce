@@ -95,20 +95,10 @@ const OrderModelSchema = new mongoose.Schema(
       default: "https://cdn-icons-png.freepik.com/512/8690/8690743.png",
     },
 
-    gcashAdditionalDetails: {
-      gcashName: {
-        type: String,
-      },
-      gcashNo: {
-        type: String,
-      },
-      gcashRefNo: {
-        type: String,
-      },
-      gcashReceiptImage: {
-        type: String,
-      },
-    },
+    stripeSessionId: {
+      type: String,
+      unique: true
+    }
   },
   {
     timestamps: true,
