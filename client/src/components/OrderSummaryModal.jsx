@@ -3,21 +3,19 @@ import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
-import useOrderStore from "../stores/useOrderStore";
+
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
-  const { setCurrentOrder } = useOrderStore();
 
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const [notes, setNotes] = useState("");
   const [taxes, setTaxes] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(35);
   const [cartItems, setCartItems] = useState({});
+
 
   const {
     data: activeAddress,
@@ -49,19 +47,16 @@ export default function OrderSummaryModal({ onClose }) {
     }
   }, [cart]);
 
-
-
- // Calculate total discount for all products
- const totalDiscount = cart?.items?.reduce((total, item) => {
-  const productDiscount = item.productId.discount || 0;
-  return total + (productDiscount * item.quantity);
-}, 0);
+  // Calculate total discount for all products
+  const totalDiscount = cart?.items?.reduce((total, item) => {
+    const productDiscount = item.productId.discount || 0;
+    return total + productDiscount * item.quantity;
+  }, 0);
 
   // Calculate subtotal if cart is not empty
   const subtotal = cart?.items?.reduce((total, item) => {
-    return total + item.productId.price  * item.quantity;
+    return total + item.productId.price * item.quantity;
   }, 0);
-
 
   const totalPrice = subtotal + shippingFee + taxes - totalDiscount;
 
@@ -72,16 +67,37 @@ export default function OrderSummaryModal({ onClose }) {
       return res.data;
     },
     onSuccess: () => {
-      setNotes("");
-      onClose();
-      queryClient.invalidateQueries({ queryKey: ["order"] });
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      toast.success(`order placed`);
+     
+        setNotes("");
+        onClose();
+        queryClient.invalidateQueries({ queryKey: ["order"] });
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+        toast.success(`order placed`);
+  
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
     },
   });
+
+
+  const { mutate: placeStripeOrder } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/order/place-order-stripe`, data);
+      return res.data;
+    },
+    onSuccess: (data) => {
+
+      console.log(data)
+      if (data.url) {
+        window.location.href = data.url; // redirect to Stripe checkout
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Stripe checkout failed");
+    },
+  });
+
 
   const handleOrderFormSubmit = (e) => {
     e.preventDefault();
@@ -95,32 +111,28 @@ export default function OrderSummaryModal({ onClose }) {
     if (!fullName || !phoneNumber || !currentAddress)
       return toast.error("Please update required fields first");
 
-    if (paymentMethod === "Gcash") {
-      if (cartItems.length > 0) {
-        const orderData = {
-          orderItems: cartItems,
-          shippingAddress: currentAddress,
-          paymentMethod,
-          taxPrice: taxes,
-          shippingPrice: shippingFee,
-          discount: totalDiscount,
-          subtotal,
-          totalPrice,
-          notes,
-          quantity: cartItems.quantity,
-        };
-        setCurrentOrder(orderData);
-        navigate("/gcashPage");
-      } else {
-        return toast.error("You can not placed an order without products!");
-      }
+    const orderData = {
+      orderItems: cartItems,
+      shippingAddress: currentAddress,
+      paymentMethod,
+      taxPrice: taxes,
+      shippingPrice: shippingFee,
+      discount: totalDiscount,
+      subtotal,
+      totalPrice,
+      notes,
+      quantity: cartItems.quantity,
+    };
 
-      return;
-    }
-
-    if (paymentMethod === "Cod") {
-      placeOrder({
-        orderItems: cartItems,
+    if (paymentMethod === "Online Payment") {
+      const stripeOrderData = {
+        orderItems: cartItems.map(item => ({
+          productId: item.productId,  
+          productName: item.productId.productName,
+          productImages: item.productId.productImages[0],
+          price: item.productId.price,
+          quantity: item.quantity
+        })),
         shippingAddress: currentAddress,
         paymentMethod,
         taxPrice: taxes,
@@ -129,8 +141,15 @@ export default function OrderSummaryModal({ onClose }) {
         subtotal,
         totalPrice,
         notes,
-        quantity: cartItems.quantity,
-      });
+      };
+    
+      placeStripeOrder(stripeOrderData);
+      console.log(stripeOrderData)
+      return;
+    }
+
+    if (paymentMethod === "Cod") {
+      placeOrder(orderData);
     }
   };
 
@@ -192,8 +211,8 @@ export default function OrderSummaryModal({ onClose }) {
                 id="paymentMethod"
                 className="border outline-none border-black rounded-[5px] p-1"
               >
+                <option value="Online Payment">Online Payment</option>
                 <option value="Cod">Cash on delivery</option>
-                <option value="Gcash">Gcash</option>
               </select>
             </div>
 

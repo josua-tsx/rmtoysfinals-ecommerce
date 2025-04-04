@@ -6,6 +6,9 @@ import Stocks from "../models/stocks.model.js";
 import { sendEmail } from "../nodemailer/nodemailer.js";
 import { logAuditTrail } from "./audit.controller.js";
 
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 export const userPlaceOrder = async (req, res, next) => {
   const userId = req.user.id;
   const {
@@ -18,7 +21,6 @@ export const userPlaceOrder = async (req, res, next) => {
     subtotal,
     totalPrice,
     notes,
-    gcashAdditionalDetails,
   } = req.body;
 
   try {
@@ -52,50 +54,6 @@ export const userPlaceOrder = async (req, res, next) => {
           )
         );
       }
-    }
-
-    if (paymentMethod === "Gcash") {
-      const newOrder = new Order({
-        userId,
-        orderItems: orderItemsWithQuantity,
-        shippingAddress,
-        paymentMethod,
-        taxPrice,
-        shippingPrice,
-        discount,
-        subtotal,
-        totalPrice,
-        notes,
-        paymentStatus: "Pending",
-        gcashAdditionalDetails,
-      });
-
-      await newOrder.save();
-
-      for (const item of orderItemsWithQuantity) {
-        await Stocks.findOneAndUpdate(
-          { product: item.productId },
-          { $inc: { quantity: -item.quantity } },
-          { new: true, runValidators: true }
-        );
-      }
-
-      const userCart = await Cart.findOne({ userId });
-      userCart.items = [];
-      await userCart.save();
-
-      await logAuditTrail({
-        action: "user_add_order",
-        userId,
-        targetId: newOrder._id,
-        targetType: "UserOrder",
-        details: {
-          description: "Ordered using gcash",
-        },
-        role: "customer",
-      });
-
-      res.status(200).json({ message: "Order placed!", newOrder });
     }
 
     if (paymentMethod === "Cod") {
@@ -144,6 +102,153 @@ export const userPlaceOrder = async (req, res, next) => {
     next(error);
   }
 };
+
+export const placeOrderStripe = async (req, res, next) => {
+  try {
+    const {
+      orderItems,
+      shippingAddress,
+      paymentMethod,
+      taxPrice,
+      shippingPrice,
+      discount,
+      subtotal,
+      totalPrice,
+      notes,
+    } = req.body;
+  
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      return next(handleMakeError(400, "Invalid or empty products array"));
+    }
+
+    const lineItems = orderItems.map((product) => {
+
+      if (!product.productId) {
+        return next(handleMakeError(400, "Missing productId in one of the order items"));
+      }
+
+
+      return {
+        price_data: {
+          currency: "php",
+          product_data: {
+            name: product.productName,
+            images: [product.productImages],
+          },
+          unit_amount: Math.round(product.price * 100),
+        },
+        quantity: product.quantity,
+      };
+    });
+
+    console.log(orderItems)
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: lineItems,
+      mode: "payment",
+      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+      metadata: {
+        userId: req.user._id.toString(),
+        orderItems: JSON.stringify(
+          orderItems.map((item) => ({
+            productId: item.productId._id,  // Only pass productId (not the whole object)
+            productName: item.productId.productName,
+            price: item.productId.price,
+            quantity: item.quantity
+          }))
+        ), // Convert array to string
+        shippingAddress: JSON.stringify(shippingAddress),
+        paymentMethod: JSON.stringify(paymentMethod),
+        taxPrice: taxPrice.toString(),
+        shippingPrice: shippingPrice.toString(),
+        discount: discount.toString(),
+        subtotal: subtotal.toString(),
+        totalPrice: totalPrice.toString(),
+        notes: notes || "",
+      },
+    });
+    
+    
+    res.status(200).json({ url: session.url }); 
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const checkOutSuccess = async (req, res, next) => {
+  try {
+    const { sessionId } = req.body;
+
+    // Retrieve the Stripe session
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (!session || session.payment_status !== "paid") {
+      return res.status(400).json({ success: false, message: "Payment not completed" });
+    }
+
+
+    console.log("Session Metadata:", session.metadata);
+    // Extract necessary data from session metadata
+    const userId = session.metadata.userId; // Ensure userId is stored in metadata
+      const orderItems = JSON.parse(session.metadata.orderItems).map((item) => {
+        if (!item.productId) {
+          return next(handleMakeError(400, "Missing productId in order items from metadata"));
+        }
+        return {
+          productId: item.productId,
+          quantity: item.quantity,
+        };
+      });
+      
+    
+    const shippingAddress = JSON.parse(session.metadata.shippingAddress);
+    const taxPrice = parseFloat(session.metadata.taxPrice);
+    const shippingPrice = parseFloat(session.metadata.shippingPrice);
+    const discount = parseFloat(session.metadata.discount);
+    const subtotal = parseFloat(session.metadata.subtotal);
+    const totalPrice = parseFloat(session.metadata.totalPrice);
+    const notes = session.metadata.notes || "";
+
+    // Create a new order
+    const newOrder = new Order({
+      userId,
+      orderItems,
+      shippingAddress,
+      paymentMethod: "Online Payment",
+      taxPrice,
+      shippingPrice,
+      discount,
+      subtotal,
+      totalPrice,
+      notes,
+      paymentStatus: "Paid",
+    });
+
+    // Save the order in the database
+    await newOrder.save();
+
+    for (const item of orderItems) {
+      await Stocks.findOneAndUpdate(
+        { product: item.productId },
+        { $inc: { quantity: -item.quantity } },
+        { new: true, runValidators: true }
+      );
+    }
+
+    const userCart = await Cart.findOne({ userId });
+    userCart.items = [];
+    await userCart.save();
+
+    res.status(200).json({ success: true, message: "Order placed successfully!" });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const getUserOrder = async (req, res, next) => {
   const userId = req.user.id;
@@ -331,62 +436,6 @@ export const getAllCancelled = async (req, res, next) => {
   }
 };
 
-// export const updateDeliveryStatus = async (req, res, next) => {
-//   const { orderId } = req.params;
-//   const { status } = req.body;
-
-//   try {
-//     const validStatuses = [
-//       "Pending",
-//       "Processing",
-//       "Shipped",
-//       "Out for Delivery",
-//       "Delivered",
-//       "Cancelled",
-//     ];
-
-//     // Validate the status
-//     if (!validStatuses.includes(status)) {
-//       return res.status(400).json({ message: "Invalid delivery status." });
-//     }
-
-//     // Find the order
-//     const order = await Order.findById(orderId);
-//     if (!order) {
-//       return next(handleMakeError(404, "Order not found!"));
-//     }
-
-//     // If the status is being updated to "Cancelled"
-//     if (status === "Cancelled" && order.status !== "Cancelled") {
-//       for (const item of order.orderItems) {
-//         // ADDING BACK THE PRODUCT QUANTITY TO STOCK  QUANTITY
-//         await Stocks.findOneAndUpdate(
-//           { product: item.productId },
-//           { $inc: { stockQuantity: item.quantity } },
-//           { new: true, runValidators: true }
-//         );
-//       }
-//     }
-
-//     // Update the order status and payment status
-//     const orderUpdate = {
-//       status,
-//       paymentStatus: status === "Delivered" ? "Paid" : "Pending",
-//     };
-
-//     const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
-//       new: true,
-//       runValidators: true,
-//     });
-
-//     res.status(200).json({
-//       order: updatedOrder,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
   const { status } = req.body;
@@ -480,47 +529,57 @@ export const updateDeliveryStatus = async (req, res, next) => {
       });
     }
 
-      // Handle different status updates
-      switch (updatedOrder.status) {
-        case "Delivered":
-          await sendEmail(userEmail, `Your Order ${updatedOrder._id} Has been Delivered!`, 
-            "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
-          );
-          await Promise.all(
-            updatedOrder.orderItems.map(item =>
-              Product.findByIdAndUpdate(
-                item.productId,
-                { $inc: { sold: item.quantity } },
-                { new: true, runValidators: true }
-              )
+    // Handle different status updates
+    switch (updatedOrder.status) {
+      case "Delivered":
+        await sendEmail(
+          userEmail,
+          `Your Order ${updatedOrder._id} Has been Delivered!`,
+          "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
+        );
+        await Promise.all(
+          updatedOrder.orderItems.map((item) =>
+            Product.findByIdAndUpdate(
+              item.productId,
+              { $inc: { sold: item.quantity } },
+              { new: true, runValidators: true }
             )
-          );
-          break;
-  
-        case "Processing":
-          await sendEmail(userEmail, `Your ${updatedOrder._id} is on Processing.`, 
-            "Your order is being processed. We will notify you once it is shipped."
-          );
-          break;
-  
-        case "Shipped":
-          await sendEmail(userEmail, `Your ${updatedOrder._id} is Shipped!`, 
-            "Your order is now on its way to you!"
-          );
-          break;
-  
-        case "Out for Delivery":
-          await sendEmail(userEmail, `Your order ${updatedOrder._id} is Out for Delivery!`, 
-            "Your order is on the way. Expect delivery soon!"
-          );
-          break;
-  
-        case "Cancelled":
-          await sendEmail(userEmail, `Your order ${updatedOrder._id} has been Cancelled`, 
-            "Unfortunately, your order has been canceled. Please contact support for further assistance."
-          );
-          break;
-      }
+          )
+        );
+        break;
+
+      case "Processing":
+        await sendEmail(
+          userEmail,
+          `Your ${updatedOrder._id} is on Processing.`,
+          "Your order is being processed. We will notify you once it is shipped."
+        );
+        break;
+
+      case "Shipped":
+        await sendEmail(
+          userEmail,
+          `Your ${updatedOrder._id} is Shipped!`,
+          "Your order is now on its way to you!"
+        );
+        break;
+
+      case "Out for Delivery":
+        await sendEmail(
+          userEmail,
+          `Your order ${updatedOrder._id} is Out for Delivery!`,
+          "Your order is on the way. Expect delivery soon!"
+        );
+        break;
+
+      case "Cancelled":
+        await sendEmail(
+          userEmail,
+          `Your order ${updatedOrder._id} has been Cancelled`,
+          "Unfortunately, your order has been canceled. Please contact support for further assistance."
+        );
+        break;
+    }
 
     res.status(200).json({ message: "Delivery Status updated sucessfully" });
   } catch (error) {}

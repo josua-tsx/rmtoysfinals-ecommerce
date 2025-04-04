@@ -58,6 +58,8 @@ import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
 import Contact from "./pages/Contact.jsx";
 import AdminStocksDelivery from "./components/admin/AdminStocksDelivery.jsx";
 import AdminStocksPending from "./pages/admin/AdminStocksPending.jsx";
+import PurchaseCancelPage from "./pages/PurchaseCancelPage.jsx";
+import PurchaseSuccessPage from "./pages/PurchaseSuccessPage.jsx";
 
 const queryClient = new QueryClient();
 
@@ -137,6 +139,7 @@ const router = createBrowserRouter([
         path: `/orderSingle`,
         element: <SingleOrderList />,
       },
+   
     ],
   },
 
@@ -323,6 +326,14 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: `/purchase-cancel`, 
+    element: <PurchaseCancelPage/>
+  },
+  {
+    path: `/purchase-success`, 
+    element: <PurchaseSuccessPage/>
+  }
 ]);
 
 createRoot(document.getElementById("root")).render(

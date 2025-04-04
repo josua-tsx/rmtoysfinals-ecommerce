@@ -29,8 +29,8 @@ const OrderModelSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Gcash", "Cod"],
-      default: "Gcash",
+      enum: ["Online Payment", "Cod"],
+      default: "Cod",
     },
 
     notes: {
@@ -99,6 +99,7 @@ const OrderModelSchema = new mongoose.Schema(
       type: String,
       unique: true
     }
+
   },
   {
     timestamps: true,

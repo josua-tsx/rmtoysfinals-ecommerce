@@ -4,6 +4,7 @@ import {
   addReason,
   adminOrderRefund,
   cancelSuccessTransact,
+  checkOutSuccess,
   getAllCancelled,
   getAllFailed,
   getAllOrder,
@@ -20,6 +21,7 @@ import {
   getUserFailed,
   getUserOrder,
   getUserRefund,
+  placeOrderStripe,
   updateDeliveryStatus,
   updatePaymentStatus,
   userCancelOrder,
@@ -29,6 +31,10 @@ import {
 const router = express.Router();
 
 router.post(`/place-order`, requireAuth, userPlaceOrder);
+
+router.post(`/place-order-stripe`, requireAuth, placeOrderStripe)
+
+router.post(`/checkout-success`, requireAuth, checkOutSuccess)
 
 router.put(`/add-reason/:orderId`, requireAuth, requireAdmin , addReason);
 
