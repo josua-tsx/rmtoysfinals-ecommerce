@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
@@ -15,8 +14,6 @@ export const OrderStocks = async (req, res, next) => {
     totalCost,
   } = req.body;
 
-  // const userId = req.user.id;
-
   try {
     const newDelivery = new Stocks({
       product,
@@ -27,13 +24,16 @@ export const OrderStocks = async (req, res, next) => {
       category,
       shippingPrice,
       totalCost,
-      deliveryStatus: "processing",
+      deliveryStatus: "delivered",
     });
 
     await Product.findByIdAndUpdate(
       product,
-      { status: "processing" },
-      { new: true }
+      { status: "published",
+        price: shopPrice,
+        stocks: newDelivery._id,
+      },
+      { new: true, runValidators: true }
     );
 
     await newDelivery.save();
@@ -77,7 +77,7 @@ export const reorderStock = async (req, res, next) => {
         category,
         shippingPrice,
         totalCost,
-        deliveryStatus: "processing"
+        deliveryStatus: "delivered"
       },
       { new: true } // Return the updated document
     );
@@ -114,55 +114,55 @@ export const getPendingDeliveries = async (req, res, next) => {
 };
 
 
-export const confirmDelivery = async (req, res, next) => {
-  const { deliveryId } = req.params;
+// export const confirmDelivery = async (req, res, next) => {
+//   const { deliveryId } = req.params;
 
-  try {
-    // Validate deliveryId
-    if (!mongoose.Types.ObjectId.isValid(deliveryId)) {
-      return res.status(400).json({ message: "Invalid delivery ID format!" });
-    }
+//   try {
+//     // Validate deliveryId
+//     if (!mongoose.Types.ObjectId.isValid(deliveryId)) {
+//       return res.status(400).json({ message: "Invalid delivery ID format!" });
+//     }
 
-    // Find the stock by deliveryId
-    const stock = await Stocks.findById(deliveryId);
-    if (!stock) {
-      return res.status(400).json({ message: "Delivery not found!" });
-    }
+//     // Find the stock by deliveryId
+//     const stock = await Stocks.findById(deliveryId);
+//     if (!stock) {
+//       return res.status(400).json({ message: "Delivery not found!" });
+//     }
 
-    // Update the delivery status in Stocks
-    stock.deliveryStatus = "delivered";
-    await stock.save();
+//     // Update the delivery status in Stocks
+//     stock.deliveryStatus = "delivered";
+//     await stock.save();
 
-    // Ensure stock contains a productId
-    if (!stock.product) {
-      return res.status(400).json({ message: "No product associated with this delivery!" });
-    }
+//     // Ensure stock contains a productId
+//     if (!stock.product) {
+//       return res.status(400).json({ message: "No product associated with this delivery!" });
+//     }
 
-    console.log(stock)
+//     console.log(stock)
 
-    // Update the corresponding product's status to "published"
-    const updatedProduct = await Product.findByIdAndUpdate(
-      stock.product,
-      { status: "published",
-        price: stock.shopPrice,
-        stocks: stock._id,
-      },
-      { new: true, runValidators: true }
-    );
+//     // Update the corresponding product's status to "published"
+//     const updatedProduct = await Product.findByIdAndUpdate(
+//       stock.product,
+//       { status: "published",
+//         price: stock.shopPrice,
+//         stocks: stock._id,
+//       },
+//       { new: true, runValidators: true }
+//     );
 
-    if (!updatedProduct) {
-      return res.status(400).json({ message: "Associated product not found!" });
-    }
+//     if (!updatedProduct) {
+//       return res.status(400).json({ message: "Associated product not found!" });
+//     }
 
-    res.status(200).json({
-      message: "Delivery confirmed, product status updated!",
-      delivery: stock,
-      product: updatedProduct,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json({
+//       message: "Delivery confirmed, product status updated!",
+//       delivery: stock,
+//       product: updatedProduct,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 
 //   const { deliveryId } = req.params;

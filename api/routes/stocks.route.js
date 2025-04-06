@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  confirmDelivery,
+  // confirmDelivery,
   getPendingDeliveries,
   getSingleStock,
   getStockLevels,
@@ -23,7 +23,7 @@ router.get(
 
 router.put(`/reOrder-stock/:deliveryId`, requireAuth, requireAdmin, reorderStock)
 
-router.put(`/set-as-delivered/:deliveryId`, requireAuth, requireAdmin, confirmDelivery);
+// router.put(`/set-as-delivered/:deliveryId`, requireAuth, requireAdmin, confirmDelivery);
 
 router.get("/get-stocks", getStocks);
 // router.delete("/delete-stock/:stockId", deleteStock)

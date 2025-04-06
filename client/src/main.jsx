@@ -258,10 +258,10 @@ const router = createBrowserRouter([
         element: <AdminEditStocks />,
       },
 
-      {
-        path: "/admin/stocksDelivery",
-        element: <AdminStocksDelivery/>,
-      },
+      // {
+      //   path: "/admin/stocksDelivery",
+      //   element: <AdminStocksDelivery/>,
+      // },
 
 
       // USER MAINTENANCE

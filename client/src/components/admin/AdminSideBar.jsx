@@ -119,10 +119,10 @@ export default function AdminSideBar() {
         //   name: "Pending Stocks",
         //   path: "/admin/addStocks",
         // },
-        {
-          name: "Stocks Delivery",
-          path: "/admin/stocksDelivery",
-        },
+        // {
+        //   name: "Stocks Delivery",
+        //   path: "/admin/stocksDelivery",
+        // },
       ],
     },
 

@@ -3,7 +3,7 @@ import { IoIosClose } from "react-icons/io";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../lib/axios";
-import { useMutation } from "@tanstack/react-query";
+import {  useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function AdminOrderRestockModal({singleStock, onClose}) {
   const [productId, setProductId] = useState("");
@@ -14,6 +14,7 @@ export default function AdminOrderRestockModal({singleStock, onClose}) {
   const [quantity, setQuantity] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
 
+  const queryClient = useQueryClient()
 
 
   useEffect(() => {
@@ -34,6 +35,8 @@ export default function AdminOrderRestockModal({singleStock, onClose}) {
     },
     onSuccess: () => {
       toast.success("success")
+      queryClient.invalidateQueries({queryKey: ["stocks"]})
+      onClose()
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong")
@@ -53,8 +56,6 @@ export default function AdminOrderRestockModal({singleStock, onClose}) {
       totalCost
     })
   }
-
-  console.log(singleStock)
 
   return (
     <section className="fixed inset-0 z-50 backdrop-blur-sm p-3">

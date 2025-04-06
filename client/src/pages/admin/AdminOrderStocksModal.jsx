@@ -40,8 +40,10 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       return res.data;
     },
     onSuccess: () => {
-        queryClient.invalidateQueries(["pendingProducts"])
       toast.success("Success")
+      queryClient.invalidateQueries(["pendingProducts"])
+      queryClient.invalidateQueries(["stocks"])
+      onClose()
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong!");
