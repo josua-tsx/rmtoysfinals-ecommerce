@@ -56,10 +56,14 @@ import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedVali
 import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
 
 import Contact from "./pages/Contact.jsx";
-import AdminStocksDelivery from "./components/admin/AdminStocksDelivery.jsx";
+
 import AdminStocksPending from "./pages/admin/AdminStocksPending.jsx";
 import PurchaseCancelPage from "./pages/PurchaseCancelPage.jsx";
 import PurchaseSuccessPage from "./pages/PurchaseSuccessPage.jsx";
+
+import AdminVat from "./pages/admin/AdminVat.jsx";
+import AdminAddVat from "./pages/admin/AdminAddVat.jsx";
+import AdminEditVat from "./pages/admin/AdminEditVat.jsx";
 
 const queryClient = new QueryClient();
 
@@ -280,6 +284,20 @@ const router = createBrowserRouter([
       },
 
 
+      // VAT
+
+      {
+        path: "/admin/vat",
+        element: <AdminVat/>
+      },
+      {
+        path: "/admin/addVat",
+        element: <AdminAddVat/>
+      },
+      {
+        path: "/admin/editVat/:vatId",
+        element: <AdminEditVat/>
+      },
 
       // AUDIT
 

@@ -3,9 +3,9 @@ import { IoIosClose } from "react-icons/io";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../lib/axios";
-import {  useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export default function AdminOrderRestockModal({singleStock, onClose}) {
+export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const [productId, setProductId] = useState("");
   const [supplier, setSupplier] = useState("");
   const [supplierPrice, setSupplierPrice] = useState(0);
@@ -13,38 +13,46 @@ export default function AdminOrderRestockModal({singleStock, onClose}) {
   const [shippingPrice, setShippingPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
+  const [deliveryId, setDeliveryId] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [discount, setDiscount] = useState(0)
 
-  const queryClient = useQueryClient()
-
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (singleStock) {
-      setProductId(singleStock?.product._id)
-      setSupplier(singleStock?.supplier._id)
-      setSupplierPrice(singleStock?.supplierPrice)
-      setShopPrice(singleStock?.shopPrice)
-      setShippingPrice(singleStock?.shippingPrice)
-      setTotalCost(singleStock?.totalCost)
+      setProductId(singleStock?.product._id);
+      setSupplier(singleStock?.supplier._id);
+      setSupplierPrice(singleStock?.supplierPrice);
+      setShopPrice(singleStock?.shopPrice);
+      setShippingPrice(singleStock?.shippingPrice);
+      setTotalCost(singleStock?.totalCost);
+      setDeliveryId(singleStock?.deliveryId)
+      setSelectedDate(singleStock?.dateDelivery)
+      // setDiscount(singleStock?.product?.discount)
     }
-  }, [singleStock])
+  }, [singleStock]);
 
-  const {mutate: reOrderStockMutation} = useMutation({
+  const { mutate: reOrderStockMutation } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosInstance.put(`/stocks/reOrder-stock/${singleStock?._id}`, data)
-      return res.data
+      const res = await axiosInstance.put(
+        `/stocks/reOrder-stock/${singleStock?._id}`,
+        data
+      );
+      return res.data;
     },
     onSuccess: () => {
-      toast.success("success")
-      queryClient.invalidateQueries({queryKey: ["stocks"]})
-      onClose()
+      toast.success("success");
+      queryClient.invalidateQueries({ queryKey: ["stocks"] });
+      onClose();
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong")
-    }
-  })
+      toast.error(err.response.data.message || "something went wrong");
+    },
+  });
 
   const hanldeFormSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     reOrderStockMutation({
       productId,
@@ -53,9 +61,11 @@ export default function AdminOrderRestockModal({singleStock, onClose}) {
       shopPrice,
       shippingPrice,
       quantity,
-      totalCost
-    })
-  }
+      totalCost,
+      deliveryId,
+      dateDelivery: selectedDate
+    });
+  };
 
   return (
     <section className="fixed inset-0 z-50 backdrop-blur-sm p-3">
@@ -85,6 +95,30 @@ export default function AdminOrderRestockModal({singleStock, onClose}) {
                 id="productName"
                 value={singleStock?.product?.productName}
                 disabled
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <label htmlFor="">Delivery ID: </label>
+              <input
+                value={deliveryId}
+                type="text"
+                id="deliveryId"
+                name="deliveryId"
+                disabled
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <label htmlFor="deliveryDate">Date Delivery: </label>
+              <input
+                type="date"
+                id="deliveryDate"
+                name="deliveryDate"
+                className="border border-black rounded-[5px] px-2"
+                max={new Date().toISOString().split("T")[0]}
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
               />
             </div>
 
@@ -157,8 +191,7 @@ export default function AdminOrderRestockModal({singleStock, onClose}) {
             </div>
           </div>
 
-          <button 
-          className="bg-primary text-card p-2 rounded-bl-[5px] rounded-br-[5px]">
+          <button className="bg-primary text-card p-2 rounded-bl-[5px] rounded-br-[5px]">
             Order
           </button>
         </form>

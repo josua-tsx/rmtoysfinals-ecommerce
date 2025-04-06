@@ -12,6 +12,9 @@ export const OrderStocks = async (req, res, next) => {
     category,
     shippingPrice,
     totalCost,
+    deliveryId,
+    dateDelivery,
+    discount
   } = req.body;
 
   try {
@@ -25,6 +28,9 @@ export const OrderStocks = async (req, res, next) => {
       shippingPrice,
       totalCost,
       deliveryStatus: "delivered",
+      deliveryId,
+      dateDelivery,
+      discount
     });
 
     await Product.findByIdAndUpdate(
@@ -32,6 +38,7 @@ export const OrderStocks = async (req, res, next) => {
       { status: "published",
         price: shopPrice,
         stocks: newDelivery._id,
+        discount,
       },
       { new: true, runValidators: true }
     );
@@ -53,12 +60,15 @@ export const reorderStock = async (req, res, next) => {
     category,
     shippingPrice,
     totalCost,
+    deliveryId,
+    dateDelivery,
+    discount,
   } = req.body;
-  const { deliveryId } = req.params;
+  const { stockId } = req.params;
 
   try {
     // 1. First find the existing stock
-    const existingStock = await Stocks.findById(deliveryId);
+    const existingStock = await Stocks.findById(stockId);
     
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
@@ -67,7 +77,7 @@ export const reorderStock = async (req, res, next) => {
 
     // 3. Update the stock with all fields including the new quantity
     const updateDeliver = await Stocks.findByIdAndUpdate(
-      deliveryId,
+      stockId,
       {
         product,
         supplier,
@@ -77,7 +87,10 @@ export const reorderStock = async (req, res, next) => {
         category,
         shippingPrice,
         totalCost,
-        deliveryStatus: "delivered"
+        deliveryStatus: "delivered",
+        deliveryId,
+        dateDelivery,
+        discount,
       },
       { new: true } // Return the updated document
     );
@@ -224,7 +237,7 @@ export const getStocks = async (req, res, next) => {
     const getStocks = await Stocks.find({ deliveryStatus: "delivered" })
       .populate({
         path: "product", // Populate the product field
-        select: "productImages productName price", // Include fields to select from product
+        select: "productImages productName discount price", // Include fields to select from product
         populate: [
           // Use an array for nested populations
           {
@@ -298,7 +311,7 @@ export const getSingleStock = async (req, res, next) => {
   try {
     const singleStock = await Stocks.findById(stockId).populate({
       path: "product",
-      select: "productName category supplier",
+      select: "productName discount category supplier",
       populate: [
         {
           path: "category",

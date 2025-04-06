@@ -23,7 +23,6 @@ export default function AdminAddProducts() {
   const [label, setLabel] = useState("");
   const [value, setValue] = useState("");
 
-  const [discount, setDiscount] = useState(0);
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
@@ -60,7 +59,7 @@ export default function AdminAddProducts() {
       setProductName("");
       setProductsDetailsArray([]);
       setImages([]);
-      setDiscount(0);
+
       toast.success("Product Submitted");
     },
     onError: (err) => {
@@ -79,7 +78,7 @@ export default function AdminAddProducts() {
       setProductName("");
       setProductsDetailsArray([]);
       setImages([]);
-      setDiscount(0);
+
       toast.success("Saved As Draft");
     },
     onError: (err) => {
@@ -93,7 +92,7 @@ export default function AdminAddProducts() {
 
       productDescription,
       productDetails: productsDetailsArray,
-      discount,
+
       productImages: images,
       // filters,
       category: category,
@@ -109,7 +108,7 @@ export default function AdminAddProducts() {
 
       productDescription,
       productDetails: productsDetailsArray,
-      discount,
+
       productImages: images,
       // filters,
       category: category,
@@ -313,20 +312,7 @@ export default function AdminAddProducts() {
                   />
                 </div> */}
                 
-                <div className="flex flex-col flex-1">
-                  <label htmlFor="discount" className="pb-2">
-                    Discount (OPTIONAL)
-                  </label>
-                  <input
-                    type="number"
-                    className="p-2 rounded-[5px] border border-black outline-none"
-                    name="discount"
-                    id="discount"
-                    min={0}
-                    value={discount}
-                    onChange={(e) => setDiscount(e.target.value)}
-                  />
-                </div>
+               
               </div>
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <div className="flex flex-col flex-1">

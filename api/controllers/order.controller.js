@@ -45,7 +45,7 @@ export const userPlaceOrder = async (req, res, next) => {
     for (const item of orderItemsWithQuantity) {
       const productStock = await Stocks.findOne({ product: item.productId });
 
-      if (!productStock || productStock.stockQuantity < item.quantity) {
+      if (!productStock || productStock.quantity < item.quantity) {
         // If stock is insufficient
         return next(
           handleMakeError(
@@ -182,6 +182,14 @@ export const checkOutSuccess = async (req, res, next) => {
   try {
     const { sessionId } = req.body;
 
+
+     // Check if order already exists for this session
+     const existingOrder = await Order.findOne({ 'paymentInfo.sessionId': sessionId });
+     if (existingOrder) {
+       return res.status(200).json({ success: true, message: "Order already processed" });
+     }
+ 
+
     // Retrieve the Stripe session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -225,6 +233,7 @@ export const checkOutSuccess = async (req, res, next) => {
       totalPrice,
       notes,
       paymentStatus: "Paid",
+      stripeSessionId: sessionId,
     });
 
     // Save the order in the database
@@ -468,7 +477,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
         // ADDING BACK THE PRODUCT QUANTITY TO STOCK  QUANTITY
         await Stocks.findOneAndUpdate(
           { product: item.productId },
-          { $inc: { stockQuantity: item.quantity } },
+          { $inc: { quantity: item.quantity } },
           { new: true, runValidators: true }
         );
       }
@@ -698,7 +707,7 @@ export const updatePaymentStatus = async (req, res, next) => {
       for (const item of order.orderItems) {
         await Stocks.findOneAndUpdate(
           { product: item.productId },
-          { $inc: { stockQuantity: item.quantity } },
+          { $inc: { quantity: item.quantity } },
           { new: true, runValidators: true }
         );
       }
@@ -726,7 +735,7 @@ export const updatePaymentStatus = async (req, res, next) => {
       for (const item of order.orderItems) {
         await Stocks.findOneAndUpdate(
           { product: item.productId },
-          { $inc: { stockQuantity: item.quantity } },
+          { $inc: { quantity: item.quantity } },
           { new: true, runValidators: true }
         );
       }
@@ -852,7 +861,7 @@ export const userCancelOrder = async (req, res, next) => {
     for (const item of order.orderItems) {
       await Stocks.findOneAndUpdate(
         { product: item.productId },
-        { $inc: { stockQuantity: item.quantity } },
+        { $inc: { quantity: item.quantity } },
         { new: true, runValidators: true }
       );
     }

@@ -21,7 +21,7 @@ router.get(
   getPendingDeliveries
 );
 
-router.put(`/reOrder-stock/:deliveryId`, requireAuth, requireAdmin, reorderStock)
+router.put(`/reOrder-stock/:stockId`, requireAuth, requireAdmin, reorderStock)
 
 // router.put(`/set-as-delivered/:deliveryId`, requireAuth, requireAdmin, confirmDelivery);
 

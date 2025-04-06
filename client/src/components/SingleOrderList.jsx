@@ -139,7 +139,7 @@ export default function SingleOrderList({ order, onClose }) {
             {order?.orderItems?.length > 0 &&
               order?.orderItems.map((item) => (
                 <div
-                  key={item._id}
+                  key={item?._id}
                   className="border border-black bg-card rounded-[5px] p-2 flex gap-4 items-center"
                 >
                   <img
@@ -180,7 +180,7 @@ export default function SingleOrderList({ order, onClose }) {
           </div>
         </div>
 
-        {order.paymentMethod === "Gcash" && (
+        {/* {order.paymentMethod === "Online Payment" && (
           <div className="border border-black flex flex-col p-2 gap-5 bg-card  rounded-[5px]">
             <div className="flex flex-row md:flex-col gap-5">
               <div className="h-full">
@@ -236,7 +236,7 @@ export default function SingleOrderList({ order, onClose }) {
             )}
             
           </div>
-        )}
+        )} */}
       </div>
     </section>
   );

@@ -18,7 +18,7 @@ import wishlistRoutes from "../api/routes/wishlist.route.js";
 import orderRoutes from "../api/routes/order.route.js";
 import auditRoute from "../api/routes/audit.route.js";
 import reviewRoute from "../api/routes/review.route.js";
-
+import vatRoute from "../api/routes/vat.route.js"
 
 // Load environment variables from .env file
 config();
@@ -52,6 +52,7 @@ app.use(`/api/wish`, wishlistRoutes);
 app.use(`/api/order`, orderRoutes);
 app.use(`/api/audit`, auditRoute);
 app.use(`/api/review`, reviewRoute);
+app.use(`/api/vat`, vatRoute);
 
 
 // Error handling middleware

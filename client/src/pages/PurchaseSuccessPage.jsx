@@ -2,11 +2,13 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function PurchaseSuccessPage() {
     const [searchParams] = useSearchParams();
     const sessionId = searchParams.get("session_id");
+    const hasProcessed = useRef(false); // Using ref to prevent double processing
+
     const navigate = useNavigate();
   
     const { mutate: confirmOrder, isLoading } = useMutation({
@@ -25,7 +27,8 @@ export default function PurchaseSuccessPage() {
     });
   
     useEffect(() => {
-      if (sessionId) {
+      if (sessionId && !hasProcessed.current) {
+        hasProcessed.current = true; // Mark as processed immediately
         confirmOrder();
       }
     }, [sessionId, confirmOrder]);

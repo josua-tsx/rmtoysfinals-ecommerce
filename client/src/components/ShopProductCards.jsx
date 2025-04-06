@@ -80,7 +80,7 @@ export default function ShopProductCards({ product }) {
       )}
 
       {
-        product?.stocks?.stockQuantity === 0 ? (
+        product?.stocks?.quantity === 0 ? (
           <div className="absolute flex gap-1 items-center  text-sm border top-[-15px] -left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">
           <span><CgUnavailable size={20} /></span>
           OUT OF STOCK 

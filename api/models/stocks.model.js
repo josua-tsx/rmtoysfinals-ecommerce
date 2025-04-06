@@ -38,6 +38,15 @@ const StocksModelSchema = new mongoose.Schema(
       enum: ["pending", "processing" ,"delivered"],
       default: "pending"
     },
+    deliveryId: {
+      type: String,
+      required: true
+    },
+    dateDelivery: {
+      type: String,
+      required: true
+    }
+
   },
   {
     timestamps: true,

@@ -66,7 +66,7 @@ export default function AdminStocksTable() {
       stock?.category?.categoryName
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      stock?.stockQuantity
+      stock?.quantity
         .toString()
         .toLowerCase()
         .includes(searchTerm.toString().toLowerCase())
@@ -111,6 +111,8 @@ export default function AdminStocksTable() {
           <thead>
             <tr>
               {/* <th className="font-normal p-2 pb-5">ID</th> */}
+              <th className="font-normal p-2 pb-5">Delivery ID</th>
+              <th className="font-normal p-2 pb-5">Delivery Date</th>
               <th className="font-normal p-2 pb-5">Product Name</th>
               <th className="font-normal p-2 pb-5">Supplier Name</th>
               <th className="font-normal p-2 pb-5">Category Name</th>
@@ -136,6 +138,8 @@ export default function AdminStocksTable() {
               filteredArrayStocks.map((stock) => (
                 <tr key={stock._id}>
                   {/* <td className="px-4">{stock._id}</td> */}
+                  <td className=" px-4 gap-2">{stock?.deliveryId}</td>
+                  <td className=" px-4 gap-2">{stock?.dateDelivery}</td>
                   <td className="flex items-center px-4 gap-2">
                     <img
                       src={

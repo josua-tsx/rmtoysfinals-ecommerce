@@ -12,15 +12,29 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [shippingPrice, setShippingPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
+  const [deliveryId, setDeliveryId] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [discount, setDiscount] = useState(0)
 
+  const generateRandomDeliveryId = () => {
+    return (
+      "DELIVERY-" + Math.random().toString(36).substring(2, 6).toUpperCase()
+    );
+  };
 
-  const queryClient = useQueryClient()
+  console.log(selectedDate);
+
+  useEffect(() => {
+    setDeliveryId(generateRandomDeliveryId());
+  }, [singleOrder]);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (singleOrder) {
-        setProduct(singleOrder._id)
+      setProduct(singleOrder._id);
     }
-  }, [singleOrder])
+  }, [singleOrder]);
 
   const {
     data: suppliers = [],
@@ -40,10 +54,10 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       return res.data;
     },
     onSuccess: () => {
-      toast.success("Success")
-      queryClient.invalidateQueries(["pendingProducts"])
-      queryClient.invalidateQueries(["stocks"])
-      onClose()
+      toast.success("Success");
+      queryClient.invalidateQueries(["pendingProducts"]);
+      queryClient.invalidateQueries(["stocks"]);
+      onClose();
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong!");
@@ -54,13 +68,16 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
     e.preventDefault();
 
     addNewDeliver({
-        product,
-        supplier,
-        supplierPrice,
-        shopPrice,
-        quantity,
-        shippingPrice,
-        totalCost
+      product,
+      supplier,
+      supplierPrice,
+      shopPrice,
+      quantity,
+      shippingPrice,
+      totalCost,
+      deliveryId,
+      dateDelivery: selectedDate,
+      discount
     });
   };
 
@@ -70,8 +87,10 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   return (
     <section className="fixed inset-0 z-50 backdrop-blur-sm p-3">
       <div className="h-screen flex flex-col justify-center items-center mx-auto">
-        <form onSubmit={handleFormSubmit}
-        className="border flex flex-col gap-10 relative border-black w-full md:w-[500px]  rounded-[5px] bg-card">
+        <form
+          onSubmit={handleFormSubmit}
+          className="border flex flex-col gap-10 relative border-black w-full md:w-[500px]  rounded-[5px] bg-card"
+        >
           <div className="absolute -top-10 bg-primary border border-black left-0 rounded-[5px] text-card px-5 py-1">
             <h1>Order Stock</h1>
           </div>
@@ -93,6 +112,30 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
                 id="productName"
                 value={singleOrder?.productName}
                 disabled
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <label htmlFor="">Delivery ID: </label>
+              <input
+                value={deliveryId}
+                type="text"
+                id="deliveryId"
+                name="deliveryId"
+                disabled
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <label htmlFor="deliveryDate">Date Delivery: </label>
+              <input
+                type="date"
+                id="deliveryDate"
+                name="deliveryDate"
+                className="border border-black rounded-[5px] px-2"
+                max={new Date().toISOString().split("T")[0]}
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
               />
             </div>
 
@@ -142,7 +185,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
             </div>
 
             <div className="flex gap-4">
-              <label htmlFor="shippingPrice">Shipping  Price: </label>
+              <label htmlFor="shippingPrice">Shipping Price: </label>
               <input
                 className="border border-black rounded-[5px] px-2"
                 type="number"
@@ -151,6 +194,19 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
                 id="shippingPrice"
                 value={shippingPrice}
                 onChange={(e) => setShippingPrice(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <label htmlFor="quantity">Shop Price Discount: </label>
+              <input
+                className="border border-black rounded-[5px] px-2"
+                type="number"
+                name="discount"
+                id="discount"
+                value={discount}
+                min={0}
+                onChange={(e) => setDiscount(e.target.value)}
               />
             </div>
 
@@ -166,6 +222,8 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
                 onChange={(e) => setQuantity(e.target.value)}
               />
             </div>
+
+       
 
             <div className="flex gap-4">
               <p>Total Cost: </p>

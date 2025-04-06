@@ -144,7 +144,6 @@ export default function OrderSummaryModal({ onClose }) {
       };
     
       placeStripeOrder(stripeOrderData);
-      console.log(stripeOrderData)
       return;
     }
 

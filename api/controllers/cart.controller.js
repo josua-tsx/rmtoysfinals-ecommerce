@@ -159,7 +159,7 @@ export const updateQuantity = async (req, res, next) => {
   try {
     const productStocks = await Stocks.findOne({ product: productId });
 
-    if (quantity > productStocks.stockQuantity)
+    if (quantity > productStocks.quantity)
       return next(
         handleMakeError(400, "You cant buy a product greater than stocks")
       );

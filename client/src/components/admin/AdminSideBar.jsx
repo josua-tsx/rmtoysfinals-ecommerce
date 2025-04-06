@@ -111,6 +111,8 @@ export default function AdminSideBar() {
           name: "Pending Stocks",
           path: "/admin/pendingStocks",
         },
+
+        
         // {
         //   name: "Add Stocks",
         //   path: "/admin/addStocks",
@@ -123,6 +125,22 @@ export default function AdminSideBar() {
         //   name: "Stocks Delivery",
         //   path: "/admin/stocksDelivery",
         // },
+      ],
+    },
+
+    {
+      name: "VAT",
+      icon: <MdCategory size={20} />,
+      allowedRoles: ["admin"],
+      inner: [
+        {
+          name: "VAT Table",
+          path: "/admin/vat"
+        },
+        {
+          name: "Add VAT",
+          path: "/admin/addVat"
+        },
       ],
     },
 
@@ -170,7 +188,7 @@ export default function AdminSideBar() {
           path: item?.path?.replace("/admin", basePath),
           inner: item.inner?.map((innerItem) => ({
             ...innerItem,
-            path: innerItem?.path.replace("/admin", basePath),
+            path: innerItem?.path?.replace("/admin", basePath),
           })),
         };
       }

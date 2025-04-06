@@ -158,7 +158,7 @@ export const getProducts = async (req, res, next) => {
       })
       .populate({
         path: "stocks",
-        select: "stockQuantity",
+        select: "quantity",
       })
       .populate({
         path: "reviews",
