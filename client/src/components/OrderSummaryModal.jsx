@@ -188,8 +188,8 @@ export default function OrderSummaryModal({ onClose }) {
   if (isActiveError || isCartError) return <p>error...</p>;
 
   return (
-    <section className="fixed inset-0 h-screen  overflow-y-auto flex flex-col justify-center z-50 backdrop-blur-sm">
-      <div className="flex relative flex-col-reverse py-10 overflow-y-auto md:flex-row w-[90%] mx-auto gap-5 justify-center items-start">
+    <section className="fixed inset-0 overflow-y-auto flex flex-col justify-center z-50 backdrop-blur-sm">
+      <div className="flex relative flex-col-reverse py-10  md:flex-row w-[90%] mx-auto gap-5 justify-center items-start">
         <form
           onSubmit={handleOrderFormSubmit}
           className="bg-card p-2  flex flex-col justify-between relative rounded-[5px] border  w-[90%] md:w-[60%]  lg:w-[50%] border-black"
@@ -285,7 +285,7 @@ export default function OrderSummaryModal({ onClose }) {
                 onChange={(e) => setNotes(e.target.value)}
                 name="notes"
                 id="notes"
-                className="border p-2 outline-none resize-none  md:h-[130px] border-black rounded-[5px]"
+                className="border p-2 outline-none resize-none h-full md:h-[130px] border-black rounded-[5px]"
               ></textarea>
             </div>
           </div>
@@ -343,10 +343,10 @@ export default function OrderSummaryModal({ onClose }) {
               <p className="text-lg">
 
                  {deductedPrice}
-                 PHP</p>
+                 PHP</p>  
             </div>
           </div>
-          <div className=" border flex flex-col max-h-[334px] h-[334px] gap-2  overflow-y-auto bg-card rounded-[5px] p-2 border-black">
+          <div className=" border flex flex-col h-[120px] md:h-[360px]  gap-2  overflow-y-auto bg-card rounded-[5px] p-2 border-black">
             {/* PRODUCT ORDER SUMMARY CARD */}
             {cart?.items?.length > 0 ? (
               cart?.items.map((item) => (

@@ -83,6 +83,7 @@ export default function AdminUserTable() {
               <th className="font-normal p-2 pb-5">ID</th>
               <th className="font-normal p-2 pb-5">Email</th>
               <th className="font-normal p-2 pb-5">Username</th>
+              <th className="font-normal p-2 pb-5">Credits</th>
               <th className="font-normal p-2 pb-5">Phone Number</th>
               <th className="font-normal p-2 pb-5">Active Address</th>
               <th className="font-normal p-2 pb-5">Status</th>
@@ -100,6 +101,9 @@ export default function AdminUserTable() {
                   </td>
                   <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
                     {user.username}
+                  </td>
+                  <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                    {user.credits}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {!user.phoneNumber ? (
