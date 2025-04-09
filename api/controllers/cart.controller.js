@@ -57,7 +57,7 @@ export const getCarts = async (req, res, next) => {
   try {
     const carts = await Cart.findOne({ userId }).populate({
       path: "items.productId",
-      select: "productName price productDescription productImages discount",
+      select: "productName price points productDescription productImages discount",
       populate: {
         path: "stocks",
         select: "quantity",

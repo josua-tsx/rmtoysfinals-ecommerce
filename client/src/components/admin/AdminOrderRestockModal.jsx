@@ -3,7 +3,8 @@ import { IoIosClose } from "react-icons/io";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../lib/axios";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import formatPrice from "../../reusable/formatPrice";
 
 export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const [productId, setProductId] = useState("");
@@ -15,7 +16,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const [totalCost, setTotalCost] = useState(0);
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [discount, setDiscount] = useState(0)
+  // const [discount, setDiscount] = useState(0);
+  const [vatPercent, setVatPercent] = useState(0)
 
   const queryClient = useQueryClient();
 
@@ -27,11 +29,24 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       setShopPrice(singleStock?.shopPrice);
       setShippingPrice(singleStock?.shippingPrice);
       setTotalCost(singleStock?.totalCost);
-      setDeliveryId(singleStock?.deliveryId)
-      setSelectedDate(singleStock?.dateDelivery)
+      setDeliveryId(singleStock?.deliveryId);
+      setSelectedDate(singleStock?.dateDelivery);
       // setDiscount(singleStock?.product?.discount)
+      setTotalCost(singleStock?.totalCost);
     }
   }, [singleStock]);
+
+  // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
+  const calculateTotalExpenses =
+    (Number(supplierPrice) + Number(shippingPrice)) * Number(quantity);
+
+  const totalPriceWithVAT = Number(shopPrice) + (Number(shopPrice) * vatPercent)
+  const roundedPrice = Math.round(totalPriceWithVAT)
+
+
+  useEffect(() => {
+    if (calculateTotalExpenses) setTotalCost(calculateTotalExpenses);
+  }, [calculateTotalExpenses]);
 
   const { mutate: reOrderStockMutation } = useMutation({
     mutationFn: async (data) => {
@@ -51,6 +66,14 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
     },
   });
 
+  const { data: vats = [], isVatPending, isVatError } = useQuery({
+    queryKey: ['vats'],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/vat/get-vat`)
+      return res.data
+    }
+  })
+
   const hanldeFormSubmit = (e) => {
     e.preventDefault();
 
@@ -58,14 +81,18 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       productId,
       supplier,
       supplierPrice,
-      shopPrice,
+      shopPrice: roundedPrice,
       shippingPrice,
       quantity,
       totalCost,
       deliveryId,
-      dateDelivery: selectedDate
+      dateDelivery: selectedDate,
+      vatPercent
     });
   };
+
+  if (isVatPending) return <p>Loading...</p>
+  if (isVatError) return <p>Error.</p>
 
   return (
     <section className="fixed inset-0 z-50 backdrop-blur-sm p-3">
@@ -134,6 +161,25 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
             </div>
 
             <div className="flex gap-4">
+              <label htmlFor="">VAT Percent: </label>
+              <select
+                name="vatPercent"
+                id="vatPercent"
+                value={vatPercent}
+                onChange={(e) => setVatPercent(e.target.value)}
+                className="rounded-[5px] border border-black outline-none"
+              >
+                <option value="">Select VAT Percent</option>
+                {vats.length > 0 &&
+                  vats.map((vat) => (
+                    <option key={vat._id} value={vat?.vatValue}>
+                      {vat.vatPercent} %
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="flex gap-4">
               <label htmlFor="supplierPrice">Supplier Price: </label>
               <input
                 className="border border-black rounded-[5px] px-2"
@@ -155,9 +201,17 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
                 name="shopPrice"
                 id="shopPrice"
                 value={shopPrice}
+                step={"any"}
                 onChange={(e) => setShopPrice(e.target.value)}
               />
             </div>
+
+             
+            {
+                vatPercent.length > 0 && (
+                  <p>Shop price with VAT = {totalPriceWithVAT}</p>
+                )
+              }
 
             <div className="flex gap-4">
               <label htmlFor="shippingPrice">Shipping Price: </label>
@@ -185,9 +239,12 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               />
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex items-center flex-wrap gap-4">
               <p>Total Cost: </p>
-              <p>{totalCost}</p>
+              <p>{formatPrice(totalCost)} PHP</p>
+              <p className="text-sm text-red-700">
+                (SUPPLIER PRCE + SHIPPING PRICE) * QUANTITY
+              </p>
             </div>
           </div>
 

@@ -57,7 +57,15 @@ const OrderModelSchema = new mongoose.Schema(
     discount: {
       type: String,
     },
+
+    usedCredits: {
+      type: Number
+    },
     
+    points: {
+      type: Number
+    },
+
     subtotal: {
       type: Number,
       required: true,
@@ -68,6 +76,11 @@ const OrderModelSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
+    },
+
+    totalPoints: {
+      type: Number,
+      default: 0
     },
 
     paymentStatus: {
@@ -97,9 +110,9 @@ const OrderModelSchema = new mongoose.Schema(
 
     stripeSessionId: {
       type: String,
-      unique: true
+      index: true,
+      sparse: true, // This allows multiple null values
     }
-
   },
   {
     timestamps: true,

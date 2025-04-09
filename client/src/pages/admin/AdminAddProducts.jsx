@@ -19,20 +19,19 @@ export default function AdminAddProducts() {
   const navigate = useNavigate()
 
   const [images, setImages] = useState([]);
-
   const [label, setLabel] = useState("");
   const [value, setValue] = useState("");
-
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
-  // const [filters, setFilters] = useState({});
-
   const [category, setCategory] = useState("");
-  // const [supplier, setSupplier] = useState("");
-
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
+
+  const [points, setPoints] = useState(0)
+
+
+  console.log(points)
 
   const {
     data: categories = [],
@@ -78,7 +77,6 @@ export default function AdminAddProducts() {
       setProductName("");
       setProductsDetailsArray([]);
       setImages([]);
-
       toast.success("Saved As Draft");
     },
     onError: (err) => {
@@ -96,6 +94,7 @@ export default function AdminAddProducts() {
       productImages: images,
       // filters,
       category: category,
+      points,
       // supplier: supplier,
     });
   };
@@ -112,6 +111,7 @@ export default function AdminAddProducts() {
       productImages: images,
       // filters,
       category: category,
+      points,
       // supplier: supplier,
     });
   };
@@ -316,19 +316,19 @@ export default function AdminAddProducts() {
               </div>
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <div className="flex flex-col flex-1">
-                  <label htmlFor="discountType" className="pb-2">
-                    Discount type (OPTIONAL)
+                  <label htmlFor="points" className="pb-2">
+                    Points
                   </label>
                   <select
-                    disabled
                     className="p-2 rounded-[5px] border border-black outline-none"
-                    name="discountType"
-                    id="discountType"
+                    name="points"
+                    id="points"
+                    value={points}
+                    onChange={(e) => setPoints(e.target.value)}
                   >
-                    <option value="chineseNewYear">None</option>
-                    <option value="chineseNewYear">Chinese New Year</option>
-                    <option value="christmas">Christmas</option>
-                    <option value="holloween">holloween</option>
+                    <option>Select Points</option>
+                    <option value="10">10 Points</option>
+                    <option value="15">15 Points</option>
                   </select>
                 </div>
               </div>

@@ -114,7 +114,7 @@ export default function ShopProductCards({ product }) {
         </div>
       </div>
 
-      <div className="p-2 flex flex-col  justify-between bg-card border-t-gray-300 border rounded-b-[5px] h-[200px]  w-full relative">
+      <div className="p-2 flex flex-col gap-2 justify-between bg-card border-t-gray-300 border rounded-b-[5px] h-[200px]  w-full relative">
         <div className="flex w-full justify-between">
           <p className="uppercase">{product?.productName}</p>
           <p className="uppercase">{formatPrice(product.price)} PHP</p>
@@ -132,6 +132,9 @@ export default function ShopProductCards({ product }) {
             <StarsRating rating={averageRating} />
             {averageRating ? <p>({averageRating.toFixed(2)} average)</p> : ""}
           </div>
+        </div>
+        <div>
+          <p className="text-sm text-blue-700">POINTS: {product?.points}</p>
         </div>
       </div>
     </div>

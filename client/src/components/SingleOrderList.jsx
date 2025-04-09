@@ -35,11 +35,11 @@ export default function SingleOrderList({ order, onClose }) {
     },
   });
 
-  const handleChangePaymentStatus = (id, e) => {
-    const newPaymentStatus = e.target.value;
+  // const handleChangePaymentStatus = (id, e) => {
+  //   const newPaymentStatus = e.target.value;
 
-    updatePaymentStatusMutation({ id, paymentStatus: newPaymentStatus });
-  };
+  //   updatePaymentStatusMutation({ id, paymentStatus: newPaymentStatus });
+  // };
 
   return (
     <section className="inset-0 z-40 font-main fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
@@ -70,10 +70,23 @@ export default function SingleOrderList({ order, onClose }) {
                   {order?.orderItems?.length}
                 </span>
               </div>
+            
               <div className="flex gap-2">
+                <p>Total Points: </p>
+                <span className="text-indigo-700">
+                  +{order?.totalPoints}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <p>Used Credit Points: </p>
+                <span className="text-indigo-700">
+                  {order?.usedCredits ? - order?.usedCredits : 0}
+                </span>
+              </div>
+              {/* <div className="flex gap-2">
                 <p>Taxes: </p>
                 <span className="text-indigo-700">{formatPrice(order.taxPrice)}</span>
-              </div>
+              </div> */}
               <div className="flex gap-2">
                 <p>Shipping Price: </p>
                 <span className="text-indigo-700">

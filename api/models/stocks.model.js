@@ -45,8 +45,11 @@ const StocksModelSchema = new mongoose.Schema(
     dateDelivery: {
       type: String,
       required: true
+    },
+    vatPercent: {
+      type: Number,
+      default: 0
     }
-
   },
   {
     timestamps: true,

@@ -7,6 +7,9 @@ const VatModelSchema = new mongoose.Schema(
       required: true,
       unique: true
     },
+    vatValue: {
+      type: Number
+    }
   },
   { timestamps: true }
 );

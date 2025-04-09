@@ -129,7 +129,7 @@ export default function AdminSideBar() {
     },
 
     {
-      name: "VAT",
+      name: "VALUE ADDED TAX",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin"],
       inner: [

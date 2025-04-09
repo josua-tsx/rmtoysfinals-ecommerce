@@ -13,6 +13,7 @@ import { useUserStore } from "../stores/useUserStore";
 // LOGO
 
 import RMTOYSLOGO from '../assets/RMTOYSLOGOFINAL.png'
+import CreditsPoints from "./CreditsPoints";
 
 export default function Navbar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -110,8 +111,9 @@ export default function Navbar() {
 
           <div className="hidden lg:flex items-center gap-3">
             {currentUser ? (
-              <div className="flex gap-3">
-                <div className="flex gap-5">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-5">
+                  <CreditsPoints/>
                   <Cart />
                   <WishList />
                 </div>

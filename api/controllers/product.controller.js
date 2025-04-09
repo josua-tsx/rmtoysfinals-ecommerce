@@ -19,6 +19,7 @@ export const addProduct = async (req, res, next) => {
     productImages,
     category,
     // supplier,
+    points
   } = req.body;
 
   // if (!category || !supplier) {
@@ -75,7 +76,8 @@ export const addProduct = async (req, res, next) => {
       discount,
       productImages,
       category,
-      status: "pending"
+      status: "pending",
+      points,
     });
 
     await newProduct.save();

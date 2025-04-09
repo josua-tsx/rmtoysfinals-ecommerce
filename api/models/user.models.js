@@ -58,6 +58,12 @@ const UserModelSchema = new mongoose.Schema(
     jobDescription: {
       type: String,
     },
+
+
+    credits: {
+      type: Number,
+      default: 0
+    }
   },
   {
     timestamps: true,

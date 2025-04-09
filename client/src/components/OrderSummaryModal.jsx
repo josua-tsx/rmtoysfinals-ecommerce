@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -15,6 +14,7 @@ export default function OrderSummaryModal({ onClose }) {
   const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(35);
   const [cartItems, setCartItems] = useState({});
+  const [useCredits, setUseCredits] = useState("no");
 
 
   const {
@@ -40,6 +40,52 @@ export default function OrderSummaryModal({ onClose }) {
       return res.data;
     },
   });
+  
+
+    // Calculate all cart values
+    const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {
+      const totalDiscount = cart?.items?.reduce((total, item) => {
+        const productDiscount = item.productId.discount || 0;
+        return total + productDiscount * item.quantity;
+      }, 0) || 0;
+  
+      const subtotal = cart?.items?.reduce((total, item) => {
+        return total + item.productId.price * item.quantity;
+      }, 0) || 0;
+  
+      const totalPoints = cart?.items?.reduce((total, item) => {
+        return total + item.productId.points * item.quantity;
+      }, 0) || 0;
+  
+      const totalPrice = subtotal + shippingFee + taxes - totalDiscount;
+  
+      return { totalDiscount, subtotal, totalPoints, totalPrice };
+    }, [cart, shippingFee, taxes]);
+  
+    // Calculate credits and final price
+    const { usedCredits, deductedPrice } = useMemo(() => {
+      if (useCredits === "yes") {
+        const creditsToUse = Math.min(currentUser?.credits || 0, totalPrice);
+        return {
+          usedCredits: creditsToUse,
+          deductedPrice: totalPrice - creditsToUse
+        };
+      }
+      return {
+        usedCredits: 0,
+        deductedPrice: totalPrice
+      };
+    }, [useCredits, currentUser?.credits, totalPrice]);
+  
+    const handleChangeCredits = (e) => {
+      setUseCredits(e.target.value);
+    };
+  
+ 
+
+
+
+
 
   useEffect(() => {
     if (cart) {
@@ -47,18 +93,6 @@ export default function OrderSummaryModal({ onClose }) {
     }
   }, [cart]);
 
-  // Calculate total discount for all products
-  const totalDiscount = cart?.items?.reduce((total, item) => {
-    const productDiscount = item.productId.discount || 0;
-    return total + productDiscount * item.quantity;
-  }, 0);
-
-  // Calculate subtotal if cart is not empty
-  const subtotal = cart?.items?.reduce((total, item) => {
-    return total + item.productId.price * item.quantity;
-  }, 0);
-
-  const totalPrice = subtotal + shippingFee + taxes - totalDiscount;
 
   const { mutate: placeOrder } = useMutation({
     mutationFn: async (data) => {
@@ -67,19 +101,16 @@ export default function OrderSummaryModal({ onClose }) {
       return res.data;
     },
     onSuccess: () => {
-     
-        setNotes("");
-        onClose();
-        queryClient.invalidateQueries({ queryKey: ["order"] });
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-        toast.success(`order placed`);
-  
+      setNotes("");
+      onClose();
+      queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      toast.success(`order placed`);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
     },
   });
-
 
   const { mutate: placeStripeOrder } = useMutation({
     mutationFn: async (data) => {
@@ -87,8 +118,7 @@ export default function OrderSummaryModal({ onClose }) {
       return res.data;
     },
     onSuccess: (data) => {
-
-      console.log(data)
+      console.log(data);
       if (data.url) {
         window.location.href = data.url; // redirect to Stripe checkout
       }
@@ -97,7 +127,6 @@ export default function OrderSummaryModal({ onClose }) {
       toast.error(error?.response?.data?.message || "Stripe checkout failed");
     },
   });
-
 
   const handleOrderFormSubmit = (e) => {
     e.preventDefault();
@@ -119,19 +148,25 @@ export default function OrderSummaryModal({ onClose }) {
       shippingPrice: shippingFee,
       discount: totalDiscount,
       subtotal,
-      totalPrice,
+      totalPrice: deductedPrice,
       notes,
       quantity: cartItems.quantity,
+      totalPoints,
+      usedCredits: useCredits === "yes" ? usedCredits: 0
     };
+
+    if (paymentMethod === "Cod") {
+      placeOrder(orderData);
+    }
 
     if (paymentMethod === "Online Payment") {
       const stripeOrderData = {
-        orderItems: cartItems.map(item => ({
-          productId: item.productId,  
+        orderItems: cartItems.map((item) => ({
+          productId: item.productId,
           productName: item.productId.productName,
           productImages: item.productId.productImages[0],
           price: item.productId.price,
-          quantity: item.quantity
+          quantity: item.quantity,
         })),
         shippingAddress: currentAddress,
         paymentMethod,
@@ -139,16 +174,13 @@ export default function OrderSummaryModal({ onClose }) {
         shippingPrice: shippingFee,
         discount: totalDiscount,
         subtotal,
-        totalPrice,
+        totalPrice: deductedPrice.toString(),
         notes,
+        totalPoints,
+        usedCredits: useCredits === "yes" ? usedCredits: 0,
       };
-    
-      placeStripeOrder(stripeOrderData);
-      return;
-    }
 
-    if (paymentMethod === "Cod") {
-      placeOrder(orderData);
+      placeStripeOrder(stripeOrderData);
     }
   };
 
@@ -160,7 +192,7 @@ export default function OrderSummaryModal({ onClose }) {
       <div className="flex relative flex-col-reverse py-10 overflow-y-auto md:flex-row w-[90%] mx-auto gap-5 justify-center items-start">
         <form
           onSubmit={handleOrderFormSubmit}
-          className="bg-card p-2  flex flex-col justify-between relative rounded-[5px] border h-[500px] w-[90%] md:w-[60%]  lg:w-[50%] border-black"
+          className="bg-card p-2  flex flex-col justify-between relative rounded-[5px] border  w-[90%] md:w-[60%]  lg:w-[50%] border-black"
         >
           <div className="hidden md:flex absolute -top-9 bg-primary border border-black left-0 rounded-[5px] text-card px-3 text-sm py-1">
             <h1>ORDER SUMMARY</h1>
@@ -215,6 +247,37 @@ export default function OrderSummaryModal({ onClose }) {
               </select>
             </div>
 
+            <div className="flex gap-2 flex-col">
+              <label>
+                <p className="text-blue-700">
+                  (Current Credits: {currentUser?.credits})
+                </p>
+                Use Your Credits?
+              </label>
+              <div className="flex gap-2">
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="useCredits"
+                    value="yes"
+                    checked={useCredits === "yes"}
+                    onChange={handleChangeCredits}
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="useCredits"
+                    value="no"
+                    checked={useCredits === "no"}
+                    onChange={handleChangeCredits}
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-1 mb-2">
               <label htmlFor="notes">Add additional note (optional)</label>
               <textarea
@@ -247,6 +310,12 @@ export default function OrderSummaryModal({ onClose }) {
               <p>TOTAL ITEMS: </p>
               <p>{cart?.items?.length}</p>
             </div>
+
+            <div className="flex justify-between">
+              <p>TOTAL POINTS</p>
+              <p>+{totalPoints}</p>
+            </div>
+
             <div className="flex justify-between">
               <p>SHIPPING FEE</p>
               <p>{shippingFee} PHP</p>
@@ -261,12 +330,20 @@ export default function OrderSummaryModal({ onClose }) {
             </div>
 
             <div className="flex justify-between">
+              <p>USED CREDITS</p>
+              <p>{usedCredits}</p>
+            </div>
+
+            <div className="flex justify-between">
               <p>SUBTOTAL: </p>
               <p>{subtotal} PHP</p>
             </div>
             <div className="flex justify-between">
               <p className="text-lg">TOTAL PRICE: </p>
-              <p className="text-lg">{totalPrice} PHP</p>
+              <p className="text-lg">
+
+                 {deductedPrice}
+                 PHP</p>
             </div>
           </div>
           <div className=" border flex flex-col max-h-[334px] h-[334px] gap-2  overflow-y-auto bg-card rounded-[5px] p-2 border-black">

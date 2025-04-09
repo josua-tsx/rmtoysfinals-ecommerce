@@ -3,6 +3,7 @@ import { IoIosClose } from "react-icons/io";
 import axiosInstance from "../../lib/axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import formatPrice from "../../reusable/formatPrice";
 
 export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [product, setProduct] = useState("");
@@ -15,6 +16,19 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [discount, setDiscount] = useState(0)
+  const [vatPercent, setVatPercent] = useState(0)
+
+
+  // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
+  const calculateTotalExpenses = (Number(supplierPrice) + Number(shippingPrice)) * Number(quantity) 
+  const totalPriceWithVAT = Number(shopPrice) + (Number(shopPrice) * vatPercent)
+  const roundedPrice = Math.round(totalPriceWithVAT)
+
+
+  useEffect(() => {
+    if (calculateTotalExpenses) setTotalCost(calculateTotalExpenses)
+  }, [calculateTotalExpenses])
+
 
   const generateRandomDeliveryId = () => {
     return (
@@ -22,7 +36,6 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
     );
   };
 
-  console.log(selectedDate);
 
   useEffect(() => {
     setDeliveryId(generateRandomDeliveryId());
@@ -35,6 +48,17 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       setProduct(singleOrder._id);
     }
   }, [singleOrder]);
+
+
+  const { data: vats = [], isVatPending, isVatError } = useQuery({
+    queryKey: ['vats'],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/vat/get-vat`)
+      return res.data
+    }
+  })
+
+  console.log(vats)
 
   const {
     data: suppliers = [],
@@ -71,18 +95,19 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       product,
       supplier,
       supplierPrice,
-      shopPrice,
+      shopPrice: roundedPrice,
       quantity,
       shippingPrice,
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-      discount
+      discount,
+      vatPercent
     });
   };
 
-  if (isSuppliersPending) return <p>Loading...</p>;
-  if (isSuppliersError) return <p>Error...</p>;
+  if (isSuppliersPending || isVatPending) return <p>Loading...</p>;
+  if (isSuppliersError || isVatError) return <p>Error...</p>;
 
   return (
     <section className="fixed inset-0 z-50 backdrop-blur-sm p-3">
@@ -139,6 +164,8 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
+           
+
             <div className="flex gap-4">
               <label htmlFor="">Supplier: </label>
               <select
@@ -153,6 +180,25 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
                   suppliers.map((supplier) => (
                     <option key={supplier._id} value={supplier._id}>
                       {supplier.supplierName}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="flex gap-4">
+              <label htmlFor="">VAT Percent: </label>
+              <select
+                name="vatPercent"
+                id="vatPercent"
+                value={vatPercent}
+                onChange={(e) => setVatPercent(e.target.value)}
+                className="rounded-[5px] border border-black outline-none"
+              >
+                <option value="">Select VAT Percent</option>
+                {vats.length > 0 &&
+                  vats.map((vat) => (
+                    <option key={vat._id} value={vat?.vatValue}>
+                      {vat.vatPercent} %
                     </option>
                   ))}
               </select>
@@ -184,6 +230,14 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
+            
+              {
+                vatPercent.length > 0 && (
+                  <p>Shop price with VAT = {totalPriceWithVAT}</p>
+                )
+              }
+            
+
             <div className="flex gap-4">
               <label htmlFor="shippingPrice">Shipping Price: </label>
               <input
@@ -198,7 +252,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
             </div>
 
             <div className="flex gap-4">
-              <label htmlFor="quantity">Shop Price Discount: </label>
+              <label htmlFor="quantity">Shop Price Discount (OPTIONAL): </label>
               <input
                 className="border border-black rounded-[5px] px-2"
                 type="number"
@@ -225,9 +279,10 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
 
        
 
-            <div className="flex gap-4">
+            <div className="flex items-center flex-wrap gap-4">
               <p>Total Cost: </p>
-              <p>{totalCost}</p>
+              <p>{formatPrice(totalCost)} PHP</p>
+              <p className="text-sm text-red-700">(SUPPLIER PRCE + SHIPPING PRICE) * QUANTITY</p>
             </div>
           </div>
 

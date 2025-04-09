@@ -135,6 +135,7 @@ export default function AdminProductsTable() {
               <th className="font-normal p-2 pb-5">REVIEWS</th>
               <th className="font-normal p-2 pb-5">SOLD</th>
               <th className="font-normal p-2 pb-5">DISCOUNT</th>
+              <th className="font-normal p-2 pb-5">POINTS</th>
               <th className="font-normal p-2 pb-5">DATE CREATED</th>
               {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
               <th className="font-normal p-2 pb-5">ACTIONS</th>
@@ -180,6 +181,9 @@ export default function AdminProductsTable() {
                       : "no discount"}
                   </td>
 
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    {product?.points}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {new Date(product.createdAt).toLocaleString()}
                   </td>

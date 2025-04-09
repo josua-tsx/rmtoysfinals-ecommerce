@@ -12,6 +12,14 @@ export default function AdminEditVat() {
 
   const [vatPercent, setVatPercent] = useState(0);
 
+  const [vatValue, setVatValue] = useState(0)
+
+  const handleConvertedToPercent = (e) => {
+    const input = parseFloat(e.target.value) || 0
+    setVatPercent(input)
+    setVatValue(input / 100)
+  }
+
   const {
     data: singleVat,
     isPending: singleVatPending,
@@ -28,7 +36,8 @@ export default function AdminEditVat() {
 
   useEffect(() => {
     if (singleVat) {
-        setVatPercent(singleVat.vatPercent)
+        setVatPercent(singleVat?.vatPercent)
+        setVatValue(singleVat?.vatValue)
     }
   }, [singleVat])
 
@@ -52,7 +61,8 @@ export default function AdminEditVat() {
     e.preventDefault()
 
     updateVatMutation({
-        vatPercent
+        vatPercent,
+        vatValue
     })
   }
 
@@ -66,7 +76,7 @@ export default function AdminEditVat() {
 
       <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col relative">
         <form onSubmit={handleFormSubmit}
-        className="border flex flex-col gap-5  rounded-[5px] relative border-black bg-card">
+        className="border flex flex-col  rounded-[5px] relative border-black bg-card">
           <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
 
           <div className="flex gap-2 p-2 flex-col">
@@ -75,13 +85,25 @@ export default function AdminEditVat() {
               <input
                 type="number"
                 value={vatPercent}
-                onChange={(e) => setVatPercent(e.target.value)}
+                onChange={handleConvertedToPercent}
                 id="vat"
                 name="vat"
                 min={0}
+                step={"any"}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
             </div>
+
+            <div className='flex p-2 flex-col'>
+               <div className='flex gap-2'>
+               <label htmlFor="vatValue">VAT VALUE: </label>
+               <input type="number" 
+               value={vatValue}
+               disabled
+               id='vatValue' name='vatValue' min={0} className='' />
+               </div>
+            </div>
+
           </div>
 
           <div className="flex gap-2 p-2">

@@ -3,6 +3,7 @@ import Cart from "../models/cart.model.js";
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
+import User from "../models/user.models.js";
 import { sendEmail } from "../nodemailer/nodemailer.js";
 import { logAuditTrail } from "./audit.controller.js";
 
@@ -21,6 +22,8 @@ export const userPlaceOrder = async (req, res, next) => {
     subtotal,
     totalPrice,
     notes,
+    totalPoints,
+    usedCredits,
   } = req.body;
 
   try {
@@ -56,57 +59,9 @@ export const userPlaceOrder = async (req, res, next) => {
       }
     }
 
-    if (paymentMethod === "Cod") {
-      const newOrder = new Order({
-        userId,
-        orderItems: orderItemsWithQuantity,
-        shippingAddress,
-        paymentMethod,
-        taxPrice,
-        shippingPrice,
-        discount,
-        subtotal,
-        totalPrice,
-        notes,
-        paymentStatus: "Pending",
-      });
-
-      await newOrder.save();
-
-      for (const item of orderItemsWithQuantity) {
-        await Stocks.findOneAndUpdate(
-          { product: item.productId },
-          { $inc: { quantity: -item.quantity } },
-          { new: true, runValidators: true }
-        );
-      }
-
-      const userCart = await Cart.findOne({ userId });
-      userCart.items = [];
-      await userCart.save();
-
-      await logAuditTrail({
-        action: "user_add_order",
-        userId,
-        targetId: newOrder._id,
-        targetType: "UserOrder",
-        details: {
-          description: "Ordered using cod",
-        },
-        role: "customer",
-      });
-
-      res.status(200).json({ message: "Order placed!", newOrder });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const placeOrderStripe = async (req, res, next) => {
-  try {
-    const {
-      orderItems,
+    const newOrder = new Order({
+      userId,
+      orderItems: orderItemsWithQuantity,
       shippingAddress,
       paymentMethod,
       taxPrice,
@@ -115,131 +70,25 @@ export const placeOrderStripe = async (req, res, next) => {
       subtotal,
       totalPrice,
       notes,
-    } = req.body;
-  
-    if (!Array.isArray(orderItems) || orderItems.length === 0) {
-      return next(handleMakeError(400, "Invalid or empty products array"));
-    }
-
-    const lineItems = orderItems.map((product) => {
-
-      if (!product.productId) {
-        return next(handleMakeError(400, "Missing productId in one of the order items"));
-      }
-
-
-      return {
-        price_data: {
-          currency: "php",
-          product_data: {
-            name: product.productName,
-            images: [product.productImages],
-          },
-          unit_amount: Math.round(product.price * 100),
-        },
-        quantity: product.quantity,
-      };
+      paymentStatus: "Pending",
+      totalPoints,
+      usedCredits,
+      stripeSessionId: `cod-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
     });
 
-    console.log(orderItems)
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-      metadata: {
-        userId: req.user._id.toString(),
-        orderItems: JSON.stringify(
-          orderItems.map((item) => ({
-            productId: item.productId._id,  // Only pass productId (not the whole object)
-            productName: item.productId.productName,
-            price: item.productId.price,
-            quantity: item.quantity
-          }))
-        ), // Convert array to string
-        shippingAddress: JSON.stringify(shippingAddress),
-        paymentMethod: JSON.stringify(paymentMethod),
-        taxPrice: taxPrice.toString(),
-        shippingPrice: shippingPrice.toString(),
-        discount: discount.toString(),
-        subtotal: subtotal.toString(),
-        totalPrice: totalPrice.toString(),
-        notes: notes || "",
-      },
-    });
-    
-    
-    res.status(200).json({ url: session.url }); 
-  } catch (error) {
-    next(error);
-  }
-};
-
-
-export const checkOutSuccess = async (req, res, next) => {
-  try {
-    const { sessionId } = req.body;
-
-
-     // Check if order already exists for this session
-     const existingOrder = await Order.findOne({ 'paymentInfo.sessionId': sessionId });
-     if (existingOrder) {
-       return res.status(200).json({ success: true, message: "Order already processed" });
-     }
- 
-
-    // Retrieve the Stripe session
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    if (!session || session.payment_status !== "paid") {
-      return res.status(400).json({ success: false, message: "Payment not completed" });
-    }
-
-
-    console.log("Session Metadata:", session.metadata);
-    // Extract necessary data from session metadata
-    const userId = session.metadata.userId; // Ensure userId is stored in metadata
-      const orderItems = JSON.parse(session.metadata.orderItems).map((item) => {
-        if (!item.productId) {
-          return next(handleMakeError(400, "Missing productId in order items from metadata"));
-        }
-        return {
-          productId: item.productId,
-          quantity: item.quantity,
-        };
-      });
-      
-    
-    const shippingAddress = JSON.parse(session.metadata.shippingAddress);
-    const taxPrice = parseFloat(session.metadata.taxPrice);
-    const shippingPrice = parseFloat(session.metadata.shippingPrice);
-    const discount = parseFloat(session.metadata.discount);
-    const subtotal = parseFloat(session.metadata.subtotal);
-    const totalPrice = parseFloat(session.metadata.totalPrice);
-    const notes = session.metadata.notes || "";
-
-    // Create a new order
-    const newOrder = new Order({
-      userId,
-      orderItems,
-      shippingAddress,
-      paymentMethod: "Online Payment",
-      taxPrice,
-      shippingPrice,
-      discount,
-      subtotal,
-      totalPrice,
-      notes,
-      paymentStatus: "Paid",
-      stripeSessionId: sessionId,
-    });
-
-    // Save the order in the database
     await newOrder.save();
 
-    for (const item of orderItems) {
+    await User.findByIdAndUpdate(
+      newOrder.userId,
+      {
+        $inc: { credits: -usedCredits },
+      },
+      { new: true }
+    );
+
+    for (const item of orderItemsWithQuantity) {
       await Stocks.findOneAndUpdate(
         { product: item.productId },
         { $inc: { quantity: -item.quantity } },
@@ -251,13 +100,212 @@ export const checkOutSuccess = async (req, res, next) => {
     userCart.items = [];
     await userCart.save();
 
-    res.status(200).json({ success: true, message: "Order placed successfully!" });
+    await logAuditTrail({
+      action: "user_add_order",
+      userId,
+      targetId: newOrder._id,
+      targetType: "UserOrder",
+      details: {
+        description: "Ordered using cod",
+      },
+      role: "customer",
+    });
 
+    return res.status(200).json({ message: "Order placed!", newOrder });
+
+    // For Stripe payments, create session ID and save it in metadata (as done in your `placeOrderStripe` function)
   } catch (error) {
     next(error);
   }
 };
 
+  export const placeOrderStripe = async (req, res, next) => {
+    try {
+      const {
+        orderItems,
+        shippingAddress,
+        paymentMethod,
+        taxPrice,
+        shippingPrice,
+        discount,
+        subtotal,
+        totalPrice,
+        notes,
+        totalPoints,
+        usedCredits,
+      } = req.body;
+
+      if (!Array.isArray(orderItems) || orderItems.length === 0) {
+        return next(handleMakeError(400, "Invalid or empty products array"));
+      }
+
+      const lineItems = orderItems.map((product) => {
+        if (!product.productId) {
+          return next(
+            handleMakeError(400, "Missing productId in one of the order items")
+          );
+        }
+
+        return {
+          price_data: {
+            currency: "php",
+            product_data: {
+              name: product.productName,
+              images: [product.productImages],
+            },
+            unit_amount: Math.round(product.price * 100),
+          },
+          quantity: product.quantity,
+        };
+      });
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: lineItems,
+        mode: "payment",
+        success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+        metadata: {
+          userId: req.user._id.toString(),
+          orderItems: JSON.stringify(
+            orderItems.map((item) => ({
+              productId: item.productId._id, // Only pass productId (not the whole object)
+              productName: item.productId.productName,
+              price: item.productId.price,
+              quantity: item.quantity,
+            }))
+          ), // Convert array to string
+          shippingAddress: JSON.stringify(shippingAddress),
+          paymentMethod: JSON.stringify(paymentMethod),
+          taxPrice: taxPrice.toString(),
+          shippingPrice: shippingPrice.toString(),
+          discount: discount.toString(),
+          subtotal: subtotal.toString(),
+          totalPrice: totalPrice.toString(),
+          notes: notes || "",
+          totalPoints: totalPoints.toString(),
+          usedCredits: usedCredits.toString()
+        },
+      });
+
+      res.status(200).json({ url: session.url });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+export const checkOutSuccess = async (req, res, next) => {
+  try {
+    const { sessionId } = req.body;
+
+    // 1. Check if order already exists for this session (prevent duplicates)
+    if (!sessionId) {
+      return next(handleMakeError(400, "Invalid session ID"));
+    }
+
+    const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+    if (existingOrder) {
+      return res.status(200).json({
+        success: true,
+        message: "Order already processed",
+        order: existingOrder,
+      });
+    }
+
+    // 2. Retrieve Stripe session
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (!session || session.payment_status !== "paid") {
+      return next(
+        handleMakeError(400, "Payment not completed or session invalid")
+      );
+    }
+
+    // 3. Parse metadata safely
+    if (!session.metadata) {
+      return next(handleMakeError(400, "Missing metadata in Stripe session"));
+    }
+
+    const {
+      userId,
+      orderItems: orderItemsStr,
+      shippingAddress: shippingAddressStr,
+      taxPrice,
+      shippingPrice,
+      discount,
+      subtotal,
+      totalPrice,
+      notes = "",
+      totalPoints,
+      usedCredits,
+    } = session.metadata;
+
+    if (!userId || !orderItemsStr) {
+      return next(handleMakeError(400, "Missing critical metadata fields"));
+    }
+
+    let orderItems, shippingAddress;
+    try {
+      orderItems = JSON.parse(orderItemsStr).map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity || 1,
+      }));
+      shippingAddress = JSON.parse(shippingAddressStr);
+    } catch (err) {
+      return next(handleMakeError(400, "Invalid metadata format"));
+    }
+
+    // 4. Create and save the order
+    const newOrder = new Order({
+      userId,
+      orderItems,
+      shippingAddress,
+      paymentMethod: "Online Payment",
+      taxPrice: parseFloat(taxPrice) || 0,
+      shippingPrice: parseFloat(shippingPrice) || 0,
+      discount: parseFloat(discount) || 0,
+      subtotal: parseFloat(subtotal) || 0,
+      totalPrice: parseFloat(totalPrice) || 0,
+      notes,
+      totalPoints,
+      usedCredits,
+      paymentStatus: "Paid",
+      stripeSessionId: sessionId, // This must be unique
+    });
+
+    await newOrder.save();
+
+    await User.findByIdAndUpdate(
+      newOrder.userId,
+      {
+        $inc: { credits: -usedCredits },
+      },
+      { new: true }
+    );
+
+    // 5. Update stock and clear cart
+    for (const item of orderItems) {
+      await Stocks.findOneAndUpdate(
+        { product: item.productId },
+        { $inc: { quantity: -item.quantity } },
+        { new: true }
+      );
+    }
+
+    await Cart.findOneAndUpdate(
+      { userId },
+      { $set: { items: [] } },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Order placed successfully!",
+      order: newOrder,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getUserOrder = async (req, res, next) => {
   const userId = req.user.id;
@@ -481,6 +529,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
           { new: true, runValidators: true }
         );
       }
+      if (order.usedCredits) {
+        await User.findByIdAndUpdate(order.userId, {
+          $inc: { credits: order.usedCredits }, // Return credits to the user
+        });
+      }
     }
 
     const orderUpdate = {
@@ -511,6 +564,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
       }
 
       ///////////////
+
+      await User.findByIdAndUpdate(updatedOrder.userId, {
+        $inc: { credits: updatedOrder.totalPoints },
+      });
 
       for (const item of updatedOrder.orderItems) {
         const productId = item.productId; // Get the productId
@@ -813,6 +870,12 @@ export const cancelSuccessTransact = async (req, res, next) => {
       );
     }
 
+    // if (order.usedCredits) {
+    //   await User.findByIdAndUpdate(order.userId, {
+    //     $inc: { credits: order.usedCredits }, // Return credits to the user
+    //   });
+    // }
+
     await logAuditTrail({
       action: "cancelled_Order_Transact",
       userId,
@@ -854,8 +917,17 @@ export const userCancelOrder = async (req, res, next) => {
         .json({ message: "Order cannot be canceled at this stage" });
     }
 
+
+
     if (order.paymentStatus === "Cancelled")
       return next(handleMakeError(400, "Order is already cancelled!"));
+
+    if (order.usedCredits) {
+      await User.findByIdAndUpdate(order.userId, {
+        $inc: { credits: order.usedCredits }, // Return credits to the user
+      });
+    }
+
 
     // Update stock for each item in the order
     for (const item of order.orderItems) {
@@ -866,6 +938,7 @@ export const userCancelOrder = async (req, res, next) => {
       );
     }
 
+    
     order.status = "Cancelled";
 
     await order.save();

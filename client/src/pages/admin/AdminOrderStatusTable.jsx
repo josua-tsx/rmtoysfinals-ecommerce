@@ -107,6 +107,8 @@ export default function AdminOrderStatusTable() {
               <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
               <th className="font-normal p-2 pb-5">ORDER DATE</th>
               <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
+              <th className="font-normal p-2 pb-5">TOTAL POINTS</th>
+              <th className="font-normal p-2 pb-5">USED CREDITS POINTS</th>
               <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
               {/* <th className="font-normal p-2 pb-5">PAYMENT STATUS</th> */}
               {/* <th className="font-normal p-2 pb-5">SHIPPING STATUS</th> */}
@@ -134,6 +136,12 @@ export default function AdminOrderStatusTable() {
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     {formatPrice(data.totalPrice)} PHP
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    +{formatPrice(data.totalPoints)} 
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    {data?.usedCredits ? -formatPrice(data.usedCredits) : 0} 
                   </td>
 
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">

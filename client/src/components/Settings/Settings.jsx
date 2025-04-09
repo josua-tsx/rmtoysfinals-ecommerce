@@ -1,6 +1,6 @@
 import {  useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link,  useNavigate } from "react-router-dom";
 import { CgProfile } from "react-icons/cg";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { FaSignOutAlt } from "react-icons/fa";
@@ -24,7 +24,6 @@ export default function Settings() {
         clearUser()
       }
     })
-
 
 
   return (

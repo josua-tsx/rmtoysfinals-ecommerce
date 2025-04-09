@@ -14,7 +14,8 @@ export const OrderStocks = async (req, res, next) => {
     totalCost,
     deliveryId,
     dateDelivery,
-    discount
+    discount,
+    vatPercent,
   } = req.body;
 
   try {
@@ -30,7 +31,8 @@ export const OrderStocks = async (req, res, next) => {
       deliveryStatus: "delivered",
       deliveryId,
       dateDelivery,
-      discount
+      discount,
+      vatPercent,
     });
 
     await Product.findByIdAndUpdate(
@@ -59,10 +61,11 @@ export const reorderStock = async (req, res, next) => {
     quantity: newQuantity, // Rename to newQuantity for clarity
     category,
     shippingPrice,
-    totalCost,
+    totalCost: newTotalCost,
     deliveryId,
     dateDelivery,
     discount,
+    vatPercent,
   } = req.body;
   const { stockId } = req.params;
 
@@ -72,8 +75,9 @@ export const reorderStock = async (req, res, next) => {
     
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
-    // 2. Calculate the new total quantity
+    // 2. Calculate the new total quantity and total cost
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
+    const updatedTotalCost = existingStock.totalCost + Number(newTotalCost)
 
     // 3. Update the stock with all fields including the new quantity
     const updateDeliver = await Stocks.findByIdAndUpdate(
@@ -86,14 +90,34 @@ export const reorderStock = async (req, res, next) => {
         quantity: updatedQuantity, // Use the summed quantity
         category,
         shippingPrice,
-        totalCost,
+        totalCost: updatedTotalCost,
         deliveryStatus: "delivered",
         deliveryId,
         dateDelivery,
         discount,
+        vatPercent,
       },
       { new: true } // Return the updated document
     );
+
+    // const updatedProduct = await Product.findByIdAndUpdate(
+    //   existingStock.product,
+    //   { 
+    //     price: shopPrice,
+    //   },
+    //   { new: true, runValidators: true }
+    // );
+
+    await Product.findByIdAndUpdate(
+      existingStock.product,
+      { 
+        price: shopPrice,
+      },
+      { new: true, runValidators: true }
+    );
+    
+    // console.log("Updated Product:", updatedProduct); // Check if price is updated here
+    
 
     res.status(200).json(updateDeliver);
 

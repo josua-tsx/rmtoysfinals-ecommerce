@@ -30,7 +30,7 @@ export default function AdminStocksTable() {
 
   console.log(stocks)
  
-  const { data } = useQuery({
+  const {} = useQuery({
     queryKey: ["singleDeliveredProduct", deliveryId],
     queryFn: async () => {
       const res = await axiosInstance.get(`/stocks/get-stocks/${deliveryId}`)
@@ -119,6 +119,7 @@ export default function AdminStocksTable() {
               <th className="font-normal p-2 pb-5">Quantity in Stock</th>
 
               <th className="font-normal p-2 pb-5">Shop Price</th>
+              <th className="font-normal p-2 pb-5">VAT APPLIED</th>
 
               <th className="font-normal p-2 pb-5">Supplier Price</th>
               <th className="font-normal p-2 pb-5">Shipping Price</th>
@@ -169,6 +170,7 @@ export default function AdminStocksTable() {
                     </div>
                   </td>
                   <td>{formatPrice(stock?.product?.price) + " PHP"}</td>
+                  <td>{stock?.vatPercent}</td>
                   <td className="text-red-700">
                     {formatPrice(stock?.supplierPrice) + " PHP"}
                   </td>

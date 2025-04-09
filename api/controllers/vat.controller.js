@@ -2,11 +2,12 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Vat from "../models/vat.models.js";
 
 export const addVat = async (req, res, next) => {
-  const { vatPercent } = req.body;
+  const { vatPercent, vatValue } = req.body;
 
   try {
     const newVat = new Vat({
-      vatPercent,
+      vatPercent, 
+      vatValue
     });
 
     const existingVat = await Vat.findOne({ vatPercent });
@@ -60,11 +61,11 @@ export const deleteSingleVat = async (req, res, next) => {
 
 export const editVat = async (req, res, next) => {
   const { vatId } = req.params;
-  const { vatPercent } = req.body;
+  const { vatPercent, vatValue } = req.body;
 
   try {
     const updateVat = await Vat.findByIdAndUpdate(vatId, {
-      vatPercent,
+      vatPercent, vatValue
     });
     if (!updateVat) return next(handleMakeError(400, "Vat not found!"))
     res.status(200).json(updateVat)

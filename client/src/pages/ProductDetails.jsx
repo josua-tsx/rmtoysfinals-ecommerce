@@ -184,6 +184,12 @@ export default function ProductDetails() {
                     {singleProduct?.sold}
                   </span>
                 </div>
+                <div className="flex items-center gap-3">
+                  <p>POINTS:</p>
+                  <span className="text-lg text-indigo-500">
+                    {singleProduct?.points}
+                  </span>
+                </div>
               </div>
 
               <div className="flex items-center gap-5">
