@@ -8,7 +8,6 @@ import { setCookies } from "../utils/setCookies.js";
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
 
-
 // const storeRefreshToken = async (userId, refreshToken) => {
 //   const token = new RefreshToken({
 //     userId,
@@ -26,8 +25,6 @@ export const signup = async (req, res, next) => {
 
   if (!username || !email || !password || !confirmPassword)
     return next(handleMakeError(400, "Please input required fields"));
-
-
 
   if (password !== confirmPassword)
     return next(handleMakeError(400, "Passwords are not equal "));
@@ -97,10 +94,9 @@ export const signin = async (req, res, next) => {
       // await storeRefreshToken(validUser._id, refreshToken);
       // setCookies(res, accessToken, refreshToken);
 
-      const { accessToken} = generateTokens(validUser._id);
+      const { accessToken } = generateTokens(validUser._id);
       // await storeRefreshToken(validUser._id, refreshToken);
       setCookies(res, accessToken);
-
 
       // EXCLUDING THE PASSWORD WITH THIS METHOD INSTEAD OF .select("-password") is wild
       // JOKES ON YOU I CANT USE .select("-password") in this messy code because if i put that after User.FindOne -
@@ -253,3 +249,4 @@ export const addWorker = async (req, res, next) => {
     next(error);
   }
 };
+

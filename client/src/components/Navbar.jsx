@@ -20,7 +20,7 @@ export default function Navbar() {
   const currentUser = useUserStore((state) => state.currentUser);
 
   return (
-    <header className=" bg-[#f2ecd9] fixed p-4 py-4 top-0 left-0 right-0 z-40">
+    <header className=" bg-yellow fixed p-4 py-4 top-0 left-0 right-0 z-40">
       <nav className="flex justify-between max-w-[1280px] mx-auto relative">
         {/* MOBILE NAVBAR */}
         <div

@@ -23,17 +23,17 @@ export default function AdminOrderTransact() {
     },
   });
 
-  const {
-    data: failedCancelledData = [],
-    isPending: isFailedCancelledPending,
-    isError: isFailedCancelledError,
-  } = useQuery({
-    queryKey: ["failedCancelled"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-failedCancelled`);
-      return res.data;
-    },
-  });
+  // const {
+  //   data: failedCancelledData = [],
+  //   isPending: isFailedCancelledPending,
+  //   isError: isFailedCancelledError,
+  // } = useQuery({
+  //   queryKey: ["failedCancelled"],
+  //   queryFn: async () => {
+  //     const res = await axiosInstance.get(`/order/get-failedCancelled`);
+  //     return res.data;
+  //   },
+  // });
 
   const {
     data: refundedCancelled = [],
@@ -79,7 +79,7 @@ export default function AdminOrderTransact() {
             className="border border-black outline-none p-2 rounded-[5px] bg-card w-full md:w-[300px]"
           >
             <option value="successful">Succesful Transactions</option>
-            <option value="failed">Failed Transactions</option>
+            {/* <option value="failed">Failed Transactions</option> */}
             <option value="refunded">Order Refunded</option>
             <option value="cancelled">Order Cancelled</option>
           </select>
@@ -91,10 +91,10 @@ export default function AdminOrderTransact() {
             title={"TOTAL SUCCESSFUL ORDER"}
             value={successOrderData.length}
           />
-          <AdminStatCard
+          {/* <AdminStatCard
             title={"TOTAL FAILED ORDER"}
             value={failedCancelledData.length}
-          />
+          /> */}
           <AdminStatCard
             title={"TOTAL REFUNDED ORDER"}
             value={refundedCancelled.length}
@@ -112,13 +112,13 @@ export default function AdminOrderTransact() {
             isSuccessError={isSuccessError}
           />
         )}
-        {selectedComponent === "failed" && (
+        {/* {selectedComponent === "failed" && (
           <AdminFailedTransactions
             failedCancelledData={failedCancelledData}
             isFailedCancelledPending={isFailedCancelledPending}
             isFailedCancelledError={isFailedCancelledError}
           />
-        )}
+        )} */}
         {selectedComponent === "refunded" && (
           <AdminRefundedCancelledTransactions
             refundedCancelled={refundedCancelled}

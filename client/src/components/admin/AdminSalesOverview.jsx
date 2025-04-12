@@ -128,7 +128,7 @@ export default function AdminSalesOverview() {
     return <p>loading...</p>;
 
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col bg-yellow gap-16">
       <div className=" grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
         <AdminStatCard
           title={"TODAY SALES"}
@@ -197,7 +197,7 @@ export default function AdminSalesOverview() {
         </div>
         <div className="w-full md:w-[30%] flex flex-col gap-14  rounded-[5px] relative ">
           <AdminRecentSuccessOrder />
-          <AdminRecentFailedOrder />
+          {/* <AdminRecentFailedOrder /> */}
           <AdminRecentRefundedOrder />
           <AdminRecentCancelledOrder />
         </div>

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
@@ -27,8 +27,6 @@ export default function AdminStocksTable() {
     },
   });
 
-
-  console.log(stocks)
  
   const {} = useQuery({
     queryKey: ["singleDeliveredProduct", deliveryId],
@@ -38,6 +36,19 @@ export default function AdminStocksTable() {
     },
     enabled: !!deliveryId
   })
+
+  // const {mutate: updateQuantityMutation} = useMutation({
+  //   mutationFn: async (data) => {
+  //     const res = await axiosInstance.put(`/stocks/update-quantity/${stocks._id}`, data)
+  //     return res.data
+  //   }
+  // })
+
+  console.log(stocks)
+
+  const handleUpdateQuantity = (stock) => {
+    console.log(stock._id)
+  }
 
 
   const openSingleStockData = (stock) => {
@@ -180,13 +191,19 @@ export default function AdminStocksTable() {
                   <td className="text-red-700">
                     {formatPrice(stock?.totalCost) + " PHP"}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm flex justify-center">
                     <button
                       onClick={() => openSingleStockData(stock)}
                       className="border border-black p-1 px-2 rounded-[5px] bg-green-700 text-white hover:text-indigo-300 mr-2"
                     >
                       Order / Re-stock
                     </button>
+                    {/* <button
+                      onClick={() => handleUpdateQuantity(stock)}
+                      className="border border-black p-1 px-2 rounded-[5px] bg-blue-700 text-white hover:text-indigo-300 mr-2"
+                    >
+                      Update Quantity
+                    </button> */}
                   </td>
                 </tr>
               ))

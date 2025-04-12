@@ -19,6 +19,7 @@ import orderRoutes from "../api/routes/order.route.js";
 import auditRoute from "../api/routes/audit.route.js";
 import reviewRoute from "../api/routes/review.route.js";
 import vatRoute from "../api/routes/vat.route.js"
+import sendEmailRoute from "../api/routes/sendEmail.route.js"
 
 // Load environment variables from .env file
 config();
@@ -53,6 +54,7 @@ app.use(`/api/order`, orderRoutes);
 app.use(`/api/audit`, auditRoute);
 app.use(`/api/review`, reviewRoute);
 app.use(`/api/vat`, vatRoute);
+app.use(`/api/send`, sendEmailRoute)
 
 
 // Error handling middleware

@@ -44,7 +44,7 @@ export default function PopularPage() {
 
   return (
     <section className="pt-[130px] pb-[100px]  p-3 font-main">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="max-w-[1280px] bg-yellow mx-auto">
         <div>
           <h1 className="text-3xl mb-5 ">POPULAR PRODUCTS</h1>
         </div>

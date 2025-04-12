@@ -39,7 +39,7 @@ export default function CartPage() {
         <OrderSummaryModal onClose={() => setOrderModal(false)} />
       )}
 
-      <div className="max-w-[1280px] mx-auto">
+      <div className="max-w-[1280px] bg-yellow h-screen mx-auto">
         <div className="flex w-full  mb-5 ">
           <h1 className="text-4xl">CART</h1>
         </div>
@@ -64,7 +64,7 @@ export default function CartPage() {
                 TOTAL ITEMS: <span>{cart?.items?.length}</span>
               </p>
               <p>
-                TOTAL POINTS: <span>{totalPoints}</span>
+                TOTAL POINTS: <span>+{totalPoints}</span>
               </p>
               <p>
                 TOTAL PRICE:{" "}

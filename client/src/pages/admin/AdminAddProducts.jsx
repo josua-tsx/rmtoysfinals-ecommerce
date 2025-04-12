@@ -297,23 +297,8 @@ export default function AdminAddProducts() {
             </div>
 
             <div className="border flex flex-col gap-2 border-black rounded-[5px] uppercase bg-card p-4">
-              <div className="flex flex-col md:flex-row gap-2">
-                {/* <div className="flex flex-col flex-1">
-                  <label htmlFor="stocks" className="pb-2">
-                    Stocks
-                  </label>
-                  <input
-                    type="number"
-                    className="p-2 rounded-[5px] border border-black outline-none"
-                    name="stocks"
-                    id="stocks"
-                    value={stocks}
-                    onChange={(e) => setStocks(e.target.value)}
-                  />
-                </div> */}
-                
-               
-              </div>
+              
+
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <div className="flex flex-col flex-1">
                   <label htmlFor="points" className="pb-2">

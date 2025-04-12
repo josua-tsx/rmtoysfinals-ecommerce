@@ -15,27 +15,24 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [totalCost, setTotalCost] = useState(0);
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [discount, setDiscount] = useState(0)
-  const [vatPercent, setVatPercent] = useState(0)
-
+  const [discount, setDiscount] = useState(0);
+  const [vatPercent, setVatPercent] = useState(0);
 
   // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
-  const calculateTotalExpenses = (Number(supplierPrice) + Number(shippingPrice)) * Number(quantity) 
-  const totalPriceWithVAT = Number(shopPrice) + (Number(shopPrice) * vatPercent)
-  const roundedPrice = Math.round(totalPriceWithVAT)
-
+  const calculateTotalExpenses =
+    Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
+  const totalPriceWithVAT = Number(shopPrice) + Number(shopPrice) * vatPercent;
+  const roundedPrice = Math.round(totalPriceWithVAT);
 
   useEffect(() => {
-    if (calculateTotalExpenses) setTotalCost(calculateTotalExpenses)
-  }, [calculateTotalExpenses])
-
+    if (calculateTotalExpenses) setTotalCost(calculateTotalExpenses);
+  }, [calculateTotalExpenses]);
 
   const generateRandomDeliveryId = () => {
     return (
       "DELIVERY-" + Math.random().toString(36).substring(2, 6).toUpperCase()
     );
   };
-
 
   useEffect(() => {
     setDeliveryId(generateRandomDeliveryId());
@@ -49,16 +46,19 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
     }
   }, [singleOrder]);
 
-
-  const { data: vats = [], isVatPending, isVatError } = useQuery({
-    queryKey: ['vats'],
+  const {
+    data: vats = [],
+    isVatPending,
+    isVatError,
+  } = useQuery({
+    queryKey: ["vats"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/vat/get-vat`)
-      return res.data
-    }
-  })
+      const res = await axiosInstance.get(`/vat/get-vat`);
+      return res.data;
+    },
+  });
 
-  console.log(vats)
+  console.log(vats);
 
   const {
     data: suppliers = [],
@@ -102,7 +102,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       deliveryId,
       dateDelivery: selectedDate,
       discount,
-      vatPercent
+      vatPercent,
     });
   };
 
@@ -163,8 +163,6 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
             </div>
-
-           
 
             <div className="flex gap-4">
               <label htmlFor="">Supplier: </label>
@@ -230,13 +228,9 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
-            
-              {
-                vatPercent.length > 0 && (
-                  <p>Shop price with VAT = {totalPriceWithVAT}</p>
-                )
-              }
-            
+            {vatPercent.length > 0 && (
+              <p>Shop price with VAT = {totalPriceWithVAT}</p>
+            )}
 
             <div className="flex gap-4">
               <label htmlFor="shippingPrice">Shipping Price: </label>
@@ -277,12 +271,12 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
-       
-
             <div className="flex items-center flex-wrap gap-4">
               <p>Total Cost: </p>
               <p>{formatPrice(totalCost)} PHP</p>
-              <p className="text-sm text-red-700">(SUPPLIER PRCE + SHIPPING PRICE) * QUANTITY</p>
+              <p className="text-sm text-red-700">
+                (SUPPLIER PRCE + SHIPPING PRICE) * QUANTITY
+              </p>
             </div>
           </div>
 

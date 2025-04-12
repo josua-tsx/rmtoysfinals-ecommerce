@@ -62,7 +62,7 @@ export default function OrderSummaryModal({ onClose }) {
       return { totalDiscount, subtotal, totalPoints, totalPrice };
     }, [cart, shippingFee, taxes]);
   
-    // Calculate credits and final price
+    // Calculate credits and final totalPrice
     const { usedCredits, deductedPrice } = useMemo(() => {
       if (useCredits === "yes") {
         const creditsToUse = Math.min(currentUser?.credits || 0, totalPrice);
@@ -81,11 +81,6 @@ export default function OrderSummaryModal({ onClose }) {
       setUseCredits(e.target.value);
     };
   
- 
-
-
-
-
 
   useEffect(() => {
     if (cart) {
@@ -242,8 +237,8 @@ export default function OrderSummaryModal({ onClose }) {
                 id="paymentMethod"
                 className="border outline-none border-black rounded-[5px] p-1"
               >
-                <option value="Online Payment">Online Payment</option>
                 <option value="Cod">Cash on delivery</option>
+                <option value="Online Payment">Online Payment</option>
               </select>
             </div>
 

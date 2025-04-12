@@ -8,6 +8,7 @@ import {
   signup,
 } from "../controllers/auth.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import { sendEmail } from "../nodemailer/nodemailer.js";
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.post(`/signout`, signout);
 // ADD WORKER
 
 router.post(`/add-worker`, requireAuth, requireAdmin, addWorker);
+router.post(`/send-email`, sendEmail)
 
 // refresh token
 // router.post(`/refresh-token`, refreshToken)

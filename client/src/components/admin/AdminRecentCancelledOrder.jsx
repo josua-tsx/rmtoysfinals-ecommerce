@@ -24,9 +24,9 @@ export default function AdminRecentCancelledOrder() {
   if (isError) return <p>Loading...</p>;
 
   return (
-    <div>
+    <div className="flex-1">
       {latestcancelledOrder ? (
-        <div className="bg-card border flex items-center justify-between relative border-black rounded-[5px] p-2">
+        <div className="bg-card h-full border flex items-center justify-between relative border-black rounded-[5px] p-2">
           <div className="absolute -top-11 -left-1 border rounded-[5px]  bg-primary text-card border-black p-1">
             <h1>RECENT CANCELLED </h1>
           </div>

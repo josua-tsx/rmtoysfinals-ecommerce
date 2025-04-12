@@ -26,7 +26,7 @@ export default function WishListPage() {
 
   return (
     <section className="pt-[130px] font-main p-3">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="max-w-[1280px] bg-yellow h-screen mx-auto">
         <div className="flex w-full  mb-5 ">
           <h1 className="text-4xl">Wishlist</h1>
         </div>

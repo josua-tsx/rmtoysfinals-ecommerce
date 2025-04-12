@@ -23,7 +23,7 @@ import {
   getUserRefund,
   placeOrderStripe,
   updateDeliveryStatus,
-  updatePaymentStatus,
+  // updatePaymentStatus,
   userCancelOrder,
   userPlaceOrder,
 } from "../controllers/order.controller.js";
@@ -60,7 +60,7 @@ router.get(`/latest/refunded`, getLatestRefundedOrder)
 
 router.get(`/latest/cancelled`, getLatestCancelledOrder)
 
-router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
+// router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
 
 router.put(`/cancel-success-transact`, requireAuth, requireAdmin ,cancelSuccessTransact)
 

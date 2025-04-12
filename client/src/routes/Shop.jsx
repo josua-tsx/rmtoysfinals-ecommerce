@@ -82,7 +82,7 @@ export default function Shop() {
 
   return (
     <section className="font-main p-3 py-[130px]">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="max-w-[1280px] bg-yellow mx-auto">
         <div className="flex w-full mb-5">
           <h1 className="text-3xl">PRODUCTS</h1>
         </div>

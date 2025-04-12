@@ -5,7 +5,6 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import {
   AdminLayout,
   RequiredAuth,
-  RequiredAuthGcashPage,
   RootLayout,
   ValidatorStaffLayout,
 } from "./layout/RootLayout.jsx";
@@ -64,22 +63,18 @@ import PurchaseSuccessPage from "./pages/PurchaseSuccessPage.jsx";
 import AdminVat from "./pages/admin/AdminVat.jsx";
 import AdminAddVat from "./pages/admin/AdminAddVat.jsx";
 import AdminEditVat from "./pages/admin/AdminEditVat.jsx";
+import FaqPage from "./pages/FaqPage.jsx";
 
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
   {
-    element: (
-      <ProtectedCustomerRoute>
-        <RequiredAuthGcashPage />
-      </ProtectedCustomerRoute>
-    ),
-
-  },
-
-  {
     path: "/",
-    element: <RootLayout />,
+    element: (
+
+        <RootLayout />
+     
+    ),
     children: [
       {
         path: `/`,
@@ -111,7 +106,11 @@ const router = createBrowserRouter([
       },
       {
         path: `/contact`,
-        element: <Contact/>
+        element: <Contact />,
+      },
+      {
+        path: `/faq`,
+        element: <FaqPage/>
       }
     ],
   },
@@ -143,7 +142,6 @@ const router = createBrowserRouter([
         path: `/orderSingle`,
         element: <SingleOrderList />,
       },
-   
     ],
   },
 
@@ -184,9 +182,8 @@ const router = createBrowserRouter([
 
       {
         path: "/admin/editWorker/:userId",
-        element: <AdminEditWorker/>
+        element: <AdminEditWorker />,
       },
-
 
       {
         path: "/admin/products",
@@ -247,7 +244,7 @@ const router = createBrowserRouter([
         path: "/admin/stocks",
         element: <AdminStocks />,
       },
-  
+
       {
         path: "/admin/addStocks",
         element: <AdminAddStocks />,
@@ -255,7 +252,7 @@ const router = createBrowserRouter([
 
       {
         path: "/admin/pendingStocks",
-        element: <AdminStocksPending/>,
+        element: <AdminStocksPending />,
       },
       {
         path: "/admin/editStocks/:stockId",
@@ -266,7 +263,6 @@ const router = createBrowserRouter([
       //   path: "/admin/stocksDelivery",
       //   element: <AdminStocksDelivery/>,
       // },
-
 
       // USER MAINTENANCE
 
@@ -283,20 +279,19 @@ const router = createBrowserRouter([
         element: <AdminAddWorker />,
       },
 
-
       // VAT
 
       {
         path: "/admin/vat",
-        element: <AdminVat/>
+        element: <AdminVat />,
       },
       {
         path: "/admin/addVat",
-        element: <AdminAddVat/>
+        element: <AdminAddVat />,
       },
       {
         path: "/admin/editVat/:vatId",
-        element: <AdminEditVat/>
+        element: <AdminEditVat />,
       },
 
       // AUDIT
@@ -345,13 +340,13 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: `/purchase-cancel`, 
-    element: <PurchaseCancelPage/>
+    path: `/purchase-cancel`,
+    element: <PurchaseCancelPage />,
   },
   {
-    path: `/purchase-success`, 
-    element: <PurchaseSuccessPage/>
-  }
+    path: `/purchase-success`,
+    element: <PurchaseSuccessPage />,
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(

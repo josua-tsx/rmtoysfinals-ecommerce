@@ -1,56 +1,100 @@
-import { IoLocation } from "react-icons/io5";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { FaPhone } from "react-icons/fa";
-import { MdEmail } from "react-icons/md";
-import { FaFacebook } from "react-icons/fa6";
+import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import axiosInstance from "../lib/axios";
+import toast from "react-hot-toast";
 
 export default function Contact() {
+
+  const [senderEmail, setSenderEmail] = useState("")
+  const [message, setMessage] = useState("")
+
+  const {mutate: sendEmailMutation, isPending} = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/send/send-email`, data)
+      return res.data
+    }, 
+    onSuccess: () => {
+      toast.success(`Email Sent!`)
+      setSenderEmail("")
+      setMessage("")
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong!")
+    }
+  })
+
+  console.log(senderEmail)
+  console.log(message)
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault()
+      sendEmailMutation({senderEmail, message})
+  }
+
+
   return (
-    <section className="pt-[130px] p-3 font-main">
+    <section className="pt-[130px] p-3 font-main  min-h-screen">
       <div className="max-w-[1280px] mx-auto">
         <div className="flex flex-col justify-center items-center">
-          <div className="flex flex-col pb-40 pt-20 md:pt-40 gap-16">
+          <div className="flex flex-col pb-20 pt-20 md:pt-32 gap-10 w-full max-w-md">
             <div className="text-center flex flex-col gap-5">
-            <h1 className="text-4xl md:text-5xl">CONTACTS</h1>
-            <p className="text-xl md:text-2xl">
-              Need help? Get in touch with us, <br /> and we’ll make sure to
-              assist you as quickly as possible. <br /> Your satisfaction is our
-              priority!
-            </p>
-            </div>
-            <div className=" flex flex-col md:flex-row gap-10">
-              <div className="flex flex-col items-center gap-2">
-                <span>
-                  <IoLocation size={30} />
-                </span>
-                <p className="text-lg">13 St. Lower Bicutan Taguig City</p>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <span>
-                  <FaPhone size={30} />
-                </span>
-                <p className="text-lg">09123456789</p>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <span>
-                  <MdEmail size={30} />
-                </span>
-                <p className="text-lg">rmtoys28@gmail.com</p>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <span>
-                  <FaFacebook size={30} />
-                </span>
-                <p className="text-lg">RM TOYS</p>
-                <p className="underline text-indigo-700">
-                  <a
-                    className="underline text-indigo-700"
-                    href="https://www.facebook.com/Rmcarsandmotorbikes"
-                  >
-                    facebook page link here!
-                  </a>
-                </p>
+              <h1 className="text-4xl md:text-5xl ">CONTACT US</h1>
+              <p className="text-lg md:text-xl text-gray-600">
+                Send us messages for any info.
+                <br />
+                Call us for any emergency to this number
+              </p>
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <FaPhone size={20} />
+                <p className="text-xl font-medium"> (+63) 9123456789101</p>
               </div>
             </div>
+
+            <div className="flex justify-center gap-4">
+              <a href="https://www.facebook.com/Rmcarsandmotorbikes" target="_blank" className="text-gray-700 hover:text-blue-600">
+                <FaFacebook size={24} />
+              </a>
+            </div>
+
+            <form onSubmit={handleFormSubmit}
+            className="flex flex-col gap-6 w-full">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="senderEmail" className="text-gray-600">Email</label>
+                <input 
+                  type="email" 
+                  id="senderEmail" 
+                  className="p-3 border border-black rounded focus:outline-primary"
+                  placeholder="Your email address"
+                  value={senderEmail}
+                  onChange={(e) => setSenderEmail(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                <label htmlFor="message" className="text-gray-600">Message</label>
+                <textarea 
+                  id="message" 
+                  name="message"
+                  rows="4"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="p-3 border border-black rounded focus:outline-primary"
+                  placeholder="Your message here..."
+                ></textarea>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={isPending}
+                className="bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded transition duration-200"
+              >
+                {isPending ? "Loading..." : "Send"}
+              </button>
+            </form>
+
+            
           </div>
         </div>
       </div>

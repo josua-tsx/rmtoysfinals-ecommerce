@@ -19,7 +19,7 @@ export const addProduct = async (req, res, next) => {
     productImages,
     category,
     // supplier,
-    points
+    points,
   } = req.body;
 
   // if (!category || !supplier) {
@@ -205,10 +205,9 @@ export const getProducts = async (req, res, next) => {
 //   }
 // };
 
-
 export const getStockStatusPendings = async (req, res, next) => {
   try {
-    const products = await Product.find({ status: "pending"   })
+    const products = await Product.find({ status: "pending" })
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -385,13 +384,12 @@ export const editProduct = async (req, res, next) => {
     discount,
     productImages,
     category,
+    points
   } = req.body;
 
   try {
     if (!category) {
-      return next(
-        handleMakeError(400, "You need category")
-      );
+      return next(handleMakeError(400, "You need category"));
     }
 
     if (price <= 0) {
@@ -401,9 +399,6 @@ export const editProduct = async (req, res, next) => {
     if (!productName || !productDescription) {
       return next(handleMakeError(400, "Please input required fields"));
     }
-
-  
-
 
     // Lowercasing all labels and values in the productDetails array
     if (productDetails && Array.isArray(productDetails)) {
@@ -436,6 +431,7 @@ export const editProduct = async (req, res, next) => {
         category,
         status: "published",
         category,
+        points
       },
       {
         new: true,
@@ -484,8 +480,7 @@ export const getSingleProduct = async (req, res, next) => {
           path: "userId",
           select: "avatar username email",
         },
-      })
-   
+      });
 
     if (!getSingleProduct)
       return next(handleMakeError(400, "Product not found"));
@@ -513,7 +508,6 @@ export const addDraft = async (req, res, next) => {
     category,
     supplier,
   } = req.body;
-
 
   try {
     const newDraft = new Product({

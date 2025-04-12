@@ -29,7 +29,8 @@ export default function AdminEditProducts() {
   const [filters, setFilters] = useState({});
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("");
-  // const [supplier, setSupplier] = useState("");
+
+  const [points, setPoints] = useState(0);
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
@@ -52,18 +53,18 @@ export default function AdminEditProducts() {
 
   useEffect(() => {
     if (singleProduct) {
-      setFilters(singleProduct.filters);
-      setProductName(singleProduct.productName || "");
-      setProductDescription(singleProduct.productDescription || "");
-      setPrice(singleProduct.price || 0);
-      setDiscount(singleProduct.discount || 0);
-      setCategory(singleProduct?.category?._id || ""); 
+      setFilters(singleProduct?.filters);
+      setProductName(singleProduct?.productName || "");
+      setProductDescription(singleProduct?.productDescription || "");
+      setPrice(singleProduct?.price || 0);
+      setDiscount(singleProduct?.discount || 0);
+      setCategory(singleProduct?.category?._id || "");
       // setSupplier(singleProduct.supplier || "");
-      setProductsDetailsArray(singleProduct.productDetails || []);
-      setImages(singleProduct.productImages || []);
+      setProductsDetailsArray(singleProduct?.productDetails || []);
+      setImages(singleProduct?.productImages || []);
+      setPoints(singleProduct?.points)
     }
   }, [singleProduct]);
-
 
   // const { data, isPending, isError } = useQuery({
   //   queryKey: ["filters"],
@@ -84,8 +85,6 @@ export default function AdminEditProducts() {
       return res.data;
     },
   });
-
-
 
   const { mutate: editProductMutation } = useMutation({
     mutationFn: async (data) => {
@@ -114,9 +113,6 @@ export default function AdminEditProducts() {
     },
   });
 
-  
-
-
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
@@ -130,6 +126,7 @@ export default function AdminEditProducts() {
       filters,
       category: category,
       // supplier: supplier,
+      points
     });
   };
 
@@ -184,11 +181,11 @@ export default function AdminEditProducts() {
     setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (isCategoryPending ||  isProductPending) {
+  if (isCategoryPending || isProductPending) {
     return <p>awdwad</p>;
   }
 
-  if (isCategoryError ||  isProductError) {
+  if (isCategoryError || isProductError) {
     return <p>awdwad</p>;
   }
 
@@ -213,14 +210,14 @@ export default function AdminEditProducts() {
                   onChange={handleInputChange(setProductName)}
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
-                   <p className="text-sm pt-1  text-green-700">
+                <p className="text-sm pt-1  text-green-700">
                   (Product name should nin 5 characters, max 50 characters, no
                   double spaces, uppercase letters allowed)
                 </p>
               </div>
 
               <div className="mb-3">
-              <div className="flex flex-col md:flex-row md:gap-2">
+                <div className="flex flex-col md:flex-row md:gap-2">
                   <h1 className="mb-3">DESCRIPTION: </h1>
                   <p className="text-sm pt-1  text-green-700">
                     (Product description should max 200 characters, no double
@@ -237,7 +234,7 @@ export default function AdminEditProducts() {
               </div>
 
               <div className="mb-3">
-              <div className="flex flex-col md:gap-2 md:flex-row">
+                <div className="flex flex-col md:gap-2 md:flex-row">
                   <h1 className="mb-3">PRODUCT DETAILS: </h1>
                   <p className="text-sm pt-1  text-green-700">
                     (Always include COLOR for LABEL and COLOR for VALUE EX:
@@ -316,19 +313,10 @@ export default function AdminEditProducts() {
 
             <div className="border flex flex-col gap-2 border-black rounded-[5px] uppercase bg-card p-4">
               <div className="flex flex-col md:flex-row gap-2">
-                {/* <div className="flex flex-col flex-1">
-                  <label htmlFor="stocks" className="pb-2">
-                    Stocks
-                  </label>
-                  <input
-                    type="number"
-                    className="p-2 rounded-[5px] border border-black outline-none"
-                    name="stocks"
-                    id="stocks"
-                    value={stocks}
-                    onChange={(e) => setStocks(e.target.value)}
-                  />
-                </div> */}
+             
+
+
+
                 <div className="flex flex-col flex-1">
                   <label htmlFor="price" className="pb-2">
                     price
@@ -357,24 +345,24 @@ export default function AdminEditProducts() {
                 </div>
               </div>
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
+              <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <div className="flex flex-col flex-1">
-                  <label htmlFor="discountType" className="pb-2">
-                    Discount type
+                  <label htmlFor="points" className="pb-2">
+                    Points
                   </label>
                   <select
-                    disabled
                     className="p-2 rounded-[5px] border border-black outline-none"
-                    name="discountType"
-                    id="discountType"
+                    name="points"
+                    id="points"
+                    value={points}
+                    onChange={(e) => setPoints(e.target.value)}
                   >
-                    <option value="chineseNewYear">None</option>
-                    <option value="chineseNewYear">Chinese New Year</option>
-                    <option value="christmas">Christmas</option>
-                    <option value="mothersDay">mothers day</option>
-                    <option value="holloween">holloween</option>
+                    <option>Select Points</option>
+                    <option value="10">10 Points</option>
+                    <option value="15">15 Points</option>
                   </select>
                 </div>
-              </div>
+              </div>              </div>
 
               <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
                 <div className="flex flex-col">

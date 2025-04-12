@@ -32,7 +32,7 @@ export default function AdminOverview() {
   return (
     <section className="bg-yellow h-screen ">
       <AdminHeader title={"Overview"} />
-      <div className="max-w-[90%] py-14 mx-auto flex gap-10 flex-col">
+      <div className="max-w-[90%]  py-14 mx-auto flex gap-10 flex-col">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 relative mt-4">
           <div className="absolute -top-11 -left-1 border rounded-[5px]  bg-primary text-card border-black p-1">
             <h1>STOCKS LEVELS</h1>

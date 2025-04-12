@@ -4,7 +4,7 @@ import AdminSideBar from "../components/admin/AdminSideBar";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
 import { useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 
 const RootLayout = () => {
@@ -15,6 +15,21 @@ const RootLayout = () => {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+
+  const {
+    data: stocks = [],
+  } = useQuery({
+    queryKey: ["stocks"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/stocks/get-stocks`);
+      return res.data;
+    },
+  });
+
+  console.log(stocks)
+
+  
 
   // Mutation for sign-out
   const { mutate: signOut } = useMutation({
@@ -36,14 +51,15 @@ const RootLayout = () => {
     return <Navigate to="/sign-in" />;
   }
 
+
   return (
-    <div className="font-main-text">
+    <div className="font-main-text bg-yellow">
       <header>
         <Navbar />
       </header>
 
       {/* Main Content */}
-      <main>
+      <main className="bg-yellow">
         <Outlet />
       </main>
       <Toaster position="bottom-right" />
@@ -63,7 +79,7 @@ const RequiredAuth = () => {
       </header>
 
       {/* Main Content */}
-      <main className="">
+      <main className="bg-yellow">
         <Outlet />
       </main>
       <Toaster position="bottom-right" />
@@ -71,20 +87,7 @@ const RequiredAuth = () => {
   );
 };
 
-const RequiredAuthGcashPage = () => {
-  const currentUser = useUserStore((state) => state.currentUser);
-  return !currentUser ? (
-    <Navigate to={`/sign-in`} />
-  ) : (
-    <div className="font-main-text">
-      {/* Main Content */}
-      <main>
-        <Outlet />
-      </main>
-      <Toaster />
-    </div>
-  );
-};
+
 
 const AdminLayout = () => {
   return (
@@ -94,7 +97,7 @@ const AdminLayout = () => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-yellow">
         <Outlet />
       </main>
       <Toaster />
@@ -110,7 +113,7 @@ const ValidatorStaffLayout = () => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-yellow">
         <Outlet />
       </main>
       <Toaster />
@@ -118,4 +121,4 @@ const ValidatorStaffLayout = () => {
   )
 }
 
-export { RootLayout, AdminLayout, RequiredAuth, RequiredAuthGcashPage, ValidatorStaffLayout };
+export { RootLayout, AdminLayout, RequiredAuth,  ValidatorStaffLayout };

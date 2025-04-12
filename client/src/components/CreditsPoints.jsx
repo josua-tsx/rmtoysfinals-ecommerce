@@ -7,8 +7,13 @@ export default function CreditsPoints() {
     console.log(currentUser)
 
   return (
-    <div className="text-sm">
-      Total Credits: {currentUser?.credits}
+    <div className="text-sm flex items-center gap-2">
+      <div>
+      Total Credits: 
+      </div>
+       <div className="text-blue-700">
+       {currentUser?.credits}
+       </div>
     </div>
   )
 }

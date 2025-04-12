@@ -1,6 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
+import { sendEmail } from "../nodemailer/nodemailer.js";
 
 export const OrderStocks = async (req, res, next) => {
   const {
@@ -37,7 +38,8 @@ export const OrderStocks = async (req, res, next) => {
 
     await Product.findByIdAndUpdate(
       product,
-      { status: "published",
+      {
+        status: "published",
         price: shopPrice,
         stocks: newDelivery._id,
         discount,
@@ -72,12 +74,12 @@ export const reorderStock = async (req, res, next) => {
   try {
     // 1. First find the existing stock
     const existingStock = await Stocks.findById(stockId);
-    
+
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
     // 2. Calculate the new total quantity and total cost
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
-    const updatedTotalCost = existingStock.totalCost + Number(newTotalCost)
+    const updatedTotalCost = existingStock.totalCost + Number(newTotalCost);
 
     // 3. Update the stock with all fields including the new quantity
     const updateDeliver = await Stocks.findByIdAndUpdate(
@@ -100,31 +102,34 @@ export const reorderStock = async (req, res, next) => {
       { new: true } // Return the updated document
     );
 
-    // const updatedProduct = await Product.findByIdAndUpdate(
-    //   existingStock.product,
-    //   { 
-    //     price: shopPrice,
-    //   },
-    //   { new: true, runValidators: true }
-    // );
-
     await Product.findByIdAndUpdate(
       existingStock.product,
-      { 
+      {
         price: shopPrice,
       },
       { new: true, runValidators: true }
     );
-    
-    // console.log("Updated Product:", updatedProduct); // Check if price is updated here
-    
-
     res.status(200).json(updateDeliver);
-
   } catch (error) {
     next(error);
   }
 };
+
+export const updateStockQuantity = async (req, rex, next) => {
+  const {stockId} = req.params
+  const {quantity} = req.body
+  try {
+
+    // const existingTotalCosty
+    
+    const updateQuantity = await Stocks.findByIdAndUpdate(stockId, {
+      quantity
+    }, {new: true})
+    res.status(200).json(updateQuantity)
+  } catch (error) {
+    next(error)
+  }
+}
 
 export const getPendingDeliveries = async (req, res, next) => {
   try {
@@ -149,7 +154,6 @@ export const getPendingDeliveries = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // export const confirmDelivery = async (req, res, next) => {
 //   const { deliveryId } = req.params;
@@ -200,7 +204,6 @@ export const getPendingDeliveries = async (req, res, next) => {
 //     next(error);
 //   }
 // };
-
 
 //   const { deliveryId } = req.params;
 
@@ -275,6 +278,73 @@ export const getStocks = async (req, res, next) => {
         select: "supplierName",
       })
       .sort({ createdAt: -1 });
+
+    // Threshold configuration
+    const STOCK_LEVELS = {
+      LOW: 30,
+      OUT: 0
+    };
+
+    // Notification cooldowns (in milliseconds)
+    const NOTIFICATION_COOLDOWNS = {
+      LOW: 10 * 60 * 1000,   // 10 minutes for low stock
+      OUT: 5 * 60 * 1000             // 5 minutes for out-of-stock
+    };
+
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+
+    // Classify stocks and check notification needs
+    const stockAlerts = {
+      low: getStocks.filter(stock => {
+        return stock.quantity <= STOCK_LEVELS.LOW && 
+               stock.quantity > STOCK_LEVELS.OUT &&
+               (!stock.lastLowStockNotification || 
+                Date.now() - stock.lastLowStockNotification > NOTIFICATION_COOLDOWNS.LOW);
+      }),
+      
+      out: getStocks.filter(stock => {
+        return stock.quantity === STOCK_LEVELS.OUT &&
+               (!stock.lastOutOfStockNotification || 
+                Date.now() - stock.lastOutOfStockNotification > NOTIFICATION_COOLDOWNS.OUT);
+      })
+    };
+
+
+    if (stockAlerts.low.length > 0) {
+      await sendEmail(
+        ADMIN_EMAIL,
+        `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length})`,
+        `URGENT! The following items are critically low:\n\n${
+          stockAlerts.low.map(item => `- ${item.product?.productName}: ${item.quantity} remaining`).join('\n')
+        }\n\nRestock immediately!`
+      );
+
+      await Promise.all(
+        stockAlerts.low.map(item => 
+          Stocks.findByIdAndUpdate(item._id, { 
+            lastLowStockNotification: Date.now() 
+          })
+        )
+      );
+    }
+
+    if (stockAlerts.out.length > 0) {
+      await sendEmail(
+        ADMIN_EMAIL,
+        `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length})`,
+        `CRITICAL! The following items are completely out of stock:\n\n${
+          stockAlerts.out.map(item => `- ${item.product?.productName}`).join('\n')
+        }\n\nTake immediate action!`
+      );
+
+      await Promise.all(
+        stockAlerts.out.map(item => 
+          Stocks.findByIdAndUpdate(item._id, { 
+            lastOutOfStockNotification: Date.now() 
+          })
+        )
+      );
+    }
 
     res.status(200).json(getStocks);
   } catch (error) {

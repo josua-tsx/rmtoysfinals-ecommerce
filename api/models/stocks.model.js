@@ -49,8 +49,12 @@ const StocksModelSchema = new mongoose.Schema(
     vatPercent: {
       type: Number,
       default: 0
-    }
+    },
+    lastLowStockNotification: Date,
+    lastOutOfStockNotification: Date,
   },
+  
+
   {
     timestamps: true,
   }
