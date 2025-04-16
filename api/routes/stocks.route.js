@@ -7,7 +7,7 @@ import {
   getStocks,
   OrderStocks,
   reorderStock,
-  updateStockQuantity,
+  // updateStockQuantity,
 } from "../controllers/stocks.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 
@@ -30,7 +30,7 @@ router.get("/get-stocks", getStocks);
 // router.delete("/delete-stock/:stockId", deleteStock)
 router.get(`/get-stock/:stockId`, getSingleStock);
 
-router.put(`/update-quantity/:stockId`, updateStockQuantity)
+// router.put(`/update-quantity/:stockId`, updateStockQuantity)
 
 router.get(`/get-stocks-levels`, getStockLevels);
 

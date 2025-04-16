@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 
 export default function ProfileComponent({ setActiveComponent }) {
   const currentUser = useUserStore((state) => state.currentUser);
-
   const queryClient = useQueryClient()
 
   const {
@@ -41,11 +40,14 @@ export default function ProfileComponent({ setActiveComponent }) {
     updateIsActive({addressId})
   }
 
+  const activeAddressId = currentUserAddress.find(addr => addr.isActive)?._id
+
+
   if (isCurrentUserAddressPending) return <p>loading...</p>;
   if (isCurrentUserAddressError) return <p>loading...</p>;
 
   return (
-    <div>
+    <div className="">
       <h1 className="text-xl">PROFILE</h1>
       <div className="my-5 flex flex-col gap-10  max-h-[666px] overflow-y-auto">
         <div className="flex flex-col items-center gap-4 justify-center">
@@ -133,6 +135,7 @@ export default function ProfileComponent({ setActiveComponent }) {
                       type="radio"
                       id={`address-${add._id}`}
                       name="address"
+                      checked={add._id === activeAddressId}
                       onClick={() => handleUpdateCurrentAddress(add._id)}
                     />
                   </div>

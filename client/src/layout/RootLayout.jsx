@@ -29,8 +29,6 @@ const RootLayout = () => {
 
   console.log(stocks)
 
-  
-
   // Mutation for sign-out
   const { mutate: signOut } = useMutation({
     mutationFn: async () => await axiosInstance.post("auth/signout"),
@@ -59,7 +57,7 @@ const RootLayout = () => {
       </header>
 
       {/* Main Content */}
-      <main className="bg-yellow">
+      <main className="bg-yellow h-full">
         <Outlet />
       </main>
       <Toaster position="bottom-right" />
@@ -79,7 +77,7 @@ const RequiredAuth = () => {
       </header>
 
       {/* Main Content */}
-      <main className="bg-yellow">
+      <main className="bg-yellow h-screen">
         <Outlet />
       </main>
       <Toaster position="bottom-right" />

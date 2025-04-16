@@ -34,7 +34,7 @@ export default function CartPage() {
   if (isError) return <div>Error loading cart.</div>;
 
   return (
-    <section className="pt-[130px] font-main p-3">
+    <section className="pt-[130px] text-sm md:text-normal font-main p-3">
       {openOrderModal && (
         <OrderSummaryModal onClose={() => setOrderModal(false)} />
       )}
@@ -45,7 +45,7 @@ export default function CartPage() {
         </div>
 
         <form className="flex flex-col md:flex-row gap-2">
-          <div className="flex flex-col gap-3  flex-1 uppercase">
+          <div className="flex flex-col gap-3 h-[500px] overflow-y-auto flex-1 uppercase">
             {/* PRODUCTS GOES HERE */}
 
             {cart?.items?.length > 0 ? (

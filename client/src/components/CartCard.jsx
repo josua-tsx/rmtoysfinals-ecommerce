@@ -4,11 +4,16 @@ import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { PiShareFatFill } from "react-icons/pi";
 import formatPrice from "../reusable/formatPrice";
+import { useState, useEffect } from "react";
+import { debounce } from 'lodash'; // or your preferred debounce utility
 
 export default function CartCard({ productCart }) {
   const queryClient = useQueryClient();
+  const [quantity, setQuantity] = useState(productCart?.quantity || 0);
 
-  console.log(productCart)
+  useEffect(() => {
+    setQuantity(productCart?.quantity || 0);
+  }, [productCart]);
 
   const { mutate: removeCartMutation } = useMutation({
     mutationFn: async (productId) => {
@@ -19,7 +24,7 @@ export default function CartCard({ productCart }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      toast.success("Sucessfully removed the cart!");
+      toast.success("Successfully removed the cart!");
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong!");
@@ -34,25 +39,45 @@ export default function CartCard({ productCart }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      toast.success(`Sucessfully transferred to cart`);
+      toast.success(`Successfully transferred to wishlist`);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong");
     },
   });
 
-  const {mutate: updateQuantity} = useMutation({
-    mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/cart/updateQuantity`, productId)
-      return res.data
-    } ,
+  const { mutate: updateQuantity } = useMutation({
+    mutationFn: async ({ productId, quantity }) => {
+      const res = await axiosInstance.post(`/cart/updateQuantity`, { 
+        productId, 
+        quantity: Number(quantity) 
+      });
+      return res.data;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['cart']})
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong!")
+      toast.error(err.response.data.message || "Something went wrong!");
+      // Revert to previous quantity on error
+      setQuantity(productCart?.quantity || 0);
     }
-  })
+  });
+
+
+  const debouncedUpdate = debounce((productId, quantity) => {
+    if (quantity !== productCart?.quantity) {
+      updateQuantity({ productId, quantity });
+    }
+  }, 500);
+
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value >= 0) {
+      setQuantity(value);
+      debouncedUpdate(productCart?.productId?._id, value);
+    }
+  };
 
   const handleTransferToWish = (productId) => {
     transferToWishMutation({ productId });
@@ -62,68 +87,58 @@ export default function CartCard({ productCart }) {
     removeCartMutation({ productId });
   };
 
-  const handleUpdateQuantity = (productId, quantity) => {
-    updateQuantity({productId, quantity})
-  }
-
   if (!productCart || Object.keys(productCart).length === 0) {
     return <p>No product found.</p>;
   }
 
   return (
-    <div className="flex items-center gap-5 relative bg-card border-black border p-3 rounded-[5px]">
+    <div className="flex h-[160px] md:h-[75px]  text-sm md:text-normal items-center gap-5 relative bg-card border-black border p-3 rounded-[5px]">
       <img
         src={productCart.productId.productImages[0]}
         alt="product images"
         className="size-[60px] border-none rounded-[5px]"
       />
-      <div className="flex-col lg:flex-row justify-between  lg:items-center flex lg:gap-5 w-full ">
+      <div className="flex-col lg:flex-row justify-between lg:items-center flex lg:gap-5 w-full">
         <h1>{productCart.productId.productName}</h1>
         <div className="my-1 flex flex-col md:flex-row md:gap-5">
           <p className="text-sm truncate w-[160px]">
             Description: <span className="text-indigo-500">{productCart.productId.productDescription}</span>
           </p>
-          {/* <p className="text-sm">
-          COLOR:<span className="text-indigo-500">{color}</span>
-        </p> */}
         </div>
-        <div className="flex  gap-10 justify-between items-center">
+        <div className="flex gap-10 justify-between items-center">
           <p>
-            <span className="text-indigo-500 text-xl">
+            <span className="text-indigo-500">
               {formatPrice(productCart?.productId?.price)} PHP
             </span>
           </p>
-         
         </div>
         <div className="flex md:flex-row items-center gap-2 relative">
-            <button onClick={() => handleUpdateQuantity(productCart?.productId?._id, productCart.quantity - 1)}
-            type="button" className="text-3xl">
-              -
-            </button>
-            <p className="">{productCart.quantity}</p>
-
-            <button onClick={() => handleUpdateQuantity(productCart?.productId?._id, productCart.quantity + 1)}
-             type="button" className="text-3xl">
-              +
-            </button>
-
-            <div className="text-sm w-[90px]">
-              (STOCKS {productCart?.productId?.stocks?.quantity})
-            </div>
-
+          <input 
+            type="number" 
+            name="quantity" 
+            id="quantity" 
+            min={1}
+            max={productCart?.productId?.stocks?.quantity}
+            value={quantity}
+            onChange={handleQuantityChange}
+            className="w-14 p-1 text-center border rounded-[5px]  border-black"
+          />
+          <div className="text-sm w-[90px]">
+            (STOCKS {productCart?.productId?.stocks?.quantity})
           </div>
+        </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleTransferToWish(productCart.productId._id)}
             type="button"
-            className="absolute flex items-center right-9 md:right-2 gap-1  text-green-600 lg:relative  "
+            className="absolute flex items-center bottom-0 right-9 md:right-2 gap-1 text-green-600 lg:relative"
           >
             <PiShareFatFill size={25} /> WISH
           </button>
           <button
             onClick={() => handleRemoveCart(productCart.productId._id)}
             type="button"
-            className="absolute flex items-center gap-1 right-2  lg:relative text-red-600 "
+            className="absolute flex items-center bottom-0 gap-1 right-2 lg:relative text-red-600"
           >
             <MdDelete size={25} />
           </button>

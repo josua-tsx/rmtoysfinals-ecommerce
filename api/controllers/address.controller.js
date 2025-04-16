@@ -66,6 +66,7 @@ export const addAddress = async (req, res, next) => {
       streetBuildingHouseNum,
       fullAddress,
       userId,
+      isActive: true
     });
 
     // Save the new address to the Address collection

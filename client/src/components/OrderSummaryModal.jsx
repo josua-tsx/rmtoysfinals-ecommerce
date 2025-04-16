@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import useOrderStore from "../stores/useOrderStore";
 import { useNavigate } from "react-router-dom";
+import formatPrice from "../reusable/formatPrice";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -336,27 +337,27 @@ export default function OrderSummaryModal({ onClose }) {
            </div> */}
             <div className="flex justify-between">
               <p>DISCOUNT</p>
-              <p>{totalDiscount ? totalDiscount : 0}</p>
+              <p>{formatPrice(totalDiscount ? totalDiscount : 0)}</p>
             </div>
 
             <div className="flex justify-between">
               <p>USED CREDITS</p>
-              <p>{usedCredits}</p>
+              <p>{formatPrice(usedCredits)}</p>
             </div>
 
             <div className="flex justify-between">
               <p>SUBTOTAL: </p>
-              <p>{subtotal} PHP</p>
+              <p>{formatPrice(subtotal)} PHP</p>
             </div>
             <div className="flex justify-between">
               <p className="text-lg">TOTAL PRICE: </p>
               <p className="text-lg">
-                {deductedPrice}
+              {formatPrice(deductedPrice)}
                 PHP
               </p>
             </div>
           </div>
-          <div className=" border flex flex-col h-[120px] md:h-[360px]  gap-2  overflow-y-auto bg-card rounded-[5px] p-2 border-black">
+          <div className=" border flex flex-col  h-[120px] md:h-[360px]  gap-2  overflow-y-auto bg-card  rounded-[5px] p-2 border-black">
             {/* PRODUCT ORDER SUMMARY CARD */}
             {cart?.items?.length > 0 ? (
               cart?.items.map((item) => (
@@ -377,7 +378,7 @@ export default function OrderSummaryModal({ onClose }) {
                       </p>
                       <p className="flex gap-2">
                         Price:{" "}
-                        <span>{item.productId.price * item.quantity} PHP</span>
+                        <span>{formatPrice(item.productId.price * item.quantity)} PHP</span>
                       </p>
                     </div>
                   </div>

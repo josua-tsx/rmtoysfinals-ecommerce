@@ -18,7 +18,7 @@ const CartScehmaModel = new mongoose.Schema(
         quantity: {
           type: Number,
           requied: true,
-          min: 1,
+          min: 0,
           default: 1,
         },
       },

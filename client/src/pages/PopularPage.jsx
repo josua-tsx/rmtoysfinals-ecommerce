@@ -44,7 +44,7 @@ export default function PopularPage() {
   if (isBestError || isRatingError) return <p>Error.</p>;
 
   return (
-    <section className="pt-[130px] h-screen pb-[100px]  p-3 font-main">
+    <section className="pt-[130px] h-full bg-yellow pb-[100px]  p-3 font-main">
       <div className="max-w-[1280px] bg-yellow mx-auto">
         <div>
           <h1 className="text-3xl mb-5 ">POPULAR PRODUCTS</h1>

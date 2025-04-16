@@ -116,24 +116,24 @@ export const reorderStock = async (req, res, next) => {
   }
 };
 
-export const updateStockQuantity = async (req, rex, next) => {
-  const { stockId } = req.params;
-  const { quantity } = req.body;
-  try {
-    // const existingTotalCosty
+// export const updateStockQuantity = async (req, res, next) => {
+//   const { stockId } = req.params;
+//   const { quantity } = req.body;
+//   try {
+//     // const existingTotalCosty
 
-    const updateQuantity = await Stocks.findByIdAndUpdate(
-      stockId,
-      {
-        quantity,
-      },
-      { new: true }
-    );
-    res.status(200).json(updateQuantity);
-  } catch (error) {
-    next(error);
-  }
-};
+//     const updateQuantity = await Stocks.findByIdAndUpdate(
+//       stockId,
+//       {
+//         quantity,
+//       },
+//       { new: true }
+//     );
+//     res.status(200).json(updateQuantity);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const getPendingDeliveries = async (req, res, next) => {
   try {

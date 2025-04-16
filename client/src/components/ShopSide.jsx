@@ -105,7 +105,7 @@ export default function ShopSide({
   };
 
   return (
-    <div className=" flex w-[90%]  mx-auto md:w-[320px] justify-center px-5 gap-5 flex-col relative overflow-x-hidden md:justify-start p-3 border-black border rounded-[5px] bg-card ">
+    <div className=" flex w-[90%] text-sm md:text-normal  mx-auto md:w-[320px] justify-center px-5 gap-5 flex-col relative overflow-x-hidden md:justify-start p-3 border-black border rounded-[5px] bg-card ">
       <div className="flex justify-between pb-5 ">
         <h1 className="text-xl">FILTER</h1>
         <button type="button" onClick={() => setShowFilter((prev) => !prev)}>

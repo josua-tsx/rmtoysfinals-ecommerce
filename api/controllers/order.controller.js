@@ -821,6 +821,7 @@ export const updatePaymentStatus = async (req, res, next) => {
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     const paymentStatusOrderPhoneNumber = order.userId?.phoneNumber;
+    const paymentStatusOrderEmail = order.userId?.email;
 
     // Set order status to "Processing" if payment status is "Failed"
     const orderUpdate = {
