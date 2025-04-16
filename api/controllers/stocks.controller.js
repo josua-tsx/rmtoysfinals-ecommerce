@@ -1,7 +1,8 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
-import { sendEmail } from "../nodemailer/nodemailer.js";
+// import { sendEmail } from "../nodemailer/nodemailer.js";
+import { sendSMS } from "../utils/smsService.js";
 
 export const OrderStocks = async (req, res, next) => {
   const {
@@ -116,20 +117,23 @@ export const reorderStock = async (req, res, next) => {
 };
 
 export const updateStockQuantity = async (req, rex, next) => {
-  const {stockId} = req.params
-  const {quantity} = req.body
+  const { stockId } = req.params;
+  const { quantity } = req.body;
   try {
-
     // const existingTotalCosty
-    
-    const updateQuantity = await Stocks.findByIdAndUpdate(stockId, {
-      quantity
-    }, {new: true})
-    res.status(200).json(updateQuantity)
+
+    const updateQuantity = await Stocks.findByIdAndUpdate(
+      stockId,
+      {
+        quantity,
+      },
+      { new: true }
+    );
+    res.status(200).json(updateQuantity);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const getPendingDeliveries = async (req, res, next) => {
   try {
@@ -275,72 +279,143 @@ export const getStocks = async (req, res, next) => {
       })
       .populate({
         path: "supplier",
-        select: "supplierName",
+        select: "supplierName contactNumber",
       })
       .sort({ createdAt: -1 });
 
     // Threshold configuration
     const STOCK_LEVELS = {
       LOW: 30,
-      OUT: 0
+      OUT: 0,
     };
 
     // Notification cooldowns (in milliseconds)
     const NOTIFICATION_COOLDOWNS = {
-      LOW: 10 * 60 * 1000,   // 10 minutes for low stock
-      OUT: 5 * 60 * 1000             // 5 minutes for out-of-stock
+      LOW: 1 * 60 * 1000, // 10 minutes for low stock
+      OUT: 5 * 60 * 1000, // 5 minutes for out-of-stock
     };
 
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+    // const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+    const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER
 
     // Classify stocks and check notification needs
     const stockAlerts = {
-      low: getStocks.filter(stock => {
-        return stock.quantity <= STOCK_LEVELS.LOW && 
-               stock.quantity > STOCK_LEVELS.OUT &&
-               (!stock.lastLowStockNotification || 
-                Date.now() - stock.lastLowStockNotification > NOTIFICATION_COOLDOWNS.LOW);
+      low: getStocks.filter((stock) => {
+        return (
+          stock.quantity <= STOCK_LEVELS.LOW &&
+          stock.quantity > STOCK_LEVELS.OUT &&
+          (!stock.lastLowStockNotification ||
+            Date.now() - stock.lastLowStockNotification >
+              NOTIFICATION_COOLDOWNS.LOW)
+        );
       }),
-      
-      out: getStocks.filter(stock => {
-        return stock.quantity === STOCK_LEVELS.OUT &&
-               (!stock.lastOutOfStockNotification || 
-                Date.now() - stock.lastOutOfStockNotification > NOTIFICATION_COOLDOWNS.OUT);
-      })
+
+      out: getStocks.filter((stock) => {
+        return (
+          stock.quantity === STOCK_LEVELS.OUT &&
+          (!stock.lastOutOfStockNotification ||
+            Date.now() - stock.lastOutOfStockNotification >
+              NOTIFICATION_COOLDOWNS.OUT)
+        );
+      }),
     };
 
 
     if (stockAlerts.low.length > 0) {
-      await sendEmail(
-        ADMIN_EMAIL,
-        `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length})`,
-        `URGENT! The following items are critically low:\n\n${
-          stockAlerts.low.map(item => `- ${item.product?.productName}: ${item.quantity} remaining`).join('\n')
-        }\n\nRestock immediately!`
+      await sendSMS(
+        ADMIN_PHONENUMBER,
+        `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length}) \n
+        URGENT! The following items are critically low:\n\n${stockAlerts.low
+          .map(
+            (item) =>
+              `- ${item.product?.productName}: ${item.quantity} remaining`
+          )
+          .join("\n")}\n\nRestock immediately!`
+      );
+
+      // Group alerts by supplier to avoid sending multiple SMS
+      const supplierAlerts = {};
+
+      stockAlerts.low.forEach((item) => {
+        if (item.supplier && item.supplier.contactNumber) {
+          if (!supplierAlerts[item.supplier._id]) {
+            supplierAlerts[item.supplier._id] = {
+              supplier: item.supplier,
+              products: [],
+            };
+          }
+          supplierAlerts[item.supplier._id].products.push({
+            name: item.product?.productName,
+            quantity: item.quantity,
+          });
+        }
+      });
+
+      // Send one SMS per supplier with all their low stock products
+      await Promise.all(
+        Object.values(supplierAlerts).map(async ({ supplier, products }) => {
+          const message =
+            `Low Stock Alert for ${supplier.supplierName}:\n\n` +
+            `The following products are running low:\n` +
+            products
+              .map((p) => `- ${p.name} (${p.quantity} units left)`)
+              .join("\n") +
+            `\n\nPlease arrange restocking soon. FROM: RM TOYS`;
+
+          await sendSMS(supplier.contactNumber, message);
+        })
       );
 
       await Promise.all(
-        stockAlerts.low.map(item => 
-          Stocks.findByIdAndUpdate(item._id, { 
-            lastLowStockNotification: Date.now() 
+        stockAlerts.low.map((item) =>
+          Stocks.findByIdAndUpdate(item._id, {
+            lastLowStockNotification: Date.now(),
           })
         )
       );
     }
 
     if (stockAlerts.out.length > 0) {
-      await sendEmail(
-        ADMIN_EMAIL,
-        `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length})`,
-        `CRITICAL! The following items are completely out of stock:\n\n${
-          stockAlerts.out.map(item => `- ${item.product?.productName}`).join('\n')
-        }\n\nTake immediate action!`
+      await sendSMS(
+        ADMIN_PHONENUMBER,
+        `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length}) \n
+        CRITICAL! The following items are completely out of stock:\n\n${stockAlerts.out
+          .map((item) => `- ${item.product?.productName}`)
+          .join("\n")}\n\nTake immediate action! FROM: RM TOYS`
+      );
+
+      // SMS to each supplier about their out-of-stock products
+      const supplierAlerts = {};
+      stockAlerts.out.forEach((item) => {
+        if (item.supplier && item.supplier.contactNumber) {
+          if (!supplierAlerts[item.supplier._id]) {
+            supplierAlerts[item.supplier._id] = {
+              supplier: item.supplier,
+              products: [],
+            };
+          }
+          supplierAlerts[item.supplier._id].products.push(
+            item.product?.productName
+          );
+        }
+      });
+
+      await Promise.all(
+        Object.values(supplierAlerts).map(async ({ supplier, products }) => {
+          const message = `URGENT: ${
+            supplier.supplierName
+          },\n\nThe following products you supply are OUT OF STOCK:\n\n${products.join(
+            "\n"
+          )}\n\nImmediate restocking is required to avoid business disruption.`;
+
+          await sendSMS(supplier.contactNumber, message);
+        })
       );
 
       await Promise.all(
-        stockAlerts.out.map(item => 
-          Stocks.findByIdAndUpdate(item._id, { 
-            lastOutOfStockNotification: Date.now() 
+        stockAlerts.out.map((item) =>
+          Stocks.findByIdAndUpdate(item._id, {
+            lastOutOfStockNotification: Date.now(),
           })
         )
       );

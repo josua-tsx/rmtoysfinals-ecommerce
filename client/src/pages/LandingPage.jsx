@@ -10,6 +10,7 @@ export default function LandingPage() {
       <div className="relative z-2 h-screen overflow-y-auto max-w-[1280px] mx-auto p-4">
         <div className="flex items-center relative flex-col gap-20 pt-40 lg:pt-52 lg:gap-4  lg:flex-row justify-between">
           <div className="flex flex-col gap-3">
+          <CreditPointsAuto/>
             <div className="flex md:pl-10 lg:pl-0">
               <h2 className="bg-[#08bb69] py-1 px-3 border border-black rounded-[5px]  tracking-wider text-card font-main uppercase">
                 RM TOYS
@@ -25,7 +26,7 @@ export default function LandingPage() {
                 imagination. Let's get <span className="text-violet-600">creative</span> and let their <span className="text-secondary">imagination</span> grow!
               </h1>
             </div>
-            <CreditPointsAuto/>
+      
             <Link
               to={`/shop`}
               className="z-10 font-main text-normal md:text-lg w-[300px] md:mx-auto lg:mx-0 flex items-center pl-[120px] hover:underline text-indigo-600 relative gap-2"

@@ -4,10 +4,9 @@ import { IoMdAdd } from "react-icons/io";
 const List = [
   {
     id: 1,
-    question: "How do I borrow books from the library web system?",
-    answer: `Simply create an account, log in, and browse our digital catalog. 
-    When you find a book you want to borrow, click the "Borrow" button. 
-    The book will be added to your account, and you can start reading instantly on any device.`,
+    question: "What is credit points system and how to use them?",
+    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
+You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
   {
     id: 2,

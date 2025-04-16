@@ -121,8 +121,8 @@ export default function GcashPaymentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
-      <div className="w-full max-w-4xl border mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="min-h-screen bg-yellow py-8 px-4 flex items-center justify-center">
+      <div className="w-full max-w-4xl border mx-auto  bg-white rounded-lg shadow-md overflow-hidden">
         <div className="md:flex">
           {/* Left Column - Payment Form */}
           <div className="md:w-1/2 p-6">
@@ -238,7 +238,7 @@ export default function GcashPaymentPage() {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className={`flex-1 bg-primary text-white py-2 px-4 rounded-md ${
+                  className={`flex-1 bg-primary border border-black text-white py-2 px-4 rounded-md ${
                     uploading
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-primary-dark"
@@ -249,7 +249,7 @@ export default function GcashPaymentPage() {
                 <button
                   onClick={() => cancelGcashQRpayment()}
                   type="button"
-                  className="text-white py-2 px-4 rounded-md border bg-red-700"
+                  className="text-white py-2 border border-black px-4 rounded-md bg-red-700"
                 >
                   Cancel
                 </button>
@@ -315,11 +315,11 @@ export default function GcashPaymentPage() {
                   <span>{currentOrder?.paymentMethod}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Points Added: </span>
+                  <span className="text-gray-600">Total Credits Added: </span>
                   <span>+{currentOrder?.totalPoints}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Points Used: </span>
+                  <span className="text-gray-600">Total Credits Used: </span>
                   <span>{currentOrder?.usedCredits}</span>
                 </div>
                 <div className="flex justify-between">
