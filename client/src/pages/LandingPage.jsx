@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import ArrowLine from "../reusable/ArrowLine";
 import { HiShoppingBag } from "react-icons/hi2";
 import ImageSlider from "../components/ImageSlider/ImageSlider";
+import CreditPointsAuto from "../components/CreditPointsAuto";
 
 export default function LandingPage() {
   return (
@@ -14,6 +15,7 @@ export default function LandingPage() {
                 RM TOYS
               </h2>
             </div>
+      
             <div className="relative z-10  md:w-[700px] lg:w-[690px]">
               <h1 className="font-main text-2xl mx-auto leading-tight md:leading-tight lg:leading-tight  md:text-5xl  md:text-center lg:text-start ">
                 <span className="text-green-600">Discover</span> a{" "}
@@ -23,7 +25,7 @@ export default function LandingPage() {
                 imagination. Let's get <span className="text-violet-600">creative</span> and let their <span className="text-secondary">imagination</span> grow!
               </h1>
             </div>
-
+            <CreditPointsAuto/>
             <Link
               to={`/shop`}
               className="z-10 font-main text-normal md:text-lg w-[300px] md:mx-auto lg:mx-0 flex items-center pl-[120px] hover:underline text-indigo-600 relative gap-2"

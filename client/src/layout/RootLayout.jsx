@@ -87,7 +87,20 @@ const RequiredAuth = () => {
   );
 };
 
-
+const RequiredAuthGcashPage = () => {
+  const currentUser = useUserStore((state) => state.currentUser);
+  return !currentUser ? (
+    <Navigate to={`/sign-in`} />
+  ) : (
+    <div className="font-main-text">
+      {/* Main Content */}
+      <main>
+        <Outlet />
+      </main>
+      <Toaster />
+    </div>
+  );
+};
 
 const AdminLayout = () => {
   return (
@@ -121,4 +134,4 @@ const ValidatorStaffLayout = () => {
   )
 }
 
-export { RootLayout, AdminLayout, RequiredAuth,  ValidatorStaffLayout };
+export { RootLayout, AdminLayout, RequiredAuth,  ValidatorStaffLayout, RequiredAuthGcashPage };

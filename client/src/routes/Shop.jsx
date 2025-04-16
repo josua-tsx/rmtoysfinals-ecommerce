@@ -3,6 +3,7 @@ import ShopProductCards from "../components/ShopProductCards.jsx";
 import ShopSide from "../components/ShopSide.jsx";
 import axiosInstance from "../lib/axios.js";
 import { useEffect, useState } from "react";
+import CreditPointsAuto from "../components/CreditPointsAuto.jsx";
 
 export default function Shop() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,6 +11,8 @@ export default function Shop() {
   // const [priceRange, setPriceRange] = useState([0, 30000]);
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
+
+
 
   // Fetch products using useInfiniteQuery with updated configuration
   const {
@@ -46,8 +49,6 @@ export default function Shop() {
 
   const products = data?.pages.flatMap((page) => page.products) || [];
 
-
-
   // Infinite scroll handler
   const handleScroll = () => {
     if (
@@ -69,7 +70,8 @@ export default function Shop() {
       product.productDetails?.some((detail) =>
         detail.value.toLowerCase().includes(searchTerm.toLowerCase())
       ) ||
-      (product.discount && product.discount.toString().includes(searchTerm.toLowerCase()))
+      (product.discount &&
+        product.discount.toString().includes(searchTerm.toLowerCase()))
   );
 
   useEffect(() => {
@@ -81,11 +83,13 @@ export default function Shop() {
   if (isError) return <p>Error loading products: {error.message}</p>;
 
   return (
-    <section className="font-main p-3 py-[130px]">
-      <div className="max-w-[1280px] bg-yellow mx-auto">
+    <section className="font-main p-3  py-[130px]">
+      <div className="max-w-[1280px] h-full md:h-screen bg-yellow mx-auto">
         <div className="flex w-full mb-5">
           <h1 className="text-3xl">PRODUCTS</h1>
         </div>
+
+        <CreditPointsAuto/>
 
         <div className="mb-5">
           <p className="text-sm">SHOP{">"}</p>

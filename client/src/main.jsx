@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import {
   AdminLayout,
   RequiredAuth,
+  RequiredAuthGcashPage,
   RootLayout,
   ValidatorStaffLayout,
 } from "./layout/RootLayout.jsx";
@@ -64,10 +65,24 @@ import AdminVat from "./pages/admin/AdminVat.jsx";
 import AdminAddVat from "./pages/admin/AdminAddVat.jsx";
 import AdminEditVat from "./pages/admin/AdminEditVat.jsx";
 import FaqPage from "./pages/FaqPage.jsx";
+import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
 
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
+
+  {
+    element: (
+      <ProtectedCustomerRoute>
+        <RequiredAuthGcashPage />
+      </ProtectedCustomerRoute>
+    ),
+    children: [{
+      path: "/gcashQRpayment",
+      element: <GcashPaymentPage/>
+    }]
+  },
+
   {
     path: "/",
     element: (
@@ -142,6 +157,7 @@ const router = createBrowserRouter([
         path: `/orderSingle`,
         element: <SingleOrderList />,
       },
+      
     ],
   },
 
@@ -172,11 +188,6 @@ const router = createBrowserRouter([
       },
 
       // FILTER
-
-      // {
-      //   path: "/admin/filter",
-      //   element: <AdminFilter />,
-      // },
 
       // PRODUCTS
 

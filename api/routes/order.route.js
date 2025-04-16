@@ -21,9 +21,10 @@ import {
   getUserFailed,
   getUserOrder,
   getUserRefund,
+  placeOrderGcashQR,
   placeOrderStripe,
   updateDeliveryStatus,
-  // updatePaymentStatus,
+  updatePaymentStatus,
   userCancelOrder,
   userPlaceOrder,
 } from "../controllers/order.controller.js";
@@ -33,6 +34,8 @@ const router = express.Router();
 router.post(`/place-order`, requireAuth, userPlaceOrder);
 
 router.post(`/place-order-stripe`, requireAuth, placeOrderStripe)
+
+router.post(`/place-order-gcashQR`, requireAuth, placeOrderGcashQR)
 
 router.post(`/checkout-success`, requireAuth, checkOutSuccess)
 
@@ -60,7 +63,7 @@ router.get(`/latest/refunded`, getLatestRefundedOrder)
 
 router.get(`/latest/cancelled`, getLatestCancelledOrder)
 
-// router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
+router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
 
 router.put(`/cancel-success-transact`, requireAuth, requireAdmin ,cancelSuccessTransact)
 

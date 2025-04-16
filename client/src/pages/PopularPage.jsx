@@ -3,6 +3,7 @@ import ShopProductCards from "../components/ShopProductCards";
 import { TbPinnedFilled } from "react-icons/tb";
 import axiosInstance from "../lib/axios";
 import { useNavigate } from "react-router-dom";
+import CreditPointsAuto from "../components/CreditPointsAuto";
 
 export default function PopularPage() {
 
@@ -48,7 +49,7 @@ export default function PopularPage() {
         <div>
           <h1 className="text-3xl mb-5 ">POPULAR PRODUCTS</h1>
         </div>
-
+        <CreditPointsAuto/>
         <div className="flex flex-col gap-14">
           <div>
             <div className="mb-7 flex justify-between">

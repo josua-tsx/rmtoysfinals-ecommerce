@@ -3,11 +3,17 @@ import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import useOrderStore from "../stores/useOrderStore";
+import { useNavigate } from "react-router-dom";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
+  const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
+  const currentOrder = useOrderStore((state) => state.currentOrder);
 
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate();
 
   const [notes, setNotes] = useState("");
   const [taxes, setTaxes] = useState(0);
@@ -15,7 +21,6 @@ export default function OrderSummaryModal({ onClose }) {
   const [shippingFee, setShippingFee] = useState(35);
   const [cartItems, setCartItems] = useState({});
   const [useCredits, setUseCredits] = useState("no");
-
 
   const {
     data: activeAddress,
@@ -40,54 +45,54 @@ export default function OrderSummaryModal({ onClose }) {
       return res.data;
     },
   });
-  
 
-    // Calculate all cart values
-    const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {
-      const totalDiscount = cart?.items?.reduce((total, item) => {
+  // Calculate all cart values
+  const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {
+    const totalDiscount =
+      cart?.items?.reduce((total, item) => {
         const productDiscount = item.productId.discount || 0;
         return total + productDiscount * item.quantity;
       }, 0) || 0;
-  
-      const subtotal = cart?.items?.reduce((total, item) => {
+
+    const subtotal =
+      cart?.items?.reduce((total, item) => {
         return total + item.productId.price * item.quantity;
       }, 0) || 0;
-  
-      const totalPoints = cart?.items?.reduce((total, item) => {
+
+    const totalPoints =
+      cart?.items?.reduce((total, item) => {
         return total + item.productId.points * item.quantity;
       }, 0) || 0;
-  
-      const totalPrice = subtotal + shippingFee + taxes - totalDiscount;
-  
-      return { totalDiscount, subtotal, totalPoints, totalPrice };
-    }, [cart, shippingFee, taxes]);
-  
-    // Calculate credits and final totalPrice
-    const { usedCredits, deductedPrice } = useMemo(() => {
-      if (useCredits === "yes") {
-        const creditsToUse = Math.min(currentUser?.credits || 0, totalPrice);
-        return {
-          usedCredits: creditsToUse,
-          deductedPrice: totalPrice - creditsToUse
-        };
-      }
+
+    const totalPrice = subtotal + shippingFee + taxes - totalDiscount;
+
+    return { totalDiscount, subtotal, totalPoints, totalPrice };
+  }, [cart, shippingFee, taxes]);
+
+  // Calculate credits and final totalPrice
+  const { usedCredits, deductedPrice } = useMemo(() => {
+    if (useCredits === "yes") {
+      const creditsToUse = Math.min(currentUser?.credits || 0, totalPrice);
       return {
-        usedCredits: 0,
-        deductedPrice: totalPrice
+        usedCredits: creditsToUse,
+        deductedPrice: totalPrice - creditsToUse,
       };
-    }, [useCredits, currentUser?.credits, totalPrice]);
-  
-    const handleChangeCredits = (e) => {
-      setUseCredits(e.target.value);
+    }
+    return {
+      usedCredits: 0,
+      deductedPrice: totalPrice,
     };
-  
+  }, [useCredits, currentUser?.credits, totalPrice]);
+
+  const handleChangeCredits = (e) => {
+    setUseCredits(e.target.value);
+  };
 
   useEffect(() => {
     if (cart) {
       setCartItems(cart.items);
     }
   }, [cart]);
-
 
   const { mutate: placeOrder } = useMutation({
     mutationFn: async (data) => {
@@ -123,6 +128,11 @@ export default function OrderSummaryModal({ onClose }) {
     },
   });
 
+  const handleGcashQRpaymentMethod = (orderData) => {
+    setCurrentOrder(orderData);
+    navigate("/gcashQRpayment")
+  };
+
   const handleOrderFormSubmit = (e) => {
     e.preventDefault();
 
@@ -147,11 +157,15 @@ export default function OrderSummaryModal({ onClose }) {
       notes,
       quantity: cartItems.quantity,
       totalPoints,
-      usedCredits: useCredits === "yes" ? usedCredits: 0
+      usedCredits: useCredits === "yes" ? usedCredits : 0,
     };
 
     if (paymentMethod === "Cod") {
       placeOrder(orderData);
+    }
+
+    if (paymentMethod === "GcashQR" && cartItems.length > 0) {
+      handleGcashQRpaymentMethod(orderData);
     }
 
     if (paymentMethod === "Online Payment") {
@@ -172,7 +186,7 @@ export default function OrderSummaryModal({ onClose }) {
         totalPrice: deductedPrice.toString(),
         notes,
         totalPoints,
-        usedCredits: useCredits === "yes" ? usedCredits: 0,
+        usedCredits: useCredits === "yes" ? usedCredits : 0,
       };
 
       placeStripeOrder(stripeOrderData);
@@ -238,7 +252,8 @@ export default function OrderSummaryModal({ onClose }) {
                 className="border outline-none border-black rounded-[5px] p-1"
               >
                 <option value="Cod">Cash on delivery</option>
-                <option value="Online Payment">Online Payment</option>
+                <option value="GcashQR">GcashQR</option>
+                <option value="Online Payment">Stripe (TEST)</option>
               </select>
             </div>
 
@@ -336,9 +351,9 @@ export default function OrderSummaryModal({ onClose }) {
             <div className="flex justify-between">
               <p className="text-lg">TOTAL PRICE: </p>
               <p className="text-lg">
-
-                 {deductedPrice}
-                 PHP</p>  
+                {deductedPrice}
+                PHP
+              </p>
             </div>
           </div>
           <div className=" border flex flex-col h-[120px] md:h-[360px]  gap-2  overflow-y-auto bg-card rounded-[5px] p-2 border-black">

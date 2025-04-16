@@ -140,6 +140,12 @@ export const placeOrderStripe = async (req, res, next) => {
       return next(handleMakeError(400, "Invalid or empty products array"));
     }
 
+    if (orderItems.length === 0) {
+      return next(
+        handleMakeError(400, "You can't place an order without products!")
+      );
+    }
+
     const lineItems = orderItems.map((product) => {
       if (!product.productId) {
         return next(
@@ -303,6 +309,119 @@ export const checkOutSuccess = async (req, res, next) => {
       message: "Order placed successfully!",
       order: newOrder,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const placeOrderGcashQR = async (req, res, next) => {
+  const userId = req.user.id;
+  const {
+    orderItems,
+    shippingAddress,
+    paymentMethod,
+    taxPrice,
+    shippingPrice,
+    discount,
+    subtotal,
+    totalPrice,
+    notes,
+    totalPoints,
+    usedCredits,
+    gcashQRmethod,
+  } = req.body;
+
+  try {
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      return next(handleMakeError(400, "Invalid or empty products array"));
+    }
+
+    if (orderItems.length === 0) {
+      return next(
+        handleMakeError(400, "You can't place an order without products!")
+      );
+    }
+
+    // Validate GCash QR payment details if payment method is GcashQR
+    if (paymentMethod === "GcashQR") {
+      if (
+        !gcashQRmethod ||
+        !gcashQRmethod.gcashPhoneNumber ||
+        !gcashQRmethod.proofOfPaymentImage ||
+        !gcashQRmethod.gcashName
+      ) {
+        return next(
+          handleMakeError(
+            400,
+            "GCash QR payment requires phone number, proof of payment image, and GCash name"
+          )
+        );
+      }
+    }
+
+    const orderData = {
+      userId,
+      orderItems,
+      shippingAddress,
+      paymentMethod,
+      taxPrice,
+      shippingPrice,
+      discount,
+      subtotal,
+      totalPrice,
+      notes,
+      totalPoints,
+      usedCredits,
+      paymentStatus: "Pending",
+      stripeSessionId: `gcashQR-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
+    };
+
+    // Add GCash QR details if payment method is GcashQR
+    if (paymentMethod === "GcashQR") {
+      orderData.gcashQRmethod = {
+        phoneNumber: gcashQRmethod.gcashPhoneNumber,
+        proofOfPaymentImage: gcashQRmethod.proofOfPaymentImage,
+        gcashName: gcashQRmethod.gcashName,
+      };
+    }
+
+    const newOrder = new Order(orderData);
+    await newOrder.save();
+
+    await User.findByIdAndUpdate(
+      newOrder.userId,
+      {
+        $inc: { credits: -usedCredits },
+      },
+      { new: true }
+    );
+
+    for (const item of orderItems) {
+      await Stocks.findOneAndUpdate(
+        { product: item.productId },
+        { $inc: { quantity: -item.quantity } },
+        { new: true }
+      );
+    }
+
+    const userCart = await Cart.findOne({ userId });
+    userCart.items = [];
+    await userCart.save();
+
+    await logAuditTrail({
+      action: "user_add_order",
+      userId,
+      targetId: newOrder._id,
+      targetType: "UserOrder",
+      details: {
+        description: "Ordered using GcashQR",
+      },
+      role: "customer",
+    });
+
+    res.status(201).json(newOrder);
   } catch (error) {
     next(error);
   }
@@ -547,26 +666,26 @@ export const updateDeliveryStatus = async (req, res, next) => {
     });
     if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
 
-
-    console.log(updatedOrder)
+    console.log(updatedOrder);
 
     // Handle different status updates
     switch (updatedOrder.status) {
       case "Delivered":
         try {
           // Send email
-          await sendEmail(
-            userEmail,
-            `Your Order ${updatedOrder._id} Has been Delivered!`,
-            "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
-          );
+          // await sendEmail(
+          //   userEmail,
+          //   `Your Order ${updatedOrder._id} Has been Delivered!`,
+          //   "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
+          // );
 
-//           await sendSMS(
-//             orderUserPhoneNumber,
-//             `Your Order ${updatedOrder._id} Has been Delivered!
-//                 "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
-// `
-//           );
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your Order ${updatedOrder._id} Has been Delivered!
+                "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
+                From: RM TOYS"
+`
+          );
 
           // Update products and user credits in parallel
           await Promise.all([
@@ -604,34 +723,38 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Processing":
-        await sendEmail(
-          userEmail,
+        await sendSMS(
+          orderUserPhoneNumber,
           `Your ${updatedOrder._id} is on Processing.`,
-          "Your order is being processed. We will notify you once it is shipped."
+          "Your order is being processed. We will notify you once it is shipped.",
+          "From: RM TOYS"
         );
         break;
 
       case "Shipped":
-        await sendEmail(
-          userEmail,
+        await sendSMS(
+          orderUserPhoneNumber,
           `Your ${updatedOrder._id} is Shipped!`,
-          "Your order is now on its way to you!"
+          "Your order is now on its way to you!",
+          "From: RM TOYS"
         );
         break;
 
       case "Out for Delivery":
-        await sendEmail(
-          userEmail,
+        await sendSMS(
+          orderUserPhoneNumber,
           `Your order ${updatedOrder._id} is Out for Delivery!`,
-          "Your order is on the way. Expect delivery soon!"
+          "Your order is on the way. Expect delivery soon!",
+          "From: RM TOYS"
         );
         break;
 
       case "Cancelled":
-        await sendEmail(
-          userEmail,
+        await sendSMS(
+          orderUserPhoneNumber,
           `Your order ${updatedOrder._id} has been Cancelled`,
-          "Unfortunately, your order has been canceled. Please contact support for further assistance."
+          "Unfortunately, your order has been canceled. Please contact support for further assistance.",
+          "From: RM TOYS"
         );
         break;
     }
@@ -680,129 +803,129 @@ export const getUserCancelled = async (req, res, next) => {
   }
 };
 
-// export const updatePaymentStatus = async (req, res, next) => {
-//   const { orderId } = req.params;
-//   const { paymentStatus } = req.body;
-//   const userId = req.user.id;
+export const updatePaymentStatus = async (req, res, next) => {
+  const { orderId } = req.params;
+  const { paymentStatus } = req.body;
+  const userId = req.user.id;
 
-//   try {
-//     const validPaymentStatuses = ["Pending", "Paid", "Failed", "Refunded"];
-//     if (!validPaymentStatuses.includes(paymentStatus)) {
-//       return res
-//         .status(400)
-//         .json({ message: "Invalid payment status status." });
-//     }
+  try {
+    const validPaymentStatuses = ["Pending", "Paid", "Failed", "Refunded"];
+    if (!validPaymentStatuses.includes(paymentStatus)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid payment status status." });
+    }
 
-//     const order = await Order.findById(orderId).populate("userId");
+    const order = await Order.findById(orderId).populate("userId");
 
-//     if (!order) return next(handleMakeError(400, "No order found!"));
+    if (!order) return next(handleMakeError(400, "No order found!"));
 
-//     const paymentStatusOrderEmail = order.userId?.email;
+    const paymentStatusOrderPhoneNumber = order.userId?.phoneNumber;
 
-//     // Set order status to "Processing" if payment status is "Failed"
-//     const orderUpdate = {
-//       paymentStatus,
-//     };
+    // Set order status to "Processing" if payment status is "Failed"
+    const orderUpdate = {
+      paymentStatus,
+    };
 
-//     if (paymentStatus === "Paid") {
-//       orderUpdate.status = "Processing";
-//     }
+    if (paymentStatus === "Paid") {
+      orderUpdate.status = "Processing";
+    }
 
-//     if (paymentStatus === "Pending") {
-//       orderUpdate.status = "Pending";
-//     }
+    if (paymentStatus === "Pending") {
+      orderUpdate.status = "Pending";
+    }
 
-//     if (paymentStatus === "Failed") {
-//       orderUpdate.status = "Cancelled";
-//     }
+    if (paymentStatus === "Failed") {
+      orderUpdate.status = "Cancelled";
+    }
 
-//     if (paymentStatus === "Refunded") {
-//       orderUpdate.status = "Cancelled";
-//     }
+    if (paymentStatus === "Refunded") {
+      orderUpdate.status = "Cancelled";
+    }
 
-//     const updatedPaymentStatus = await Order.findByIdAndUpdate(
-//       orderId,
-//       orderUpdate,
-//       { new: true, runValidators: true }
-//     );
+    const updatedPaymentStatus = await Order.findByIdAndUpdate(
+      orderId,
+      orderUpdate,
+      { new: true, runValidators: true }
+    );
 
-//     if (!updatedPaymentStatus)
-//       return next(handleMakeError(400, "status not found!"));
+    if (!updatedPaymentStatus)
+      return next(handleMakeError(400, "status not found!"));
 
-//     if (updatedPaymentStatus.paymentStatus === "Paid") {
-//       await logAuditTrail({
-//         action: "set_PaymentStatus_paid",
-//         userId,
-//         targetId: updatedPaymentStatus._id,
-//         targetType: "PaymentStatus",
-//         details: {
-//           email: paymentStatusOrderEmail,
-//         },
-//         role: "admin",
-//       });
-//     }
+    if (updatedPaymentStatus.paymentStatus === "Paid") {
+      await logAuditTrail({
+        action: "set_PaymentStatus_paid",
+        userId,
+        targetId: updatedPaymentStatus._id,
+        targetType: "PaymentStatus",
+        details: {
+          email: paymentStatusOrderEmail,
+        },
+        role: "admin",
+      });
+    }
 
-//     if (updatedPaymentStatus.paymentStatus === "Failed") {
-//       const failedSubject = `Your Order Gcash method ${updatedPaymentStatus._id} has been failed!`;
-//       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
-//       Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
+    if (updatedPaymentStatus.paymentStatus === "Failed") {
+      const failedSubject = `Your Order Gcash method ${updatedPaymentStatus._id} has been failed!`;
+      const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
+      Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-//       await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage);
+      await sendSMS(paymentStatusOrderPhoneNumber, failedSubject, failedMessage);
 
-//       // Update stock for each item in the order
-//       for (const item of order.orderItems) {
-//         await Stocks.findOneAndUpdate(
-//           { product: item.productId },
-//           { $inc: { quantity: item.quantity } },
-//           { new: true, runValidators: true }
-//         );
-//       }
+      // Update stock for each item in the order
+      for (const item of order.orderItems) {
+        await Stocks.findOneAndUpdate(
+          { product: item.productId },
+          { $inc: { quantity: item.quantity } },
+          { new: true, runValidators: true }
+        );
+      }
 
-//       await logAuditTrail({
-//         action: "set_PaymentStatus_Failed",
-//         userId,
-//         targetId: updatedPaymentStatus._id,
-//         targetType: "PaymentStatus",
-//         details: {
-//           email: paymentStatusOrderEmail,
-//         },
-//         role: "admin",
-//       });
-//     }
+      await logAuditTrail({
+        action: "set_PaymentStatus_Failed",
+        userId,
+        targetId: updatedPaymentStatus._id,
+        targetType: "PaymentStatus",
+        details: {
+          email: paymentStatusOrderEmail,
+        },
+        role: "admin",
+      });
+    }
 
-//     if (updatedPaymentStatus.paymentStatus === "Refunded") {
-//       const failedSubject = `Your Order Gcash method  ${updatedPaymentStatus._id} has been refunded!`;
-//       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
-//       Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
+    if (updatedPaymentStatus.paymentStatus === "Refunded") {
+      const failedSubject = `Your Order Gcash method  ${updatedPaymentStatus._id} has been refunded!`;
+      const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
+      Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-//       await sendEmail(paymentStatusOrderEmail, failedSubject, failedMessage);
+      await sendSMS(paymentStatusOrderPhoneNumber, failedSubject, failedMessage);
 
-//       // Update stock for each item in the order
-//       for (const item of order.orderItems) {
-//         await Stocks.findOneAndUpdate(
-//           { product: item.productId },
-//           { $inc: { quantity: item.quantity } },
-//           { new: true, runValidators: true }
-//         );
-//       }
+      // Update stock for each item in the order
+      for (const item of order.orderItems) {
+        await Stocks.findOneAndUpdate(
+          { product: item.productId },
+          { $inc: { quantity: item.quantity } },
+          { new: true, runValidators: true }
+        );
+      }
 
-//       await logAuditTrail({
-//         action: "set_PaymentStatus_Refunded",
-//         userId,
-//         targetId: updatedPaymentStatus._id,
-//         targetType: "PaymentStatus",
-//         details: {
-//           email: paymentStatusOrderEmail,
-//         },
-//         role: "admin",
-//       });
-//     }
+      await logAuditTrail({
+        action: "set_PaymentStatus_Refunded",
+        userId,
+        targetId: updatedPaymentStatus._id,
+        targetType: "PaymentStatus",
+        details: {
+          email: paymentStatusOrderEmail,
+        },
+        role: "admin",
+      });
+    }
 
-//     res.status(200).json({ message: "Payment Status updated sucessfully" });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    res.status(200).json({ message: "Payment Status updated sucessfully" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const addReason = async (req, res, next) => {
   const { orderId } = req.params;
@@ -858,12 +981,6 @@ export const cancelSuccessTransact = async (req, res, next) => {
         { new: true, runValidators: true }
       );
     }
-
-    // if (order.usedCredits) {
-    //   await User.findByIdAndUpdate(order.userId, {
-    //     $inc: { credits: order.usedCredits }, // Return credits to the user
-    //   });
-    // }
 
     await logAuditTrail({
       action: "cancelled_Order_Transact",

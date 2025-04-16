@@ -35,11 +35,11 @@ export default function SingleOrderList({ order, onClose }) {
     },
   });
 
-  // const handleChangePaymentStatus = (id, e) => {
-  //   const newPaymentStatus = e.target.value;
+  const handleChangePaymentStatus = (id, e) => {
+    const newPaymentStatus = e.target.value;
 
-  //   updatePaymentStatusMutation({ id, paymentStatus: newPaymentStatus });
-  // };
+    updatePaymentStatusMutation({ id, paymentStatus: newPaymentStatus });
+  };
 
   return (
     <section className="inset-0 z-40 font-main fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
@@ -193,12 +193,12 @@ export default function SingleOrderList({ order, onClose }) {
           </div>
         </div>
 
-        {/* {order.paymentMethod === "Online Payment" && (
+        {order.paymentMethod === "GcashQR" && (
           <div className="border border-black flex flex-col p-2 gap-5 bg-card  rounded-[5px]">
             <div className="flex flex-row md:flex-col gap-5">
               <div className="h-full">
                 <img
-                  src={order.gcashAdditionalDetails.gcashReceiptImage}
+                  src={order?.gcashQRmethod?.proofOfPaymentImage}
                   alt="receipt imgae"
                   className="h-[450px] md:h-[550px] w-auto rounded-[5px]"
                 />
@@ -206,17 +206,10 @@ export default function SingleOrderList({ order, onClose }) {
 
               <div className="flex text-sm flex-col gap-1">
                 <div className="flex flex-col md:flex-row gap-2">
-                  <p>Ref No.</p>
-                  <p>{order.gcashAdditionalDetails.gcashRefNo}</p>
-                </div>
-                <div className="flex flex-col md:flex-row gap-2">
                   <p>Gcash Number: </p>
-                  <p>{order.gcashAdditionalDetails.gcashNo}</p>
+                  <p>{order?.gcashQRmethod?.gcashName}</p>
                 </div>
-                <div className="flex flex-col md:flex-row gap-2">
-                  <p>Gcash Name:</p>
-                  <p>{order.gcashAdditionalDetails.gcashName}</p>
-                </div>
+               
               </div>
             </div>
 
@@ -249,7 +242,7 @@ export default function SingleOrderList({ order, onClose }) {
             )}
             
           </div>
-        )} */}
+        )}
       </div>
     </section>
   );

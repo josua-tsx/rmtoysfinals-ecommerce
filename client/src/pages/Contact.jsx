@@ -88,7 +88,7 @@ export default function Contact() {
               <button 
                 type="submit"
                 disabled={isPending}
-                className="bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded transition duration-200"
+                className="bg-primary border border-black hover:bg-blue-700 text-white font-medium py-3 px-6 rounded transition duration-200"
               >
                 {isPending ? "Loading..." : "Send"}
               </button>

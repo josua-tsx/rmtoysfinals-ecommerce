@@ -46,7 +46,7 @@ export default function FaqPage() {
       <div className="max-w-[1280px] h-full mx-auto">
         <div className="flex flex-col justify-center items-center h-full ">
           <div className="text-4xl mb-5">FAQs</div>
-          <div className="flex flex-col  md:max-w-[600px] gap-4">
+          <div className="flex flex-col  md:max-w-[700px] gap-4">
             {List.map((faq) => (
               <li
                 className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"

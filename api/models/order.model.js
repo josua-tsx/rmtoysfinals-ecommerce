@@ -29,7 +29,7 @@ const OrderModelSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Online Payment", "Cod"],
+      enum: ["Online Payment", "Cod", "GcashQR"],
       default: "Cod",
     },
 
@@ -112,6 +112,18 @@ const OrderModelSchema = new mongoose.Schema(
       type: String,
       index: true,
       sparse: true, // This allows multiple null values
+    },
+
+    gcashQRmethod: {
+      gcashPhoneNumber: {
+        type: Number,
+      },
+      proofOfPaymentImage: {
+        type: String,
+      },
+      gcashName: {
+        type: String
+      }
     }
   },
   {

@@ -8,6 +8,7 @@ import { useUserStore } from "../stores/useUserStore";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
+import CreditPointsAuto from "../components/CreditPointsAuto";
 
 export default function SignIn() {
 
@@ -129,6 +130,7 @@ export default function SignIn() {
           </div>
         </div>
       </div>
+
 
 
     </section>

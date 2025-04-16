@@ -197,7 +197,7 @@ export default function AdminSalesOverview() {
         </div>
         <div className="w-full md:w-[30%] flex flex-col gap-14  rounded-[5px] relative ">
           <AdminRecentSuccessOrder />
-          {/* <AdminRecentFailedOrder /> */}
+          <AdminRecentFailedOrder />
           <AdminRecentRefundedOrder />
           <AdminRecentCancelledOrder />
         </div>
