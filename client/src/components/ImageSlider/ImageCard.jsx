@@ -14,7 +14,7 @@ export default function ImageCard({ product }) {
       <div className="flex flex-col gap-2 bg-card group-hover:bg-primary border border-black rounded-br-none rounded-bl-none p-2 rounded-[5px]">
         <img
           src={product?.productImages[0]}
-          className="w-[230px] h-[190px] md:h-[260px] transition-all object-cover mx-auto group-hover:-translate-y-2"
+          className="w-full h-[190px] md:h-[260px] transition-all object-cover mx-auto group-hover:-translate-y-2"
         />
         <p className="py-1  text-sm md:text-lg group-hover:text-white text-center">{product?.productName}</p>
       </div>

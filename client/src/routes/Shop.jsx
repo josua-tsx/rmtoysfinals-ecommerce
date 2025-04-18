@@ -83,7 +83,7 @@ export default function Shop() {
   if (isError) return <p>Error loading products: {error.message}</p>;
 
   return (
-    <section className="font-main p-3 bg-yellow py-[130px]">
+    <section className="font-main p-3 bg-yellow h-full py-[130px]">
       <div className="max-w-[1280px] h-full md:h-screen bg-yellow mx-auto">
         <div className="flex w-full mb-5">
           <h1 className="text-3xl">Products</h1>
@@ -95,7 +95,7 @@ export default function Shop() {
           <p className="text-sm">SHOP{">"}</p>
         </div>
 
-        <div className="flex flex-col gap-4 md:flex-row">
+        <div className="flex flex-col bg-yellow gap-4 md:flex-row">
           {/* SIDEBAR FORM*/}
           <ShopSide
             setSearchTerm={setSearchTerm}
@@ -106,7 +106,7 @@ export default function Shop() {
           />
 
           {/* Products/Cards */}
-          <div className="w-full h-full">
+          <div className="w-full bg-yellow h-full">
             <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {/* Product Cards */}
               {filteredArrayProducts.length > 0 &&

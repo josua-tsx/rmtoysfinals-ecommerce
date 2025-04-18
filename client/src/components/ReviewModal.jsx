@@ -48,7 +48,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
   };
 
   return (
-    <section className=" pt-[105px] md:pt-[130px] inset-0 fixed z-40 backdrop-blur-sm p-3">
+    <section className=" pt-[105px] md:pt-[130px] text-sm md:text-normal inset-0 fixed z-40 backdrop-blur-sm p-3">
       <div className="md:max-w-[90%] lg:max-w-[65%]  h-screen  mx-auto">
         <div className="flex flex-col md:flex-row-reverse gap-2 relative">
           {/* close button */}
@@ -61,13 +61,13 @@ export default function ReviewModal({ singleProduct, closeModal }) {
 
           <div className="md:w-[28%] flex flex-col gap-2">
             <div className="flex bg-card border rounded-[5px] p-3 border-black flex-col text-center gap-2">
-              <h1 className="text-normal">ADD REVIEW HERE</h1>
+              <h1 className="text-normal">Add Review Here</h1>
               <button
                 onClick={() => setShowReview(!showReview)}
                 type="button"
                 className="border border-black bg-primary text-card p-1 w-full rounded-[5px]"
               >
-                {showReview ? "HIDE REVIEW" : "ADD REVIEW"}
+                {showReview ? "Hide Review" : "Add Review"}
               </button>
             </div>
 
@@ -79,7 +79,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               } flex-col gap-5 bg-card border rounded-[5px] p-3  border-black`}
             >
               <div className="flex gap-2 flex-col ">
-                <h1 className="text-center">HOW SATISFIED ARE YOU WITH THE PRODUCT?</h1>
+                <h1 className="text-center">How satisfied are you with the product?</h1>
                 <input
                   type="number"
                   value={rating}
@@ -97,7 +97,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               </div>
 
               <div className=" flex flex-col gap-2 ">
-                <h1>ADD YOUR COMMENT HERE</h1>
+                <h1>Add your comment here</h1>
                 <div className="flex items-center gap-2">
                   <textarea
                     name="review"
@@ -129,7 +129,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
                   <ReviewCard key={index} review={review} />
                 ))
             ) : (
-              <p className="text-center text-xl">no review yet.</p>
+              <p className="text-center">no review yet.</p>
             )}
           </div>
         </div>
