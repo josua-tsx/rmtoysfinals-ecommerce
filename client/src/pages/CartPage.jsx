@@ -86,16 +86,16 @@ export default function CartPage() {
 
           {cart?.items?.length > 0 && (
             <div className="border md:w-[270px] gap-2 flex flex-col bg-card rounded-[5px] p-6 border-black">
-              <h1 className="uppercase text-xl mb-3">order summary</h1>
+              <h1 className=" text-xl mb-3">Order Summary</h1>
               <div className="flex flex-1 flex-col gap-2">
                 <p>
-                  TOTAL ITEMS: <span>{cart?.items?.length}</span>
+                  Total Items: <span>{cart?.items?.length}</span>
                 </p>
                 <p>
-                  TOTAL POINTS: <span>+{totalPoints}</span>
+                  Total Items: <span>+{totalPoints}</span>
                 </p>
                 <p>
-                  TOTAL PRICE:{" "}
+                  Total Price:{" "}
                   <span className="text-indigo-500">
                     {" "}
                     {cart?.items ? formatPrice(totalPrice) : 0} PHP

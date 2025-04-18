@@ -131,7 +131,7 @@ export default function OrderSummaryModal({ onClose }) {
 
   const handleGcashQRpaymentMethod = (orderData) => {
     setCurrentOrder(orderData);
-    navigate("/gcashQRpayment")
+    navigate("/gcashQRpayment");
   };
 
   const handleOrderFormSubmit = (e) => {
@@ -318,17 +318,17 @@ export default function OrderSummaryModal({ onClose }) {
         <div className="flex text-sm h-full flex-col gap-2 w-[90%] md:w-[25%]  ">
           <div className="flex flex-col gap-2 bg-card rounded-[5px] p-2 border-black border">
             <div className="flex justify-between">
-              <p>TOTAL ITEMS: </p>
+              <p>Total Items: </p>
               <p>{cart?.items?.length}</p>
             </div>
 
             <div className="flex justify-between">
-              <p>TOTAL POINTS</p>
+              <p>Total Points</p>
               <p>+{totalPoints}</p>
             </div>
 
             <div className="flex justify-between">
-              <p>SHIPPING FEE</p>
+              <p>Shipping Fee</p>
               <p>{shippingFee} PHP</p>
             </div>
             {/* <div className="flex justify-between">
@@ -336,24 +336,24 @@ export default function OrderSummaryModal({ onClose }) {
             <p>0</p>
            </div> */}
             <div className="flex justify-between">
-              <p>DISCOUNT</p>
+              <p>Discount</p>
               <p>{formatPrice(totalDiscount ? totalDiscount : 0)}</p>
             </div>
 
             <div className="flex justify-between">
-              <p>USED CREDITS</p>
+              <p>Used Credits</p>
               <p>{formatPrice(usedCredits)}</p>
             </div>
 
             <div className="flex justify-between">
-              <p>SUBTOTAL: </p>
+              <p>Subtotal: </p>
               <p>{formatPrice(subtotal)} PHP</p>
             </div>
             <div className="flex justify-between">
-              <p className="text-lg">TOTAL PRICE: </p>
+              <p className="text-lg">Total Price: </p>
               <p className="text-lg">
-              {formatPrice(deductedPrice)}
-                PHP
+                {formatPrice(deductedPrice)}
+                 PHP
               </p>
             </div>
           </div>
@@ -378,7 +378,10 @@ export default function OrderSummaryModal({ onClose }) {
                       </p>
                       <p className="flex gap-2">
                         Price:{" "}
-                        <span>{formatPrice(item.productId.price * item.quantity)} PHP</span>
+                        <span>
+                          {formatPrice(item.productId.price * item.quantity)}{" "}
+                          PHP
+                        </span>
                       </p>
                     </div>
                   </div>

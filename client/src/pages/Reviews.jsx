@@ -4,6 +4,7 @@ import TwoStarReviews from "./TwoStarReviews";
 import ThreeStarReviews from "./ThreeStarReviews";
 import FourStarReviews from "./FourStarReviews";
 import FiveStarReviews from "./FiveStarReviews";
+import CreditPointsAuto from "../components/CreditPointsAuto";
 
 export default function Reviews() {
   const [selectedComponent, setSelectedComponent] = useState("fiveStar");
@@ -18,6 +19,7 @@ export default function Reviews() {
     <section className="pt-[130px] text-sm md:text-normal h-screen p-3 font-main">
       <div className="max-w-[1280px] mx-auto">
         <h1 className="text-3xl mb-5">Reviews</h1>
+        <CreditPointsAuto/>
 
         <div className="flex gap-10  flex-col md:flex-row">
           <div className="text-center md:text-start">
