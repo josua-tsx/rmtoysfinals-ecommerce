@@ -48,7 +48,7 @@ export default function FaqPage() {
           <div className="flex flex-col  md:max-w-[700px] gap-4">
             {List.map((faq) => (
               <li
-                className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
+                className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
                 key={faq.id}
               >
                 {faq.question}

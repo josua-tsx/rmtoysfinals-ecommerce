@@ -16,14 +16,14 @@ export default function OrderHistory() {
   return (
     <div>
       <div className="flex gap-5 items-center">
-      <h1 className="text-xl">ORDER HISTORY</h1>
+      <h1 className="text-xl">Order History</h1>
       <div>
         <select onChange={handleChangeComponent}
          className="outline-none border border-black rounded-[5px] px-5 p-1">
-          <option value="Delivered">DELIVERED</option>
-          <option value="Cancelled">CANCELLED</option>
-          <option value="Refunded">REFUNDED</option>
-          <option value="Failed">FAILED</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Refunded">Refunded</option>
+          <option value="Failed">Failed</option>
         </select>
       </div>
       </div>

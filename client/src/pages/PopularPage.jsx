@@ -47,7 +47,7 @@ export default function PopularPage() {
     <section className="pt-[130px] h-full bg-yellow pb-[100px]  p-3 font-main">
       <div className="max-w-[1280px] bg-yellow mx-auto">
         <div>
-          <h1 className="text-3xl mb-5 ">POPULAR PRODUCTS</h1>
+          <h1 className="text-3xl mb-5 ">Popular Products</h1>
         </div>
         <CreditPointsAuto/>
         <div className="flex flex-col gap-14">
@@ -55,13 +55,13 @@ export default function PopularPage() {
             <div className="mb-7 flex justify-between">
               <div className="flex items-center   gap-1 bg-card border border-black rounded-[5px]">
                 <h1 className=" text-xl border-black p-2 ">
-                  BEST SOLD PRODUCTS
+                  Best Sold Products
                 </h1>
                 <TbPinnedFilled className="text-primary" size={25} />
               </div>
-              <button onClick={handleNavigateToShop} className="text-primary underline">SEE MORE</button>
+              <button onClick={handleNavigateToShop} className="text-primary underline">See More</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {bestSoldProducts.length > 0 ? (
                 bestSoldProducts.map((best) => (
                   <ShopProductCards key={best._id} product={best} />
@@ -77,11 +77,11 @@ export default function PopularPage() {
             <div className="mb-7 flex justify-between">
               <div className="flex items-center gap-1 bg-card border border-black rounded-[5px]">
                 <h1 className=" text-xl p-2 ">
-                  BEST RATING PRODUCT
+                  Best Rating Products
                 </h1>
                 <TbPinnedFilled className="text-primary" size={25} />
               </div>
-              <button onClick={handleNavigateToShop} className="text-primary underline">SEE MORE</button>
+              <button onClick={handleNavigateToShop} className="text-primary underline">See More</button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {bestRatingProducts.length > 0 ? (
@@ -94,23 +94,6 @@ export default function PopularPage() {
             </div>
           </div> 
 
-          {/* <div>
-            <div className="mb-7 flex justify-between">
-              <div className="flex items-center gap-1 bg-card border border-black rounded-[5px]">
-                <h1 className=" text-xl  p-2 ">
-                  BEST RATING PRODUCT
-                </h1>
-                <TbPinnedFilled className="text-primary" size={25} />
-              </div>
-              <button className="text-primary underline">SEE MORE</button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              <ShopProductCards />
-              <ShopProductCards />
-              <ShopProductCards />
-              <ShopProductCards />
-            </div>
-          </div> */}
         </div>
       </div>
     </section>

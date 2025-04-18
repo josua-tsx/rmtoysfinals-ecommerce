@@ -68,7 +68,7 @@ export default function CustomerOrder() {
 
 
 
-      <h1 className="text-xl">YOUR ORDER</h1>
+      <h1 className="text-xl">Your Order</h1>
       <div className=" my-5 p-2 flex flex-col gap-2">
         {/* CARD GOES HERE */}
 

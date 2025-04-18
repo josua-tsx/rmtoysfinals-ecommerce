@@ -8,7 +8,7 @@ export default function LandingPage() {
   return (
     <section className="h-screen font-main  relative overflow-hidden">
       <div className="relative z-2 h-screen overflow-y-auto max-w-[1280px] mx-auto p-4">
-        <div className="flex items-center relative flex-col gap-20 pt-40 lg:pt-52 lg:gap-4  lg:flex-row justify-between">
+        <div className="flex items-center relative flex-col gap-20 pt-32 lg:pt-52 lg:gap-4  lg:flex-row justify-between">
           <div className="flex flex-col gap-3">
           <CreditPointsAuto/>
             <div className="flex md:pl-10 lg:pl-0">
@@ -18,7 +18,7 @@ export default function LandingPage() {
             </div>
       
             <div className="relative z-10  md:w-[700px] lg:w-[690px]">
-              <h1 className="font-main text-2xl mx-auto leading-tight md:leading-tight lg:leading-tight  md:text-5xl  md:text-center lg:text-start ">
+              <h1 className="font-main text-3xl mx-auto leading-tight md:leading-tight lg:leading-tight  md:text-5xl  md:text-center lg:text-start ">
                 <span className="text-green-600">Discover</span> a{" "}
                 <span className="text-red-600">toy</span> that{" "}
                 <span className="text-orange-600">empowers</span> your child to{" "}

@@ -40,7 +40,7 @@ export default function Contact() {
         <div className="flex flex-col justify-center items-center">
           <div className="flex flex-col pb-20 pt-20 md:pt-32 gap-10 w-full max-w-md">
             <div className="text-center flex flex-col gap-5">
-              <h1 className="text-4xl md:text-5xl ">CONTACT US</h1>
+              <h1 className="text-4xl md:text-5xl ">Contact Us</h1>
               <p className="text-lg md:text-xl text-gray-600">
                 Send us messages for any info.
                 <br />

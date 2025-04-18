@@ -112,6 +112,11 @@ export default function AdminSideBar() {
           path: "/admin/pendingStocks",
         },
 
+        {
+          name: "Order Stock History",
+          path: "/admin/pendingStocks",
+        },
+
         
         // {
         //   name: "Add Stocks",

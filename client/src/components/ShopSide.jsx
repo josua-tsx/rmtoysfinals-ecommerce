@@ -107,7 +107,7 @@ export default function ShopSide({
   return (
     <div className=" flex w-[90%] text-sm md:text-normal  mx-auto md:w-[320px] justify-center px-5 gap-5 flex-col relative overflow-x-hidden md:justify-start p-3 border-black border rounded-[5px] bg-card ">
       <div className="flex justify-between pb-5 ">
-        <h1 className="text-xl">FILTER</h1>
+        <h1 className="text-xl">Filter</h1>
         <button type="button" onClick={() => setShowFilter((prev) => !prev)}>
           <IoFilter size={20} />
         </button>
@@ -129,7 +129,7 @@ export default function ShopSide({
           } md:flex flex-col h-full gap-7`}
         >
           {/* sort */}
-          <FilterSection title={"sort"}>
+          <FilterSection title={"Sort"}>
             <div className="flex gap-3">
               <input
                 type="radio"
@@ -138,7 +138,7 @@ export default function ShopSide({
                 checked={sortOption === "latest"}
                 onChange={handleSortChange}
               />
-              <label htmlFor="latest">LATEST</label>
+              <label htmlFor="latest">Latest</label>
             </div>
             <div className="flex gap-3">
               <input
@@ -148,7 +148,7 @@ export default function ShopSide({
                 checked={sortOption === "oldest"}
                 onChange={handleSortChange}
               />
-              <label htmlFor="oldest">OLDEST</label>
+              <label htmlFor="oldest">Oldest</label>
             </div>
           </FilterSection>
 
@@ -173,7 +173,7 @@ export default function ShopSide({
 
           <div className={` flex-col gap-2  pb-5`}>
             <div className="flex items-start justify-between">
-              <h1 className="text-xl mb-2 uppercase">Categories</h1>
+              <h1 className="text-xl mb-2">Categories</h1>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -194,7 +194,7 @@ export default function ShopSide({
                       />
                       <label
                         htmlFor={category.categoryName}
-                        className="uppercase"
+                        className=""
                       >
                         {category.categoryName}
                       </label>
@@ -233,7 +233,7 @@ export default function ShopSide({
 
           {/* COLORS */}
 
-          <FilterSection title={"colors"}>
+          <FilterSection title={"Colors"}>
             <div className={` flex flex-col gap-2`}>
               {productColors &&
                 productColors.map((color) => (
@@ -245,7 +245,7 @@ export default function ShopSide({
                       checked={filterColor.includes(color)}
                       onChange={(e) => setFilterColor(e.target.value)}
                     />
-                    <span className="uppercase"
+                    <span className=""
                     
                     >
                       {color}
@@ -256,15 +256,15 @@ export default function ShopSide({
           </FilterSection>
 
           <div className="flex gap-2">
-            <button className="border flex-1 hover:opacity-95 bg-gee uppercase justify-center  items-center w-full border-black p-2 rounded-[5px] bg-primary text-card">
-              APPLY FILTERS
+            <button className="border flex-1 hover:opacity-95 bg-gee  justify-center  items-center w-full border-black p-2 rounded-[5px] bg-primary text-card">
+              Apply Filter
             </button>
             <button
               type="button"
               onClick={handleResetFilter}
               className="border border-black bg-red-700 text-card px-3 rounded-[5px]"
             >
-              RESET
+              Reset
             </button>
           </div>
         </div>

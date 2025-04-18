@@ -1,9 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {  useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import AdminOrderRestockModal from "./AdminOrderRestockModal";
+import ReduceQuantityModal from "../ReduceQuantityModal";
 
 
 export default function AdminStocksTable() {
@@ -12,6 +13,10 @@ export default function AdminStocksTable() {
   const [searchTerm, setSearchTerm] = useState("");
 
    const [openModal, setOpenModal] = useState(false)
+    const [reduceModal, setReduceModal] = useState(false)
+    
+
+
     const [deliveryId, setDeliveryId] = useState(null)
     const [singleDataStock, setSingleDataStock] = useState()
 
@@ -27,6 +32,7 @@ export default function AdminStocksTable() {
     },
   });
 
+  console.log(stocks)
  
   const {} = useQuery({
     queryKey: ["singleDeliveredProduct", deliveryId],
@@ -37,19 +43,20 @@ export default function AdminStocksTable() {
     enabled: !!deliveryId
   })
 
-  // const {mutate: updateQuantityMutation} = useMutation({
-  //   mutationFn: async (data) => {
-  //     const res = await axiosInstance.put(`/stocks/update-quantity/${stocks._id}`, data)
-  //     return res.data
-  //   }
-  // })
 
-  console.log(stocks)
 
-  const handleUpdateQuantity = (stock) => {
-    console.log(stock._id)
+
+  const openReduceModal = (stock) => {
+    setDeliveryId(stock._id)
+    setReduceModal(true)
+    setSingleDataStock(stock)
   }
 
+  const closeReduceModal = () => {
+    setDeliveryId(null)
+    setReduceModal(false)
+    setSingleDataStock(null)
+  }
 
   const openSingleStockData = (stock) => {
     setDeliveryId(stock._id)
@@ -99,6 +106,15 @@ export default function AdminStocksTable() {
           <AdminOrderRestockModal
             singleStock={singleDataStock}
             onClose={closeSingleStockData}
+          />
+        )
+      }
+
+      {
+        reduceModal && (
+          <ReduceQuantityModal
+            singleStock={singleDataStock}
+            onClose={closeReduceModal}
           />
         )
       }
@@ -198,12 +214,12 @@ export default function AdminStocksTable() {
                     >
                       Order / Re-stock
                     </button>
-                    {/* <button
-                      onClick={() => handleUpdateQuantity(stock)}
-                      className="border border-black p-1 px-2 rounded-[5px] bg-blue-700 text-white hover:text-indigo-300 mr-2"
+                    <button
+                      onClick={() => openReduceModal(stock)}
+                      className="border border-black p-1 px-2 rounded-[5px] bg-red-700 text-white hover:text-indigo-300 mr-2"
                     >
-                      Update Quantity
-                    </button> */}
+                      Reduce Quantity
+                    </button>
                   </td>
                 </tr>
               ))

@@ -133,7 +133,7 @@ export default function ProductDetails() {
               </div>
 
               <div className="flex gap-8">
-                <p>DESCRIPTION:</p>
+                <p>Description:</p>
                 <p>{singleProduct.productDescription}</p>
               </div>
 
@@ -143,9 +143,9 @@ export default function ProductDetails() {
                 <p>({averageRating ? averageRating.toFixed(2) : 0} average)</p>
               </div>
 
-              <div className="uppercase flex flex-col gap-2">
+              <div className=" flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <p>PRICE:</p>
+                  <p>Price:</p>
                   <div className="text-lg flex relative  text-indigo-500">
                     {formatPrice(singleProduct.price)} PHP 
                     {
@@ -173,19 +173,19 @@ export default function ProductDetails() {
                   ""
                 )}
                 <div className="flex items-center gap-3">
-                  <p>category:</p>
+                  <p>Category:</p>
                   <span className="text-lg text-indigo-500">
                     {singleProduct?.category?.categoryName}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <p>SOLD:</p>
+                  <p>Sold:</p>
                   <span className="text-lg text-indigo-500">
                     {singleProduct?.sold}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <p>POINTS:</p>
+                  <p>Points:</p>
                   <span className="text-lg text-indigo-500">
                     {singleProduct?.points}
                   </span>
@@ -193,7 +193,7 @@ export default function ProductDetails() {
               </div>
 
               <div className="flex items-center gap-5">
-                <p>PRODUCT DETAILS</p>
+                <p>Product Details</p>
                 <button onClick={() => setHideShowDetails(!hideShowDetails)}>
                   <MdOutlineKeyboardArrowDown size={25} />
                 </button>
@@ -219,15 +219,15 @@ export default function ProductDetails() {
             <div className="flex justify-between">
               <button
                 onClick={() => ShowModal()}
-                className="uppercase underline text-indigo-500"
+                className=" underline text-indigo-500"
               >
-                see all reviews ({singleProduct?.reviews?.length})
+                See All Reviews ({singleProduct?.reviews?.length})
               </button>
               <button
                 onClick={() => ShowModal()}
-                className="uppercase underline text-indigo-500"
+                className=" underline text-indigo-500"
               >
-                add review
+                Add Review
               </button>
             </div>
           </div>

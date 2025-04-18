@@ -123,7 +123,7 @@ export default function ChangeInfoComponent() {
 
   return (
     <div>
-      <h1 className="text-xl">CHANGE INFORMATION</h1>
+      <h1 className="text-xl">Change Information</h1>
       <form onSubmit={handleFormSubmit} className="my-5 flex flex-col gap-10 ">
         <div className="flex flex-col items-center gap-4 justify-center">
           <p>AVATAR</p>
@@ -143,15 +143,15 @@ export default function ChangeInfoComponent() {
           <button
             type="button"
             onClick={() => fileRef.current.click()}
-            className="bg-primary uppercase border border-black text-card px-2 py-1 rounded-[5px]"
+            className="bg-primary  border border-black text-card px-2 py-1 rounded-[5px]"
           >
             Change Avatar
           </button>
         </div>
 
-        <div className="flex flex-col gap-5 w-[90%] md:w-[70%] mx-auto uppercase">
+        <div className="flex flex-col gap-5 w-[90%] md:w-[70%] mx-auto ">
           <div className="flex flex-col md:flex-row md:items-center my-2 justify-between text-md md:text-lg ">
-            <h1 className="my-5">PERSONAL INFORMATION</h1>
+            <h1 className="my-5">Personal Information</h1>
           </div>
 
           <div className="flex items-center flex-col md:flex-row gap-2">
@@ -180,7 +180,7 @@ export default function ChangeInfoComponent() {
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="username">username: </label>
+                <label htmlFor="username">Username: </label>
                 <div className="flex flex-col">
                   <input
                     type="text"
@@ -198,7 +198,7 @@ export default function ChangeInfoComponent() {
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="fullName">full name: </label>
+                <label htmlFor="fullName">Full Name: </label>
                 <div className="flex flex-col">
                   <input
                     type="text"
@@ -217,7 +217,7 @@ export default function ChangeInfoComponent() {
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="password">password: </label>
+                <label htmlFor="password">Password: </label>
                 <div className="flex items-center  justify-between gap-5">
                   <div className="flex relative  w-full">
                     <div className="flex flex-col w-full">
@@ -250,7 +250,7 @@ export default function ChangeInfoComponent() {
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="phoneNum">phone number: </label>
+                <label htmlFor="phoneNum">Phone Number: </label>
                 <div className="flex items-center  justify-between gap-5">
                   <div className="flex w-full flex-col gap-1">
                     <input
@@ -272,8 +272,8 @@ export default function ChangeInfoComponent() {
           </div>
         </div>
         <div className="flex justify-center">
-          <button className="hover:opacity-95 uppercase flex items-center border gap-5 px-5 border-black p-2 rounded-[5px] bg-primary text-card">
-            UPDATE
+          <button className="hover:opacity-95  flex items-center border gap-5 px-5 border-black p-2 rounded-[5px] bg-primary text-card">
+            Update
             <FaCheckCircle size={15} />
           </button>
         </div>

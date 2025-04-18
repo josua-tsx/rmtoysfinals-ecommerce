@@ -12,7 +12,7 @@ export default function CreditPointsAuto() {
   }, []);
 
   return (
-    <div className="relative w-full mb-10 md:mb-5 h-10">
+    <div className="relative w-full mb-8 md:mb-5 h-10">
       <div
         className={`absolute transition-opacity duration-1000 ease-in-out px-4 py-2 bg-blue-700 text-white rounded-md shadow-lg text-sm md:text-normal ${
           showCreditInfo ? "opacity-100" : "opacity-0"

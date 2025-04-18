@@ -116,24 +116,31 @@ export const reorderStock = async (req, res, next) => {
   }
 };
 
-// export const updateStockQuantity = async (req, res, next) => {
-//   const { stockId } = req.params;
-//   const { quantity } = req.body;
-//   try {
-//     // const existingTotalCosty
+export const updateStockQuantity = async (req, res, next) => {
+  const { stockId } = req.params;
+  const { quantity } = req.body;
+  try {
+    // const existingTotalCosty
 
-//     const updateQuantity = await Stocks.findByIdAndUpdate(
-//       stockId,
-//       {
-//         quantity,
-//       },
-//       { new: true }
-//     );
-//     res.status(200).json(updateQuantity);
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    const existingStock = await Stocks.findById(stockId);
+
+    if (!existingStock) return next(handleMakeError(400, "No stock found!"));
+
+    const existingSupplierPrice = existingStock.supplierPrice;
+
+    const updateQuantity = await Stocks.findByIdAndUpdate(
+      stockId,
+      {
+        quantity,
+        totalCost: quantity * existingSupplierPrice,
+      },
+      { new: true }
+    );
+    res.status(200).json(updateQuantity);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getPendingDeliveries = async (req, res, next) => {
   try {
@@ -296,7 +303,7 @@ export const getStocks = async (req, res, next) => {
     };
 
     // const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER
+    const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER;
 
     // Classify stocks and check notification needs
     const stockAlerts = {
@@ -319,7 +326,6 @@ export const getStocks = async (req, res, next) => {
         );
       }),
     };
-
 
     if (stockAlerts.low.length > 0) {
       await sendSMS(

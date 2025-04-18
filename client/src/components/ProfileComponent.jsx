@@ -48,7 +48,7 @@ export default function ProfileComponent({ setActiveComponent }) {
 
   return (
     <div className="">
-      <h1 className="text-xl">PROFILE</h1>
+      <h1 className="text-xl">Profile</h1>
       <div className="my-5 flex flex-col gap-10  max-h-[666px] overflow-y-auto">
         <div className="flex flex-col items-center gap-4 justify-center">
           <p>AVATAR</p>
@@ -60,11 +60,11 @@ export default function ProfileComponent({ setActiveComponent }) {
           />
         </div>
 
-        <div className="flex flex-col gap-5 w-[90%] md:w-[80%] mx-auto uppercase">
+        <div className="flex flex-col gap-5 w-[90%] md:w-[80%] mx-auto">
           <div className="flex flex-col md:flex-row md:items-center my-2 justify-between text-md md:text-lg ">
-            <h1 className="my-5">PERSONAL INFORMATION</h1>
+            <h1 className="my-5">Personal Information</h1>
             <div onClick={() => setActiveComponent("changeinformation")}>
-              <Buttons buttonName={"edit information"} />
+              <Buttons buttonName={"Edit Information"} />
             </div>
           </div>
           <div className="flex flex-col md:flex-row justify-between gap-5">
@@ -107,9 +107,9 @@ export default function ProfileComponent({ setActiveComponent }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 w-[90%] md:w-[80%] mx-auto uppercase">
+        <div className="flex flex-col gap-5 w-[90%] md:w-[80%] mx-auto ">
           <div className="flex flex-col justify-between text-md md:text-lg md:flex-row md:items-center my-2 ">
-            <h1 className="my-5">CURRENT SHIPPING ADDRESS</h1>
+            <h1 className="my-5">Current Shipping Address</h1>
             <div onClick={() => setActiveComponent("shippingaddress")}>
               <Buttons buttonName={"Edit shipping address"} />
             </div>

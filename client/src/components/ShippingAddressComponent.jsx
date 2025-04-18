@@ -180,7 +180,7 @@ export default function ShippingAddressComponent() {
         onCancel={handleCancel}
       />
 
-      <h1 className="text-xl">SHIPPING ADDRESS</h1>
+      <h1 className="text-xl">Shipping Address</h1>
       <div className="w-[90%] md:w-[80%] mx-auto my-5">
         <form onSubmit={handleAddressSubmit} className="flex flex-col gap-5">
           {/* <div className="flex justify-end">
