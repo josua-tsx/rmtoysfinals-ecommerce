@@ -6,48 +6,58 @@ import { useUserStore } from "../stores/useUserStore";
 import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
+import useOrderStore from "../stores/useOrderStore";
 
 const RootLayout = () => {
-  const { checkAuth } = useUserStore();
-  const currentUser = useUserStore((state) => state.currentUser);
-  const { clearUser } = useUserStore();
+ // 🧠 User store
+ const { checkAuth } = useUserStore();
+ const currentUser = useUserStore((state) => state.currentUser);
+ const clearUser = useUserStore((state) => state.clearUser);
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+ // 📦 Order store
+ const currentOrder = useOrderStore((state) => state.currentOrder);
+ const clearOrder = useOrderStore((state) => state.clearOrder);
 
+ // 🔍 Check auth on mount
+ useEffect(() => {
+   checkAuth();
+ }, [checkAuth]);
 
-  const {
-    data: stocks = [],
-  } = useQuery({
-    queryKey: ["stocks"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stocks`);
-      return res.data;
-    },
-  });
+ // 🧹 Clear order if exists
+ useEffect(() => {
+   if (currentOrder) {
+     clearOrder();
+   }
+ }, [currentOrder]);
 
-  console.log(stocks)
+ // 🔁 Query: fetch stocks
+ const {
+   data: stocks = [],
+ } = useQuery({
+   queryKey: ["stocks"],
+   queryFn: async () => {
+     const res = await axiosInstance.get("/stocks/get-stocks");
+     return res.data;
+   },
+ });
 
-  // Mutation for sign-out
-  const { mutate: signOut } = useMutation({
-    mutationFn: async () => await axiosInstance.post("auth/signout"),
-    onSuccess: () => {
-      clearUser(); // Clear the user from the store
-    },
-  });
+ // ❌ Mutation: sign-out user
+ const { mutate: signOut } = useMutation({
+   mutationFn: () => axiosInstance.post("/auth/signout"),
+   onSuccess: clearUser,
+ });
 
-  // UseEffect to trigger sign-out when status is "blocked"
-  useEffect(() => {
-    if (currentUser && currentUser.status === "blocked") {
-      signOut(); // Trigger sign-out
-    }
-  }, [currentUser, signOut]);
+ // 🚫 Sign out if user is blocked
+ useEffect(() => {
+   if (currentUser?.status === "blocked") {
+     signOut();
+   }
+ }, [currentUser, signOut]);
 
-  // If the user is blocked, redirect to sign-in page
-  if (currentUser?.status === "blocked") {
-    return <Navigate to="/sign-in" />;
-  }
+ // ⛔️ Redirect blocked users to sign-in
+ if (currentUser?.status === "blocked") {
+   return <Navigate to="/sign-in" />;
+ }
 
 
   return (

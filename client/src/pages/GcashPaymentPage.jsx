@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import RMTOYSQR from "../assets/RMTOYSQR.jpg";
 import {
   getDownloadURL,
@@ -10,7 +10,7 @@ import app from "../firebase/firebase";
 import toast from "react-hot-toast";
 import { MdDelete } from "react-icons/md";
 import useOrderStore from "../stores/useOrderStore";
-import { useNavigate } from "react-router-dom";
+import { useBlocker, useNavigate } from "react-router-dom";
 import formatPrice from "../reusable/formatPrice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
@@ -22,7 +22,14 @@ export default function GcashPaymentPage() {
   const currentOrder = useOrderStore((state) => state.currentOrder);
   const clearOrder = useOrderStore((state) => state.clearOrder);
 
-  console.log(currentOrder);
+  useEffect(() => {
+    if (!currentOrder) {
+      navigate("/");
+      return;
+    }
+  }, [currentOrder]);
+
+  
 
   const [gcashPhoneNumber, setGcashPhoneNumber] = useState("");
   const [gcashName, setGcashName] = useState("");
@@ -327,13 +334,13 @@ export default function GcashPaymentPage() {
                   <span>{formatPrice(currentOrder?.totalPrice)} PHP</span>
                 </div>
                 {/* <div className="flex justify-between font-medium">
-                  <span className="text-gray-600">GCash Number:</span>
-                  <span>09948088370</span>
-                </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-gray-600">Account Name:</span>
-                  <span>Jhon Josua Gono</span>
-                </div> */}
+                      <span className="text-gray-600">GCash Number:</span>
+                      <span>09948088370</span>
+                    </div>
+                    <div className="flex justify-between font-medium">
+                      <span className="text-gray-600">Account Name:</span>
+                      <span>Jhon Josua Gono</span>
+                    </div> */}
               </div>
 
               <p className="mt-4 text-sm text-gray-600 text-center">

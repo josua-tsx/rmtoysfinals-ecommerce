@@ -2,17 +2,27 @@ import Buttons from "../reusable/Buttons";
 import CartCard from "../components/CartCard";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import OrderSummaryModal from "../components/OrderSummaryModal";
 import formatPrice from "../reusable/formatPrice";
 import CreditPointsAuto from "../components/CreditPointsAuto";
 import { useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
+import useOrderStore from "../stores/useOrderStore";
 
 export default function CartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
-
   const navigate = useNavigate();
+
+  
+  // IF CUSTOMER USED BACK BUTTON (NOT THE CANCEL) IT WILL CLEAR THE ORDER IN THE LOCAL STORAGE 
+   const currentOrder = useOrderStore((state) => state.currentOrder);
+   const clearOrder = useOrderStore((state) => state.clearOrder);
+   useEffect(() => {
+     if (currentOrder) {
+       clearOrder();
+     }
+   }, [currentOrder]);
 
   const {
     data: cart = [],
