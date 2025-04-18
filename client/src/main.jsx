@@ -313,7 +313,7 @@ const router = createBrowserRouter([
       },
 
       {
-        path: `/admin/orderTransact`,
+        path: `/admin/orderTransactions`,
         element: <AdminOrderTransact />,
       },
     ],

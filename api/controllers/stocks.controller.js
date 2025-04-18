@@ -468,8 +468,7 @@ export const getStockLevels = async (req, res, next) => {
       })
       .sort({ createdAt: -1 });
 
-    // Return a response with categorized stock levels
-    res.status(200).json({
+      res.status(200).json({
       highStock,
       mediumStock,
       lowStock,

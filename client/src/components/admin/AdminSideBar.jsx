@@ -153,16 +153,17 @@ export default function AdminSideBar() {
 
 
     {
+      name: "Order Transactions",
+      path: "/admin/orderTransactions",
+      icon: <MdCategory size={20} />,
+      allowedRoles: ["admin", "validatorStaff"],
+    },
+
+    {
       name: "Audit Trail",
       path: "/admin/audit",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
-      inner: [
-        {
-          name: "Order Transactions",
-          path: "/admin/orderTransact",
-        },
-      ],
     },
 
 
