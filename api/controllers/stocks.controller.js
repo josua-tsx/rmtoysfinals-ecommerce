@@ -3,8 +3,11 @@ import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 // import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
+import { orderStockHistory } from "./orderStockHistory.contoller.js";
 
 export const OrderStocks = async (req, res, next) => {
+  const userId = req.user.id;
+
   const {
     product,
     supplier,
@@ -35,6 +38,22 @@ export const OrderStocks = async (req, res, next) => {
       dateDelivery,
       discount,
       vatPercent,
+    });
+
+    await orderStockHistory({
+      action: "admin_ordered_stock",
+      userId,
+      deliveryId,
+      supplier,
+      category,
+      quantityOrdered: quantity,
+      supplierPrice,
+      shippingPrice,
+      vatPercentApplied: vatPercent,
+      shopPrice,
+      receivedDate: dateDelivery,
+      receivedQuantity: quantity,
+      totalCost,
     });
 
     await Product.findByIdAndUpdate(
@@ -72,6 +91,8 @@ export const reorderStock = async (req, res, next) => {
   } = req.body;
   const { stockId } = req.params;
 
+  const userId = req.user.id
+
   try {
     // 1. First find the existing stock
     const existingStock = await Stocks.findById(stockId);
@@ -102,6 +123,23 @@ export const reorderStock = async (req, res, next) => {
       },
       { new: true } // Return the updated document
     );
+
+    await orderStockHistory({
+      action: "admin_reordered_stock",
+      userId,
+      deliveryId,
+      supplier,
+      category,
+      quantityOrdered: newQuantity,
+      supplierPrice,
+      shippingPrice,
+      vatPercentApplied: vatPercent,
+      shopPrice,
+      receivedDate: dateDelivery,
+      receivedQuantity: newQuantity,
+      totalCost: newTotalCost,
+    });
+
 
     await Product.findByIdAndUpdate(
       existingStock.product,
@@ -468,7 +506,7 @@ export const getStockLevels = async (req, res, next) => {
       })
       .sort({ createdAt: -1 });
 
-      res.status(200).json({
+    res.status(200).json({
       highStock,
       mediumStock,
       lowStock,

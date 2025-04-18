@@ -83,8 +83,8 @@ export default function Shop() {
   if (isError) return <p>Error loading products: {error.message}</p>;
 
   return (
-    <section className="font-main p-3 bg-yellow h-full py-[130px]">
-      <div className="max-w-[1280px] h-full md:h-screen bg-yellow mx-auto">
+    <section className="font-main p-3 h-full bg-yellow py-[130px]">
+      <div className="max-w-[1280px] mx-auto">
         <div className="flex w-full mb-5">
           <h1 className="text-3xl">Products</h1>
         </div>

@@ -66,6 +66,8 @@ import AdminAddVat from "./pages/admin/AdminAddVat.jsx";
 import AdminEditVat from "./pages/admin/AdminEditVat.jsx";
 import FaqPage from "./pages/FaqPage.jsx";
 import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
+import AdminOrderStockHistoryTable from "./pages/admin/AdminOrderStockHistoryTable.jsx";
+import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
 
 const queryClient = new QueryClient();
 
@@ -265,6 +267,11 @@ const router = createBrowserRouter([
         path: "/admin/pendingStocks",
         element: <AdminStocksPending />,
       },
+      {
+        path: "/admin/stockHistory",
+        element: <AdminStockHistory/>,
+      },
+
       {
         path: "/admin/editStocks/:stockId",
         element: <AdminEditStocks />,

@@ -35,8 +35,8 @@ const StocksModelSchema = new mongoose.Schema(
     },
     deliveryStatus: {
       type: String,
-      enum: ["pending", "processing" ,"delivered"],
-      default: "pending"
+      enum: ["delivered", "cancelled"],
+      default: "delivered"
     },
     deliveryId: {
       type: String,

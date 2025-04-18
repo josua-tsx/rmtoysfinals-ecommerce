@@ -167,7 +167,10 @@ export default function AdminStocksTable() {
                 <tr key={stock._id}>
                   {/* <td className="px-4">{stock._id}</td> */}
                   <td className=" px-4 gap-2">{stock?.deliveryId}</td>
-                  <td className=" px-4 gap-2">{stock?.dateDelivery}</td>
+                  <td className=" px-4 gap-2">
+                    <p>{stock?.dateDelivery}</p>
+                    <p>{new Date(stock?.createdAt).toLocaleTimeString()}</p>
+                  </td>
                   <td className="flex items-center px-4 gap-2">
                     <img
                       src={

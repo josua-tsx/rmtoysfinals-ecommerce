@@ -4,7 +4,6 @@ import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import User from "../models/user.models.js";
-import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 

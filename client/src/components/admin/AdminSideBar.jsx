@@ -114,7 +114,7 @@ export default function AdminSideBar() {
 
         {
           name: "Order Stock History",
-          path: "/admin/pendingStocks",
+          path: "/admin/stockHistory",
         },
 
         
