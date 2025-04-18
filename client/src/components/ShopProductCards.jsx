@@ -1,7 +1,7 @@
 import { FaCartPlus } from "react-icons/fa";
 import { IoHeart } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import StarsRating from "./StarsRating";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
@@ -12,8 +12,7 @@ import { CgUnavailable } from "react-icons/cg";
 
 export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
-
-  console.log(product)
+  const navigate = useNavigate()
 
   const { mutate: addToCartMutation } = useMutation({
     mutationFn: async (productId) => {
@@ -95,19 +94,21 @@ export default function ShopProductCards({ product }) {
         <div className="w-full absolute bottom-[-100%] border border-t-black transition-all group-hover:bottom-0 text-black bg-card">
           <ul className="p-2 flex flex-col gap-2">
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
-              <button onClick={() => handleAddToCart(product._id)}>
-                ADD TO CART
+              <button className="w-full text-start" onClick={() => handleAddToCart(product._id)}>
+                Add To Cart
               </button>
               <FaCartPlus size={20} />
             </li>
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
-              <button onClick={() => handleAddToWishList(product._id)}>
-                ADD TO WISHLIST
+              <button className="w-full text-start" onClick={() => handleAddToWishList(product._id)}>
+                Add To Wishlist
               </button>
               <IoHeart size={20} />
             </li>
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
-              <Link to={`/product/${product._id}`}>VIEW DETAILS</Link>
+              <button className="w-full text-start" 
+                onClick={() => navigate(`/product/${product._id}`)}
+              >View Details</button>
               <FaEye size={20} />
             </li>
           </ul>
