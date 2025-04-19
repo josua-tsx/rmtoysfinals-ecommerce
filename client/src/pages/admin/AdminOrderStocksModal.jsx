@@ -18,6 +18,8 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [discount, setDiscount] = useState(0);
   const [vatPercent, setVatPercent] = useState(0);
 
+  console.log(shopPrice)
+
   // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
   const calculateTotalExpenses =
     Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
@@ -95,7 +97,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       product,
       supplier,
       supplierPrice,
-      shopPrice: roundedPrice,
+      shopPrice,
       quantity,
       shippingPrice,
       totalCost,
@@ -103,6 +105,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       dateDelivery: selectedDate,
       discount,
       vatPercent,
+      vatShopPrice: roundedPrice,
     });
   };
 

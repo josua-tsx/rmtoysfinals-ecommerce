@@ -39,14 +39,14 @@ export default function AdminRecentCancelledOrder() {
           <div className="flex items-center gap-2">
             {latestcancelledOrder?.orderItems?.length > 1 ? (
               <img
-                src={latestcancelledOrder.imageUrl}
+                src={latestcancelledOrder?.imageUrl}
                 alt="product image"
                 className="w-[50px]"
               />
             ) : (
               <img
                 src={
-                  latestcancelledOrder?.orderItems[0].productId.productImages[0]
+                  latestcancelledOrder?.orderItems[0]?.productId?.productImages[0]
                 }
                 alt="product image"
                 className="w-[50px]"
@@ -57,13 +57,13 @@ export default function AdminRecentCancelledOrder() {
                 <div className="flex flex-col gap-1">
                   <p>items ({latestcancelledOrder?.orderItems.length})</p>
                   <p className="uppercase text-indigo-700">
-                    {latestcancelledOrder.paymentMethod}
+                    {latestcancelledOrder?.paymentMethod}
                   </p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
                   <p className="uppercase truncate w-[50px]">
-                    {latestcancelledOrder?.orderItems[0].productId.productName}
+                    {latestcancelledOrder?.orderItems[0]?.productId?.productName}
                   </p>
                   <p className="uppercase text-indigo-700">
                     {latestcancelledOrder.paymentMethod}

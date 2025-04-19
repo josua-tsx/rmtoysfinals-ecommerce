@@ -147,10 +147,10 @@ export default function AdminStocksTable() {
               <th className="font-normal p-2 pb-5">Supplier Name</th>
               <th className="font-normal p-2 pb-5">Category Name</th>
               <th className="font-normal p-2 pb-5">Quantity in Stock</th>
-
               <th className="font-normal p-2 pb-5">Shop Price</th>
+              <th className="font-normal p-2 pb-5">Shop Price With VAT</th>
+              <th className="font-normal p-2 pb-5">VAT to Remit</th>
               <th className="font-normal p-2 pb-5">VAT APPLIED</th>
-
               <th className="font-normal p-2 pb-5">Supplier Price</th>
               <th className="font-normal p-2 pb-5">Shipping Price</th>
               <th className="font-normal p-2 pb-5">Total Cost</th>
@@ -202,7 +202,9 @@ export default function AdminStocksTable() {
                       ) : null}
                     </div>
                   </td>
-                  <td>{formatPrice(stock?.product?.price) + " PHP"}</td>
+                  <td>{formatPrice(stock?.shopPrice) + " PHP"}</td>
+                  <td>{formatPrice(stock?.vatShopPrice) + " PHP"}</td>
+                  <td>{formatPrice(stock?.vatToRemit) + " PHP"}</td>
                   <td>{stock?.vatPercent}</td>
                   <td className="text-red-700">
                     {formatPrice(stock?.supplierPrice) + " PHP"}
@@ -213,7 +215,7 @@ export default function AdminStocksTable() {
                   <td className="text-red-700">
                     {formatPrice(stock?.totalCost) + " PHP"}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm flex justify-center">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm flex flex-col gap-2">
                     <button
                       onClick={() => openSingleStockData(stock)}
                       className="border border-black p-1 px-2 rounded-[5px] bg-green-700 text-white hover:text-indigo-300 mr-2"

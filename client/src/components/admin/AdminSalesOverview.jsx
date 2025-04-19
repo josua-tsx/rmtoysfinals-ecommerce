@@ -34,11 +34,7 @@ export default function AdminSalesOverview() {
     },
   });
 
-  const {
-    data: successOrderData = [],
-    isPending: isSuccessPending,
-    isError: isSuccessError,
-  } = useQuery({
+  const { data: successOrderData = [] } = useQuery({
     queryKey: ["successOrder"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/order/get-successOrder`);
@@ -61,11 +57,7 @@ export default function AdminSalesOverview() {
   });
 
   // GET ALL WORKERS
-  const {
-    data: totalWorkers = [],
-    isPending: isWorkersPending,
-    isError: isWorkersError,
-  } = useQuery({
+  const { data: totalWorkers = [] } = useQuery({
     queryKey: ["totalWorkers"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/user/getAllWorkers`);
@@ -119,7 +111,7 @@ export default function AdminSalesOverview() {
   // Get daily sales
   const dailySales = getDailySales(successOrderData);
 
-  if (isMonthlyError || isSuccessError || isCustomerError || isWorkersError || isPendingError)
+  if (isMonthlyError || isCustomerError || isPendingError)
     return <p>loading...</p>;
 
   return (
@@ -141,12 +133,34 @@ export default function AdminSalesOverview() {
           }
         />
 
-
-
         <AdminStatCard
           title={"TOTAL REVENUE"}
           value={`${formatPrice(totalRevenue)} PHP`}
         />
+
+        {isPendingPending ? (
+          <div className="flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard title={"TOTAL EXPENSES"} value={"0"} />
+        )}
+
+        {isPendingPending ? (
+          <div className="flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard title={"TOTAL EXPENSES"} value={"0"} />
+        )}
+
+        {isPendingPending ? (
+          <div className="flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard title={"TOTAL EXPENSES"} value={"0"} />
+        )}
 
         {isCustomerPending ? (
           <div className="flex justify-center items-center">

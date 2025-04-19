@@ -41,13 +41,6 @@ const OrderModelSchema = new mongoose.Schema(
       type: String,
     },
 
-    taxPrice: {
-      type: Number,
-      // required: true,
-      min: 0,
-      default: 0,
-    },
-
     shippingPrice: {
       type: Number,
       required: true,

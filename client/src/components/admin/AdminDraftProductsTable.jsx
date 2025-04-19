@@ -174,7 +174,7 @@ export default function AdminDraftProductsTable() {
                         onClick={() => publishDraftMutation(draft._id)}
                         className="text-green-600 hover:text-indigo-300 mr-2"
                       >
-                        PUBLISH
+                        SEND TO PENDING STOCKS
                       </button>
                     </td>
                   </tr>

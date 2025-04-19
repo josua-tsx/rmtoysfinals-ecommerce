@@ -33,6 +33,12 @@ const StocksModelSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    vatShopPrice : {
+      type: Number, 
+    },
+    vatToRemit: {
+      type: Number
+    },
     deliveryStatus: {
       type: String,
       enum: ["delivered", "cancelled"],

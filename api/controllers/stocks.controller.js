@@ -21,6 +21,7 @@ export const OrderStocks = async (req, res, next) => {
     dateDelivery,
     discount,
     vatPercent,
+    vatShopPrice,
   } = req.body;
 
   try {
@@ -38,6 +39,8 @@ export const OrderStocks = async (req, res, next) => {
       dateDelivery,
       discount,
       vatPercent,
+      vatShopPrice,
+      vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * quantity,
     });
 
     await orderStockHistory({
@@ -60,7 +63,7 @@ export const OrderStocks = async (req, res, next) => {
       product,
       {
         status: "published",
-        price: shopPrice,
+        price: vatShopPrice,
         stocks: newDelivery._id,
         discount,
       },
@@ -88,10 +91,11 @@ export const reorderStock = async (req, res, next) => {
     dateDelivery,
     discount,
     vatPercent,
+    vatShopPrice,
   } = req.body;
   const { stockId } = req.params;
 
-  const userId = req.user.id
+  const userId = req.user.id;
 
   try {
     // 1. First find the existing stock
@@ -120,6 +124,9 @@ export const reorderStock = async (req, res, next) => {
         dateDelivery,
         discount,
         vatPercent,
+        vatShopPrice,
+        vatToRemit:
+          (Number(vatShopPrice) - Number(shopPrice)) * updatedQuantity,
       },
       { new: true } // Return the updated document
     );
@@ -139,7 +146,6 @@ export const reorderStock = async (req, res, next) => {
       receivedQuantity: newQuantity,
       totalCost: newTotalCost,
     });
-
 
     await Product.findByIdAndUpdate(
       existingStock.product,
@@ -165,12 +171,16 @@ export const updateStockQuantity = async (req, res, next) => {
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
     const existingSupplierPrice = existingStock.supplierPrice;
+    const existingShippingPrice = existingStock.shippingPrice;
+    const existingShopPrice = existingStock.shopPrice;
+    const existingVatPrice = existingStock.vatShopPrice;
 
     const updateQuantity = await Stocks.findByIdAndUpdate(
       stockId,
       {
         quantity,
-        totalCost: quantity * existingSupplierPrice,
+        totalCost: existingSupplierPrice * quantity + existingShippingPrice,
+        vatToRemit: (existingVatPrice - existingShopPrice) * quantity,
       },
       { new: true }
     );

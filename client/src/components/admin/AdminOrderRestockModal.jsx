@@ -26,7 +26,6 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       setProductId(singleStock?.product._id);
       setSupplier(singleStock?.supplier._id);
       setSupplierPrice(singleStock?.supplierPrice);
-      setShopPrice(singleStock?.shopPrice);
       setShippingPrice(singleStock?.shippingPrice);
       setTotalCost(singleStock?.totalCost);
       setDeliveryId(singleStock?.deliveryId);
@@ -81,13 +80,14 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       productId,
       supplier,
       supplierPrice,
-      shopPrice: roundedPrice,
+      shopPrice,
       shippingPrice,
       quantity,
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-      vatPercent
+      vatPercent,
+      vatShopPrice: roundedPrice,
     });
   };
 

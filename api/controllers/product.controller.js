@@ -584,7 +584,7 @@ export const publishDraft = async (req, res, next) => {
     const publishDraft = await Product.findByIdAndUpdate(
       draftId,
       {
-        status: "",
+        status: "pending",
       },
       { new: true }
     );

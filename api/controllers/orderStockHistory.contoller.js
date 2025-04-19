@@ -54,7 +54,7 @@ export const getOrderStockHistory = async (req, res, next) => {
         path: "supplier",
         select: "supplierName",
       })
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 });
 
     if (!getHistory) return next(handleMakeError(400, "No history found!"));
     res.status(200).json(getHistory);
@@ -64,11 +64,11 @@ export const getOrderStockHistory = async (req, res, next) => {
 };
 
 export const deleteAllHistory = async (req, res, next) => {
-    try {
-        const deleteAll = await OrderStockHistory.deleteMany({})
-        if (!deleteAll) return next(handleMakeError(400, "Order not found!"))
-        res.status(200).json(deleteAll)
-    } catch (error) {
-        next(error)
-    }
-}
+  try {
+    const deleteAll = await OrderStockHistory.deleteMany({});
+    if (!deleteAll) return next(handleMakeError(400, "Order not found!"));
+    res.status(200).json(deleteAll);
+  } catch (error) {
+    next(error);
+  }
+};

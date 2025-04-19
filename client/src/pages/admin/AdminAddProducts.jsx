@@ -403,13 +403,13 @@ export default function AdminAddProducts() {
               >
                 <Buttons
                   buttonType={"button"}
-                  buttonName={"draft"}
+                  buttonName={"Draft"}
                   icon={<IoArchive />}
                 />
               </div>
 
               <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
-                ADD THIS PRODUCT
+                Add This Product
                 <FaCheckCircle />
               </button>
               <button
