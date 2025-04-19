@@ -34,6 +34,7 @@ export default function AdminSalesOverview() {
     },
   });
 
+  // GET TOTAL VAT TO REMIT FROM SUCCESS ORDER
   const { data: successOrderData = [] } = useQuery({
     queryKey: ["successOrder"],
     queryFn: async () => {
@@ -42,8 +43,23 @@ export default function AdminSalesOverview() {
     },
   });
 
-  // TOTAL CUSTOMER
+  // Calculate total VAT to remit
+const totalVatToRemit = Array.isArray(successOrderData)
+? successOrderData.reduce((totalVat, order) => {
+    const orderVat = order.orderItems?.reduce((orderTotal, item) => {
+      if (!item?.productId) return orderTotal;
+      const vatPerUnit = item.productId.price - item.productId.preVatPrice;
+      return orderTotal + (vatPerUnit * item.quantity);
+    }, 0) || 0;
+    
+    return totalVat + orderVat;
+  }, 0)
+: 0;
 
+
+
+
+  // TOTAL CUSTOMER
   const {
     data: totalCustomer = [],
     isPending: isCustomerPending,
@@ -64,6 +80,30 @@ export default function AdminSalesOverview() {
       return res.data;
     },
   });
+
+  // GET TOTAL COST IN STOCKS
+
+  const {
+    data: stocks = [],
+    isLoading: isStocksPending,
+    isError: isStocksError,
+  } = useQuery({
+    queryKey: ["stocks"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/stocks/get-stocks`);
+      return res.data;
+    },
+  });
+
+  const totalExpenses = Array.isArray(stocks)
+    ? stocks.reduce((total, item) => {
+        return total + item?.totalCost;
+      }, 0)
+    : 0;
+
+  
+
+ 
 
   // GET ALL ORDERS (PENDING SO ON)
 
@@ -111,7 +151,7 @@ export default function AdminSalesOverview() {
   // Get daily sales
   const dailySales = getDailySales(successOrderData);
 
-  if (isMonthlyError || isCustomerError || isPendingError)
+  if (isMonthlyError || isCustomerError || isPendingError || isStocksError)
     return <p>loading...</p>;
 
   return (
@@ -138,12 +178,15 @@ export default function AdminSalesOverview() {
           value={`${formatPrice(totalRevenue)} PHP`}
         />
 
-        {isPendingPending ? (
+        {isStocksPending ? (
           <div className="flex justify-center items-center">
             <LoadingSpinner />
           </div>
         ) : (
-          <AdminStatCard title={"TOTAL EXPENSES"} value={"0"} />
+          <AdminStatCard
+            title={"TOTAL EXPENSES"}
+            value={`${formatPrice(totalExpenses)} PHP`}
+          />
         )}
 
         {isPendingPending ? (
@@ -151,7 +194,7 @@ export default function AdminSalesOverview() {
             <LoadingSpinner />
           </div>
         ) : (
-          <AdminStatCard title={"TOTAL EXPENSES"} value={"0"} />
+          <AdminStatCard title={"TOTAL VAT TO REMIT"} value={`${formatPrice(totalVatToRemit)} PHP`} />
         )}
 
         {isPendingPending ? (
@@ -159,7 +202,7 @@ export default function AdminSalesOverview() {
             <LoadingSpinner />
           </div>
         ) : (
-          <AdminStatCard title={"TOTAL EXPENSES"} value={"0"} />
+          <AdminStatCard title={"TOTAL PROFIT"} value={`${formatPrice(totalRevenue - totalExpenses)} PHP`} />
         )}
 
         {isCustomerPending ? (
