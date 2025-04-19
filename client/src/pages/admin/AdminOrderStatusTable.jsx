@@ -72,7 +72,6 @@ export default function AdminOrderStatusTable() {
     setOpenModal(true);
   };
 
-  if (isOrdersPending) return <p>loading...</p>;
   if (isOrdersError) return <p>error.</p>;
 
   return (

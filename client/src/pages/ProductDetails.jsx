@@ -82,7 +82,7 @@ export default function ProductDetails() {
   const CloseShowModal = () => setShowModalReview(false);
 
   return (
-    <section className="p-3 pt-[130px] text-sm md:text-normal h-full md:h-screen font-main relative">
+    <section className="p-3 pt-[130px] text-sm md:text-normal h-full bg-yellow font-main relative">
       {showModalReview && (
         <ReviewModal
           singleProduct={singleProduct}

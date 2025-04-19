@@ -97,7 +97,7 @@ export default function AdminProductsTable() {
     navigate(`/admin/editProduct/${editId}`);
   };
 
-  if (isPending) return <p>Loading...</p>;
+
   if (isError) return <p>Error loading filters</p>;
 
   return (

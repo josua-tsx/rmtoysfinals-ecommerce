@@ -81,7 +81,7 @@ const RequiredAuth = () => {
   return !currentUser ? (
     <Navigate to={`/sign-in`} />
   ) : (
-    <div className="font-main-text">
+    <div className="font-main-text h-screen bg-yellow">
       <header>
         <Navbar />
       </header>
@@ -112,7 +112,7 @@ const RequiredAuthGcashPage = () => {
 
 const AdminLayout = () => {
   return (
-    <div className="flex">
+    <div className="flex bg-yellow h-screen">
       <div className="">
         <AdminSideBar />
       </div>

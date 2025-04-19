@@ -41,9 +41,7 @@ export default function AdminStocksPending() {
     setSelectedId(null);
   };
 
-  if (isProductsPending) {
-    return <p>loading...</p>;
-  }
+ 
   if (isProductsError) {
     return <p>loading...</p>;
   }

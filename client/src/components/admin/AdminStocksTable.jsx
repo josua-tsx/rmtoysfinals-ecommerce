@@ -75,7 +75,7 @@ export default function AdminStocksTable() {
 
   const filteredArrayStocks = arrayStocks.filter(
     (stock) =>
-      stock._id.includes(searchTerm) ||
+      stock.deliveryId.includes(searchTerm) ||
       stock?.product?.productName
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
