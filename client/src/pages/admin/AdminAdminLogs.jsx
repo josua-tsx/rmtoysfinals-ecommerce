@@ -362,7 +362,7 @@ export default function AdminAdminLogs() {
                 </tr>
               ))
             ) : (
-              <p>No admin logs.</p>
+              <p className="">No admin logs.</p>
             )}
           </tbody>
         </table>

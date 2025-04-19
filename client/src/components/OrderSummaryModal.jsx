@@ -65,10 +65,10 @@ export default function OrderSummaryModal({ onClose }) {
         return total + item.productId.points * item.quantity;
       }, 0) || 0;
 
-    const totalPrice = subtotal + shippingFee + taxes - totalDiscount;
+    const totalPrice = subtotal - totalDiscount;
 
     return { totalDiscount, subtotal, totalPoints, totalPrice };
-  }, [cart, shippingFee, taxes]);
+  }, [cart]);
 
   // Calculate credits and final totalPrice
   const { usedCredits, deductedPrice } = useMemo(() => {
@@ -202,7 +202,7 @@ export default function OrderSummaryModal({ onClose }) {
       <div className="flex relative flex-col-reverse py-10  md:flex-row w-[90%] mx-auto gap-5 justify-center items-start">
         <form
           onSubmit={handleOrderFormSubmit}
-          className="bg-card p-2  flex flex-col justify-between relative rounded-[5px] border  w-[90%] md:w-[60%]  lg:w-[50%] border-black"
+          className="bg-card p-2 h-full  flex flex-col justify-between relative rounded-[5px] border  w-[90%] md:w-[60%]  lg:w-[50%] border-black"
         >
           <div className="hidden md:flex absolute -top-9 bg-primary border border-black left-0 rounded-[5px] text-card px-3 text-sm py-1">
             <h1>ORDER SUMMARY</h1>
@@ -328,7 +328,14 @@ export default function OrderSummaryModal({ onClose }) {
             </div>
 
             <div className="flex justify-between">
-              <p>Shipping Fee</p>
+              <div className="flex flex-col">
+                <p>Shipping Fee</p>
+                <span className="text-red-700 w-full text-xs">
+                  {" "}
+                  (Shipping fees are not included in the subtotal/total price
+                  and must be paid upon delivery.)
+                </span>
+              </div>
               <p>{shippingFee} PHP</p>
             </div>
             {/* <div className="flex justify-between">
@@ -353,7 +360,7 @@ export default function OrderSummaryModal({ onClose }) {
               <p className="text-lg">Total Price: </p>
               <p className="text-lg">
                 {formatPrice(deductedPrice)}
-                 PHP
+                PHP
               </p>
             </div>
           </div>

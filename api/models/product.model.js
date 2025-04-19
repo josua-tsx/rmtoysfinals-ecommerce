@@ -13,6 +13,10 @@ const ProductModelSchema = new mongoose.Schema(
       min: 0,
     },
 
+    preVatPrice: {
+      type: Number,
+    },
+
     productDescription: {
       type: String,
       required: true,

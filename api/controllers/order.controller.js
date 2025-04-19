@@ -31,6 +31,11 @@ export const userPlaceOrder = async (req, res, next) => {
       quantity: item.quantity || 1,
     }));
 
+    let totalItemsOrdered = orderItems.reduce(
+      (sum, item) => sum + (item.quantity || 0),
+      0
+    );
+
     if (!shippingAddress) {
       return next(
         handleMakeError(400, "You can't place an order without your address")
@@ -71,6 +76,7 @@ export const userPlaceOrder = async (req, res, next) => {
       paymentStatus: "Pending",
       totalPoints,
       usedCredits,
+      totalItemsOrdered,
       stripeSessionId: `cod-${Date.now()}-${Math.random()
         .toString(36)
         .substr(2, 9)}`,
@@ -317,7 +323,6 @@ export const placeOrderGcashQR = async (req, res, next) => {
     orderItems,
     shippingAddress,
     paymentMethod,
-    taxPrice,
     shippingPrice,
     discount,
     subtotal,
@@ -361,7 +366,6 @@ export const placeOrderGcashQR = async (req, res, next) => {
       orderItems,
       shippingAddress,
       paymentMethod,
-      taxPrice,
       shippingPrice,
       discount,
       subtotal,
@@ -481,6 +485,10 @@ export const getAllOrder = async (req, res, next) => {
       },
     })
       .populate({
+        path: "orderItems.productId",
+        select: "price preVatPrice",
+      })
+      .populate({
         path: "userId",
         select: "fullName email",
       })
@@ -504,6 +512,10 @@ export const getAllSuccess = async (req, res, next) => {
     const orders = await Order.find({
       status: ["Delivered"],
     })
+      .populate({
+        path: "orderItems.productId",
+        select: "price preVatPrice",
+      })
       .populate({
         path: "userId",
         select: "fullName email phoneNumber",
@@ -868,7 +880,11 @@ export const updatePaymentStatus = async (req, res, next) => {
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
       Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      await sendSMS(paymentStatusOrderPhoneNumber, failedSubject, failedMessage);
+      await sendSMS(
+        paymentStatusOrderPhoneNumber,
+        failedSubject,
+        failedMessage
+      );
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {
@@ -896,7 +912,11 @@ export const updatePaymentStatus = async (req, res, next) => {
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
       Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      await sendSMS(paymentStatusOrderPhoneNumber, failedSubject, failedMessage);
+      await sendSMS(
+        paymentStatusOrderPhoneNumber,
+        failedSubject,
+        failedMessage
+      );
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {

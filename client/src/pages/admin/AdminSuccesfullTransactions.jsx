@@ -192,7 +192,7 @@ export default function AdminSuccesfullTransactions({
                         {success.userId?.phoneNumber}
                       </td>
                       <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {totalItemsBought}
+                        {success?.totalItemsOrdered}
                       </td>
                       <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                         {success.paymentMethod}

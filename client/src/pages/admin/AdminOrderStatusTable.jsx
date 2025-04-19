@@ -27,6 +27,8 @@ export default function AdminOrderStatusTable() {
     },
   });
 
+  console.log(allOrders)
+
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : []
 
   const filteredArrayAllOrders = arrayAllOrders.filter((order) => (

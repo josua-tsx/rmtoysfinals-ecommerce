@@ -140,10 +140,10 @@ export default function AdminRefundedCancelledTransactions({
                     {formatPrice(refund.totalPrice)}
                   </td>
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    32
-                  </td>
-                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                     {refund.userId?.phoneNumber}
+                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                    {refund?.totalItemsOrdered}
+                  </td>
                   </td>
                   <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                     {refund.paymentMethod}

@@ -66,7 +66,7 @@ export default function AdminStocks() {
               value={`${formatPrice(totalExpectedVatToRemit)} PHP`}
             />
             <AdminStatCard
-              title={"TOTAL EXPECTED PROFIT"}
+              title={"TOTAL EXPECTED PROFIT WITHOUT VAT"}
               value={`${formatPrice(totalExpectedProfit)} PHP`}
             />
           </div>

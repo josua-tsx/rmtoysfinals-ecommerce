@@ -96,6 +96,14 @@ const OrderModelSchema = new mongoose.Schema(
       default: "Pending",
     },
 
+    shopPrice: {
+      type: Number
+    },
+
+    totalItemsOrdered: {
+      type: Number
+    },
+
     imageUrl: {
       type: String,
       default: "https://cdn-icons-png.freepik.com/512/8690/8690743.png",

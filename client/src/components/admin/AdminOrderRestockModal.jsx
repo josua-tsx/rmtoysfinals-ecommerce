@@ -17,7 +17,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   // const [discount, setDiscount] = useState(0);
-  const [vatPercent, setVatPercent] = useState(0)
+  const [vatPercent, setVatPercent] = useState(0);
 
   const queryClient = useQueryClient();
 
@@ -27,11 +27,9 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       setSupplier(singleStock?.supplier._id);
       setSupplierPrice(singleStock?.supplierPrice);
       setShippingPrice(singleStock?.shippingPrice);
-      setTotalCost(singleStock?.totalCost);
       setDeliveryId(singleStock?.deliveryId);
       setSelectedDate(singleStock?.dateDelivery);
       // setDiscount(singleStock?.product?.discount)
-      setTotalCost(singleStock?.totalCost);
     }
   }, [singleStock]);
 
@@ -39,9 +37,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const calculateTotalExpenses =
     (Number(supplierPrice) + Number(shippingPrice)) * Number(quantity);
 
-  const totalPriceWithVAT = Number(shopPrice) + (Number(shopPrice) * vatPercent)
-  const roundedPrice = Math.round(totalPriceWithVAT)
-
+  const totalPriceWithVAT = Number(shopPrice) + Number(shopPrice) * vatPercent;
+  const roundedPrice = Math.round(totalPriceWithVAT);
 
   useEffect(() => {
     if (calculateTotalExpenses) setTotalCost(calculateTotalExpenses);
@@ -65,13 +62,17 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
     },
   });
 
-  const { data: vats = [], isVatPending, isVatError } = useQuery({
-    queryKey: ['vats'],
+  const {
+    data: vats = [],
+    isVatPending,
+    isVatError,
+  } = useQuery({
+    queryKey: ["vats"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/vat/get-vat`)
-      return res.data
-    }
-  })
+      const res = await axiosInstance.get(`/vat/get-vat`);
+      return res.data;
+    },
+  });
 
   const hanldeFormSubmit = (e) => {
     e.preventDefault();
@@ -91,8 +92,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
     });
   };
 
-  if (isVatPending) return <p>Loading...</p>
-  if (isVatError) return <p>Error.</p>
+  if (isVatPending) return <p>Loading...</p>;
+  if (isVatError) return <p>Error.</p>;
 
   return (
     <section className="fixed inset-0 z-50 backdrop-blur-sm p-3">
@@ -206,12 +207,9 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               />
             </div>
 
-             
-            {
-                vatPercent.length > 0 && (
-                  <p>Shop price with VAT = {totalPriceWithVAT}</p>
-                )
-              }
+            {vatPercent.length > 0 && (
+              <p>Shop price with VAT = {totalPriceWithVAT}</p>
+            )}
 
             <div className="flex gap-4">
               <label htmlFor="shippingPrice">Shipping Price: </label>

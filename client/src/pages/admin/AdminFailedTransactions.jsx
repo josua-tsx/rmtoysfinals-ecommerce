@@ -147,7 +147,7 @@ export default function AdminFailedTransactions({
                       {failed.userId?.phoneNumber}
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {totalItems}
+                      {failed?.totalItemsOrdered}
                     </td>
                     <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                       {failed.paymentMethod}

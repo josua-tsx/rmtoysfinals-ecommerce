@@ -14,7 +14,6 @@ export const OrderStocks = async (req, res, next) => {
     supplierPrice,
     shopPrice,
     quantity,
-    category,
     shippingPrice,
     totalCost,
     deliveryId,
@@ -25,13 +24,32 @@ export const OrderStocks = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Validate required fields
+    if (
+      !product ||
+      !supplier ||
+      !quantity ||
+      !deliveryId ||
+      !vatPercent ||
+      !shippingPrice ||
+      !dateDelivery ||
+      !shopPrice
+    ) {
+      return res.status(400).json({ message: "Please input required fields!" });
+    }
+
+    if (Number(discount) > Number(vatShopPrice)) {
+      return next(
+        handleMakeError(400, "Discount should not be higher than shop price")
+      );
+    }
+
     const newDelivery = new Stocks({
       product,
       supplier,
       supplierPrice,
       shopPrice,
       quantity,
-      category,
       shippingPrice,
       totalCost,
       deliveryStatus: "delivered",
@@ -48,7 +66,6 @@ export const OrderStocks = async (req, res, next) => {
       userId,
       deliveryId,
       supplier,
-      category,
       quantityOrdered: quantity,
       supplierPrice,
       shippingPrice,
@@ -64,6 +81,7 @@ export const OrderStocks = async (req, res, next) => {
       {
         status: "published",
         price: vatShopPrice,
+        preVatPrice: shopPrice,
         stocks: newDelivery._id,
         discount,
       },
@@ -98,6 +116,16 @@ export const reorderStock = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
+    if (
+      !dateDelivery ||
+      !vatPercent ||
+      !supplier ||
+      !shopPrice ||
+      !shippingPrice
+    ) {
+      return res.status(400).json({ message: "Please input required fields!" });
+    }
+
     // 1. First find the existing stock
     const existingStock = await Stocks.findById(stockId);
 
@@ -150,7 +178,8 @@ export const reorderStock = async (req, res, next) => {
     await Product.findByIdAndUpdate(
       existingStock.product,
       {
-        price: shopPrice,
+        price: vatShopPrice,
+        preVatPrice: shopPrice,
       },
       { new: true, runValidators: true }
     );
