@@ -56,6 +56,7 @@ export default function AdminOrderStatusTable() {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({queryKey: ['notificationLogs']})
       queryClient.invalidateQueries({ queryKey: ["deliveredCancelled"] });
+      queryClient.invalidateQueries({ queryKey: ["stocks"] });
       toast.success("Sucessfully Updated Status!");
     },
     onError: (err) => {
@@ -145,7 +146,7 @@ export default function AdminOrderStatusTable() {
                     +{formatPrice(data.totalPoints)} 
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {data?.usedCredits ? -formatPrice(data?.usedCredits) : 0} 
+                    -{data?.usedCredits ? formatPrice(data?.usedCredits) : 0} 
                   </td>
 
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">

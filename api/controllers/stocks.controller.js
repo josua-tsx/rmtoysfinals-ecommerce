@@ -133,7 +133,7 @@ export const reorderStock = async (req, res, next) => {
 
     // 2. Calculate the new total quantity and total cost
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
-    const updatedTotalCost = existingStock.totalCost + Number(newTotalCost);
+    // const updatedTotalCost = existingStock.totalCost + Number(newTotalCost);
 
     // 3. Update the stock with all fields including the new quantity
     const updateDeliver = await Stocks.findByIdAndUpdate(
@@ -146,7 +146,7 @@ export const reorderStock = async (req, res, next) => {
         quantity: updatedQuantity, // Use the summed quantity
         category,
         shippingPrice,
-        totalCost: updatedTotalCost,
+        totalCost: (supplierPrice * updatedQuantity) + shippingPrice,
         deliveryStatus: "delivered",
         deliveryId,
         dateDelivery,

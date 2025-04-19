@@ -78,7 +78,7 @@ export default function AdminRecentFailedOrder() {
           </div>
           <div className="text-xs flex flex-col gap-1">
             <button
-              onClick={() => navigate(`/admin/orderTransact`)}
+              onClick={() => navigate(`/admin/orderTransactions`)}
               className="underline text-indigo-700"
             >
               redirect to order

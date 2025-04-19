@@ -59,11 +59,16 @@ const UserModelSchema = new mongoose.Schema(
       type: String,
     },
 
-
     credits: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
+
+    creditLock: {
+      type: Date,
+      default: null
+    },
+
   },
   {
     timestamps: true,

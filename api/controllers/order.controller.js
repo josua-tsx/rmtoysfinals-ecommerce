@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Order from "../models/order.model.js";
@@ -25,7 +26,22 @@ export const userPlaceOrder = async (req, res, next) => {
     usedCredits,
   } = req.body;
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
+    // Validate inputs
+    if (!shippingAddress) {
+      await session.abortTransaction();
+      return next(handleMakeError(400, "Shipping address is required"));
+    }
+
+    if (orderItems.length === 0) {
+      await session.abortTransaction();
+      return next(handleMakeError(400, "Order must contain products"));
+    }
+
+    // Process order items
     let orderItemsWithQuantity = orderItems.map((item) => ({
       ...item,
       quantity: item.quantity || 1,
@@ -35,18 +51,6 @@ export const userPlaceOrder = async (req, res, next) => {
       (sum, item) => sum + (item.quantity || 0),
       0
     );
-
-    if (!shippingAddress) {
-      return next(
-        handleMakeError(400, "You can't place an order without your address")
-      );
-    }
-
-    if (orderItemsWithQuantity.length === 0) {
-      return next(
-        handleMakeError(400, "You can't place an order without products!")
-      );
-    }
 
     // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
     for (const item of orderItemsWithQuantity) {
@@ -63,6 +67,34 @@ export const userPlaceOrder = async (req, res, next) => {
       }
     }
 
+    // Check credit availability if using credits
+    if (usedCredits > 0) {
+      const user = await User.findById(userId).session(session);
+
+      // Auto-clear expired lock
+      if (user.creditLock && user.creditLock <= new Date()) {
+        await User.findByIdAndUpdate(
+          userId,
+          { $set: { creditLock: null } },
+          { session }
+        );
+      }
+
+      // Verify credits can be used
+      if (user.creditLock) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, `Credits locked until ${user.creditLock}`)
+        );
+      }
+
+      if (user.credits < usedCredits) {
+        await session.abortTransaction();
+        return next(handleMakeError(400, "Insufficient credits"));
+      }
+    }
+
+    // Create order
     const newOrder = new Order({
       userId,
       orderItems: orderItemsWithQuantity,
@@ -82,44 +114,64 @@ export const userPlaceOrder = async (req, res, next) => {
         .substr(2, 9)}`,
     });
 
-    await newOrder.save();
+    await newOrder.save({ session });
 
-    await User.findByIdAndUpdate(
-      newOrder.userId,
-      {
-        $inc: { credits: -usedCredits },
-      },
-      { new: true }
-    );
+    // Update user credits and set lock if points are earned
+    const updates = {
+      $inc: { credits: -usedCredits },
+    };
 
+    if (totalPoints > 0) {
+      updates.$set = {
+        creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24-hour lock
+      };
+    }
+
+    await User.findByIdAndUpdate(userId, updates, { new: true, session });
+
+    // Update stock
     for (const item of orderItemsWithQuantity) {
       await Stocks.findOneAndUpdate(
         { product: item.productId },
         { $inc: { quantity: -item.quantity } },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true, session }
       );
     }
 
-    const userCart = await Cart.findOne({ userId });
+    // Clear cart
+    const userCart = await Cart.findOne({ userId }).session(session);
     userCart.items = [];
-    await userCart.save();
+    await userCart.save({ session });
 
+    // Audit trail
     await logAuditTrail({
       action: "user_add_order",
       userId,
       targetId: newOrder._id,
       targetType: "UserOrder",
       details: {
-        description: "Ordered using cod",
+        description: `Ordered using ${paymentMethod}`,
+        creditsUsed: usedCredits,
+        pointsEarned: totalPoints,
       },
       role: "customer",
     });
 
-    return res.status(200).json({ message: "Order placed!", newOrder });
+    await session.commitTransaction();
 
-    // For Stripe payments, create session ID and save it in metadata (as done in your `placeOrderStripe` function)
+    return res.status(200).json({
+      message: "Order placed successfully!",
+      order: newOrder,
+      creditsUsed: usedCredits,
+      pointsEarned: totalPoints,
+      creditsLockedUntil:
+        totalPoints > 0 ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
+    });
   } catch (error) {
+    await session.abortTransaction();
     next(error);
+  } finally {
+    session.endSession();
   }
 };
 
@@ -688,13 +740,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
           //   "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
           // );
 
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your Order ${updatedOrder._id} Has been Delivered!
-                "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
-                From: RM TOYS"
-`
-          );
+          //           await sendSMS(
+          //             orderUserPhoneNumber,
+          //             `Your Order ${updatedOrder._id} Has been Delivered!
+          //                 "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
+          //                 From: RM TOYS"
+          // `
+          //           );
 
           // Update products and user credits in parallel
           await Promise.all([
@@ -707,7 +759,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
             ),
             User.findByIdAndUpdate(updatedOrder.userId, {
               $inc: { credits: updatedOrder.totalPoints },
+              $set: {
+                creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000),
+              },
             }),
+
             // Stocks.findOneAndUpdate(
             //   { product: { $in: updatedOrder.orderItems.map(item => item.productId) } },
             //   { $inc: { totalCost: -updatedOrder.totalPrice } },
@@ -765,6 +821,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
           "Unfortunately, your order has been canceled. Please contact support for further assistance.",
           "From: RM TOYS"
         );
+
         break;
     }
 
@@ -1000,6 +1057,21 @@ export const cancelSuccessTransact = async (req, res, next) => {
       );
     }
 
+    // Handle credit points logic
+    if (order.usedCredits) {
+      // Return the credits they used for this order
+      await User.findByIdAndUpdate(order.userId, {
+        $inc: { credits: order.usedCredits },
+      });
+    }
+
+    // Deduct any credits they earned from this order (if applicable)
+    if (order.totalPoints) {
+      await User.findByIdAndUpdate(order.userId, {
+        $inc: { credits: -order.totalPoints },
+      });
+    }
+
     await logAuditTrail({
       action: "cancelled_Order_Transact",
       userId,
@@ -1098,7 +1170,7 @@ export const adminOrderRefund = async (req, res, next) => {
 
     for (const item of order.orderItems) {
       const productId = item.productId; // Get the productId
-      const quantitySold = item.quantity; // Get the quantity sold
+      const quantitySold = item.quantity;
 
       // Update the sold quantity in the Product collection
       await Product.findByIdAndUpdate(
@@ -1106,6 +1178,21 @@ export const adminOrderRefund = async (req, res, next) => {
         { $inc: { sold: -quantitySold } }, // DECREMENT the soldQuantity by the quantity sold
         { new: true, runValidators: true }
       );
+    }
+
+    // Handle credit points logic
+    if (order.usedCredits) {
+      // Return the credits they used for this order
+      await User.findByIdAndUpdate(order.userId, {
+        $inc: { credits: order.usedCredits },
+      });
+    }
+
+    // Deduct any credits they earned from this order (if applicable)
+    if (order.totalPoints) {
+      await User.findByIdAndUpdate(order.userId, {
+        $inc: { credits: -order.totalPoints },
+      });
     }
 
     if (!order) return next(handleMakeError(400, "No order found!"));

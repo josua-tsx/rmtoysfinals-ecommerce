@@ -80,7 +80,7 @@ export default function AdminRecentSuccessOrder() {
               </div>
               <div className="text-xs flex flex-col gap-1">
                 <button
-                  onClick={() => navigate(`${currentUser.role === "admin" ? `/admin/orderTransact` : '/validator/orderTransact'}`)}
+                  onClick={() => navigate(`${currentUser.role === "admin" ? `/admin/orderTransactions` : '/validator/orderTransactions'}`)}
                   className="underline text-indigo-700"
                 >
                   redirect to order
