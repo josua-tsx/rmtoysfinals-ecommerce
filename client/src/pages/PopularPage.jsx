@@ -4,14 +4,14 @@ import { TbPinnedFilled } from "react-icons/tb";
 import axiosInstance from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 import CreditPointsAuto from "../components/CreditPointsAuto";
+import LoadingSpinner from "../reusable/LoadingSpinner";
 
 export default function PopularPage() {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleNavigateToShop = () => {
-    navigate(`/shop`)
-  }
+    navigate(`/shop`);
+  };
 
   const {
     data: bestSoldProducts = [],
@@ -25,7 +25,6 @@ export default function PopularPage() {
     },
   });
 
-
   const {
     data: bestRatingProducts = [],
     isPending: isRatingPending,
@@ -38,9 +37,6 @@ export default function PopularPage() {
     },
   });
 
-  console.log(bestRatingProducts)
-
-  if (isBestPending || isRatingPending) return <p>Loading...</p>;
   if (isBestError || isRatingError) return <p>Error.</p>;
 
   return (
@@ -49,7 +45,7 @@ export default function PopularPage() {
         <div>
           <h1 className="text-3xl mb-5 ">Popular Products</h1>
         </div>
-        <CreditPointsAuto/>
+        <CreditPointsAuto />
         <div className="flex flex-col gap-14">
           <div>
             <div className="mb-7 flex justify-between">
@@ -59,41 +55,60 @@ export default function PopularPage() {
                 </h1>
                 <TbPinnedFilled className="text-primary" size={25} />
               </div>
-              <button onClick={handleNavigateToShop} className="text-primary underline">See More</button>
+              <button
+                onClick={handleNavigateToShop}
+                className="text-primary underline"
+              >
+                See More
+              </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {bestSoldProducts.length > 0 ? (
-                bestSoldProducts.map((best) => (
-                  <ShopProductCards key={best._id} product={best} />
-                ))
-              ) : (
-                <p>No product yet.</p>
-              )}
-            </div>
+            {isBestPending ? (
+              <div className="flex justify-center h-[200px] flex-col items-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {bestSoldProducts.length > 0 ? (
+                  bestSoldProducts.map((best) => (
+                    <ShopProductCards key={best._id} product={best} />
+                  ))
+                ) : (
+                  <p>No product yet.</p>
+                )}
+              </div>
+            )}
           </div>
-      
 
-        <div>
+          <div>
             <div className="mb-7 flex justify-between">
               <div className="flex items-center gap-1 bg-card border border-black rounded-[5px]">
-                <h1 className=" text-xl p-2 ">
-                  Best Rating Products
-                </h1>
+                <h1 className=" text-xl p-2 ">Best Rating Products</h1>
                 <TbPinnedFilled className="text-primary" size={25} />
               </div>
-              <button onClick={handleNavigateToShop} className="text-primary underline">See More</button>
+              <button
+                onClick={handleNavigateToShop}
+                className="text-primary underline"
+              >
+                See More
+              </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {bestRatingProducts.length > 0 ? (
-                bestRatingProducts.map((rating) => (
-                  <ShopProductCards key={rating._id} product={rating} />
-                ))
-              ) : (
-                <p>No product yet.</p>
-              )}
-            </div>
-          </div> 
 
+            {isRatingPending ? (
+              <div className="flex justify-center h-[200px] flex-col items-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {bestRatingProducts.length > 0 ? (
+                  bestRatingProducts.map((rating) => (
+                    <ShopProductCards key={rating._id} product={rating} />
+                  ))
+                ) : (
+                  <p>No product yet.</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>

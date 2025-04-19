@@ -5,6 +5,7 @@ import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminVatTable() {
     const navigate = useNavigate()
@@ -36,9 +37,7 @@ export default function AdminVatTable() {
     }
   })
 
-  console.log(vatTable)
 
-  if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error</p>;
 
   return (
@@ -58,7 +57,13 @@ export default function AdminVatTable() {
         </div>
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner/>
+            </div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="flex justify-between">
               <th className="font-normal p-2 pb-5">ID</th>
@@ -97,6 +102,8 @@ export default function AdminVatTable() {
             }
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );

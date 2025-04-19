@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../lib/axios";
 import formatPrice from "../../reusable/formatPrice";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminRecentFailedOrder() {
   const navigate = useNavigate();
@@ -25,7 +26,11 @@ export default function AdminRecentFailedOrder() {
 
   return (
     <div className="flex-1">
-      {latestfailedOrder ? (
+      {isPending ? (
+        <div className="flex items-center justify-center h-full">
+          <LoadingSpinner />
+        </div>
+      ) : latestfailedOrder ? (
         <div className="bg-card border h-full flex items-center justify-between relative border-black rounded-[5px] p-2">
           <div className="absolute -top-11 -left-1 border rounded-[5px]  bg-primary text-card border-black p-1">
             <h1>RECENT FAILED </h1>
@@ -82,7 +87,9 @@ export default function AdminRecentFailedOrder() {
           </div>
         </div>
       ) : (
-        <p className="border border-black rounded-[5px] bg-card p-5">no failed order yet.</p>
+        <p className="border border-black rounded-[5px] bg-card p-5">
+          no failed order yet.
+        </p>
       )}
     </div>
   );

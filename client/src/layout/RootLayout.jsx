@@ -61,13 +61,13 @@ const RootLayout = () => {
 
 
   return (
-    <div className="font-main-text bg-yellow">
+    <div className="font-main-text h-screen bg-yellow">
       <header>
         <Navbar />
       </header>
 
       {/* Main Content */}
-      <main className="bg-yellow h-full">
+      <main className="">
         <Outlet />
       </main>
       <Toaster position="bottom-right" />

@@ -16,6 +16,7 @@ import AdminRecentSuccessOrder from "./AdminRecentSuccessOrder.jsx";
 import AdminRecentFailedOrder from "./AdminRecentFailedOrder.jsx";
 import AdminRecentRefundedOrder from "./AdminRecentRefundedOrder.jsx";
 import AdminRecentCancelledOrder from "./AdminRecentCancelledOrder.jsx";
+import LoadingSpinner from "../../reusable/LoadingSpinner.jsx";
 
 export default function AdminSalesOverview() {
   const {
@@ -71,17 +72,20 @@ export default function AdminSalesOverview() {
       return res.data;
     },
   });
-  
+
   // GET ALL ORDERS (PENDING SO ON)
 
-  const {data: allPendings = [], isPending: isPendingPending, isError: isPendingError} = useQuery({
-    queryKey: ['Pendings'],
+  const {
+    data: allPendings = [],
+    isPending: isPendingPending,
+    isError: isPendingError,
+  } = useQuery({
+    queryKey: ["Pendings"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-orders`)
-      return res.data
-    }
-  })
-
+      const res = await axiosInstance.get(`/order/get-orders`);
+      return res.data;
+    },
+  });
 
   const totalRevenue = successOrderData.reduce((sum, item) => {
     return sum + item.totalPrice;
@@ -115,16 +119,7 @@ export default function AdminSalesOverview() {
   // Get daily sales
   const dailySales = getDailySales(successOrderData);
 
-  if (
-    isMonthlyPending ||
-    isSuccessPending ||
-    isCustomerPending ||
-    isWorkersPending ||
-    isPendingPending || 
-    isPendingError
-  )
-    return <p>loading...</p>;
-  if (isMonthlyError || isSuccessError || isCustomerError || isWorkersError)
+  if (isMonthlyError || isSuccessError || isCustomerError || isWorkersError || isPendingError)
     return <p>loading...</p>;
 
   return (
@@ -145,21 +140,38 @@ export default function AdminSalesOverview() {
               : 0
           }
         />
+
+
+
         <AdminStatCard
           title={"TOTAL REVENUE"}
           value={`${formatPrice(totalRevenue)} PHP`}
         />
-        <AdminStatCard
-          title={"TOTAL CUSTOMER"}
-          value={totalCustomer?.length > 0 ? totalCustomer?.length : 0}
-          value2={`TOTAL WORKERS ${
-            totalWorkers.length > 0 ? totalWorkers?.length : 0
-          }`}
-        />
-        <AdminStatCard
-          title={"TOTAL PENDING ORDERS"}
-          value={`${allPendings.length > 0 ? allPendings.length : 0}`}
-        />
+
+        {isCustomerPending ? (
+          <div className="flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard
+            title={"TOTAL CUSTOMER"}
+            value={totalCustomer?.length > 0 ? totalCustomer?.length : 0}
+            value2={`TOTAL WORKERS ${
+              totalWorkers.length > 0 ? totalWorkers?.length : 0
+            }`}
+          />
+        )}
+
+        {isPendingPending ? (
+          <div className="flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard
+            title={"TOTAL PENDING ORDERS"}
+            value={`${allPendings.length > 0 ? allPendings.length : 0}`}
+          />
+        )}
       </div>
 
       <div className="flex w-full flex-col md:flex-row  gap-20 md:gap-4">
@@ -168,7 +180,11 @@ export default function AdminSalesOverview() {
             <h1>MONTHLY SALES</h1>
           </div>
 
-          {monthlySales.length === 0 ? (
+          {isMonthlyPending ? (
+            <div className="h-full flex justify-center items-center">
+              <LoadingSpinner />
+            </div>
+          ) : monthlySales.length === 0 ? (
             <p>No data available for the chart</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">

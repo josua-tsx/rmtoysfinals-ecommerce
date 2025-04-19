@@ -3,6 +3,7 @@ import { useState } from "react";
 import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
 import { IoSearch } from "react-icons/io5";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminCancelledTransact({
   cancelledOrder,
@@ -42,9 +43,6 @@ export default function AdminCancelledTransact({
       cancelled?.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  console.log(cancelledOrder);
-
-  if (iscancelledOrderPending) return <p>Loading...</p>;
   if (iscancelledOrderError) return <p>Error.</p>;
 
   return (
@@ -70,7 +68,13 @@ export default function AdminCancelledTransact({
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          iscancelledOrderPending ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner/>
+            </div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">ORDER ID</th>
@@ -132,6 +136,8 @@ export default function AdminCancelledTransact({
             )}
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );

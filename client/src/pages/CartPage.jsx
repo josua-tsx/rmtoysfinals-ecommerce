@@ -102,7 +102,7 @@ export default function CartPage() {
                   Total Items: <span>{cart?.items?.length}</span>
                 </p>
                 <p>
-                  Total Items: <span>+{totalPoints}</span>
+                  Total Points: <span>+{totalPoints}</span>
                 </p>
                 <p>
                   Total Price:{" "}

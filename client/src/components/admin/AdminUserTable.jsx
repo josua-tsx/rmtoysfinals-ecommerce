@@ -3,6 +3,7 @@ import { IoSearch } from "react-icons/io5";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminUserTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,9 +54,6 @@ export default function AdminUserTable() {
       customer.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (isPending) {
-    return <p>loading...</p>;
-  }
 
   if (isError) {
     return <p>error...</p>;
@@ -77,7 +75,13 @@ export default function AdminUserTable() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          isPending ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner/>
+            </div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">ID</th>
@@ -143,6 +147,8 @@ export default function AdminUserTable() {
               ))}
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );

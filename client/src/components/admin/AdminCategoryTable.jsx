@@ -7,15 +7,16 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminCategoryTable() {
-	const queryClient = useQueryClient()
-  const navigate = useNavigate()
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [isOpenModal, setIsOpenModal] = useState(false)
-  const [selectedId, setSelectedId] = useState(null)
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
   const {
     data: categories = [],
@@ -29,72 +30,66 @@ export default function AdminCategoryTable() {
     },
   });
 
-  const arrayCategories = Array.isArray(categories) ? categories: [];
+  const arrayCategories = Array.isArray(categories) ? categories : [];
 
-  const {mutate: deleteCategoryMutation, isPending: isDeletedPending, isError: isDeletedError} = useMutation({
+  const { mutate: deleteCategoryMutation } = useMutation({
     mutationFn: async (categoryId) => {
-      const res = await axiosInstance.delete(`/category/delete-category/${categoryId}`)
-      return res.data
+      const res = await axiosInstance.delete(
+        `/category/delete-category/${categoryId}`
+      );
+      return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["categories"]})
-      toast.success("Category Deleted Successfully!")
-    }
-  })
-
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Category Deleted Successfully!");
+    },
+  });
 
   const handleClickDelete = (categoryId) => {
-    setSelectedId(categoryId)
-    setIsOpenModal(true)
-  }
+    setSelectedId(categoryId);
+    setIsOpenModal(true);
+  };
 
   const handleConfirm = () => {
     if (setSelectedId) {
-      deleteCategoryMutation(selectedId)
-      setIsOpenModal(false)
+      deleteCategoryMutation(selectedId);
+      setIsOpenModal(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setSelectedId(null)
-    setIsOpenModal(false)
-  }
-
+    setSelectedId(null);
+    setIsOpenModal(false);
+  };
 
   const navigateToEdit = (categoryId) => {
-    navigate(`/admin/editCategory/${categoryId}`)
+    navigate(`/admin/editCategory/${categoryId}`);
+  };
+
+  const filterdArrayCategories = arrayCategories.filter(
+    (category) =>
+      category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category._id.includes(searchTerm)
+  );
+
+  if (isCategoryError) {
+    <p>loading...</p>;
   }
-
-
-  const filterdArrayCategories = arrayCategories.filter((category) => (
-    category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    category._id.includes(searchTerm)
-  ))
-
-
-
-  if (isCategoryPending || isDeletedPending) {
-    <p>loading...</p>
-  }
-
-  if (isCategoryError || isDeletedError) {
-    <p>loading...</p>
-  }
-
 
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
-       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-       {/* CARD */}
+      <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
+      {/* CARD */}
 
       <ConfirmModal
         isOpen={isOpenModal}
         title={"Confirm delete"}
-        message={"Are you sure you want to delete this category? This action cannot be undone."}
+        message={
+          "Are you sure you want to delete this category? This action cannot be undone."
+        }
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-     
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>CATEGORY TABLE</h1>
@@ -102,7 +97,7 @@ export default function AdminCategoryTable() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value) }
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search category.."
             className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
@@ -110,7 +105,13 @@ export default function AdminCategoryTable() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+       {
+        isCategoryPending ? (
+          <div className="flex justify-center h-full items-center">
+            <LoadingSpinner/>
+          </div>
+        ) : (
+          <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">ID</th>
@@ -126,24 +127,24 @@ export default function AdminCategoryTable() {
                 <tr key={category._id}>
                   <td className="px-4 ">{category._id}</td>
 
-                  <td className="	">
-                    {category?.categoryName}
-                  </td>
+                  <td className="	">{category?.categoryName}</td>
 
-                  <td className="">
-                    {category?.categoryDescription}
-                  </td>
+                  <td className="">{category?.categoryDescription}</td>
                   {/* <td className="">
                     {category?.products.length}
                   </td> */}
 
                   <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button onClick={() => navigateToEdit(category._id)}
-                    className="text-green-600 hover:text-indigo-300 mr-2">
+                    <button
+                      onClick={() => navigateToEdit(category._id)}
+                      className="text-green-600 hover:text-indigo-300 mr-2"
+                    >
                       <CiEdit size={25} />
                     </button>
-                    <button onClick={() => handleClickDelete(category._id)}
-                    className="text-red-600 hover:text-red-300">
+                    <button
+                      onClick={() => handleClickDelete(category._id)}
+                      className="text-red-600 hover:text-red-300"
+                    >
                       <MdDelete size={25} />
                     </button>
                   </td>
@@ -151,6 +152,8 @@ export default function AdminCategoryTable() {
               ))}
           </tbody>
         </table>
+        )
+       }
       </div>
     </div>
   );

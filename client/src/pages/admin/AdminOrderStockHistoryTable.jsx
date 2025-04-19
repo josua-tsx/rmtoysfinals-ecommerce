@@ -3,6 +3,7 @@ import formatPrice from "../../reusable/formatPrice";
 import { IoSearch } from "react-icons/io5";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminOrderStockHistoryTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,31 +25,25 @@ export default function AdminOrderStockHistoryTable() {
   const filteredArrayStocks = arrayStocks.filter(
     (stock) =>
       stock.deliveryId.includes(searchTerm) ||
-      stock?.action
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
+      stock?.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock?.supplier?.supplierName
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      stock?.receivedDate
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
+      stock?.receivedDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock?.totalCost
-      .toString()
-      .toLowerCase()
-      .includes(searchTerm.toString().toLowerCase()) ||
+        .toString()
+        .toLowerCase()
+        .includes(searchTerm.toString().toLowerCase()) ||
       stock?.quantityOrdered
-      .toString()
-      .toLowerCase()
-      .includes(searchTerm.toString().toLowerCase()) ||
+        .toString()
+        .toLowerCase()
+        .includes(searchTerm.toString().toLowerCase()) ||
       stock?.receivedQuantity
-      .toString()
-      .toLowerCase()
-      .includes(searchTerm.toString().toLowerCase()) 
-
+        .toString()
+        .toLowerCase()
+        .includes(searchTerm.toString().toLowerCase())
   );
 
-  if (isStockHistoryPending) return <p>loading...</p>;
   if (isStockHistoryError) return <p>Error.</p>;
 
   return (
@@ -68,58 +63,73 @@ export default function AdminOrderStockHistoryTable() {
         </div>
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
-          <thead>
-            <tr>
-              {/* <th className="font-normal p-2 pb-5">ID</th> */}
-              <th className="font-normal p-2 pb-5">Delivery ID</th>
-              <th className="font-normal p-2 pb-5">User</th>
-              <th className="font-normal p-2 pb-5">Action</th>
-              <th className="font-normal p-2 pb-5">Quantity Ordered</th>
-              <th className="font-normal p-2 pb-5">Supplier Name</th>
-              <th className="font-normal p-2 pb-5">Supplier Price</th>
-              <th className="font-normal p-2 pb-5">Shipping Price</th>
-              <th className="font-normal p-2 pb-5">Shop Price</th>
-              <th className="font-normal p-2 pb-5">Vat Applied</th>
-              <th className="font-normal p-2 pb-5">Recieved Date</th>
-              <th className="font-normal p-2 pb-5">Recieved Quantity</th>
-              <th className="font-normal p-2 pb-5">Total Cost</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {filteredArrayStocks.length === 0 ? (
+        {isStockHistoryPending ? (
+          <div className="flex justify-center items-center h-full">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <table className="w-full divide-y divide-gray-700">
+            <thead>
               <tr>
-                <td colSpan="6" className="text-center">
-                  No stocks available
-                </td>
+                {/* <th className="font-normal p-2 pb-5">ID</th> */}
+                <th className="font-normal p-2 pb-5">Delivery ID</th>
+                <th className="font-normal p-2 pb-5">User</th>
+                <th className="font-normal p-2 pb-5">Action</th>
+                <th className="font-normal p-2 pb-5">Quantity Ordered</th>
+                <th className="font-normal p-2 pb-5">Supplier Name</th>
+                <th className="font-normal p-2 pb-5">Supplier Price</th>
+                <th className="font-normal p-2 pb-5">Shipping Price</th>
+                <th className="font-normal p-2 pb-5">Shop Price</th>
+                <th className="font-normal p-2 pb-5">Vat Applied</th>
+                <th className="font-normal p-2 pb-5">Recieved Date</th>
+                <th className="font-normal p-2 pb-5">Recieved Quantity</th>
+                <th className="font-normal p-2 pb-5">Total Cost</th>
               </tr>
-            ) : (
-              filteredArrayStocks.map((stock) => (
-                <tr key={stock._id}>
-                  {/* <td className="px-4">{stock._id}</td> */}
-                  <td className=" px-4 gap-2">{stock?.deliveryId}</td>
-                  <td className=" px-4 gap-2">{stock?.userId?.username}</td>
-                  <td className=" px-4 gap-2">{stock?.action}</td>
-                  <td className="text-center">{stock?.quantityOrdered}</td>
-                  <td className="text-center">{stock?.supplier?.supplierName}</td>
-                  <td className="text-center">{formatPrice(stock?.supplierPrice)} PHP</td>
-                  <td className="text-center">{formatPrice(stock?.shippingPrice)} PHP</td>
-                  <td className="text-center">{formatPrice(stock?.shopPrice)} PHP</td>
-                  <td className="text-center">{stock?.vatPercentApplied}</td>
-                  <td className="text-center flex flex-col">
-                    <span>{stock?.receivedDate}</span>
-                    <span>{new Date(stock?.createdAt).toLocaleTimeString()}</span>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {filteredArrayStocks.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center">
+                    No stocks available
                   </td>
-                  <td className="text-center ">{stock?.receivedQuantity}</td>
-                  <td className="text-center px-4">{formatPrice(stock?.totalCost)} PHP</td>
-                
-
-          
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredArrayStocks.map((stock) => (
+                  <tr key={stock._id}>
+                    {/* <td className="px-4">{stock._id}</td> */}
+                    <td className=" px-4 gap-2">{stock?.deliveryId}</td>
+                    <td className=" px-4 gap-2">{stock?.userId?.username}</td>
+                    <td className=" px-4 gap-2">{stock?.action}</td>
+                    <td className="text-center">{stock?.quantityOrdered}</td>
+                    <td className="text-center">
+                      {stock?.supplier?.supplierName}
+                    </td>
+                    <td className="text-center">
+                      {formatPrice(stock?.supplierPrice)} PHP
+                    </td>
+                    <td className="text-center">
+                      {formatPrice(stock?.shippingPrice)} PHP
+                    </td>
+                    <td className="text-center">
+                      {formatPrice(stock?.shopPrice)} PHP
+                    </td>
+                    <td className="text-center">{stock?.vatPercentApplied}</td>
+                    <td className="text-center flex flex-col">
+                      <span>{stock?.receivedDate}</span>
+                      <span>
+                        {new Date(stock?.createdAt).toLocaleTimeString()}
+                      </span>
+                    </td>
+                    <td className="text-center ">{stock?.receivedQuantity}</td>
+                    <td className="text-center px-4">
+                      {formatPrice(stock?.totalCost)} PHP
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

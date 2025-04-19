@@ -5,6 +5,7 @@ import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import AdminOrderRestockModal from "./AdminOrderRestockModal";
 import ReduceQuantityModal from "../ReduceQuantityModal";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 
 export default function AdminStocksTable() {
@@ -90,9 +91,7 @@ export default function AdminStocksTable() {
         .includes(searchTerm.toString().toLowerCase())
   );
 
-  if (isStocksPending) {
-    return <p>Loading...</p>;
-  }
+
 
   if (isStocksError) {
     return <p>Something went wrong.</p>;
@@ -134,7 +133,11 @@ export default function AdminStocksTable() {
         </div>
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          isStocksPending ? (
+            <div className="flex justify-center items-center h-full"><LoadingSpinner/></div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr>
               {/* <th className="font-normal p-2 pb-5">ID</th> */}
@@ -229,6 +232,8 @@ export default function AdminStocksTable() {
             )}
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );

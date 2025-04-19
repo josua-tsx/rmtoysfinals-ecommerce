@@ -6,6 +6,7 @@ import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
 
 import formatPrice from "../../reusable/formatPrice";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminFailedTransactions({
   failedCancelledData,
@@ -68,9 +69,8 @@ export default function AdminFailedTransactions({
       failed.reason.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  console.log(failedCancelledData);
 
-  if (isFailedCancelledPending) return <p>Loading...</p>;
+
   if (isFailedCancelledError) return <p>Error.</p>;
 
   return (
@@ -96,7 +96,13 @@ export default function AdminFailedTransactions({
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          isFailedCancelledPending ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner/>
+            </div>
+          ): (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">ORDER ID</th>
@@ -189,6 +195,8 @@ export default function AdminFailedTransactions({
             )}
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import formatPrice from "../../reusable/formatPrice";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminProductsTable() {
   const queryClient = useQueryClient();
@@ -124,102 +125,108 @@ export default function AdminProductsTable() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
-          <thead>
-            <tr className="">
-              <th className="font-normal p-2 pb-5">ID</th>
-              <th className="font-normal p-2 pb-5">NAME</th>
-              <th className="font-normal p-2 pb-5">CATEGORY</th>
-              <th className="font-normal p-2 pb-5">PRICE</th>
-              <th className="font-normal p-2 pb-5">STATUS</th>
-              <th className="font-normal p-2 pb-5">REVIEWS</th>
-              <th className="font-normal p-2 pb-5">SOLD</th>
-              <th className="font-normal p-2 pb-5">DISCOUNT</th>
-              <th className="font-normal p-2 pb-5">POINTS</th>
-              <th className="font-normal p-2 pb-5">DATE CREATED</th>
-              {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
-              <th className="font-normal p-2 pb-5">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700 ">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <tr key={product._id}>
-                  <td className="px-4 ">{product._id}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
-                    <img
-                      src={product.productImages[0]}
-                      alt="Product img"
-                      className="size-10 rounded-full"
-                    />
-                    {product.productName}
-                  </td>
-
-                  <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {product.category && product.category.categoryName}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {formatPrice(product?.price)} PHP
-                  </td>
-
-                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                    {product.status}
-                  </td>
-
-                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                    {product?.reviews?.length}
-                  </td>
-
-                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                    {product?.sold}
-                  </td>
-
-                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                    {product?.discount
-                      ? formatPrice(product?.discount) 
-                      : "no discount"}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {product?.points}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {new Date(product.createdAt).toLocaleString()}
-                  </td>
-
-                  {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
-                  {product.stocks}
-                </td> */}
-                  <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button
-                      onClick={() => navigateToeditPage(product._id)}
-                      className="text-green-600 hover:text-indigo-300 mr-2"
-                    >
-                      <CiEdit size={25} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(product._id)}
-                      className="text-red-600 hover:text-red-300"
-                    >
-                      <MdDelete size={25} />
-                    </button>
-                    <button
-                      onClick={() => addToSlider(product._id)}
-                      className="text-red-600 hover:text-red-300"
-                    >
-                      {!product?.isBestProduct
-                        ? "ADD TO SLIDER"
-                        : "REMOVE FROM SLIDER"}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <p className="px-1">no products</p>
-            )}
-          </tbody>
-        </table>
+        {
+          isPending ? (
+            <div className="flex h-full justify-center items-center"><LoadingSpinner/></div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
+            <thead>
+              <tr className="">
+                <th className="font-normal p-2 pb-5">ID</th>
+                <th className="font-normal p-2 pb-5">NAME</th>
+                <th className="font-normal p-2 pb-5">CATEGORY</th>
+                <th className="font-normal p-2 pb-5">PRICE</th>
+                <th className="font-normal p-2 pb-5">STATUS</th>
+                <th className="font-normal p-2 pb-5">REVIEWS</th>
+                <th className="font-normal p-2 pb-5">SOLD</th>
+                <th className="font-normal p-2 pb-5">DISCOUNT</th>
+                <th className="font-normal p-2 pb-5">POINTS</th>
+                <th className="font-normal p-2 pb-5">DATE CREATED</th>
+                {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
+                <th className="font-normal p-2 pb-5">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700 ">
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <tr key={product._id}>
+                    <td className="px-4 ">{product._id}</td>
+                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
+                      <img
+                        src={product.productImages[0]}
+                        alt="Product img"
+                        className="size-10 rounded-full"
+                      />
+                      {product.productName}
+                    </td>
+  
+                    <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                      {product.category && product.category.categoryName}
+                    </td>
+  
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                      {formatPrice(product?.price)} PHP
+                    </td>
+  
+                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                      {product.status}
+                    </td>
+  
+                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                      {product?.reviews?.length}
+                    </td>
+  
+                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                      {product?.sold}
+                    </td>
+  
+                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                      {product?.discount
+                        ? formatPrice(product?.discount) 
+                        : "no discount"}
+                    </td>
+  
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                      {product?.points}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                      {new Date(product.createdAt).toLocaleString()}
+                    </td>
+  
+                    {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
+                    {product.stocks}
+                  </td> */}
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
+                      <button
+                        onClick={() => navigateToeditPage(product._id)}
+                        className="text-green-600 hover:text-indigo-300 mr-2"
+                      >
+                        <CiEdit size={25} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(product._id)}
+                        className="text-red-600 hover:text-red-300"
+                      >
+                        <MdDelete size={25} />
+                      </button>
+                      <button
+                        onClick={() => addToSlider(product._id)}
+                        className="text-red-600 hover:text-red-300"
+                      >
+                        {!product?.isBestProduct
+                          ? "ADD TO SLIDER"
+                          : "REMOVE FROM SLIDER"}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <p className="px-1">no products</p>
+              )}
+            </tbody>
+          </table>
+          )
+        }
       </div>
     </div>
   );

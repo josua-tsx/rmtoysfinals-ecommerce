@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminProductReviewsTable() {
   const navigate = useNavigate();
@@ -48,13 +49,10 @@ export default function AdminProductReviewsTable() {
       review?.productId.includes(searchTerm)
   );
 
-  console.log(allReviews);
-
   const handleNavigateToProduct = (productId) => {
     navigate(`/product/${productId}`);
   };
 
-  if (isPending) return <p>Loading...</p>;
   if (isError) return <p>Error.</p>;
 
   return (
@@ -73,75 +71,83 @@ export default function AdminProductReviewsTable() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
-          <thead>
-            <tr className="">
-              <th className="font-normal p-2 pb-5">REVIEW ID</th>
-              <th className="font-normal p-2 pb-5">PRODUCT ID</th>
-              <th className="font-normal p-2 pb-5">EMAIL</th>
-              <th className="font-normal p-2 pb-5">USERNAME</th>
-              <th className="font-normal p-2 pb-5">COMMENT REVIEW</th>
-              <th className="font-normal p-2 pb-5">RATING</th>
-              <th className="font-normal p-2 pb-5">DATE CREATED</th>
-              {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
-              <th className="font-normal p-2 pb-5">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700 ">
-            {filteredArrayAllReviews.length > 0 ? (
-              filteredArrayAllReviews.map((review) => (
-                <tr key={review._id}>
-                  <td className="px-4 ">{review?._id}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2	">
-                    {review?.productId}
-                  </td>
+        {isPending ? (
+          <div className="flex justify-center h-full items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <table className="w-full divide-y divide-gray-700">
+            <thead>
+              <tr className="">
+                <th className="font-normal p-2 pb-5">REVIEW ID</th>
+                <th className="font-normal p-2 pb-5">PRODUCT ID</th>
+                <th className="font-normal p-2 pb-5">EMAIL</th>
+                <th className="font-normal p-2 pb-5">USERNAME</th>
+                <th className="font-normal p-2 pb-5">COMMENT REVIEW</th>
+                <th className="font-normal p-2 pb-5">RATING</th>
+                <th className="font-normal p-2 pb-5">DATE CREATED</th>
+                {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
+                <th className="font-normal p-2 pb-5">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700 ">
+              {filteredArrayAllReviews.length > 0 ? (
+                filteredArrayAllReviews.map((review) => (
+                  <tr key={review._id}>
+                    <td className="px-4 ">{review?._id}</td>
+                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2	">
+                      {review?.productId}
+                    </td>
 
-                  <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                    {review?.userId?.email}
-                  </td>
+                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
+                      {review?.userId?.email}
+                    </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {review?.userId?.username}
-                  </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                      {review?.userId?.username}
+                    </td>
 
-                  <td className="px-6 py-4  text-indigo-700 uppercase  text-center text-sm">
-                    <p className="w-[250px] truncate">
-                      {review?.commentReview}
-                    </p>
-                  </td>
+                    <td className="px-6 py-4  text-indigo-700 uppercase  text-center text-sm">
+                      <p className="w-[250px] truncate">
+                        {review?.commentReview}
+                      </p>
+                    </td>
 
-                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                    {review?.rating}
-                  </td>
+                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                      {review?.rating}
+                    </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {new Date(review.createdAt).toLocaleString()}
-                  </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                      {new Date(review.createdAt).toLocaleString()}
+                    </td>
 
-                  {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
+                    {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
                   {product.stocks}
                 </td> */}
-                  <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button
-                      onClick={() => adminDeleteReviewMutation(review._id)}
-                      className="text-red-600 hover:text-red-300"
-                    >
-                      <MdDelete size={25} />
-                    </button>
-                    <button
-                      onClick={() => handleNavigateToProduct(review?.productId)}
-                      className="text-indigo-700 hover:text-red-300"
-                    >
-                      GO TO PRODUCT
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <p>no reviews yet.</p>
-            )}
-          </tbody>
-        </table>
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
+                      <button
+                        onClick={() => adminDeleteReviewMutation(review._id)}
+                        className="text-red-600 hover:text-red-300"
+                      >
+                        <MdDelete size={25} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleNavigateToProduct(review?.productId)
+                        }
+                        className="text-indigo-700 hover:text-red-300"
+                      >
+                        GO TO PRODUCT
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <p>no reviews yet.</p>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

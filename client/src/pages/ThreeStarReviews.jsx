@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../lib/axios';
 import ReviewCardTwo from '../components/ReviewCardTwo';
+import LoadingSpinner from '../reusable/LoadingSpinner';
 
 export default function ThreeStarReviews() {
 
@@ -16,9 +17,7 @@ export default function ThreeStarReviews() {
         },
       });
     
-      console.log(threeStarReviews);
-    
-      if (isPending) return <p>Loading...</p>;
+      if (isPending) return <LoadingSpinner fullScreen/>;
       if (isError) return <p>Error.</p>;
 
   return (

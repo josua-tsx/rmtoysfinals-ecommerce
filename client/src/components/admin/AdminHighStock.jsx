@@ -2,7 +2,7 @@ import React from "react";
 
 export default function AdminHighStock({stock}) {
 
-    console.log(stock)
+   
 
   return (
     <div className="border border-black flex flex-col justify-center  p-2 px-10 text-center  relative  bg-card rounded-[5px]">

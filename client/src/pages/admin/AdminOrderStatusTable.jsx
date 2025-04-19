@@ -5,6 +5,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminOrderStatusTable() {
   const [orderId, setOrderId] = useState(null);
@@ -25,8 +26,6 @@ export default function AdminOrderStatusTable() {
       return res.data;
     },
   });
-
-  console.log(allOrders)
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : []
 
@@ -99,7 +98,11 @@ export default function AdminOrderStatusTable() {
       </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+       {
+        isOrdersPending ? (
+          <div className="flex justify-center items-center h-full"><LoadingSpinner/></div>
+        ) : (
+          <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">ORDER ID</th>
@@ -207,6 +210,8 @@ export default function AdminOrderStatusTable() {
             )}
           </tbody>
         </table>
+        )
+       }
       </div>
     </div>
   );

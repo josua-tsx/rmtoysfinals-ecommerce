@@ -5,6 +5,7 @@ import { useState } from "react";
 import SingleOrderList from "../../components/SingleOrderList";
 import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminRefundedCancelledTransactions({
   refundedCancelled,
@@ -72,7 +73,7 @@ export default function AdminRefundedCancelledTransactions({
 
   console.log(refundedCancelled);
 
-  if (isRefundedCancelledPending) return <p>Loading...</p>;
+
   if (isRefundedCancelledError) return <p>Error.</p>;
 
   return (
@@ -98,7 +99,13 @@ export default function AdminRefundedCancelledTransactions({
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          isRefundedCancelledPending ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner/>
+            </div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">ORDER ID</th>
@@ -172,6 +179,8 @@ export default function AdminRefundedCancelledTransactions({
             )}
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );

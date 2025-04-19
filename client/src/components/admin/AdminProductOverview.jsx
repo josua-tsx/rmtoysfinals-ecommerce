@@ -6,6 +6,7 @@ import AdminProductOverviewCard from "./AdminProductOverviewCard";
 import { useNavigate } from "react-router-dom";
 import StarsRating from "../StarsRating";
 import { TbPinnedFilled } from "react-icons/tb";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminProductOverview() {
   const navigate = useNavigate();
@@ -134,51 +135,67 @@ export default function AdminProductOverview() {
   }));
 
   if (
-    isCategoriesPending ||
-    isProductPending ||
-    isSupplierPending ||
-    isSoldPending ||
-    isRatingPending ||
-    isSingleReviewPending ||
-    isLatestReviewPending ||
-    isLatestReviewError ||
-    isReviewsPending
-  )
-    return <p>Loading categories...</p>;
-  if (
     isCategoriesError ||
     isProductError ||
     isSupplierError ||
     isSoldError ||
     isRatingError ||
     isSingleReviewError ||
-    isReviewsError
+    isReviewsError ||
+    isLatestReviewError
   )
     return <p>Error loading categories</p>;
 
   return (
     <div className="flex flex-col bg-yellow gap-16">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-        <AdminStatCard
-          title={"TOTAL PRODUCTS"}
-          value={
-            allProducts?.products?.length > 0
-              ? allProducts?.products?.length
-              : 0
-          }
-        />
-        <AdminStatCard
-          title={"TOTAL CATEGORIES"}
-          value={allCategories.length > 0 ? allCategories.length : 0}
-        />
-        <AdminStatCard
-          title={"TOTAL SUPPLIERS"}
-          value={allSuppliers.length > 0 ? allSuppliers.length : 0}
-        />
-        <AdminStatCard
-          title={"TOTAL PRODUCTS REVIEWS"}
-          value={allReviews.length > 0 ? allReviews.length : 0}
-        />
+        {isProductPending ? (
+          <div className="flex justify-center h-[150px] items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard
+            title={"TOTAL PRODUCTS"}
+            value={
+              allProducts?.products?.length > 0
+                ? allProducts?.products?.length
+                : 0
+            }
+          />
+        )}
+
+        {isCategoriesPending ? (
+          <div className="flex justify-center h-[150px] items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard
+            title={"TOTAL CATEGORIES"}
+            value={allCategories.length > 0 ? allCategories.length : 0}
+          />
+        )}
+
+        {isSupplierPending ? (
+          <div className="flex justify-center h-[150px] items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard
+            title={"TOTAL SUPPLIERS"}
+            value={allSuppliers.length > 0 ? allSuppliers.length : 0}
+          />
+        )}
+
+        {isReviewsPending ? (
+          <div className="flex justify-center h-[150px] items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <AdminStatCard
+            title={"TOTAL PRODUCTS REVIEWS"}
+            value={allReviews.length > 0 ? allReviews.length : 0}
+          />
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row justify-between gap-16 md:gap-4">
@@ -187,24 +204,34 @@ export default function AdminProductOverview() {
             <h1>CATEGORIES DISTRIBUTION</h1>
           </div>
           <ResponsiveContainer width="100%" height={"100%"}>
-            <PieChart width={730} height={200}>
-              {/* Outer Pie: Outer ring */}
-              <Pie
-                data={pieData}
-                dataKey="categoryDescription"
-                nameKey="categoryName"
-                cx="50%"
-                outerRadius={90} // Size of the outer ring
-                fill="#8884d8"
-                label={({ name, percent }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
-                } // Custom label for outer pie chart (category name)
-              />
-            </PieChart>
+            {isCategoriesPending ? (
+              <div className="flex h-full justify-center items-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <PieChart width={730} height={200}>
+                {/* Outer Pie: Outer ring */}
+                <Pie
+                  data={pieData}
+                  dataKey="categoryDescription"
+                  nameKey="categoryName"
+                  cx="50%"
+                  outerRadius={90} // Size of the outer ring
+                  fill="#8884d8"
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  } // Custom label for outer pie chart (category name)
+                />
+              </PieChart>
+            )}
           </ResponsiveContainer>
         </div>
         <div className="w-full md:w-[50%] grid grid-cols-1 md:grid-cols-2 gap-5 relative">
-          {topSingleBestProduct ? (
+          {isSoldPending ? (
+            <div className="flex justify-center flex-col items-center">
+              <LoadingSpinner />
+            </div>
+          ) : topSingleBestProduct ? (
             <AdminProductOverviewCard
               singleBestSoldProduct={topSingleBestProduct}
               value1={"TOP 1 PRODUCT"}
@@ -226,7 +253,11 @@ export default function AdminProductOverview() {
             </p>
           )}
 
-          {topSingleBestRatingProduct ? (
+          {isRatingPending ? (
+            <div className="flex justify-center flex-col items-center">
+              <LoadingSpinner />
+            </div>
+          ) : topSingleBestRatingProduct ? (
             <AdminProductOverviewCard
               singleBestSoldProduct={topSingleBestRatingProduct}
               value1={"TOP 1 IN RATING"}
@@ -248,7 +279,11 @@ export default function AdminProductOverview() {
             </p>
           )}
 
-          {topSingleMostReviewsProduct ? (
+          {isSingleReviewPending ? (
+            <div className="flex justify-center flex-col items-center">
+              <LoadingSpinner />
+            </div>
+          ) : topSingleMostReviewsProduct ? (
             <AdminProductOverviewCard
               singleBestSoldProduct={topSingleMostReviewsProduct}
               value1={"MOST REVIEWS"}
@@ -274,7 +309,11 @@ export default function AdminProductOverview() {
             </p>
           )}
 
-          {latestReview.length > 0 ? (
+          {isLatestReviewPending ? (
+            <div className="flex justify-center items-center">
+              <LoadingSpinner />
+            </div>
+          ) : latestReview.length > 0 ? (
             <div className="border border-black flex justify-center items-center rounded-[5px] relative bg-card">
               <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
                 <div className="  w-[15px] h-[15px] rounded-full">

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminSupplierTable() {
   const queryClient = useQueryClient();
@@ -32,9 +33,7 @@ export default function AdminSupplierTable() {
   const arraySuppliers = Array.isArray(suppliers) ? suppliers : [];
 
   const {
-    mutate: deleteSupplierMutation,
-    isPending: isSuppDeletePending,
-    isError: isSuppError,
+    mutate: deleteSupplierMutation
   } = useMutation({
     mutationFn: async (supplierId) => {
       const res = await axiosInstance.delete(
@@ -78,10 +77,8 @@ export default function AdminSupplierTable() {
       supplier._id.includes(searchTerm)
   );
 
-  if (isSupplierPending || isSuppDeletePending) {
-    <p>loading....</p>;
-  }
-  if (isSupplierError || isSuppError) {
+
+  if (isSupplierError) {
     <p>loading....</p>;
   }
   return (
@@ -111,59 +108,67 @@ export default function AdminSupplierTable() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
-          <thead>
-            <tr className="">
-              <th className="font-normal p-2 pb-5">ID</th>
-              <th className="font-normal p-2 pb-5">Supplier Name</th>
-              <th className="font-normal p-2 pb-5">Contact Person Fullname</th>
-              <th className="font-normal p-2 pb-5">Contact Number</th>
-              <th className="font-normal p-2 pb-5">Method</th>
-              <th className="font-normal p-2 pb-5">Supplier Address</th>
-              <th className="font-normal p-2 pb-5">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700 ">
-            {filteredArraySuppliers.length > 0 &&
-              filteredArraySuppliers.map((supplier) => (
-                <tr key={supplier._id}>
-                  <td className="px-4 ">{supplier._id}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
-                    {supplier.supplierName}
-                  </td>
-
-                  <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {supplier.contactPerson}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {supplier.contactNumber}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
-                    {supplier.supplierPay}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
-                    {supplier.supplierAddress}
-                  </td>
-
-                  <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button
-                      onClick={() => navigateToEditSupplier(supplier._id)}
-                      className="text-green-600 hover:text-indigo-300 mr-2"
-                    >
-                      <CiEdit size={25} />
-                    </button>
-                    <button
-                      onClick={() => handleClickDelete(supplier._id)}
-                      className="text-red-600 hover:text-red-300"
-                    >
-                      <MdDelete size={25} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        {
+          isSupplierPending ? (
+          <div className="flex justify-center items-center h-full">
+            <LoadingSpinner/>
+          </div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
+            <thead>
+              <tr className="">
+                <th className="font-normal p-2 pb-5">ID</th>
+                <th className="font-normal p-2 pb-5">Supplier Name</th>
+                <th className="font-normal p-2 pb-5">Contact Person Fullname</th>
+                <th className="font-normal p-2 pb-5">Contact Number</th>
+                <th className="font-normal p-2 pb-5">Method</th>
+                <th className="font-normal p-2 pb-5">Supplier Address</th>
+                <th className="font-normal p-2 pb-5">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700 ">
+              {filteredArraySuppliers.length > 0 &&
+                filteredArraySuppliers.map((supplier) => (
+                  <tr key={supplier._id}>
+                    <td className="px-4 ">{supplier._id}</td>
+                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
+                      {supplier.supplierName}
+                    </td>
+  
+                    <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                      {supplier.contactPerson}
+                    </td>
+  
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                      {supplier.contactNumber}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
+                      {supplier.supplierPay}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
+                      {supplier.supplierAddress}
+                    </td>
+  
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
+                      <button
+                        onClick={() => navigateToEditSupplier(supplier._id)}
+                        className="text-green-600 hover:text-indigo-300 mr-2"
+                      >
+                        <CiEdit size={25} />
+                      </button>
+                      <button
+                        onClick={() => handleClickDelete(supplier._id)}
+                        className="text-red-600 hover:text-red-300"
+                      >
+                        <MdDelete size={25} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+          )
+        }
       </div>
     </div>
   );

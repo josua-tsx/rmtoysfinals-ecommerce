@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 const ACTION_TYPES = ["user_add_order", "newly_created_user", "user_added_review"];
 
@@ -27,9 +28,7 @@ export default function AdminCustomerLogs() {
     logs.targetId.includes(searchTerm) 
   ))
 
-  console.log(customerLogs);
 
-  if (isPending) return <p>Loading...</p>;
   if (isError) return <p>Error.</p>;
 
 
@@ -49,7 +48,13 @@ export default function AdminCustomerLogs() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          isPending ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner/>
+            </div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">TIMESTAMPS</th>
@@ -156,6 +161,8 @@ export default function AdminCustomerLogs() {
             )}
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );

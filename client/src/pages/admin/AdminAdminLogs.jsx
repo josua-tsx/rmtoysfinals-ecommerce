@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 const ACTION_TYPES = [
   "create_product",
@@ -45,9 +46,7 @@ export default function AdminAdminLogs() {
       logs.targetId.includes(searchTerm)
   );
 
-  console.log(adminLogs);
 
-  if (isPending) return <p>Loading...</p>;
   if (isError) return <p>Error.</p>;
 
   return (
@@ -66,7 +65,13 @@ export default function AdminAdminLogs() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        <table className="w-full divide-y divide-gray-700">
+        {
+          isPending ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner/>
+            </div>
+          ) : (
+            <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
               <th className="font-normal p-2 pb-5">TIMESTAMPS</th>
@@ -361,6 +366,8 @@ export default function AdminAdminLogs() {
             )}
           </tbody>
         </table>
+          )
+        }
       </div>
     </div>
   );
