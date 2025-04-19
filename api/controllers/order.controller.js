@@ -121,12 +121,6 @@ export const userPlaceOrder = async (req, res, next) => {
       $inc: { credits: -usedCredits },
     };
 
-    if (totalPoints > 0) {
-      updates.$set = {
-        creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24-hour lock
-      };
-    }
-
     await User.findByIdAndUpdate(userId, updates, { new: true, session });
 
     // Update stock
