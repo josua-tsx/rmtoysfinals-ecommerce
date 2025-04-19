@@ -751,12 +751,20 @@ export const updateDeliveryStatus = async (req, res, next) => {
                 { new: true, runValidators: true }
               )
             ),
+
             User.findByIdAndUpdate(updatedOrder.userId, {
               $inc: { credits: updatedOrder.totalPoints },
-              $set: {
-                creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000),
-              },
             }),
+
+            ...(updatedOrder.usedCredits > 0
+              ? [
+                  User.findByIdAndUpdate(updatedOrder.userId, {
+                    $set: {
+                      creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                    },
+                  }),
+                ]
+              : []),
 
             // Stocks.findOneAndUpdate(
             //   { product: { $in: updatedOrder.orderItems.map(item => item.productId) } },
