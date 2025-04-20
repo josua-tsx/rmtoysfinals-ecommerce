@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { MdOutlineKeyboardArrowUp } from "react-icons/md";
 import ReviewModal from "../components/ReviewModal.jsx";
 import StarsRating from "../components/StarsRating.jsx";
 import Buttons from "../reusable/Buttons.jsx";
@@ -197,7 +198,9 @@ export default function ProductDetails() {
                 <div className="flex items-center gap-5">
                   <p>Product Details</p>
                   <button onClick={() => setHideShowDetails(!hideShowDetails)}>
-                    <MdOutlineKeyboardArrowDown size={25} />
+                    {
+                      hideShowDetails ? <MdOutlineKeyboardArrowDown size={25} /> : <MdOutlineKeyboardArrowUp size={25}/>
+                    }
                   </button>
                 </div>
 

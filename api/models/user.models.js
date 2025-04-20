@@ -51,7 +51,7 @@ const UserModelSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["customer", "admin", "staff", "validatorStaff"],
+      enum: ["customer", "admin", "validatorStaff"],
       default: "customer",
     },
 
@@ -69,6 +69,10 @@ const UserModelSchema = new mongoose.Schema(
       default: null
     },
 
+    isLoggedIn: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true,

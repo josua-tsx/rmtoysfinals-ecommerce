@@ -14,11 +14,11 @@ const router = express.Router();
 
 router.post(`/signup`, signup);
 router.post(`/signin`, signin);
-router.post(`/signout`, signout);
+router.post(`/signout`, requireAuth, signout);
 // ADD WORKER
 
 router.post(`/add-worker`, requireAuth, requireAdmin, addWorker);
-router.post(`/send-email`, sendEmail)
+router.post(`/send-email`, sendEmail);
 
 // refresh token
 // router.post(`/refresh-token`, refreshToken)

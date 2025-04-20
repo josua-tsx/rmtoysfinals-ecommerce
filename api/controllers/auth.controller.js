@@ -7,15 +7,14 @@ import { setCookies } from "../utils/setCookies.js";
 
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
-import { validateEmail, validatePassword, validateUsername } from "../utils/validations.js";
+import {
+  validateEmail,
+  validatePassword,
+  validateUsername,
+} from "../utils/validations.js";
+import { sendEmail } from "../nodemailer/nodemailer.js";
 
-// const storeRefreshToken = async (userId, refreshToken) => {
-//   const token = new RefreshToken({
-//     userId,
-//     token: refreshToken,
-//   });
-//   await token.save();
-// };
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 // REGISTER
 export const signup = async (req, res, next) => {
@@ -31,20 +30,18 @@ export const signup = async (req, res, next) => {
     return next(handleMakeError(400, "Passwords are not equal "));
 
   if (!validateEmail(email)) {
-    return next(handleMakeError(400, "Invalid email format"))
+    return next(handleMakeError(400, "Invalid email format"));
   }
 
-  const userNameCheck = validateUsername(username)
+  const userNameCheck = validateUsername(username);
   if (!userNameCheck.valid) {
     return next(handleMakeError(400, userNameCheck.message));
   }
 
-  const passwordCheck = validatePassword(password) 
+  const passwordCheck = validatePassword(password);
   if (!passwordCheck.valid) {
-    return next(handleMakeError(400, passwordCheck.message))
+    return next(handleMakeError(400, passwordCheck.message));
   }
-
-
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -123,6 +120,38 @@ export const signin = async (req, res, next) => {
     } else {
       next(handleMakeError(400, "Invalid Credentials"));
     }
+
+    if (validUser.role === "validatorStaff" || validUser.role === "admin") {
+      const validUserEmail = validUser.email;
+      const validUserRole = validUser.role;
+
+      await User.findByIdAndUpdate(
+        validUser._id,
+        {
+          $set: {
+            isLoggedIn: true,
+          },
+        },
+        { new: true }
+      );
+
+      await sendEmail(
+        ADMIN_EMAIL,
+        `${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
+          "en-US",
+          {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+          }
+        )}`
+      );
+    }
   } catch (error) {
     next(error);
     console.log("Error in sign-in controller");
@@ -130,28 +159,60 @@ export const signin = async (req, res, next) => {
 };
 
 export const signout = async (req, res, next) => {
-  try {
-    // const { refreshToken } = req.cookies;
+  const userId = req.user.id;
 
-    // if (refreshToken) {
-    //   const decoded = jwt.verify(
-    //     refreshToken,
-    //     process.env.REFRESH_TOKEN_SECRET
-    //   );
-    //   await RefreshToken.deleteOne({
-    //     userId: decoded.userId,
-    //     token: refreshToken,
-    //   });
-    // }
+  try {
+    const validUser = await User.findById(userId); // Changed to findById
+
+    if (!validUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update isLoggedIn only for validatorStaff or admin
+    if (validUser.role === "validatorStaff" || validUser.role === "admin") {
+      const validUserEmail = validUser.email;
+      const validUserRole = validUser.role;
+
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $set: {
+            isLoggedIn: false, // Changed from true to false for logout
+          },
+        },
+        { new: true }
+      );
+
+      res.clearCookie("accessToken");
+
+      await sendEmail(
+        ADMIN_EMAIL,
+        `${validUserEmail} (${validUserRole}) logged out on ${new Date().toLocaleString(
+          "en-US",
+          {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+          }
+        )}`
+      );
+
+
+      return res.status(200).json({ message: "Logged out successfully!" });
+    }
 
     res.clearCookie("accessToken");
     // res.clearCookie("refreshToken");
-    res.status(200).json({ message: "Logged out successfully!" });
+    return res.status(200).json({ message: "Logged out successfully!" });
   } catch (error) {
     next(error);
   }
 };
-
 // REFRESH TOKEN
 
 // export const refreshToken = async (req, res, next) => {
@@ -217,7 +278,14 @@ export const addWorker = async (req, res, next) => {
     req.body; // Extract confirmPassword
   const userId = req.user.id;
 
-  if (!username || !email || !password || !confirmPassword || role || jobDescription) {
+  if (
+    !username ||
+    !email ||
+    !password ||
+    !confirmPassword ||
+    role ||
+    jobDescription
+  ) {
     return next(handleMakeError(400, "Please input required fields"));
   }
 
@@ -226,17 +294,17 @@ export const addWorker = async (req, res, next) => {
   }
 
   if (!validateEmail(email)) {
-    return next(handleMakeError(400, "Invalid email format"))
+    return next(handleMakeError(400, "Invalid email format"));
   }
 
-  const userNameCheck = validateUsername(username)
+  const userNameCheck = validateUsername(username);
   if (!userNameCheck.valid) {
     return next(handleMakeError(400, userNameCheck.message));
   }
 
-  const passwordCheck = validatePassword(password) 
+  const passwordCheck = validatePassword(password);
   if (!passwordCheck.valid) {
-    return next(handleMakeError(400, passwordCheck.message))
+    return next(handleMakeError(400, passwordCheck.message));
   }
 
   const userExists = await User.findOne({ email });
@@ -280,4 +348,3 @@ export const addWorker = async (req, res, next) => {
     next(error);
   }
 };
-
