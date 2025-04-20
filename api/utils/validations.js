@@ -124,3 +124,218 @@ export const validatePHMobile = (phone) => {
 
   return { valid: true };
 };
+
+export const validateProductName = (name) => {
+  if (!name) {
+    return { valid: false, message: "Product name is required" };
+  }
+
+  // Trim and check for leading/trailing spaces
+  if (name !== name.trim()) {
+    return {
+      valid: false,
+      message: "Remove spaces before/after the product name",
+    };
+  }
+
+  // Length check (5-50 chars)
+  if (name.length < 5 || name.length > 50) {
+    return {
+      valid: false,
+      message: "Product name must be 5-50 characters",
+    };
+  }
+
+  // Double spaces check
+  if (/\s{2,}/.test(name)) {
+    return {
+      valid: false,
+      message: "Double spaces are not allowed",
+    };
+  }
+
+  // Allow letters, numbers, spaces, hyphens (-), and apostrophes (')
+  if (!/^[a-zA-Z0-9 \-']+$/.test(name)) {
+    return {
+      valid: false,
+      message: "Only letters, numbers, spaces, hyphens (-), and apostrophes (') are allowed",
+    };
+  }
+
+  // Prevent names starting with a number
+  if (/^[0-9]/.test(name)) {
+    return {
+      valid: false,
+      message: "Product name cannot start with a number",
+    };
+  }
+
+  // Prevent names starting/ending with hyphen/apostrophe
+  if (/^[-']|[-']$/.test(name)) {
+    return {
+      valid: false,
+      message: "Product name cannot start or end with a hyphen (-) or apostrophe (')",
+    };
+  }
+
+  return { valid: true };
+};
+
+export const validateProductDescription = (desc) => {
+  if (!desc) {
+    return { valid: false, message: "Description is required" };
+  }
+
+  // Trim and check for leading/trailing spaces
+  if (desc !== desc.trim()) {
+    return {
+      valid: false,
+      message: "Remove spaces before/after the description",
+    };
+  }
+
+  // Max length check (200 chars)
+  if (desc.length > 200) {
+    return {
+      valid: false,
+      message: "Description cannot exceed 200 characters",
+    };
+  }
+
+  // Double spaces check
+  if (/\s{2,}/.test(desc)) {
+    return {
+      valid: false,
+      message: "Double spaces are not allowed",
+    };
+  }
+
+  return { valid: true };
+};
+
+
+export const validateCategoryName = (name) => {
+  if (!name) {
+    return { valid: false, message: "Category name is required" };
+  }
+
+  // Trim and check for leading/trailing spaces
+  const trimmedName = name.trim();
+  if (name !== trimmedName) {
+    return { valid: false, message: "Remove spaces before/after the name" };
+  }
+
+  // Length check (3-50 chars)
+  if (trimmedName.length < 3 || trimmedName.length > 50) {
+    return {
+      valid: false,
+      message: "Category name must be 3-50 characters long",
+    };
+  }
+
+  // Allow only letters (no spaces, numbers, or symbols)
+  if (!/^[A-Za-z]+$/.test(trimmedName)) {
+    return {
+      valid: false,
+      message: "Category name must contain only letters (no spaces or numbers)",
+    };
+  }
+
+  return { valid: true };
+};
+
+export const validateCategoryDescription = (desc) => {
+  if (!desc) return { valid: true }; // Optional field
+  
+  const trimmedDesc = desc.trim();
+  if (desc !== trimmedDesc) {
+    return { valid: false, message: "Remove spaces before/after the description" };
+  }
+
+  if (trimmedDesc.length > 200) {
+    return { 
+      valid: false, 
+      message: "Description cannot exceed 200 characters" 
+    };
+  }
+
+  if (/\s{2,}/.test(trimmedDesc)) {
+    return { valid: false, message: "Remove double spaces" };
+  }
+
+  // Allows letters, numbers, spaces, and basic punctuation
+  if (!/^[A-Za-z0-9\s.,!?-]+$/.test(trimmedDesc)) {
+    return { 
+      valid: false, 
+      message: "Description contains invalid characters" 
+    };
+  }
+
+  return { valid: true };
+};
+
+export const validateSupplierName = (name) => {
+  if (!name) {
+    return { valid: false, message: "Supplier name is required" };
+  }
+
+  const trimmedName = name.trim();
+  if (name !== trimmedName) {
+    return { valid: false, message: "Remove spaces before/after the name" };
+  }
+
+  if (trimmedName.length < 3 || trimmedName.length > 50) {
+    return { 
+      valid: false, 
+      message: "Supplier name must be 3-50 characters long" 
+    };
+  }
+
+  // Letters, numbers, spaces, hyphens, and apostrophes allowed
+  if (!/^[A-Za-z0-9\s\-']+$/.test(trimmedName)) {
+    return { 
+      valid: false, 
+      message: "Supplier name contains invalid characters" 
+    };
+  }
+
+  return { valid: true };
+};
+
+export const validateSupplierAddress = (address) => {
+  if (!address) {
+    return { valid: false, message: "Address is required" };
+  }
+
+  // Trim and check for leading/trailing spaces
+  const trimmedAddress = address.trim();
+  if (address !== trimmedAddress) {
+    return { valid: false, message: "Remove spaces before/after the address" };
+  }
+
+  // Length check (5-200 chars)
+  if (trimmedAddress.length < 5 || trimmedAddress.length > 200) {
+    return {
+      valid: false,
+      message: "Address must be 5-200 characters long",
+    };
+  }
+
+  // Double spaces check
+  if (/\s{2,}/.test(trimmedAddress)) {
+    return {
+      valid: false,
+      message: "Remove double spaces in the address",
+    };
+  }
+
+  // Optional: Validate allowed characters
+  if (!/^[A-Za-z0-9\s.,'-]+$/.test(trimmedAddress)) {
+    return {
+      valid: false,
+      message: "Address contains invalid characters (only letters, numbers, spaces, and ,.-' allowed)",
+    };
+  }
+
+  return { valid: true };
+};

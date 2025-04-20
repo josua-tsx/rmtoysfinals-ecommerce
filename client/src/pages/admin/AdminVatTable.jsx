@@ -23,6 +23,8 @@ export default function AdminVatTable() {
     },
   });
 
+  console.log(vatTable)
+
   const {mutate: deleteVatMutation} = useMutation({
     mutationFn: async (vatId) => {
         const res = await axiosInstance.delete(`/vat/delete-vat/${vatId}`)

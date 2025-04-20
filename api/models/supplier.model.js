@@ -15,10 +15,6 @@ const SupplierModelSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    supplierPay: {
-      type: String,
-      required: true,
-    },
     supplierAddress: {
       type: String,
       required: true,

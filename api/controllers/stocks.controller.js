@@ -28,7 +28,6 @@ export const OrderStocks = async (req, res, next) => {
     if (
       !product ||
       !supplier ||
-      !quantity ||
       !deliveryId ||
       !vat ||
       !shippingPrice ||
@@ -43,6 +42,17 @@ export const OrderStocks = async (req, res, next) => {
         handleMakeError(400, "Discount should not be higher than shop price")
       );
     }
+
+    // Quantity specific validation
+    if (Number(quantity) <= 0) {
+      return next(handleMakeError(400, "Quantity must be at least 1"));
+    }
+
+    // Price validation
+    if (Number(shopPrice) < Number(supplierPrice)) {
+      return next(handleMakeError(400, "Shop price cannot be lower than supplier price"));
+    }
+
 
     const newDelivery = new Stocks({
       product,
@@ -124,6 +134,18 @@ export const reorderStock = async (req, res, next) => {
       !shippingPrice
     ) {
       return res.status(400).json({ message: "Please input required fields!" });
+    }
+
+    if (Number(discount) > Number(vatShopPrice)) {
+      return next(
+        handleMakeError(400, "Discount should not be higher than shop price")
+      );
+    }
+
+
+    // Price validation
+    if (Number(shopPrice) < Number(supplierPrice)) {
+      return next(handleMakeError(400, "Shop price cannot be lower than supplier price"));
     }
 
     // 1. First find the existing stock

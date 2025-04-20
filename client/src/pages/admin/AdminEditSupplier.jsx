@@ -14,7 +14,6 @@ export default function AdminEditSupplier() {
   const [supplierName, setSupplierName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [contactNumber, setContactNumber] = useState("");
-  const [supplierPay, setSupplierPay] = useState("");
   const [supplierAddress, setSupplierAddress] = useState("");
 
   const {
@@ -39,7 +38,6 @@ export default function AdminEditSupplier() {
       setSupplierName(singleSupplier.supplierName);
       setContactPerson(singleSupplier.contactPerson);
       setContactNumber(singleSupplier.contactNumber);
-      setSupplierPay(singleSupplier.supplierPay);
       setSupplierAddress(singleSupplier.supplierAddress);
     }
   }, [singleSupplier]);
@@ -170,23 +168,7 @@ export default function AdminEditSupplier() {
                 and exact 11 numbers)
               </p>
             </div>
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="" className="uppercase">
-                Method:{" "}
-              </label>
-              <input
-                type="text"
-                name="supplierPay"
-                id="supplierPay"
-                value={supplierPay}
-                onChange={handleInputChange(setSupplierPay)}
-                className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
-              />
-              <p className="text-sm pt-1 lowercase text-green-700">
-                (Supplier pay do not allow double sapces. It should be between 3
-                and 50 characters.)
-              </p>
-            </div>
+           
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
                 Supplier Address:{" "}

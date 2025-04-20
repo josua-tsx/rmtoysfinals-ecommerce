@@ -1,6 +1,7 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { validateCategoryDescription, validateCategoryName } from "../utils/validations.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
@@ -10,16 +11,15 @@ export const addCategory = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
-  if (!categoryName.trim()) {
-    return next(handleMakeError(400, "Only spaces not allowed."));
+  const categoryNameCheck = validateCategoryName(categoryName)
+  if (!categoryNameCheck.valid) {
+    return next(handleMakeError(400, categoryNameCheck.message))
   }
 
-  if (!categoryDescription.trim()) {
-    return next(handleMakeError(400, "Only spaces not allowed."));
+  const categoryDescriptionCheck = validateCategoryDescription(categoryDescription)
+  if (!categoryDescriptionCheck.valid) {
+    return next(handleMakeError(400, categoryDescriptionCheck.message))
   }
-
-
-
 
   try {
     const newCategory = new Category({

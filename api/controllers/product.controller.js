@@ -7,6 +7,10 @@ import Review from "../models/review.model.js";
 import Category from "../models/category.model.js";
 import Order from "../models/order.model.js";
 import Wishlist from "../models/wishlist.models.js";
+import {
+  validateProductDescription,
+  validateProductName,
+} from "../utils/validations.js";
 
 export const addProduct = async (req, res, next) => {
   const userId = req.user.id;
@@ -18,28 +22,39 @@ export const addProduct = async (req, res, next) => {
     discount,
     productImages,
     category,
-    // supplier,
     points,
   } = req.body;
-
-  // if (!category || !supplier) {
-  //   return next(
-  //     handleMakeError(400, "You need category or supplier to add product!")
-  //   );
-  // }
-
-  if (!category) {
-    return next(
-      handleMakeError(400, "You need category or supplier to add product!")
-    );
-  }
 
   if (!productName || !productDescription) {
     return next(handleMakeError(400, "Please input required fields"));
   }
 
+  if (!category) {
+    return next(handleMakeError(400, "Category is required!"));
+  }
+
+  if (!productImages || !Array.isArray(productImages) || productImages.length === 0) {
+    return next(handleMakeError(400, "At least one product image is required"));
+  }
+
+
+  const productNameCheck = validateProductName(productName);
+  if (!productNameCheck.valid) {
+    return next(handleMakeError(400, productNameCheck.message));
+  }
+
+  const productDescriptionCheck =
+    validateProductDescription(productDescription);
+  if (!productDescriptionCheck.valid) {
+    return next(handleMakeError(400, productDescriptionCheck.message));
+  }
+
   // Lowercasing all labels and values in the productDetails array
   if (productDetails && Array.isArray(productDetails)) {
+    if (productDetails.length > 10) {
+      return next(handleMakeError(400, "Maximum 10 product details allowed"));
+    }
+
     for (let i = 0; i < productDetails.length; i++) {
       // Ensure productDetails[i] is an object and has both 'label' and 'value' properties
       if (
@@ -388,20 +403,45 @@ export const editProduct = async (req, res, next) => {
   } = req.body;
 
   try {
+    if (!productName || !productDescription) {
+      return next(handleMakeError(400, "Please input required fields"));
+    }
+
     if (!category) {
       return next(handleMakeError(400, "You need category"));
+    }
+
+    if (!productImages || !Array.isArray(productImages) || productImages.length === 0) {
+      return next(handleMakeError(400, "At least one product image is required"));
     }
 
     if (price <= 0) {
       return next(handleMakeError(400, "Price cannot be 0 or negative!"));
     }
 
-    if (!productName || !productDescription) {
-      return next(handleMakeError(400, "Please input required fields"));
+    if (discount > price) {
+      return next(
+        handleMakeError(400, "Discount should not be higher than price.")
+      );
+    }
+
+    const productNameCheck = validateProductName(productName);
+    if (!productNameCheck.valid) {
+      return next(handleMakeError(400, productNameCheck.message));
+    }
+
+    const productDescriptionCheck =
+      validateProductDescription(productDescription);
+    if (!productDescriptionCheck.valid) {
+      return next(handleMakeError(400, productDescriptionCheck.message));
     }
 
     // Lowercasing all labels and values in the productDetails array
     if (productDetails && Array.isArray(productDetails)) {
+      if (productDetails.length > 10) {
+        return next(handleMakeError(400, "Maximum 10 product details allowed"));
+      }
+
       for (let i = 0; i < productDetails.length; i++) {
         // Ensure productDetails[i] is an object and has both 'label' and 'value' properties
         if (

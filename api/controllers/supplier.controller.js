@@ -1,6 +1,7 @@
 import Supplier from "../models/supplier.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { validateFullName, validatePHMobile, validateSupplierAddress, validateSupplierName } from "../utils/validations.js";
 // import {
 //   isValidFullName,
 //   isValidPhoneNumber,
@@ -11,37 +12,38 @@ import { logAuditTrail } from "./audit.controller.js";
 export const addSupplier = async (req, res, next) => {
   const userId = req.user.id;
 
-  const { contactNumber, supplierPay, supplierAddress } = req.body;
+  const { contactNumber, supplierName, contactPerson ,supplierAddress } = req.body;
 
-  const supplierName = req.body.supplierName.toLowerCase();
-  const contactPerson = req.body.contactPerson.toLowerCase();
-
-  if (
-    !supplierName ||
-    !contactPerson ||
-    !contactNumber ||
-    !supplierPay ||
-    !supplierAddress
-  ) {
-    return next(handleMakeError(400, "Please input required fields!"));
+  if (!contactNumber || !supplierName || !contactPerson || !supplierAddress) {
+    return next(handleMakeError(400, "Input all required fields"))
   }
 
-
-  if (
-    !contactPerson.trim() ||
-    !supplierPay.trim() ||
-    !supplierAddress.trim() ||
-    !supplierName.trim()
-  ) {
-    return next(handleMakeError(400, "Input fields do not allow only spaces!"));
+  const supplierNameCheck = validateSupplierName(supplierName)
+  if (!supplierNameCheck.valid) {
+    return next(handleMakeError(400, supplierNameCheck.message))
   }
+
+  const contactNumberCheck = validatePHMobile(contactNumber)
+  if (!contactNumberCheck.valid) {
+    return next(handleMakeError(400, contactNumberCheck.message))
+  }
+
+  const contactPersonCheck = validateFullName(contactPerson) 
+  if (!contactPersonCheck.valid) {
+    return next(handleMakeError(400, contactPersonCheck.message))
+  }
+
+  const supplierAddressCheck = validateSupplierAddress(supplierAddress)
+  if (!supplierAddressCheck.valid) {
+    return next(handleMakeError(400, supplierAddressCheck.message))
+  }
+ 
 
   try {
     const newSupplier = new Supplier({
       supplierName,
       contactPerson,
       contactNumber,
-      supplierPay,
       supplierAddress,
     });
 
@@ -115,25 +117,39 @@ export const editSupplier = async (req, res, next) => {
     supplierName,
     contactPerson,
     contactNumber,
-    supplierPay,
     supplierAddress,
   } = req.body;
 
-  if (
-    !contactPerson.trim() ||
-    !supplierPay.trim() ||
-    !supplierAddress.trim() ||
-    !supplierName.trim()
-  ) {
-    return next(handleMakeError(400, "Input fields do not allow only spaces!"));
+  if (!contactNumber || !supplierName || !contactPerson || !supplierAddress) {
+    return next(handleMakeError(400, "Input all required fields"))
   }
 
+  const supplierNameCheck = validateSupplierName(supplierName)
+  if (!supplierNameCheck.valid) {
+    return next(handleMakeError(400, supplierNameCheck.message))
+  }
+
+  const contactNumberCheck = validatePHMobile(contactNumber)
+  if (!contactNumberCheck.valid) {
+    return next(handleMakeError(400, contactNumberCheck.message))
+  }
+
+  const contactPersonCheck = validateFullName(contactPerson) 
+  if (!contactPersonCheck.valid) {
+    return next(handleMakeError(400, contactPersonCheck.message))
+  }
+
+  const supplierAddressCheck = validateSupplierAddress(supplierAddress)
+  if (!supplierAddressCheck.valid) {
+    return next(handleMakeError(400, supplierAddressCheck.message))
+  }
+ 
+ 
   try {
     const updateSupplier = await Supplier.findByIdAndUpdate(supplierId, {
       supplierName,
       contactPerson,
       contactNumber,
-      supplierPay,
       supplierAddress,
     });
 

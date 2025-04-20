@@ -62,13 +62,13 @@ export const deleteSingleVat = async (req, res, next) => {
 
 export const editVat = async (req, res, next) => {
   const { vatId } = req.params;
-  const { vatPercent } = req.body; // Using vatPercent (e.g., 12 for 12%)
+  const { vatPercent, vatValue } = req.body; // Using vatPercent (e.g., 12 for 12%)
 
   try {
     // 1. Update the VAT record
     const updatedVat = await Vat.findByIdAndUpdate(
       vatId,
-      { vatPercent },
+      { vatPercent, vatValue },
       { new: true }
     );
 

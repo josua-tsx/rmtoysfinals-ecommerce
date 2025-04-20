@@ -16,12 +16,10 @@ export default function AdminEditProducts() {
   const params = useParams();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
+  
   const [images, setImages] = useState([]);
-
   const [label, setLabel] = useState("");
   const [value, setValue] = useState("");
-
   const [discount, setDiscount] = useState(0);
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
@@ -29,9 +27,7 @@ export default function AdminEditProducts() {
   const [filters, setFilters] = useState({});
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("");
-
   const [points, setPoints] = useState(0);
-
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
 
@@ -62,7 +58,7 @@ export default function AdminEditProducts() {
       // setSupplier(singleProduct.supplier || "");
       setProductsDetailsArray(singleProduct?.productDetails || []);
       setImages(singleProduct?.productImages || []);
-      setPoints(singleProduct?.points)
+      setPoints(singleProduct?.points);
     }
   }, [singleProduct]);
 
@@ -126,7 +122,7 @@ export default function AdminEditProducts() {
       filters,
       category: category,
       // supplier: supplier,
-      points
+      points,
     });
   };
 
@@ -156,6 +152,11 @@ export default function AdminEditProducts() {
       ...prevDetails,
       { label: label, value: value },
     ]);
+
+    if (productsDetailsArray.length > 10) {
+      return toast.error("Product details must not exceed to 10!");
+    }
+
     setLabel("");
     setValue("");
   };
@@ -313,10 +314,6 @@ export default function AdminEditProducts() {
 
             <div className="border flex flex-col gap-2 border-black rounded-[5px] uppercase bg-card p-4">
               <div className="flex flex-col md:flex-row gap-2">
-             
-
-
-
                 <div className="flex flex-col flex-1">
                   <label htmlFor="price" className="pb-2">
                     price
@@ -345,24 +342,25 @@ export default function AdminEditProducts() {
                 </div>
               </div>
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
-              <div className="flex flex-col md:flex-row gap-2 md:items-center">
-                <div className="flex flex-col flex-1">
-                  <label htmlFor="points" className="pb-2">
-                    Points
-                  </label>
-                  <select
-                    className="p-2 rounded-[5px] border border-black outline-none"
-                    name="points"
-                    id="points"
-                    value={points}
-                    onChange={(e) => setPoints(e.target.value)}
-                  >
-                    <option>Select Points</option>
-                    <option value="10">10 Points</option>
-                    <option value="15">15 Points</option>
-                  </select>
-                </div>
-              </div>              </div>
+                <div className="flex flex-col md:flex-row gap-2 md:items-center">
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="points" className="pb-2">
+                      Points
+                    </label>
+                    <select
+                      className="p-2 rounded-[5px] border border-black outline-none"
+                      name="points"
+                      id="points"
+                      value={points}
+                      onChange={(e) => setPoints(e.target.value)}
+                    >
+                      <option>Select Points</option>
+                      <option value="10">10 Points</option>
+                      <option value="15">15 Points</option>
+                    </select>
+                  </div>
+                </div>{" "}
+              </div>
 
               <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
                 <div className="flex flex-col">

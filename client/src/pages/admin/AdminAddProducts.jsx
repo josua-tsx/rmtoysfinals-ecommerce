@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 export default function AdminAddProducts() {
   const queryClient = useQueryClient();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [images, setImages] = useState([]);
   const [label, setLabel] = useState("");
@@ -28,10 +28,9 @@ export default function AdminAddProducts() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
 
-  const [points, setPoints] = useState(0)
+  const [points, setPoints] = useState(0);
 
-
-  console.log(points)
+  console.log(points);
 
   const {
     data: categories = [],
@@ -44,7 +43,6 @@ export default function AdminAddProducts() {
       return res.data;
     },
   });
-
 
   const { mutate: addProductMutation } = useMutation({
     mutationFn: async (data) => {
@@ -142,6 +140,10 @@ export default function AdminAddProducts() {
       ...prevDetails,
       { label: label, value: value },
     ]);
+
+    if (productsDetailsArray.length > 10) {
+      return toast.error("Product details must not exceed to 10!");
+    }
     setLabel("");
     setValue("");
   };
@@ -197,8 +199,8 @@ export default function AdminAddProducts() {
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
                 <p className="text-sm pt-1  text-green-700">
-                  (Product name should nin 5 characters, max 50 characters, no
-                  double spaces, uppercase letters allowed)
+                  (Product name must be 5-50 characters. Double spaces are not
+                  allowed)
                 </p>
               </div>
 
@@ -297,8 +299,6 @@ export default function AdminAddProducts() {
             </div>
 
             <div className="border flex flex-col gap-2 border-black rounded-[5px] uppercase bg-card p-4">
-              
-
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <div className="flex flex-col flex-1">
                   <label htmlFor="points" className="pb-2">

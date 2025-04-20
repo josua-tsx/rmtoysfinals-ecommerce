@@ -85,7 +85,9 @@ export default function AdminAddCategory() {
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="">
                 CATEGORY DESCRIPTION :{" "}
-              
+                <p className="text-sm pt-1  text-green-700">
+                  (Category description must not exceed to 200.)
+                </p>
               </label>
               <textarea
                 type="text"
