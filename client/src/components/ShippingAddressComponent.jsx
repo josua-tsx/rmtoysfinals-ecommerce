@@ -34,9 +34,8 @@ export default function ShippingAddressComponent() {
 
   const currentUser = useUserStore((state) => state.currentUser);
 
-
-  const [selectedId, setSelectedId] = useState(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data: currentUserAddress,
@@ -45,7 +44,9 @@ export default function ShippingAddressComponent() {
   } = useQuery({
     queryKey: ["address", currentUser._id],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/address/user/${currentUser._id}/address`);
+      const res = await axiosInstance.get(
+        `/address/user/${currentUser._id}/address`
+      );
       return res.data;
     },
   });
@@ -97,21 +98,21 @@ export default function ShippingAddressComponent() {
   });
 
   const handleDeleteclick = (addressId) => {
-    setSelectedId(addressId)
-    setIsModalOpen(true)
-  }
+    setSelectedId(addressId);
+    setIsModalOpen(true);
+  };
 
   const handleConfirm = () => {
     if (selectedId) {
-      deleteAddressMutation(selectedId)
-      setIsModalOpen(false)
+      deleteAddressMutation(selectedId);
+      setIsModalOpen(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setSelectedId(null)
-    setIsModalOpen(false)
-  }
+    setSelectedId(null);
+    setIsModalOpen(false);
+  };
 
   const handleAddressSubmit = (e) => {
     e.preventDefault();
@@ -156,12 +157,8 @@ export default function ShippingAddressComponent() {
     setOpenModal(true);
   };
 
-
-  if (isPending) return <p>loading...</p>
-  if (isError) return <p>loading...</p>
-
-
-
+  if (isPending) return <p>loading...</p>;
+  if (isError) return <p>loading...</p>;
 
   return (
     <div>
@@ -175,13 +172,42 @@ export default function ShippingAddressComponent() {
       <ConfirmModal
         isOpen={isModalOpen}
         title={"Delete confirm"}
-        message={"Are you sure you want to delete this address? This action can not be undone."}
+        message={
+          "Are you sure you want to delete this address? This action can not be undone."
+        }
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
 
       <h1 className="text-xl">Shipping Address</h1>
+
       <div className="w-[90%] md:w-[80%] mx-auto my-5">
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-yellow-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3 flex flex-col gap-2">
+              <p className="text-md text-black">
+                <strong>Important:</strong> Your delivery address must be valid
+                and accurate. Incomplete or false addresses may result in
+                automatic cancellation of your order.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleAddressSubmit} className="flex flex-col gap-5">
           {/* <div className="flex justify-end">
             <button
@@ -262,7 +288,10 @@ export default function ShippingAddressComponent() {
               className="bg-gray-200 outline-none p-2 border border-black rounded-[5px]"
               name="barangay"
               id="barangay"
+              pattern="^[a-zA-Z\s'-]{2,100}$"
+              title="Use only letters, hyphens, or apostrophes."
               placeholder="input barangay"
+              required
             ></input>
           </AddressSection>
 
@@ -275,8 +304,11 @@ export default function ShippingAddressComponent() {
               className="bg-gray-200 outline-none p-2 border border-black rounded-[5px]"
               placeholder="Street Name, Building, House No."
               type="text"
+              pattern="^[a-zA-Z0-9\s\.,#'-]{5,200}$"
+              title="Use letters, numbers, or symbols like .,-#"
               id="streetBuildingHouseNum"
               name="streetBuildingHouseNum"
+              required
             />
           </AddressSection>
 

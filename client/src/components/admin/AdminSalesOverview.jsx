@@ -211,7 +211,7 @@ const totalVatToRemit = Array.isArray(successOrderData)
           </div>
         ) : (
           <AdminStatCard
-            title={"TOTAL CUSTOMER"}
+            title={"TOTAL CUSTOMERS"}
             value={totalCustomer?.length > 0 ? totalCustomer?.length : 0}
             value2={`TOTAL WORKERS ${
               totalWorkers.length > 0 ? totalWorkers?.length : 0

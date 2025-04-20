@@ -3,45 +3,50 @@ import User from "../models/user.models.js";
 import bcypt from "bcryptjs";
 import { generateTokens } from "../utils/generateToken.js";
 import { logAuditTrail } from "./audit.controller.js";
-// import {
-//   isValidEmail,
-//   isValidFullName,
-//   isValidPassword,
-//   isValidPhoneNumber,
-//   isValidUsername,
-// } from "../utils/validations.js";
 
 import Address from "../models/address.models.js";
 import Review from "../models/review.model.js";
+import { validateEmail, validateFullName, validatePassword, validatePHMobile, validateUsername } from "../utils/validations.js";
 
 export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
   const { username, email, password, avatar, phoneNumber, fullName } = req.body;
 
+  if (username) {
+    const userNameCheck = validateUsername(username);
+    if (!userNameCheck.valid) {
+      return next(handleMakeError(400, userNameCheck.message));
+    }
+  }
 
+  if (email) {
+    if (!validateEmail(email)) {
+      return next(handleMakeError(400, "Invalid email format"));
+    }
+  }
 
-  // if (fullName) {
-  //   if (!isValidFullName(fullName)) {
-  //     return next(
-  //       handleMakeError(
-  //         400,
-  //         "Full name must be all lowercase, contain no uppercase letters, no numbers, and be between 6 and 50 characters long. also no double spaces"
-  //       )
-  //     );
-  //   }
-  // }
+  if (fullName) {
+    const fullNameCheck = validateFullName(fullName)
+    if (!fullNameCheck.valid) {
+      return next(handleMakeError(400, fullNameCheck.message))
+    }
+  }
+
+  if (phoneNumber) {
+    const phoneNumberCheck = validatePHMobile(phoneNumber)
+    if (!phoneNumberCheck.valid) {
+      return next(handleMakeError(400, phoneNumberCheck.message))
+    }
+  }
 
   try {
     let hashedPassword;
     if (password) {
-      // if (!isValidPassword(password)) {
-      //   return next(
-      //     handleMakeError(
-      //       400,
-      //       "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-      //     )
-      //   );
-      // }
+      const passwordCheck = validatePassword(password);
+      if (!passwordCheck.valid) {
+        return next(handleMakeError(400, passwordCheck.message));
+      }
+
       hashedPassword = await bcypt.hash(password, 10);
     }
 
@@ -169,7 +174,7 @@ export const getSingleUser = async (req, res, next) => {
 export const editWorker = async (req, res, next) => {
   const { workerId } = req.params;
   const { email, username, password, role, jobDescription } = req.body;
-  const userId = req.user.id
+  const userId = req.user.id;
 
   if (!username || !email || !password || !role || !jobDescription) {
     return next(handleMakeError(400, "Please input required fields"));

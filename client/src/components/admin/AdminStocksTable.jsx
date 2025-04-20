@@ -192,7 +192,7 @@ export default function AdminStocksTable() {
                     <td>{formatPrice(stock?.shopPrice) + " PHP"}</td>
                     <td>{formatPrice(stock?.vatShopPrice) + " PHP"}</td>
                     <td>{formatPrice(stock?.vatToRemit) + " PHP"}</td>
-                    <td>{stock?.vatPercent}</td>
+                    <td>{stock?.vat?.vatPercent} %</td>
                     <td className="text-red-700">
                       {formatPrice(stock?.supplierPrice) + " PHP"}
                     </td>
@@ -200,7 +200,7 @@ export default function AdminStocksTable() {
                       {formatPrice(stock?.shippingPrice) + " PHP"}
                     </td>
                     <td className="text-red-700">
-                      {formatPrice(stock?.totalCost) + " PHP"}
+                      {formatPrice((stock?.supplierPrice * stock?.quantity) + stock?.shippingPrice) + " PHP"}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm flex flex-col gap-2">
                       <button

@@ -45,11 +45,8 @@ export default function SignIn() {
     }
   })
 
-
-
   const handleFormSubmit = (e) => {
     e.preventDefault()
-
    try {
     loginMutation({email, password})
    } catch (error) {
@@ -59,7 +56,7 @@ export default function SignIn() {
   }
 
   return (
-    <section className="pt-[180px] p-4 font-main ">
+    <section className="pt-[180px] h-full bg-yellow p-4 font-main ">
       <div className="max-w-[600px] bg-yellow h-screen mx-auto overflow-hidden">
 
       <div className="relative px-2  mb-4 flex justify-end w-full">
@@ -76,11 +73,11 @@ export default function SignIn() {
          className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[50px] pb-[80px] shadow-lg">
          
           <div className="flex justify-between flex-col">
-            <label htmlFor="email" className="uppercase mb-2">Email: </label>
+            <label htmlFor="email" className=" mb-2">Email: </label>
             <input type="text" name="email" id="email" value={email} onChange={handleInputChange(setEmail)} className="outline-none p-3 bg-transparent border-black border rounded-[5px]" />
           </div>
           <div className="flex justify-between flex-col">
-            <label htmlFor="password" className="uppercase mb-2">Password: </label>
+            <label htmlFor="password" className=" mb-2">Password: </label>
             <div className="flex relative w-full">
               <input
                 type={showPassword ? "text" : "password"}
@@ -94,7 +91,7 @@ export default function SignIn() {
                 htmlFor=""
                 className="absolute right-2 top-4 flex items-center gap-2"
               >
-                <p className="text-xs">SHOW PASSWORD</p>
+                <p className="text-xs">Show Password</p>
                 <input
                   type="checkbox"
                   onChange={togglePassword}
@@ -106,9 +103,9 @@ export default function SignIn() {
           </div>
 
           <div className="flex justify-center gap-2">
-            <button disabled={isPending} className="border w-[100px] p-2 px-5 mt-10  bg-primary border-black hover:opacity-95  uppercase font-medium text-white rounded-[5px]">
+            <button disabled={isPending} className="border w-[100px] p-2 px-5 mt-10  bg-primary border-black hover:opacity-95   font-medium text-white rounded-[5px]">
               {
-                isPending ? "Loading.." : "sign in"
+                isPending ? "Loading.." : "Sign In"
               }
             </button>
           </div>
@@ -125,8 +122,8 @@ export default function SignIn() {
           <div className="relative flex-1">
           <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"}/>
           </div>
-          <div className="text-sm uppercase flex gap-2">
-            no account yet? {" "} <Link to={`/sign-up`} className="text-indigo-500 hover:underline uppercase text-[17px]"> sign up here!</Link>
+          <div className="text-sm  flex gap-2">
+            No account yet? {" "} <Link to={`/sign-up`} className="text-indigo-500 hover:underline  text-normal"> Sign Up Here!</Link>
           </div>
         </div>
       </div>

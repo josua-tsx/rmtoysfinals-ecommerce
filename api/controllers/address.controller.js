@@ -26,12 +26,25 @@ export const addAddress = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
-  // if (
-  //   !validateNoDoubleSpaces(barangay) ||
-  //   !validateNoDoubleSpaces(streetBuildingHouseNum)
-  // ) {
-  //   return next(handleMakeError(400, "Double spaces is not allowed."));
-  // }
+  // 1. Validate barangay
+  if (!/^[a-zA-Z\s'-]{2,100}$/.test(barangay.trim())) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid barangay format. Use only letters, spaces, hyphens (-), or apostrophes (')."
+      )
+    );
+  }
+
+  // 2. Validate street
+  if (!/^[a-zA-Z0-9\s\.,#'-]{5,200}$/.test(streetBuildingHouseNum.trim())) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid street format. Use only letters, numbers, spaces, or symbols like .,-#."
+      )
+    );
+  }
 
   try {
     // Construct full address string
@@ -62,11 +75,11 @@ export const addAddress = async (req, res, next) => {
       region,
       stateProvince,
       city,
-      barangay,
-      streetBuildingHouseNum,
+      barangay: barangay.trim(),
+      streetBuildingHouseNum: streetBuildingHouseNum.replace(/[<>"&]/g, ""),
       fullAddress,
       userId,
-      isActive: true
+      isActive: true,
     });
 
     // Save the new address to the Address collection
@@ -125,12 +138,36 @@ export const editAddress = async (req, res, next) => {
     streetBuildingHouseNum,
   } = req.body;
 
-  // if (
-  //   !validateNoDoubleSpaces(barangay) ||
-  //   !validateNoDoubleSpaces(streetBuildingHouseNum)
-  // ) {
-  //   return next(handleMakeError(400, "Double spaces is not allowed."));
-  // }
+  // Validate required fields
+  if (
+    !region ||
+    !stateProvince ||
+    !city ||
+    !barangay ||
+    !streetBuildingHouseNum
+  ) {
+    return next(handleMakeError(400, "Please input required fields!"));
+  }
+
+  // 1. Validate barangay
+  if (!/^[a-zA-Z\s'-]{2,100}$/.test(barangay.trim())) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid barangay format. Use only letters, spaces, hyphens (-), or apostrophes (')."
+      )
+    );
+  }
+
+  // 2. Validate street
+  if (!/^[a-zA-Z0-9\s\.,#'-]{5,200}$/.test(streetBuildingHouseNum.trim())) {
+    return next(
+      handleMakeError(
+        400,
+        "Invalid street format. Use only letters, numbers, spaces, or symbols like .,-#."
+      )
+    );
+  }
 
   try {
     const existingAddress = await Address.findOne({ fullAddress });
@@ -145,9 +182,9 @@ export const editAddress = async (req, res, next) => {
         region,
         stateProvince,
         city,
-        barangay,
+        barangay: barangay.trim(),
         fullAddress: `${streetBuildingHouseNum}, ${barangay}, ${city}`,
-        streetBuildingHouseNum,
+        streetBuildingHouseNum: streetBuildingHouseNum.replace(/[<>"&]/g, ""),
       },
       {
         new: true,

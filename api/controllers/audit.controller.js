@@ -36,7 +36,7 @@ export const deleteAllAuditLogs = async (req, res, next) => {
 
 export const getAdminLogs = async (req, res, next) => {
   try {
-    const logs = await Audit.find({ role: "admin" })
+    const logs = await Audit.find({ role: "admin" })  
       .populate({
         path: "userId",
         select: "email",

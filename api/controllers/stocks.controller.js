@@ -19,7 +19,7 @@ export const OrderStocks = async (req, res, next) => {
     deliveryId,
     dateDelivery,
     discount,
-    vatPercent,
+    vat,
     vatShopPrice,
   } = req.body;
 
@@ -30,7 +30,7 @@ export const OrderStocks = async (req, res, next) => {
       !supplier ||
       !quantity ||
       !deliveryId ||
-      !vatPercent ||
+      !vat ||
       !shippingPrice ||
       !dateDelivery ||
       !shopPrice
@@ -56,7 +56,7 @@ export const OrderStocks = async (req, res, next) => {
       deliveryId,
       dateDelivery,
       discount,
-      vatPercent,
+      vat,
       vatShopPrice,
       vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * quantity,
     });
@@ -69,7 +69,7 @@ export const OrderStocks = async (req, res, next) => {
       quantityOrdered: quantity,
       supplierPrice,
       shippingPrice,
-      vatPercentApplied: vatPercent,
+      vatPercentApplied: vat,
       shopPrice,
       receivedDate: dateDelivery,
       receivedQuantity: quantity,
@@ -360,6 +360,9 @@ export const getStocks = async (req, res, next) => {
             select: "categoryName",
           },
         ],
+      }).populate({
+        path: "vat",
+        select: "vatPercent vatValue"
       })
       .populate({
         path: "supplier",

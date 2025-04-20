@@ -21,6 +21,9 @@ const EditAddress = ({ address, onClose }) => {
   const [barangay, setBarangay] = useState("");
   const [streetBuildingHouseNum, setStreetBuildingHouseNum] = useState("");
 
+  // console.log(cities)
+  // console.log(selectedCity)
+
   useEffect(() => {
     if (address) {
       setBarangay(address.barangay || "");

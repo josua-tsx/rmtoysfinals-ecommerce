@@ -1,6 +1,6 @@
-  import { TbPinnedFilled } from "react-icons/tb";
+import { TbPinnedFilled } from "react-icons/tb";
 import StarsRating from "./StarsRating";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdEdit } from "react-icons/md";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
@@ -11,10 +11,8 @@ import { ConfirmModal } from "../reusable/ConfirmModal";
 
 export default function ReviewCard({ review }) {
   const currentUser = useUserStore((state) => state.currentUser);
-
   const [editReviewId, setEditReviewId] = useState(null);
   const [openEditModal, setOpenEditModal] = useState(false);
-
   const [selectedId, setSelectedId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -28,41 +26,12 @@ export default function ReviewCard({ review }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["review"] });
-      toast.success("Deleted review!");
+      toast.success("Review deleted successfully");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong.");
+      toast.error(err.response.data.message || "Something went wrong.");
     },
   });
-
-  const handleDeleteClick = (reviewId) => {
-    setSelectedId(reviewId);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteClick2 =  (reviewId) => {
-    setSelectedId(reviewId);
-    setIsModalOpen(true);
-  };
-
-  const handleCancel = () => {
-    setSelectedId(null);
-    setIsModalOpen(false);
-  };
-
-  const handleConfirmAdmin = async () => {
-    if (selectedId) {
-      adminDeleteReviewMutation(selectedId);
-      userDeleteReviewMutation(selectedId);
-      setIsModalOpen(false);
-    }
-  };
-  const handleConfirmCustomer = () => {
-    if (selectedId) {
-    userDeleteReviewMutation(selectedId);
-      setIsModalOpen(false);
-    }
-  };
 
   const { mutate: userDeleteReviewMutation } = useMutation({
     mutationFn: async (reviewId) => {
@@ -72,12 +41,33 @@ export default function ReviewCard({ review }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["review"] });
-      toast.success("Deleted review!");
+      toast.success("Review deleted successfully");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong.");
+      toast.error(err.response.data.message || "Something went wrong.");
     },
   });
+
+  const handleDeleteClick = (reviewId) => {
+    setSelectedId(reviewId);
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setSelectedId(null);
+    setIsModalOpen(false);
+  };
+
+  const handleConfirm = () => {
+    if (selectedId) {
+      if (currentUser?.role === "admin") {
+        adminDeleteReviewMutation(selectedId);
+      } else {
+        userDeleteReviewMutation(selectedId);
+      }
+      setIsModalOpen(false);
+    }
+  };
 
   const {
     data: singleReview,
@@ -101,9 +91,10 @@ export default function ReviewCard({ review }) {
     }
   };
 
+  const isCurrentUserReview = currentUser?._id === review?.userId?._id;
+
   return (
-    <div className="relative border font-main flex flex-col gap-3 w-full mx-auto px-2 md:px-5 py-4 rounded-[5px] bg-card border-black ">
-      {/* <EditReviewComponent/> */}
+    <div className="relative mb-4 rounded-xl border border-black bg-yellow p-5 shadow-sm">
       {openEditModal && singleReview && !isPending && !isError && (
         <EditReviewComponent
           singleReview={singleReview}
@@ -113,74 +104,66 @@ export default function ReviewCard({ review }) {
 
       <ConfirmModal
         isOpen={isModalOpen}
-        title={"Delete confirm"}
+        title={"Delete Review"}
         message={
-          "Are you sure you want delete this review? This action can not be undone."
+          "Are you sure you want to delete this review? This action cannot be undone."
         }
-        onConfirm={() =>
-          currentUser?.role === "admin"
-            ? handleConfirmAdmin()
-            : handleConfirmCustomer()
-        }
+        onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
 
-      {/* PIN */}
-      <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
-        <div className="  w-[15px] h-[15px] rounded-full">
-          <div className="absolute -top-6 right-[-65%]">
-            <TbPinnedFilled size={30} />
-          </div>
-        </div>
+      <div className="absolute -top-3 right-2 text-yellow-500">
+        <TbPinnedFilled size={25} />
       </div>
 
-      <div className="flex gap-4 flex-col justify-between  w-full">
-        <div className="flex flex-col items-center gap-4 justify-between">
-          <div className="flex gap-2 w-full justify-center md:mr-5 md:justify-end text-sm">
-            <button
-              onClick={() => handleOpenReviewEditModal(review)}
-              type="button"
-              className="text-green-600"
-            >
-              EDIT
-            </button>
-            {currentUser?.role === "admin" ? (
-              <button
-                onClick={() => handleDeleteClick(review._id)}
-                type="button"
-                className="text-red-600"
-              >
-                <MdDelete size={23} />
-              </button>
-            ) : (
-              <button
-                onClick={() => handleDeleteClick2(review._id)}
-                type="button"
-                className="text-red-600"
-              >
-                <MdDelete size={23} />
-              </button>
+      {/* Review header */}
+      <div className="flex items-start gap-5">
+        <img
+          src={review?.userId?.avatar || "/default-avatar.png"}
+          alt={review?.userId?.username}
+          className="h-10 w-10 rounded-full border border-black object-cover"
+        />
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium text-gray-900">
+                {review?.userId?.username}
+              </h3>
+              <div className="flex items-center gap-1">
+                <StarsRating rating={review.rating} size={16} />
+                {/* <span className="text-sm text-gray-500">
+                  {format(new Date(review.createdAt), "MMM d, yyyy")}
+                </span> */}
+              </div>
+            </div>
+
+            {/* Actions */}
+            {(isCurrentUserReview || currentUser?.role === "admin") && (
+              <div className="flex gap-2">
+                {isCurrentUserReview && (
+                  <button
+                    onClick={() => handleOpenReviewEditModal(review)}
+                    className="text-blue-600"
+                    aria-label="Edit review"
+                  >
+                    <MdEdit size={20} />
+                  </button>
+                )}
+                <button
+                  onClick={() => handleDeleteClick(review._id)}
+                  className="text-red-600"
+                  aria-label="Delete review"
+                >
+                  <MdDelete size={20} />
+                </button>
+              </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-4 items-center">
-            <img
-              src={review?.userId?.avatar}
-              alt="reviewer imgae"
-              className="w-[50px] rounded-full border border-black object-cover"
-            />
-            <div className="flex flex-row gap-4">
-              <h1>{review?.userId?.username}</h1>
-              <div className="flex items-center gap-2">
-                <StarsRating rating={review.rating} />
-                <p>({review.rating})</p>
-              </div>
-            </div>
+          {/* Review content */}
+          <div className="mt-3">
+            <p className="text-gray-700">{review?.commentReview}</p>
           </div>
-        </div>
-
-        <div className="border border-black bg-card p-2 max-h-[150px] overflow-y-auto rounded-[5px] flex flex-col gap-4">
-          <p className="w-full ">{review?.commentReview}</p>
         </div>
       </div>
     </div>

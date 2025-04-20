@@ -2,6 +2,7 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Review from "../models/review.model.js";
 import Product from "../models/product.model.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { hasProfanity, hasThreat } from "../utils/profanityFilter.js";
 
 export const userAddReview = async (req, res, next) => {
   const userId = req.user.id;
@@ -9,6 +10,27 @@ export const userAddReview = async (req, res, next) => {
   const { commentReview, rating } = req.body;
 
   try {
+    if (rating < 0 || rating > 5)
+      return next(handleMakeError(400, "Rating is not valid!"));
+
+    if (commentReview) {
+      const trimmedComment = commentReview.trim();
+
+      // 1. Length validation (FIXED LOGIC)
+      if (trimmedComment.length < 1 || trimmedComment.length > 500) {
+        return next(
+          handleMakeError(400, "Comment must be 1-500 characters long")
+        );
+      }
+
+      // 2. Profanity check
+      if (hasProfanity(trimmedComment) || hasThreat(trimmedComment)) {
+        return next(
+          handleMakeError(400, "Please keep comments family-friendly")
+        );
+      }
+    }
+
     const review = new Review({
       userId,
       productId,
@@ -120,7 +142,7 @@ export const userDeleteReview = async (req, res, next) => {
 
 export const adminDeleteReview = async (req, res, next) => {
   const { reviewId } = req.params;
-  const userId = req.user.id
+  const userId = req.user.id;
 
   try {
     const review = await Review.findById(reviewId);

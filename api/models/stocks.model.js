@@ -52,9 +52,9 @@ const StocksModelSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    vatPercent: {
-      type: Number,
-      default: 0
+    vat: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vat"
     },
     lastLowStockNotification: Date,
     lastOutOfStockNotification: Date,

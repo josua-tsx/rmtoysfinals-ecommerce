@@ -4,6 +4,7 @@ import { FaArrowTurnDown } from 'react-icons/fa6'
 import { IoIosClose } from 'react-icons/io'
 import axiosInstance from '../lib/axios'
 import toast from 'react-hot-toast'
+import { FaPaperPlane } from 'react-icons/fa'
 
 export default function EditReviewComponent({ singleReview ,onClose}) {
 
@@ -20,7 +21,7 @@ export default function EditReviewComponent({ singleReview ,onClose}) {
 
     }, [singleReview])
 
-    const {mutate: updateSingleReviewMutation} = useMutation({
+    const {mutate: updateSingleReviewMutation, isPending: isSubmitting} = useMutation({
         mutationFn: async (data) => {
             const res = await axiosInstance.put(`/review/edit/${singleReview?._id}`, data)
             return res.data
@@ -77,27 +78,34 @@ export default function EditReviewComponent({ singleReview ,onClose}) {
            }}
          />
        </div>
-       <div className=" flex flex-col gap-2 ">
-         <h1>ADD YOUR COMMENT HERE</h1>
-         <div className="flex items-center gap-2">
-           <textarea
-             name="review"
-             id="review"
-             value={newCommentReview}
-             onChange={(e) => setNewCommentReview(e.target.value)}
-             className="border flex-1 border-black rounded-[5px] resize-none outline-none px-1 py-1"
-           ></textarea>
-           <div className="flex gap-1">
-             <button
-               type="submit"
-               disabled={!newCommentReview || newRating < 1}
-               className="border border-black bg-primary text-card rounded-[5px] p-2"
-             >
-               <FaArrowTurnDown size={20} />
-             </button>
-           </div>
-         </div>
-       </div>
+        <div className=" flex flex-col gap-2 ">
+                       <h1>Add your comment here</h1>
+                       <div className="flex flex-col items-center gap-2">
+                         <textarea
+                           name="review"
+                           id="review"
+                           value={newCommentReview}
+                           onChange={(e) => setNewCommentReview(e.target.value)}
+                           className="border h-[150px] p-2 border-black rounded-[5px] w-full resize-none outline-none"
+                         ></textarea>
+                         <div className="w-full">
+                         <button
+                       type="submit"
+                       disabled={isSubmitting}
+                       className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white transition  disabled:opacity-70"
+                     >
+                       {isSubmitting ? (
+                         "Submitting..."
+                       ) : (
+                         <>
+                           <FaPaperPlane />
+                           Submit Review
+                         </>
+                       )}
+                       </button>
+                         </div>
+                       </div>
+                     </div>
         </form>
      </div>
   )

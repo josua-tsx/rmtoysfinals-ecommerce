@@ -49,7 +49,7 @@ export default function SignUp() {
     signUpMutation({ username, email, password, confirmPassword });
   };
   return (
-    <section className="pt-[180px] p-4 font-main">
+    <section className="pt-[180px] h-full bg-yellow p-4 font-main">
       <div className="max-w-[600px] bg-yellow h-screen mx-auto overflow-hidden">
         <div className="relative px-2  mb-4 flex justify-end w-full">
           <div className="relative flex-1">
@@ -64,7 +64,7 @@ export default function SignUp() {
           className="relative border flex gap-2 bg-card flex-col border-[#313031] p-4 rounded-[5px] pt-[50px] pb-[80px] shadow-lg"
         >
           <div className="flex justify-between flex-col">
-            <label htmlFor="email" className="uppercase mb-2">
+            <label htmlFor="email" className=" mb-2">
               Email:{" "}
             </label>
             <input
@@ -76,11 +76,11 @@ export default function SignUp() {
               className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
             />
             <p className="text-sm pt-1 text-green-700">
-              (Enter a valid email. Only letters, numbers, and ., _, %, + are allowed before '@'.)
+              (Enter a valid email. Numbers are not allowed after "@")
             </p>
           </div>
           <div className="flex justify-between flex-col">
-            <label htmlFor="username" className="uppercase mb-2 ">
+            <label htmlFor="username" className=" mb-2 ">
               Username:{" "}
             </label>
             <input
@@ -92,11 +92,11 @@ export default function SignUp() {
               className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
             />
              <p className="text-sm pt-1 text-green-700">
-              (Username must be 5-50 letters and contain no numbers or special characters.)
+              (Username must be 3-30 characters long and contain no special characters.)
             </p>
           </div>
           <div className="flex justify-between flex-col">
-            <label htmlFor="password" className="uppercase mb-2 ">
+            <label htmlFor="password" className=" mb-2 ">
               Password:{" "}
             </label>
             <div className="flex flex-col gap-2 relative w-full">
@@ -121,13 +121,12 @@ export default function SignUp() {
                 />
               </label>
               <p className="text-sm text-green-700">
-                (Password must be at least 8 characters, include one uppercase
-                letter, one number, and one special character.)
+                (Password must be at least 12 characters.)
               </p>
             </div>
           </div>
           <div className="flex justify-between flex-col">
-            <label htmlFor="password2" className="uppercase mb-2 ">
+            <label htmlFor="password2" className=" mb-2 ">
               Confirm password:{" "}
             </label>
             <input
@@ -143,7 +142,7 @@ export default function SignUp() {
           <div className="flex justify-center mt-10 gap-2">
             <button
               disabled={isPending}
-              className="border p-2 px-5  bg-primary w-[100px] border-black  hover:opacity-95  uppercase font-medium text-white rounded-[5px]"
+              className="border p-2 px-5  bg-primary w-[100px] border-black  hover:opacity-95   font-medium text-white rounded-[5px]"
             >
               sign up
             </button>
@@ -158,14 +157,14 @@ export default function SignUp() {
           <div className="relative flex-1">
             <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
           </div>
-          <div className="text-sm uppercase flex gap-2">
-            already have an account?{" "}
+          <div className="text-sm  flex gap-2">
+            Already have an account?{" "}
             <Link
               to={`/sign-in`}
-              className="text-indigo-500 hover:underline text-[17px] uppercase"
+              className="text-indigo-500 hover:underline text-normal "
             >
               {" "}
-              sign in here!
+              Sign in here!
             </Link>
           </div>
         </div>

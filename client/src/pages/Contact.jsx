@@ -35,7 +35,7 @@ export default function Contact() {
 
 
   return (
-    <section className="pt-[130px] p-3 font-main  min-h-screen">
+    <section className="pt-[130px] p-3 font-main h-full bg-yellow">
       <div className="max-w-[1280px] mx-auto">
         <div className="flex flex-col justify-center items-center">
           <div className="flex flex-col pb-20 pt-20 md:pt-32 gap-10 w-full max-w-md">
@@ -74,16 +74,19 @@ export default function Contact() {
               
               <div className="flex flex-col gap-1">
                 <label htmlFor="message" className="text-gray-600">Message</label>
-                <textarea 
+                <textarea   
                   id="message" 
                   name="message"
                   rows="4"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="p-3 border border-black rounded focus:outline-primary"
+                  className="p-3 border resize-none border-black rounded focus:outline-primary"
                   placeholder="Your message here..."
                 ></textarea>
               </div>
+
+              {/*  Honeypot (hidden from humans) */}
+              <input type="text" name="website" className="hidden"/>
 
               <button 
                 type="submit"

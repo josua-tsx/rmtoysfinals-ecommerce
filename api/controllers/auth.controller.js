@@ -7,6 +7,7 @@ import { setCookies } from "../utils/setCookies.js";
 
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
+import { validateEmail, validatePassword, validateUsername } from "../utils/validations.js";
 
 // const storeRefreshToken = async (userId, refreshToken) => {
 //   const token = new RefreshToken({
@@ -24,10 +25,26 @@ export const signup = async (req, res, next) => {
   const username = req.body.username.toLowerCase();
 
   if (!username || !email || !password || !confirmPassword)
-    return next(handleMakeError(400, "Please input required fields"));
+    return next(handleMakeError(400, "All fields are required"));
 
   if (password !== confirmPassword)
     return next(handleMakeError(400, "Passwords are not equal "));
+
+  if (!validateEmail(email)) {
+    return next(handleMakeError(400, "Invalid email format"))
+  }
+
+  const userNameCheck = validateUsername(username)
+  if (!userNameCheck.valid) {
+    return next(handleMakeError(400, userNameCheck.message));
+  }
+
+  const passwordCheck = validatePassword(password) 
+  if (!passwordCheck.valid) {
+    return next(handleMakeError(400, passwordCheck.message))
+  }
+
+
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -200,12 +217,26 @@ export const addWorker = async (req, res, next) => {
     req.body; // Extract confirmPassword
   const userId = req.user.id;
 
-  if (!username || !email || !password || !confirmPassword) {
+  if (!username || !email || !password || !confirmPassword || role || jobDescription) {
     return next(handleMakeError(400, "Please input required fields"));
   }
 
   if (password !== confirmPassword) {
     return next(handleMakeError(400, "Passwords do not match"));
+  }
+
+  if (!validateEmail(email)) {
+    return next(handleMakeError(400, "Invalid email format"))
+  }
+
+  const userNameCheck = validateUsername(username)
+  if (!userNameCheck.valid) {
+    return next(handleMakeError(400, userNameCheck.message));
+  }
+
+  const passwordCheck = validatePassword(password) 
+  if (!passwordCheck.valid) {
+    return next(handleMakeError(400, passwordCheck.message))
   }
 
   const userExists = await User.findOne({ email });

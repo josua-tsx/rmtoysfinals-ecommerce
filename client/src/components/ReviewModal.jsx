@@ -1,12 +1,10 @@
 import { IoIosClose } from "react-icons/io";
-import { FaArrowTurnDown } from "react-icons/fa6";
-import StarsRating from "../components/StarsRating.jsx";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import ReviewCard from "./ReviewCard.jsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
-import EditReviewComponent from "./EditReviewComponent.jsx";
+import { FaPaperPlane } from "react-icons/fa";
 
 export default function ReviewModal({ singleProduct, closeModal }) {
   const [showReview, setShowReview] = useState(false);
@@ -15,7 +13,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
 
   const queryClient = useQueryClient();
 
-  const { mutate: addReviewMutation } = useMutation({
+  const { mutate: addReviewMutation, isPending: isSubmitting } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(
         `/review/add-review/${singleProduct._id}`,
@@ -26,7 +24,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      setRating(0);
+      setRating(1);
       setCommentReview("");
       toast.success(`Added a review!`);
     },
@@ -98,28 +96,36 @@ export default function ReviewModal({ singleProduct, closeModal }) {
 
               <div className=" flex flex-col gap-2 ">
                 <h1>Add your comment here</h1>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col items-center gap-2">
                   <textarea
                     name="review"
                     id="review"
                     value={commentReview}
                     onChange={(e) => setCommentReview(e.target.value)}
-                    className="border flex-1 border-black rounded-[5px] resize-none outline-none px-1"
+                    className="border h-[150px] p-2 border-black rounded-[5px] w-full resize-none outline-none"
                   ></textarea>
-                  <div className="flex gap-1">
-                    <button
-                      type="submit"
-                      className={`border border-black  bg-primary p-3 rounded-[5px]`}
-                    >
-                      <FaArrowTurnDown size={20} />
-                    </button>
+                  <div className="w-full">
+                  <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white transition  disabled:opacity-70"
+              >
+                {isSubmitting ? (
+                  "Submitting..."
+                ) : (
+                  <>
+                    <FaPaperPlane />
+                    Submit Review
+                  </>
+                )}
+                </button>
                   </div>
                 </div>
               </div>
             </form>
 
           </div>
-          <div className="bg-card h-[655px] w-[90%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-5 border-black border rounded-[5px]">
+          <div className="bg-card h-[655px] w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
             {/* REVIEW CARD GOES HERE */}
 
             {singleProduct?.reviews?.length > 0 ? (

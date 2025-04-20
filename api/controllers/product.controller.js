@@ -384,7 +384,7 @@ export const editProduct = async (req, res, next) => {
     discount,
     productImages,
     category,
-    points
+    points,
   } = req.body;
 
   try {
@@ -431,7 +431,7 @@ export const editProduct = async (req, res, next) => {
         category,
         status: "published",
         category,
-        points
+        points,
       },
       {
         new: true,
@@ -441,6 +441,29 @@ export const editProduct = async (req, res, next) => {
     if (!updateProduct) {
       return next(handleMakeError(400, "Product Not Found!"));
     }
+
+    const stocksToUpdate = await Stocks.findOne({ product: id }).populate({
+      path: "vat",
+      select: "vatPercent vatValue",
+    });
+
+    const vatAmountPerUnit = price * (stocksToUpdate.vat.vatPercent / 100);
+    const newVatShopPrice = price + vatAmountPerUnit;
+    const newVatToRemit = vatAmountPerUnit * stocksToUpdate.quantity;
+
+    await Stocks.findByIdAndUpdate(
+      stocksToUpdate._id,
+      {
+        $set: {
+          shopPrice: price,
+          vatShopPrice: newVatShopPrice,
+          vatToRemit: newVatToRemit,
+        },
+      },
+      {
+        new: true,
+      }
+    );
 
     await logAuditTrail({
       action: "update_product",

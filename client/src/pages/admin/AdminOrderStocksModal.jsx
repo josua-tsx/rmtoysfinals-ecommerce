@@ -16,14 +16,14 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [vatPercent, setVatPercent] = useState(0);
 
-  console.log(shopPrice)
+  const [selectedVatValue, setSelectedVatValue] = useState(null);
 
   // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
   const calculateTotalExpenses =
     Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
-  const totalPriceWithVAT = Number(shopPrice) + Number(shopPrice) * vatPercent;
+  const totalPriceWithVAT =
+    Number(shopPrice) + Number(shopPrice) * selectedVatValue?.vatValue;
   const roundedPrice = Math.round(totalPriceWithVAT);
 
   useEffect(() => {
@@ -60,7 +60,14 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
     },
   });
 
-  console.log(vats);
+  const handleVatOnChange = (e) => {
+    const selectedVatId = e.target.value;
+    const selectedVatValue = vats.find((vat) => vat._id === selectedVatId);
+
+    setSelectedVatValue(selectedVatValue);
+  };
+
+  console.log(selectedVatValue);
 
   const {
     data: suppliers = [],
@@ -104,7 +111,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       deliveryId,
       dateDelivery: selectedDate,
       discount,
-      vatPercent,
+      vat: selectedVatValue?._id,
       vatShopPrice: roundedPrice,
     });
   };
@@ -191,14 +198,14 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               <select
                 name="vatPercent"
                 id="vatPercent"
-                value={vatPercent}
-                onChange={(e) => setVatPercent(e.target.value)}
+                value={selectedVatValue?._id}
+                onChange={handleVatOnChange}
                 className="rounded-[5px] border border-black outline-none"
               >
                 <option value="">Select VAT Percent</option>
                 {vats.length > 0 &&
                   vats.map((vat) => (
-                    <option key={vat._id} value={vat?.vatValue}>
+                    <option key={vat._id} value={vat?._id}>
                       {vat.vatPercent} %
                     </option>
                   ))}
@@ -231,8 +238,8 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
-            {vatPercent.length > 0 && (
-              <p>Shop price with VAT = {totalPriceWithVAT}</p>
+            {selectedVatValue?.vatPercent > 0 && (
+              <p>Shop price with VAT = {roundedPrice}</p>
             )}
 
             <div className="flex gap-4">

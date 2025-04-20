@@ -22,7 +22,7 @@ export default function AdminStocks() {
   const totalExpectedRevenue = Array.isArray(stocks)
     ? stocks.reduce((total, item) => {
         return total + item?.shopPrice * item?.quantity;
-      }, 0)
+      }, 0) 
     : 0;
 
   const totalExpectedExpenses = Array.isArray(stocks)
