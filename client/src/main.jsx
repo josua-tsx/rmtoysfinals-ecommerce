@@ -39,8 +39,6 @@ import AdminAddCategory from "./pages/admin/AdminAddCategory.jsx";
 import AdminCategoryEdit from "./pages/admin/AdminCategoryEdit.jsx";
 import AdminEditSupplier from "./pages/admin/AdminEditSupplier.jsx";
 import AdminStocks from "./pages/admin/AdminStocks.jsx";
-import AdminAddStocks from "./pages/admin/AdminAddStocks.jsx";
-import AdminEditStocks from "./components/admin/AdminEditStocks.jsx";
 import AdminUser from "./pages/admin/AdminUser.jsx";
 
 import AdminDraftProduct from "./pages/admin/AdminDraftProduct.jsx";
@@ -66,7 +64,7 @@ import AdminAddVat from "./pages/admin/AdminAddVat.jsx";
 import AdminEditVat from "./pages/admin/AdminEditVat.jsx";
 import FaqPage from "./pages/FaqPage.jsx";
 import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
-import AdminOrderStockHistoryTable from "./pages/admin/AdminOrderStockHistoryTable.jsx";
+
 import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
 
 const queryClient = new QueryClient();
@@ -259,11 +257,6 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "/admin/addStocks",
-        element: <AdminAddStocks />,
-      },
-
-      {
         path: "/admin/pendingStocks",
         element: <AdminStocksPending />,
       },
@@ -272,17 +265,7 @@ const router = createBrowserRouter([
         element: <AdminStockHistory/>,
       },
 
-      {
-        path: "/admin/editStocks/:stockId",
-        element: <AdminEditStocks />,
-      },
 
-      // {
-      //   path: "/admin/stocksDelivery",
-      //   element: <AdminStocksDelivery/>,
-      // },
-
-      // USER MAINTENANCE
 
       {
         path: "/admin/user",
@@ -346,14 +329,28 @@ const router = createBrowserRouter([
         path: "orderStatus",
         element: <AdminOrderStatus />,
       },
+      // {
+      //   path: "audit",
+      //   element: <AdminAuditTrailLogs />,
+      // },
+
       {
-        path: "audit",
-        element: <AdminAuditTrailLogs />,
+        path: `orderTransactions`,
+        element: <AdminOrderTransact />,
       },
 
       {
-        path: `orderTransact`,
-        element: <AdminOrderTransact />,
+        path: "stocks",
+        element: <AdminStocks />,
+      },
+
+      {
+        path: "pendingStocks",
+        element: <AdminStocksPending />,
+      },
+      {
+        path: "stockHistory",
+        element: <AdminStockHistory/>,
       },
     ],
   },

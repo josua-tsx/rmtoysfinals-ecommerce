@@ -6,7 +6,7 @@ const AuditSchemaModel = new mongoose.Schema({
   targetId: { type: mongoose.Schema.Types.ObjectId }, // e.g., ID of the product/order involved
   targetType: { type: String }, // e.g., 'Product', 'Order', 'User'
   details: { type: Object }, // Store additional details about the action
-  role: { type: String, enum: ["customer", "admin"] },
+  role: { type: String, enum: ["customer", "admin", "validatorStaff"] },
   timestamp: { type: Date, default: Date.now }, // Auto-generated timestamp
 });
 

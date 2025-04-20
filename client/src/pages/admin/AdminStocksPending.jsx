@@ -4,8 +4,12 @@ import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import AdminOrderStocksModal from "./AdminOrderStocksModal";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import { useUserStore } from "../../stores/useUserStore";
 
 export default function AdminStocksPending() {
+
+  const currentUser = useUserStore((state) => state.currentUser)
+
   const [orderSingleStock, setOrderSingleStock] = useState();
   const [openModal, setOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -96,8 +100,9 @@ export default function AdminStocksPending() {
                         </div>
                         <div>
                           <button
+                          disabled={currentUser.role === "validatorStaff"}
                             onClick={() => handleOpenSingleOrder(product)}
-                            className="border bg-primary rounded-[5px] text-white p-1 border-black"
+                            className={` ${currentUser.role === "validatorStaff" ? "hidden" : "block"} border bg-primary rounded-[5px] text-white p-1 border-black`}
                           >
                             Order Stock
                           </button>

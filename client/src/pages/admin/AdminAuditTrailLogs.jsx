@@ -2,6 +2,7 @@ import { useState } from "react";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import AdminAdminLogs from "./AdminAdminLogs";
 import AdminCustomerLogs from "./AdminCustomerLogs";
+import AdminValidatorStaffLogs from "./AdminValidatorStaffLogs";
 
 export default function AdminAuditTrailLogs() {
   const [componenent, setComponent] = useState("admin");
@@ -29,11 +30,13 @@ export default function AdminAuditTrailLogs() {
           >
             <option value="admin">Admin logs</option>
             <option value="customer">Customer logs</option>
+            <option value="validator">Validator logs</option>
           </select>
         </div>
 
         {componenent === "admin" && <AdminAdminLogs />}
         {componenent === "customer" && <AdminCustomerLogs />}
+        {componenent === "validator" && <AdminValidatorStaffLogs/>}
       </div>
     </section>
   );

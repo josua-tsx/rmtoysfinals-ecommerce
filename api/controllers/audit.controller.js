@@ -61,3 +61,17 @@ export const getCustomerLogs = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getValidatorStaffLogs = async (req, res, next) => {
+  try {
+    const logs = await Audit.find({ role: "validatorStaff" })
+      .populate({
+        path: "userId",
+        select: "email",
+      })
+      .sort({ timestamp: -1 });
+    res.status(200).json(logs);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -710,6 +710,8 @@ export const updateDeliveryStatus = async (req, res, next) => {
       }
     }
 
+    const isUserAdminOrValida = await User.findById(userId)
+
     const orderUpdate = {
       status,
       paymentStatus: status === "Delivered" ? "Paid" : "Pending",
@@ -721,7 +723,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     });
     if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
 
-    console.log(updatedOrder);
 
     // Handle different status updates
     switch (updatedOrder.status) {
@@ -734,13 +735,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
           //   "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
           // );
 
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your Order ${updatedOrder._id} Has been Delivered!
-                          "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
-                          From: RM TOYS"
-          `
-          );
+          // await sendSMS(
+          //   orderUserPhoneNumber,
+          //   `Your Order ${updatedOrder._id} Has been Delivered!
+          //                 "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
+          //                 From: RM TOYS"
+          // `
+          // );
 
           // Update products and user credits in parallel
           await Promise.all([
@@ -774,14 +775,27 @@ export const updateDeliveryStatus = async (req, res, next) => {
           ]);
 
           // Audit trail
-          await logAuditTrail({
-            action: "set_OrderStatus_delivered",
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "admin",
-          });
+          
+          if (isUserAdminOrValida.role === "admin") {
+            await logAuditTrail({
+              action: "set_OrderStatus_delivered",
+              userId,
+              targetId: updatedOrder._id,
+              targetType: "OrderStatus",
+              details: { email: userEmail }, // Consistent variable usage
+              role: "admin",
+            });
+          } else {
+            await logAuditTrail({
+              action: "set_OrderStatus_delivered",
+              userId,
+              targetId: updatedOrder._id,
+              targetType: "OrderStatus",
+              details: { email: userEmail }, // Consistent variable usage
+              role: "validatorStaff",
+            });
+          }
+
         } catch (error) {
           // Handle errors appropriately
           console.error("Delivery processing failed:", error);
@@ -790,39 +804,119 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Processing":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your ${updatedOrder._id} is on Processing.`,
-          "Your order is being processed. We will notify you once it is shipped.",
-          "From: RM TOYS"
-        );
+        // await sendSMS(
+        //   orderUserPhoneNumber,
+        //   `Your ${updatedOrder._id} is on Processing.`,
+        //   "Your order is being processed. We will notify you once it is shipped.",
+        //   "From: RM TOYS"
+        // );
+
+        if (isUserAdminOrValida.role === "admin") {
+          await logAuditTrail({
+            action: "set_OrderStatus_Processing",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "admin",
+          });
+        } else {
+          await logAuditTrail({
+            action: "set_OrderStatus_Processing",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "validatorStaff",
+          });
+        }
         break;
 
       case "Shipped":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your ${updatedOrder._id} is Shipped!`,
-          "Your order is now on its way to you!",
-          "From: RM TOYS"
-        );
+        // await sendSMS(
+        //   orderUserPhoneNumber,
+        //   `Your ${updatedOrder._id} is Shipped!`,
+        //   "Your order is now on its way to you!",
+        //   "From: RM TOYS"
+        // );
+
+        if (isUserAdminOrValida.role === "admin") {
+          await logAuditTrail({
+            action: "set_OrderStatus_Shipped",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "admin",
+          });
+        } else {
+          await logAuditTrail({
+            action: "set_OrderStatus_Shipped",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "validatorStaff",
+          });
+        }
         break;
 
       case "Out for Delivery":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your order ${updatedOrder._id} is Out for Delivery!`,
-          "Your order is on the way. Expect delivery soon!",
-          "From: RM TOYS"
-        );
+        // await sendSMS(
+        //   orderUserPhoneNumber,
+        //   `Your order ${updatedOrder._id} is Out for Delivery!`,
+        //   "Your order is on the way. Expect delivery soon!",
+        //   "From: RM TOYS"
+        // );
+
+        if (isUserAdminOrValida.role === "admin") {
+          await logAuditTrail({
+            action: "set_OrderStatus_OutforDelivery",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "admin",
+          });
+        } else {
+          await logAuditTrail({
+            action: "set_OrderStatus_OutforDelivery",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "validatorStaff",
+          });
+        }
         break;
 
       case "Cancelled":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your order ${updatedOrder._id} has been Cancelled`,
-          "Unfortunately, your order has been canceled. Please contact support for further assistance.",
-          "From: RM TOYS"
-        );
+        // await sendSMS(
+        //   orderUserPhoneNumber,
+        //   `Your order ${updatedOrder._id} has been Cancelled`,
+        //   "Unfortunately, your order has been canceled. Please contact support for further assistance.",
+        //   "From: RM TOYS"
+        // );
+
+        if (isUserAdminOrValida.role === "admin") {
+          await logAuditTrail({
+            action: "set_OrderStatus_Cancelled",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "admin",
+          });
+        } else {
+          await logAuditTrail({
+            action: "set_OrderStatus_Cancelled",
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail }, // Consistent variable usage
+            role: "validatorStaff",
+          });
+        }
 
         break;
     }
@@ -891,6 +985,8 @@ export const updatePaymentStatus = async (req, res, next) => {
     const paymentStatusOrderPhoneNumber = order.userId?.phoneNumber;
     const paymentStatusOrderEmail = order.userId?.email;
 
+    const isUserAdminOrValida = await User.findById(userId);
+
     // Set order status to "Processing" if payment status is "Failed"
     const orderUpdate = {
       paymentStatus,
@@ -909,7 +1005,7 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     if (paymentStatus === "Refunded") {
-      orderUpdate.status = "Cancelled";
+      orderUpdate.status = "Refunded";
     }
 
     const updatedPaymentStatus = await Order.findByIdAndUpdate(
@@ -922,16 +1018,29 @@ export const updatePaymentStatus = async (req, res, next) => {
       return next(handleMakeError(400, "status not found!"));
 
     if (updatedPaymentStatus.paymentStatus === "Paid") {
-      await logAuditTrail({
-        action: "set_PaymentStatus_paid",
-        userId,
-        targetId: updatedPaymentStatus._id,
-        targetType: "PaymentStatus",
-        details: {
-          email: paymentStatusOrderEmail,
-        },
-        role: "admin",
-      });
+      if (isUserAdminOrValida.role === "admin") {
+        await logAuditTrail({
+          action: "set_PaymentStatus_Paid",
+          userId,
+          targetId: updatedPaymentStatus._id,
+          targetType: "PaymentStatus",
+          details: {
+            email: paymentStatusOrderEmail,
+          },
+          role: "admin",
+        });
+      } else {
+        await logAuditTrail({
+          action: "set_PaymentStatus_Paid",
+          userId,
+          targetId: updatedPaymentStatus._id,
+          targetType: "PaymentStatus",
+          details: {
+            email: paymentStatusOrderEmail,
+          },
+          role: "validatorStaff",
+        });
+      }
     }
 
     if (updatedPaymentStatus.paymentStatus === "Failed") {
@@ -954,16 +1063,29 @@ export const updatePaymentStatus = async (req, res, next) => {
         );
       }
 
-      await logAuditTrail({
-        action: "set_PaymentStatus_Failed",
-        userId,
-        targetId: updatedPaymentStatus._id,
-        targetType: "PaymentStatus",
-        details: {
-          email: paymentStatusOrderEmail,
-        },
-        role: "admin",
-      });
+      if (isUserAdminOrValida.role === "admin") {
+        await logAuditTrail({
+          action: "set_PaymentStatus_Failed",
+          userId,
+          targetId: updatedPaymentStatus._id,
+          targetType: "PaymentStatus",
+          details: {
+            email: paymentStatusOrderEmail,
+          },
+          role: "admin",
+        });
+      } else {
+        await logAuditTrail({
+          action: "set_PaymentStatus_Failed",
+          userId,
+          targetId: updatedPaymentStatus._id,
+          targetType: "PaymentStatus",
+          details: {
+            email: paymentStatusOrderEmail,
+          },
+          role: "validatorStaff",
+        });
+      }
     }
 
     if (updatedPaymentStatus.paymentStatus === "Refunded") {
@@ -986,16 +1108,29 @@ export const updatePaymentStatus = async (req, res, next) => {
         );
       }
 
-      await logAuditTrail({
-        action: "set_PaymentStatus_Refunded",
-        userId,
-        targetId: updatedPaymentStatus._id,
-        targetType: "PaymentStatus",
-        details: {
-          email: paymentStatusOrderEmail,
-        },
-        role: "admin",
-      });
+      if (isUserAdminOrValida.role === "admin") {
+        await logAuditTrail({
+          action: "set_PaymentStatus_Refunded",
+          userId,
+          targetId: updatedPaymentStatus._id,
+          targetType: "PaymentStatus",
+          details: {
+            email: paymentStatusOrderEmail,
+          },
+          role: "admin",
+        });
+      } else {
+        await logAuditTrail({
+          action: "set_PaymentStatus_Refunded",
+          userId,
+          targetId: updatedPaymentStatus._id,
+          targetType: "PaymentStatus",
+          details: {
+            email: paymentStatusOrderEmail,
+          },
+          role: "validatorStaff",
+        });
+      }
     }
 
     res.status(200).json({ message: "Payment Status updated sucessfully" });

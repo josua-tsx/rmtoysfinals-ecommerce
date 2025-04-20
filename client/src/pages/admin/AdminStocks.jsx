@@ -7,6 +7,9 @@ import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminStocks() {
+
+ 
+
   const {
     data: stocks = [],
     isLoading: isStocksPending,

@@ -114,6 +114,8 @@ export default function AdminProductOverview() {
     },
   });
 
+  console.log(latestReview);
+
   //   GET ALL REVIEWS
 
   const {
@@ -313,10 +315,10 @@ export default function AdminProductOverview() {
             <div className="flex justify-center items-center">
               <LoadingSpinner />
             </div>
-          ) : latestReview.length > 0 ? (
+          ) : latestReview && Object.keys(latestReview).length > 0 ? (
             <div className="border border-black flex justify-center items-center rounded-[5px] relative bg-card">
               <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
-                <div className="  w-[15px] h-[15px] rounded-full">
+                <div className="w-[15px] h-[15px] rounded-full">
                   <div className="absolute -top-6 right-[-65%]">
                     <TbPinnedFilled size={30} />
                   </div>
@@ -325,11 +327,11 @@ export default function AdminProductOverview() {
 
               <div className="p-4 text-sm flex flex-col gap-3 items-center">
                 <p className="text-lg">LATEST REVIEW</p>
-                <p> {new Date(latestReview.createdAt).toLocaleString()}</p>
+                <p>{new Date(latestReview.createdAt).toLocaleString()}</p>
                 <img
                   src={latestReview?.userId?.avatar}
                   alt="avatar"
-                  className=" h-[70px] w-auto rounded-full border border-black"
+                  className="h-[70px] w-auto rounded-full border border-black"
                 />
                 <div className="w-[200px] truncate flex flex-col justify-center items-center gap-3">
                   <p>{latestReview.commentReview}</p>
@@ -350,7 +352,7 @@ export default function AdminProductOverview() {
           ) : (
             <p className="bg-card border border-black text-center rounded-[5px] flex flex-col justify-center relative">
               <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
-                <div className="  w-[15px] h-[15px] rounded-full">
+                <div className="w-[15px] h-[15px] rounded-full">
                   <div className="absolute -top-6 right-[-65%]">
                     <TbPinnedFilled size={30} />
                   </div>

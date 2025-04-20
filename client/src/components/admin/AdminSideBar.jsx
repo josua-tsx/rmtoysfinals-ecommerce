@@ -101,7 +101,7 @@ export default function AdminSideBar() {
     {
       name: "Stocks",
       icon: <MdCategory size={20} />,
-      allowedRoles: ["admin"],
+      allowedRoles: ["admin", "validatorStaff"],
       inner: [
         {
           name: "Stocks Table",
@@ -117,19 +117,7 @@ export default function AdminSideBar() {
           path: "/admin/stockHistory",
         },
 
-        
-        // {
-        //   name: "Add Stocks",
-        //   path: "/admin/addStocks",
-        // },
-        // {
-        //   name: "Pending Stocks",
-        //   path: "/admin/addStocks",
-        // },
-        // {
-        //   name: "Stocks Delivery",
-        //   path: "/admin/stocksDelivery",
-        // },
+      
       ],
     },
 
@@ -163,7 +151,7 @@ export default function AdminSideBar() {
       name: "Audit Trail",
       path: "/admin/audit",
       icon: <MdCategory size={20} />,
-      allowedRoles: ["admin", "validatorStaff"],
+      allowedRoles: ["admin"],
     },
 
 

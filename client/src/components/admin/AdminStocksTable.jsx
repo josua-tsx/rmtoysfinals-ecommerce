@@ -6,8 +6,12 @@ import formatPrice from "../../reusable/formatPrice";
 import AdminOrderRestockModal from "./AdminOrderRestockModal";
 import ReduceQuantityModal from "../ReduceQuantityModal";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import { useUserStore } from "../../stores/useUserStore";
 
 export default function AdminStocksTable() {
+  const currentUser = useUserStore((state) => state.currentUser);
+  console.log(currentUser);
+
   // const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -200,18 +204,31 @@ export default function AdminStocksTable() {
                       {formatPrice(stock?.shippingPrice) + " PHP"}
                     </td>
                     <td className="text-red-700">
-                      {formatPrice((stock?.supplierPrice * stock?.quantity) + stock?.shippingPrice) + " PHP"}
+                      {formatPrice(
+                        stock?.supplierPrice * stock?.quantity +
+                          stock?.shippingPrice
+                      ) + " PHP"}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm flex flex-col gap-2">
                       <button
+                        disabled={currentUser.role === "validatorStaff"}
                         onClick={() => openSingleStockData(stock)}
-                        className="border border-black p-1 px-2 rounded-[5px] bg-green-700 text-white hover:text-indigo-300 mr-2"
+                        className={`${
+                          currentUser.role === "validatorStaff"
+                            ? "hidden"
+                            : "block"
+                        } border border-black p-1 px-2 rounded-[5px] bg-green-700 text-white hover:text-indigo-300 mr-2`}
                       >
                         Order / Re-stock
                       </button>
                       <button
+                        disabled={currentUser.role === "validatorStaff"}
                         onClick={() => openReduceModal(stock)}
-                        className="border border-black p-1 px-2 rounded-[5px] bg-red-700 text-white hover:text-indigo-300 mr-2"
+                        className={`${
+                          currentUser.role === "validatorStaff"
+                            ? "hidden"
+                            : "block"
+                        } border border-black p-1 px-2 rounded-[5px] bg-red-700 text-white hover:text-indigo-300 mr-2`}
                       >
                         Reduce Quantity
                       </button>
