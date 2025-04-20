@@ -6,10 +6,15 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import { useState } from "react";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminVatTable() {
     const navigate = useNavigate()
     const queryClient = useQueryClient()
+
+    const [isOpenModal, setIsOpenModal] = useState(false)
+    const [selectedId, setSelectedId] = useState(null)
 
   const {
     data: vatTable = [],
@@ -23,7 +28,6 @@ export default function AdminVatTable() {
     },
   });
 
-  console.log(vatTable)
 
   const {mutate: deleteVatMutation} = useMutation({
     mutationFn: async (vatId) => {
@@ -40,12 +44,39 @@ export default function AdminVatTable() {
   })
 
 
+  const handleClickDelete = (vatId) => {
+    setSelectedId(vatId)
+    setIsOpenModal(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (selectedId) {
+      deleteVatMutation(selectedId)
+      setIsOpenModal(false)
+    }
+  }
+
+  const handleCancelDelete = () => {
+    setSelectedId(null)
+    setIsOpenModal(false)
+  }
+
   if (isError) return <p>Error</p>;
 
   return (
     <div className="font-main border rounded-[5px] border-black bg-card relative ">
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       {/* CARD */}
+
+      <ConfirmModal
+              isOpen={isOpenModal}
+              title={"Confirm delete"}
+              message={
+                "Are you sure you want to delete this VAT? This action cannot be undone."
+              }
+              onConfirm={handleConfirmDelete}
+              onCancel={handleCancelDelete}
+            />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>VAT TABLE</h1>
@@ -93,7 +124,7 @@ export default function AdminVatTable() {
                 className="text-green-600 hover:text-indigo-300 mr-2">
                   <CiEdit size={25} />
                 </button>
-                <button onClick={() => deleteVatMutation(vat._id)}
+                <button onClick={() => handleClickDelete(vat._id)}
                 className="text-red-600 hover:text-red-300">
                   <MdDelete size={25} />
                 </button>
