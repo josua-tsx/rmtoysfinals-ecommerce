@@ -28,10 +28,15 @@ config();
 const app = express();
 const PORT = process.env.PORT;
 
+const allowedOrigins = [
+  "https://rmtoysfinals-8jgr.vercel.app", // Your Vercel frontend
+  "http://localhost:5173", // For local testing (optional)
+];
+
 // CORS configuration
 app.use(
   cors({
-    origin: ["https://rmtoysfinals-8jgr.vercel.app", process.env.CLIENT_URL], // Make sure this matches the frontend origin
+    origin: allowedOrigins, // Make sure this matches the frontend origin
     credentials: true,
   })
 );
