@@ -1,8 +1,8 @@
 import { useState } from "react";
-import UserDeliveredOrder from "./UserDeliveredOrder";
-import UserCancelledOrder from "./UserCancelledOrder";
-import UserRefundedOrder from "./UserRefundedORder";
-import UserFailedOrder from "./UserFailedOrder";
+import UserDeliveredOrder from "./UserDeliveredOrder.jsx";
+import UserCancelledOrder from "./UserCancelledOrder.jsx";
+import UserRefundedOrder from "./UserRefundedOrder.jsx";
+import UserFailedOrder from "./UserFailedOrder.jsx";
 
 export default function OrderHistory() {
  
