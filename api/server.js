@@ -31,7 +31,7 @@ const PORT = process.env.PORT;
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL, // Make sure this matches the frontend origin
+    origin: ["https://rmtoysfinals-8jgr.vercel.app/", process.env.CLIENT_URL], // Make sure this matches the frontend origin
     credentials: true,
   })
 );
