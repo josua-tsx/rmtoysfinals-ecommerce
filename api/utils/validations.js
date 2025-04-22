@@ -304,11 +304,19 @@ export const validateSupplierName = (name) => {
     };
   }
 
-  // Letters, numbers, spaces, hyphens, and apostrophes allowed
-  if (!/^[A-Za-z0-9\s\-']+$/.test(trimmedName)) {
+  // Allow letters, numbers, spaces, and common punctuation
+  if (!/^[A-Za-z0-9\s\-'.,&()]+$/.test(trimmedName)) {
     return {
       valid: false,
-      message: "Supplier name contains invalid characters",
+      message: "Supplier name contains invalid characters (only letters, numbers, spaces, and -'.,&() allowed)",
+    };
+  }
+
+  // Additional check to prevent names starting/ending with punctuation
+  if (/^[-'.,&()]|[-'.,&()]$/.test(trimmedName)) {
+    return {
+      valid: false,
+      message: "Supplier name cannot start or end with punctuation",
     };
   }
 
@@ -333,6 +341,25 @@ export const validateSupplierAddress = (address) => {
       message: "Address must be 5-200 characters long",
     };
   }
+
+  // Double spaces check
+  if (/\s{2,}/.test(trimmedAddress)) {
+    return {
+      valid: false,
+      message: "Remove double spaces in the address",
+    };
+  }
+
+  // Allow letters, numbers, spaces, and basic punctuation (including #)
+  if (!/^[A-Za-z0-9\s.,'#-]+$/.test(trimmedAddress)) {
+    return {
+      valid: false,
+      message: "Address contains invalid characters (only letters, numbers, spaces, and .,-'# allowed)",
+    };
+  }
+
+  return { valid: true };
+};
 
   // Double spaces check
   if (/\s{2,}/.test(trimmedAddress)) {

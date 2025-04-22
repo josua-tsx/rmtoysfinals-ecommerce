@@ -98,15 +98,15 @@ export const editCategory = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
-  if (!categoryName.trim()) {
-    return next(handleMakeError(400, "Only spaces not allowed."));
+  const categoryNameCheck = validateCategoryNamee(categoryName)
+  if (!categoryNameCheck.valid) {
+    return next(handleMakeError(400, categoryNameCheck.message))
   }
 
-  if (!categoryDescription.trim()) {
-    return next(handleMakeError(400, "Only spaces not allowed."));
+  const categoryDescriptionCheck = validateCategoryDescription(categoryDescription)
+  if (!categoryDescriptionCheck.valid) {
+    return next(handleMakeError(400, categoryDescriptionCheck.message))
   }
-
-
 
   try {
     const updateCategory = await Category.findByIdAndUpdate(categoryId, {
