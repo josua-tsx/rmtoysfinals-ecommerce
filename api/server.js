@@ -34,12 +34,15 @@ const allowedOrigins = [
 ];
 
 // CORS configuration
-app.use(
-  cors({
-    origin: allowedOrigins, // Make sure this matches the frontend origin
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "https://your-vercel-app.vercel.app", // Production
+    "http://localhost:5173" // Development
+  ],
+  credentials: true, // Must be true
+  exposedHeaders: ["set-cookie"] // Helps with cookie issues
+}));
+
 
 console.log(process.env.CLIENT_URL);
 
