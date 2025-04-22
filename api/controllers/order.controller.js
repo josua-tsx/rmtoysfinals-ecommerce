@@ -8,11 +8,8 @@ import User from "../models/user.models.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 
-import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);  // MUST be initialized
-
-
-
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
   const userId = req.user.id;
@@ -222,8 +219,16 @@ export const placeOrderStripe = async (req, res, next) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+      success_url: `${
+        process.env.NODE_ENV === "development"
+          ? process.env.CLIENT_URL
+          : "https://rmtoysfinals-8jgr.vercel.app"
+      }/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${
+        process.env.NODE_ENV === "development"
+          ? process.env.CLIENT_URL
+          : "https://rmtoysfinals-8jgr.vercel.app"
+      }/purchase-cancel`,
       metadata: {
         userId: req.user._id.toString(),
         orderItems: JSON.stringify(
@@ -713,7 +718,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
       }
     }
 
-    const isUserAdminOrValida = await User.findById(userId)
+    const isUserAdminOrValida = await User.findById(userId);
 
     const orderUpdate = {
       status,
@@ -725,7 +730,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
       runValidators: true,
     });
     if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
-
 
     // Handle different status updates
     switch (updatedOrder.status) {
@@ -778,7 +782,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
           ]);
 
           // Audit trail
-          
+
           if (isUserAdminOrValida.role === "admin") {
             await logAuditTrail({
               action: "set_OrderStatus_delivered",
@@ -798,7 +802,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
               role: "validatorStaff",
             });
           }
-
         } catch (error) {
           // Handle errors appropriately
           console.error("Delivery processing failed:", error);
