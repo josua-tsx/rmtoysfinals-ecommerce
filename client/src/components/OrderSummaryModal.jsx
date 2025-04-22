@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import useOrderStore from "../stores/useOrderStore";
 import { useNavigate } from "react-router-dom";
 import formatPrice from "../reusable/formatPrice";
+import { IoIosClose } from "react-icons/io";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -198,97 +199,119 @@ export default function OrderSummaryModal({ onClose }) {
   if (isActiveError || isCartError) return <p>error...</p>;
 
   return (
-    <section className="fixed inset-0 overflow-y-auto flex flex-col justify-center z-50 backdrop-blur-sm">
-      <div className="flex relative flex-col-reverse py-10  md:flex-row w-[90%] mx-auto gap-5 justify-center items-start">
-        <form
-          onSubmit={handleOrderFormSubmit}
-          className="bg-card p-2 h-full  flex flex-col justify-between relative rounded-[5px] border  w-[90%] md:w-[60%]  lg:w-[50%] border-black"
+    <section className="fixed inset-0 overflow-y-auto flex items-center justify-center font-main z-50 backdrop-blur-sm p-4">
+      <div className="bg-card border flex-col-reverse text-sm md:text-normal border-black rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex  md:flex-row">
+        {/* Left Panel - Order Form */}
+
+
+        <div className="w-full md:w-7/12 p-6  overflow-y-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl">Order Summary</h2>
+            
+        <button
+          onClick={onClose}
+          className="border  border-black  text-card bg-primary rounded-[5px] px-5 right-0 -top-8"
         >
-          <div className="hidden md:flex absolute -top-9 bg-primary border border-black left-0 rounded-[5px] text-card px-3 text-sm py-1">
-            <h1>ORDER SUMMARY</h1>
+          <IoIosClose size={25} />
+        </button>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="fullName">Full name: </label>
-              <input
-                className="border outline-none border-black rounded-[5px] p-1"
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={currentUser?.fullName && currentUser?.fullName}
-                disabled={!activeAddress?.fullAddress ? true : false}
-              />
+          <form onSubmit={handleOrderFormSubmit} className="relative">
+            {/* Customer Information Section */}
+            <div className="bg-card p-4 rounded-lg">
+              <h3 className="text-lg mb-3">Customer Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm  text-black mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    className="w-full p-2 border border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary"
+                    value={currentUser?.fullName || ""}
+                    disabled={!activeAddress?.fullAddress}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm  text-black mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    className="w-full p-2 border border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary"
+                    value={currentUser?.phoneNumber || ""}
+                    disabled={!activeAddress?.fullAddress}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <label className="block text-sm  text-black mb-1">
+                  Shipping Address
+                </label>
+                <input
+                  type="text"
+                  name="currentAddress"
+                  className="w-full p-2 border border-gray-300 rounded-md outline-none focus:ring-primary focus:border-primary"
+                  value={activeAddress?.fullAddress || ""}
+                  disabled={!activeAddress?.fullAddress}
+                />
+              </div>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label htmlFor="fullName">Phone Number: </label>
-              <input
-                className="border outline-none border-black rounded-[5px] p-1"
-                type="number"
-                id="phoneNumber"
-                name="phoneNumber"
-                value={currentUser?.phoneNumber && currentUser?.phoneNumber}
-                disabled={!activeAddress?.fullAddress ? true : false}
-              />
-            </div>
+            {/* Payment Method Section */}
+            <div className="bg-card p-4 rounded-lg">
+              <h3 className=" text-lg ">Payment Method</h3>
 
-            <div className="flex flex-col gap-1">
-              <label htmlFor="currentAddress">Current Shipping Address: </label>
-              <input
-                className="border  outline-none border-black rounded-[5px] p-1"
-                type="text"
-                id="currentAddress"
-                name="currentAddress"
-                value={activeAddress?.fullAddress && activeAddress?.fullAddress}
-                disabled={!activeAddress?.fullAddress ? true : false}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label htmlFor="paymentMethod">Payment Method: </label>
               <select
                 name="paymentMethod"
-                id="paymentMethod"
-                className="border outline-none border-black rounded-[5px] p-1"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               >
-                <option value="Cod">Cash on delivery</option>
-                <option value="GcashQR">GcashQR</option>
-                <option value="Online Payment">Stripe (TEST)</option>
+                <option value="Cod">Cash on Delivery</option>
+                <option value="GcashQR">GCash QR</option>
+                <option value="Online Payment">Credit/Debit Card</option>
               </select>
             </div>
 
-            <div className="flex gap-2 flex-col">
-              <label>
-                <p className="text-blue-700">
-                  (Current Credits: {currentUser?.credits})
-                </p>
-                Use Your Credits?
-              </label>
-              <div className="flex gap-2">
-                <label className="flex items-center gap-1">
-                  <input
-                    type="radio"
-                    name="useCredits"
-                    value="yes"
-                    checked={useCredits === "yes"}
-                    onChange={handleChangeCredits}
-                  />
-                  Yes
-                </label>
-                <label className="flex items-center gap-1">
-                  <input
-                    type="radio"
-                    name="useCredits"
-                    value="no"
-                    checked={useCredits === "no"}
-                    onChange={handleChangeCredits}
-                  />
-                  No
-                </label>
+            {/* Credits Section */}
+            <div className="bg-card p-4 rounded-lg">
+              <h3 className=" text-lg mb-3">Credits</h3>
+
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-blue-600">
+                  Available Credits: {currentUser?.credits || 0}
+                </span>
+                <div className="flex items-center space-x-4">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="useCredits"
+                      value="yes"
+                      checked={useCredits === "yes"}
+                      onChange={handleChangeCredits}
+                      className="text-primary focus:ring-primary"
+                    />
+                    <span className="ml-2">Use Credits</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="useCredits"
+                      value="no"
+                      checked={useCredits === "no"}
+                      onChange={handleChangeCredits}
+                      className="text-primary focus:ring-primary"
+                    />
+                    <span className="ml-2">Don't Use</span>
+                  </label>
+                </div>
               </div>
 
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg
@@ -304,9 +327,9 @@ export default function OrderSummaryModal({ onClose }) {
                       />
                     </svg>
                   </div>
-                  <div className="ml-3 flex flex-col gap-2">
-                    <p className="text-md text-black">
-                      <strong>Important:</strong> You can only use your credits once
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      <strong>Note:</strong> You can only use your credits once
                       every 24 hours.
                     </p>
                   </div>
@@ -314,114 +337,120 @@ export default function OrderSummaryModal({ onClose }) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1 mb-2">
-              <label htmlFor="notes">Add additional note (optional)</label>
+            {/* Additional Notes */}
+            <div className="bg-card p-4 rounded-lg">
+              <label className="block text-sm  text-black mb-2">
+                Additional Notes (Optional)
+              </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                name="notes"
-                id="notes"
-                className="border p-2 outline-none resize-none h-full md:h-[130px] border-black rounded-[5px]"
+                className="w-full p-2 border border-gray-300 resize-none rounded-md outline-none focus:ring-primary focus:border-primary"
+                rows="3"
+                placeholder="Special instructions, delivery notes, etc."
               ></textarea>
             </div>
-          </div>
 
-          <div className="flex flex-row-reverse gap-2">
-            <button
-              onClick={onClose}
-              type="button"
-              className="border w-[90px] md:w-[150px] border-black bg-red-700 text-card p-1 rounded-[5px]"
-            >
-              Cancel
-            </button>
-            <button className="border flex-1 border-black bg-primary text-card p-1 rounded-[5px]">
-              Place Order
-            </button>
-          </div>
-        </form>
+            {/* Action Buttons */}
+            <div className="flex flex-row-reverse w-full  gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-black bg-red-700 text-white rounded-md "
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 flex-1 border border-black bg-primary text-white rounded-md hover:bg-primary-dark"
+              >
+                Place Order
+              </button>
+            </div>
+          </form>
+        </div>
 
-        <div className="flex text-sm h-full flex-col gap-2 w-[90%] md:w-[25%]  ">
-          <div className="flex flex-col gap-2 bg-card rounded-[5px] p-2 border-black border">
-            <div className="flex justify-between">
-              <p>Total Items: </p>
-              <p>{cart?.items?.length}</p>
-            </div>
+        {/* Right Panel - Order Summary */}
+        <div className="w-full md:w-5/12 bg-gray-50 border border-none md:border-l-black  p-6 overflow-y-auto">
+          <h3 className=" text-lg mb-4">Your Order</h3>
 
-            <div className="flex justify-between">
-              <p>Total Points</p>
-              <p>+{totalPoints}</p>
-            </div>
-
-            <div className="flex justify-between">
-              <div className="flex flex-col">
-                <p>Shipping Fee</p>
-                <span className="text-red-700 w-full text-xs">
-                  {" "}
-                  (Shipping fees are not included in the subtotal/total price
-                  and must be paid upon delivery.)
-                </span>
-              </div>
-              <p>{shippingFee} PHP</p>
-            </div>
-            {/* <div className="flex justify-between">
-            <p>TAX: </p>
-            <p>0</p>
-           </div> */}
-            <div className="flex justify-between">
-              <p>Discount</p>
-              <p>{formatPrice(totalDiscount ? totalDiscount : 0)}</p>
-            </div>
-
-            <div className="flex justify-between">
-              <p>Used Credits</p>
-              <p>{formatPrice(usedCredits)}</p>
-            </div>
-
-            <div className="flex justify-between">
-              <p>Subtotal: </p>
-              <p>{formatPrice(subtotal)} PHP</p>
-            </div>
-            <div className="flex justify-between">
-              <p className="text-lg">Total Price: </p>
-              <p className="text-lg">
-                {formatPrice(deductedPrice)}
-                PHP
-              </p>
-            </div>
-          </div>
-          <div className=" border flex flex-col  h-[120px] md:h-[360px]  gap-2  overflow-y-auto bg-card  rounded-[5px] p-2 border-black">
-            {/* PRODUCT ORDER SUMMARY CARD */}
+          {/* Products List */}
+          <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto">
             {cart?.items?.length > 0 ? (
-              cart?.items.map((item) => (
+              cart.items.map((item) => (
                 <div
-                  key={item?._id}
-                  className="flex gap-2 justify-between border border-black rounded-[5px] p-1 items-center"
+                  key={item._id}
+                  className="flex items-start border-b border-gray-200 pb-4"
                 >
                   <img
                     src={item.productId.productImages[0]}
-                    alt="productImage"
-                    className="size-[50px] border-none rounded-[5px]"
+                    alt={item.productId.productName}
+                    className="w-16 h-16 object-cover rounded-md mr-4"
                   />
-                  <div className="flex gap-10">
-                    <p>{item.productId.productName}</p>
-                    <div>
-                      <p className="flex gap-2">
-                        Quantity: <span>{item.quantity}</span>
-                      </p>
-                      <p className="flex gap-2">
-                        Price:{" "}
-                        <span>
-                          {formatPrice(item.productId.price * item.quantity)}{" "}
-                          PHP
-                        </span>
-                      </p>
+                  <div className="flex-1">
+                    <h4 className=" text-gray-800">
+                      {item.productId.productName}
+                    </h4>
+                    <div className="flex justify-between text-sm text-gray-600 mt-1">
+                      <span>Qty: {item.quantity}</span>
+                      <span>
+                        {formatPrice(item.productId.price * item.quantity)} PHP
+                      </span>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p>No products found.</p>
+              <p className="text-gray-500">No items in cart</p>
             )}
+          </div>
+
+          {/* Order Totals */}
+          <div className="bg-white p-4 rounded-lg shadow-sm">
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Subtotal</span>
+                <span className="">{formatPrice(subtotal)} PHP</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Shipping Fee</span>
+                <span className="">{shippingFee} PHP</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Discount</span>
+                <span className=" text-green-600">
+                  -{formatPrice(totalDiscount)} PHP
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Credits Used</span>
+                <span className=" text-green-600">
+                  -{formatPrice(usedCredits)} PHP
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Points Earned</span>
+                <span className=" text-blue-600">+{totalPoints}</span>
+              </div>
+
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span>{formatPrice(deductedPrice)} PHP</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 text-xs text-gray-500">
+              <p>
+                * Shipping fees are not included in the subtotal and must be
+                paid upon delivery.
+              </p>
+            </div>
           </div>
         </div>
       </div>
