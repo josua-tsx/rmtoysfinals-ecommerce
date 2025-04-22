@@ -80,12 +80,18 @@ export const userPlaceOrder = async (req, res, next) => {
         );
       }
 
-      // Verify credits can be used
+      // More defensive auto-clear
       if (user.creditLock) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, `Credits locked until ${user.creditLock}`)
-        );
+        const now = new Date();
+        console.log(`Checking lock: ${user.creditLock} vs ${now}`);
+        if (new Date(user.creditLock) <= now) {
+          console.log("Clearing expired lock");
+          await User.findByIdAndUpdate(
+            userId,
+            { $set: { creditLock: null } },
+            { session }
+          );
+        }
       }
 
       if (user.credits < usedCredits) {
@@ -219,16 +225,8 @@ export const placeOrderStripe = async (req, res, next) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${
-        process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL
-          : "https://rmtoysfinals-8jgr.vercel.app"
-      }/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${
-        process.env.NODE_ENV === "development"
-          ? process.env.CLIENT_URL
-          : "https://rmtoysfinals-8jgr.vercel.app"
-      }/purchase-cancel`,
+      success_url: ` ${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
       metadata: {
         userId: req.user._id.toString(),
         orderItems: JSON.stringify(
