@@ -3,10 +3,14 @@ import Buttons from "../reusable/Buttons";
 import { useUserStore } from "../stores/useUserStore";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+import LoadingSpinner from "../reusable/LoadingSpinner";
+import { ConfirmModal } from "../reusable/ConfirmModal";
+import { useState } from "react";
 
 export default function ProfileComponent({ setActiveComponent }) {
   const currentUser = useUserStore((state) => state.currentUser);
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+ 
 
   const {
     data: currentUserAddress = [],
@@ -22,32 +26,36 @@ export default function ProfileComponent({ setActiveComponent }) {
     },
   });
 
-  const {mutate: updateIsActive} = useMutation({
+  const { mutate: updateIsActive } = useMutation({
     mutationFn: async (addressId) => {
-      const res = await axiosInstance.patch(`/address/update-currentAddress`, addressId)
-      return res.data 
+      const res = await axiosInstance.patch(
+        `/address/update-currentAddress`,
+        addressId
+      );
+      return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["address"]})
-      toast.success("Sucessfully Updated the address!")
+      queryClient.invalidateQueries({ queryKey: ["address"] });
+      toast.success("Sucessfully Updated the address!");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong!")
-    }
-  })
+      toast.error(err.response.data.message || "something went wrong!");
+    },
+  });
+  
 
   const handleUpdateCurrentAddress = (addressId) => {
-    updateIsActive({addressId})
-  }
+    updateIsActive({ addressId });
+  };
 
-  const activeAddressId = currentUserAddress.find(addr => addr.isActive)?._id
+  const activeAddressId = currentUserAddress.find((addr) => addr.isActive)?._id;
 
-
-  if (isCurrentUserAddressPending) return <p>loading...</p>;
   if (isCurrentUserAddressError) return <p>loading...</p>;
 
   return (
     <div className="">
+
+
       <h1 className="text-xl">Profile</h1>
       <div className="my-5 flex flex-col gap-10  max-h-[666px] overflow-y-auto">
         <div className="flex flex-col items-center gap-4 justify-center">
@@ -118,7 +126,11 @@ export default function ProfileComponent({ setActiveComponent }) {
           {/* ADDRESSES */}
           <div className="flex flex-col justify-between gap-5">
             <div className="flex flex-col lowercase gap-5">
-              {currentUserAddress.length > 0 ? (
+              {isCurrentUserAddressPending ? (
+                <div className="flex justify-center items-center" >
+                  <LoadingSpinner />
+                </div>
+              ) : currentUserAddress.length > 0 ? (
                 currentUserAddress.map((add) => (
                   <div
                     key={add._id}

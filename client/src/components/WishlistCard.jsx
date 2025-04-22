@@ -4,17 +4,19 @@ import { MdDelete } from "react-icons/md";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import formatPrice from "../reusable/formatPrice";
+import { useState } from "react";
+import { ConfirmModal } from "../reusable/ConfirmModal";
 
-export default function WishlistCard({productWish}) {
-
-  console.log(productWish)
+export default function WishlistCard({ productWish }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [cartId, setCartId] = useState(null);
 
   const queryClient = useQueryClient();
 
   const { mutate: removeWishMutation } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.delete(`/wish/delete`, {
-        data: productId,
+        data: { productId },
       });
       return res.data;
     },
@@ -27,35 +29,59 @@ export default function WishlistCard({productWish}) {
     },
   });
 
-
-  const {mutate: transferToCartMutation} = useMutation({
+  const { mutate: transferToCartMutation } = useMutation({
     mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/wish/addWishToCart`, productId)
-      return res.data
+      const res = await axiosInstance.post(`/wish/addWishToCart`, productId);
+      return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['cart']})
-      queryClient.invalidateQueries({queryKey: ['wishlist']})
-      toast.success(`Sucessfully transferred to cart`)
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      toast.success(`Sucessfully transferred to cart`);
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong")
-    }
-  })
-
-  const handleRemoveWish = (productId) => {
-    removeWishMutation({ productId });
-  };
+      toast.error(err.response.data.message || "Something went wrong");
+    },
+  });
 
   const handleTransferToCart = (productId) => {
     transferToCartMutation({ productId });
   };
 
+  const handleDeleteWish = (productId) => {
+    setIsOpen(true);
+    setCartId(productId);
+  };
+
+  const handleCancelDelete = () => {
+    setCartId(null);
+    setIsOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (cartId) {
+      removeWishMutation(cartId);
+      handleCancelDelete();
+    }
+  };
 
   return (
     <div className="border w-[253px] mx-auto md:w-full border-black bg-card relative flex justify-center items-center flex-col rounded-[5px]">
-      <button onClick={() => handleRemoveWish(productWish.productId._id)}
-      type="button" className="absolute right-0 text-red-700 top-0">
+      <ConfirmModal
+        isOpen={isOpen}
+        title={"Confirm Delete Wish"}
+        message={
+          "Are you sure you want to delete this wish? This action cannot be undone."
+        }
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
+
+      <button
+        onClick={() => handleDeleteWish(productWish?.productId._id)}
+        type="button"
+        className="absolute right-0 text-red-700 top-0"
+      >
         <MdDelete size={25} />
       </button>
 
@@ -73,13 +99,17 @@ export default function WishlistCard({productWish}) {
       <div className="flex-1 p-2 border-t rounded-t-none border-black rounded-[5px] flex flex-col bg-white w-full">
         <div className="flex flex-col gap-2 justify-between">
           <h1 className="text-sm">{productWish?.productId?.productName}</h1>
-          <p className="text-sm">{formatPrice(productWish?.productId?.price)} PHP</p>
+          <p className="text-sm">
+            {formatPrice(productWish?.productId?.price)} PHP
+          </p>
         </div>
       </div>
 
-      <button onClick={() => handleTransferToCart(productWish.productId._id)}
-      type="button"
-      className="bg-primary w-full text-card rounded-b-[5px] py-1">
+      <button
+        onClick={() => handleTransferToCart(productWish.productId._id)}
+        type="button"
+        className="bg-primary w-full text-card rounded-b-[5px] py-1"
+      >
         TRANSFER TO CART
       </button>
     </div>

@@ -106,7 +106,7 @@ export default function OrderSummaryModal({ onClose }) {
       onClose();
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      toast.success(`order placed`);
+      toast.success(`Order placed! Check your order status in your order status page in your profile!`);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");

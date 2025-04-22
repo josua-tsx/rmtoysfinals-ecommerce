@@ -12,6 +12,8 @@ import useOrderStore from "../stores/useOrderStore";
 
 export default function CartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
+  
+
   const navigate = useNavigate();
 
   
