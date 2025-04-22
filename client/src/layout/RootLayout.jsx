@@ -112,13 +112,13 @@ const RequiredAuthGcashPage = () => {
 
 const AdminLayout = () => {
   return (
-    <div className="flex bg-yellow h-screen">
+    <div className="flex bg-yellow h-full">
       <div className="">
         <AdminSideBar />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-yellow">
+      <main className="flex-1 overflow-y-auto ">
         <Outlet />
       </main>
       <Toaster />
@@ -128,13 +128,13 @@ const AdminLayout = () => {
 
 const ValidatorStaffLayout = () => {
   return (
-    <div className="flex">
+    <div className="flex h-screen bg-yellow">
       <div className="">
         <AdminSideBar />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-yellow">
+      <main className="flex-1 overflow-y-auto ">
         <Outlet />
       </main>
       <Toaster />
