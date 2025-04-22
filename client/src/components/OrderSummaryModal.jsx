@@ -309,7 +309,7 @@ export default function OrderSummaryModal({ onClose }) {
               >
                 <option value="Cod">Cash on Delivery</option>
                 <option value="GcashQR">GCash QR</option>
-                <option value="Online Payment">Credit/Debit Card</option>
+                <option value="Online Payment">Credit/Debit Card (TEST)</option>
               </select>
             </div>
 
