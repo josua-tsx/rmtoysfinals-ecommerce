@@ -731,13 +731,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
           //   "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
           // );
 
-          // await sendSMS(
-          //   orderUserPhoneNumber,
-          //   `Your Order ${updatedOrder._id} Has been Delivered!
-          //                 "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
-          //                 From: RM TOYS"
-          // `
-          // );
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your Order ${updatedOrder._id} Has been Delivered!
+                          "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
+                          From: RM TOYS"
+          `
+          );
 
           // Update products and user credits in parallel
           await Promise.all([
@@ -799,12 +799,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Processing":
-        // await sendSMS(
-        //   orderUserPhoneNumber,
-        //   `Your ${updatedOrder._id} is on Processing.`,
-        //   "Your order is being processed. We will notify you once it is shipped.",
-        //   "From: RM TOYS"
-        // );
+        await sendSMS(
+          orderUserPhoneNumber,
+          `Your ${updatedOrder._id} is on Processing.`,
+          "Your order is being processed. We will notify you once it is shipped.",
+          "From: RM TOYS"
+        );
 
         if (isUserAdminOrValida.role === "admin") {
           await logAuditTrail({
@@ -828,12 +828,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Shipped":
-        // await sendSMS(
-        //   orderUserPhoneNumber,
-        //   `Your ${updatedOrder._id} is Shipped!`,
-        //   "Your order is now on its way to you!",
-        //   "From: RM TOYS"
-        // );
+        await sendSMS(
+          orderUserPhoneNumber,
+          `Your ${updatedOrder._id} is Shipped!`,
+          "Your order is now on its way to you!",
+          "From: RM TOYS"
+        );
 
         if (isUserAdminOrValida.role === "admin") {
           await logAuditTrail({
@@ -857,12 +857,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Out for Delivery":
-        // await sendSMS(
-        //   orderUserPhoneNumber,
-        //   `Your order ${updatedOrder._id} is Out for Delivery!`,
-        //   "Your order is on the way. Expect delivery soon!",
-        //   "From: RM TOYS"
-        // );
+        await sendSMS(
+          orderUserPhoneNumber,
+          `Your order ${updatedOrder._id} is Out for Delivery!`,
+          "Your order is on the way. Expect delivery soon!",
+          "From: RM TOYS"
+        );
 
         if (isUserAdminOrValida.role === "admin") {
           await logAuditTrail({
@@ -886,12 +886,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Cancelled":
-        // await sendSMS(
-        //   orderUserPhoneNumber,
-        //   `Your order ${updatedOrder._id} has been Cancelled`,
-        //   "Unfortunately, your order has been canceled. Please contact support for further assistance.",
-        //   "From: RM TOYS"
-        // );
+        await sendSMS(
+          orderUserPhoneNumber,
+          `Your order ${updatedOrder._id} has been Cancelled`,
+          "Unfortunately, your order has been canceled. Please contact support for further assistance.",
+          "From: RM TOYS"
+        );
 
         if (isUserAdminOrValida.role === "admin") {
           await logAuditTrail({
