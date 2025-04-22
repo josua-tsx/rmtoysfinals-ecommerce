@@ -73,7 +73,7 @@ export default function SignUp() {
               id="email"
               value={email}
               onChange={handleInputChange(setEmail)}
-              className=" outline-none p- bg-transparent border-[#313031] border rounded-[5px]"
+              className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
             <p className="text-sm pt-1 text-green-700">
               (Enter a valid email. Numbers are not allowed after "@")
