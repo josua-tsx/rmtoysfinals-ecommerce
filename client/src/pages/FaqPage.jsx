@@ -10,26 +10,27 @@ You can use your collected points as a discount to reduce the total price of you
   },
   {
     id: 2,
-    question: "Can I access the library from multiple devices?",
-    answer: `Yes! Our library web system is compatible with smartphones, tablets, 
-    and desktop computers. You can seamlessly switch between devices and continue reading your borrowed books without any interruptions.`,
+    question: "What is credit points system and how to use them?",
+    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
+You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
   {
     id: 3,
-    question: "How long can I borrow a book for?",
-    answer: `Borrowed books are typically available for up to 14 days. You’ll be notified when your borrowing period is close to ending, 
-    and you can return the book early or renew it if no one else has requested it.`,
+    question: "What is credit points system and how to use them?",
+    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
+You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
   {
     id: 4,
-    question: "Is there a limit to how many books I can borrow at once?",
-    answer: `You can borrow up to 5 books at a time. If you reach this limit, simply return one book before borrowing a new one.`,
+    question: "What is credit points system and how to use them?",
+    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
+You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
   {
     id: 5,
-    question:
-      " What happens if I accidentally lose my borrowed book or can’t return it on time?",
-    answer: `No worries! Since all books are digital, there's no physical damage or late fees. However, it’s important to return your book on time so others can borrow it. If you need more time, you can request an extension if no one else has the book on hold.`,
+    question: "What is credit points system and how to use them?",
+    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
+You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
 ];
 
