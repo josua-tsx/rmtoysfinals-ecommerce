@@ -114,7 +114,7 @@ export default function CustomerOrder() {
             </div>
             <div className="ml-3 flex flex-col gap-2">
               <p className="text-md text-black">
-                <strong>Important:</strong> Once your order status changes to Processing, Shipped, or Out for Delivery, it can no longer be cancelled. Only orders with a Pending status are eligible for cancellation. Thank you for understanding!
+                <strong>Important:</strong> Once your order status changes to Shipped, or Out for Delivery, it can no longer be cancelled. Only orders with a Pending and Processing status are eligible for cancellation. Thank you for understanding!
               </p>
             </div>
           </div>

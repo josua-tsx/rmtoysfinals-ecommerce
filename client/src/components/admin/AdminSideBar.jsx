@@ -213,7 +213,7 @@ export default function AdminSideBar() {
 
   return (
     <aside
-      className={`z-50  border transition-all border-r-gray-500 p-3 bg-card   ${
+      className={`z-50  border transition-all border-r-gray-500 p-3 bg-card h-full  ${
         toggleSideBar ? "w-52" : "w-16"
       } font-main`}
     >
