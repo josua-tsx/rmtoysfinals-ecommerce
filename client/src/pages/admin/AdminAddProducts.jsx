@@ -247,10 +247,6 @@ export default function AdminAddProducts() {
                 </div>
                 <div className="flex flex-col md:gap-2 md:flex-row">
                   <h1 className="mb-3">PRODUCT DETAILS: </h1>
-                  <p className="text-sm pt-1  text-green-700">
-                    (Always include COLOR for LABEL and COLOR for VALUE EX:
-                    LABEL: COLOR VALUE: RED)
-                  </p>
                 </div>
                 <div className=" flex flex-col gap-5 pt-4 md:pt-0 ">
                   <div className="flex md:items-center flex-col md:flex-row md:justify-between gap-5 ">

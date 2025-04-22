@@ -70,17 +70,8 @@ export const userPlaceOrder = async (req, res, next) => {
     // Check credit availability if using credits
     if (usedCredits > 0) {
       const user = await User.findById(userId).session(session);
-
-      // Auto-clear expired lock
-      if (user.creditLock && user.creditLock <= new Date()) {
-        await User.findByIdAndUpdate(
-          userId,
-          { $set: { creditLock: null } },
-          { session }
-        );
-      }
-
-      // More defensive auto-clear
+ 
+      // if user select usedCredits, this if verify if credit lock is already done then proceed to set credit lock to null to let the user use their cretis again
       if (user.creditLock) {
         const now = new Date();
         console.log(`Checking lock: ${user.creditLock} vs ${now}`);
@@ -94,7 +85,7 @@ export const userPlaceOrder = async (req, res, next) => {
         }
       }
 
-      if (user.credits < usedCredits) {
+      if (user.credits <= usedCredits) {
         await session.abortTransaction();
         return next(handleMakeError(400, "Insufficient credits"));
       }

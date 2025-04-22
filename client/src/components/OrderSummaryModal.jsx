@@ -10,8 +10,7 @@ import { IoIosClose } from "react-icons/io";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
-  const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
-  const currentOrder = useOrderStore((state) => state.currentOrder);
+  const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);;
 
   const queryClient = useQueryClient();
 
@@ -147,6 +146,12 @@ export default function OrderSummaryModal({ onClose }) {
     if (!fullName || !phoneNumber || !currentAddress)
       return toast.error("Please update required fields first");
 
+    // Before submitting
+    if (useCredits === "yes" && currentUser?.credits <= 0) {
+      toast.error("You don't have any credits available");
+      return;
+    }
+
     const orderData = {
       orderItems: cartItems,
       shippingAddress: currentAddress,
@@ -203,17 +208,16 @@ export default function OrderSummaryModal({ onClose }) {
       <div className="bg-card border flex-col-reverse text-sm md:text-normal border-black rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex  md:flex-row">
         {/* Left Panel - Order Form */}
 
-
         <div className="w-full md:w-7/12 p-6  overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl">Order Summary</h2>
-            
-        <button
-          onClick={onClose}
-          className="border  border-black  text-card bg-primary rounded-[5px] px-5 right-0 -top-8"
-        >
-          <IoIosClose size={25} />
-        </button>
+
+            <button
+              onClick={onClose}
+              className="border  border-black  text-card bg-primary rounded-[5px] px-5 right-0 -top-8"
+            >
+              <IoIosClose size={25} />
+            </button>
           </div>
 
           <form onSubmit={handleOrderFormSubmit} className="relative">

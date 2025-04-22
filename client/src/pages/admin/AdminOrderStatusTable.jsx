@@ -129,46 +129,46 @@ export default function AdminOrderStatusTable() {
                 <tr key={data._id}>
                   <td className="px-4 ">{data._id}</td>
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
-                    {data.userId.fullName}
+                    {data?.userId?.fullName}
                   </td>
 
                   <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                    {data.userId.email}
+                    {data?.userId?.email}
                   </td>
                   <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                  {new Date(data.createdAt).toLocaleString()}
+                  {new Date(data?.createdAt).toLocaleString()}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {formatPrice(data.totalPrice)} PHP
+                    {formatPrice(data?.totalPrice)} PHP
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    +{formatPrice(data.totalPoints)} 
+                    +{formatPrice(data?.totalPoints)} 
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                     -{data?.usedCredits ? formatPrice(data?.usedCredits) : 0} 
                   </td>
 
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {data.paymentMethod}
+                    {data?.paymentMethod}
                   </td>
 
                   <td className="px-6 py-4 uppercase  whitespace-nowrap text-center text-sm">
-                    {(data.paymentStatus && data.paymentStatus === "Failed") ||
-                    data.paymentStatus === "Refunded" ? (
-                      <span className="text-red-700">{data.paymentStatus}</span>
+                    {(data?.paymentStatus && data?.paymentStatus === "Failed") ||
+                    data?.paymentStatus === "Refunded" ? (
+                      <span className="text-red-700">{data?.paymentStatus}</span>
                     ) : (
                       <span className="text-blue-700">
-                        {data.paymentStatus}
+                        {data?.paymentStatus}
                       </span>
                     )}
                   </td>
 
                   <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {data.status && data.status === "Cancelled" ? (
-                      <span className="text-red-700">{data.status}</span>
+                    {data?.status && data?.status === "Cancelled" ? (
+                      <span className="text-red-700">{data?.status}</span>
                     ) : (
-                      <span className="text-blue-700">{data.status}</span>
+                      <span className="text-blue-700">{data?.status}</span>
                     )}
                   </td>
                   {/* 

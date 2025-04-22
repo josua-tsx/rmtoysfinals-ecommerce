@@ -158,7 +158,8 @@ export const validateProductName = (name) => {
   if (!/^[a-zA-Z0-9 \-']+$/.test(name)) {
     return {
       valid: false,
-      message: "Only letters, numbers, spaces, hyphens (-), and apostrophes (') are allowed",
+      message:
+        "Only letters, numbers, spaces, hyphens (-), and apostrophes (') are allowed",
     };
   }
 
@@ -174,7 +175,8 @@ export const validateProductName = (name) => {
   if (/^[-']|[-']$/.test(name)) {
     return {
       valid: false,
-      message: "Product name cannot start or end with a hyphen (-) or apostrophe (')",
+      message:
+        "Product name cannot start or end with a hyphen (-) or apostrophe (')",
     };
   }
 
@@ -213,8 +215,7 @@ export const validateProductDescription = (desc) => {
   return { valid: true };
 };
 
-
-export const validateCategoryName = (name) => {
+export const validateCategoryNamee = (name) => {
   if (!name) {
     return { valid: false, message: "Category name is required" };
   }
@@ -233,11 +234,20 @@ export const validateCategoryName = (name) => {
     };
   }
 
-  // Allow only letters (no spaces, numbers, or symbols)
-  if (!/^[A-Za-z]+$/.test(trimmedName)) {
+  // Allow letters and single spaces between words (no numbers or symbols)
+  if (!/^[A-Za-z]+(?:\s[A-Za-z]+)*$/.test(trimmedName)) {
     return {
       valid: false,
-      message: "Category name must contain only letters (no spaces or numbers)",
+      message:
+        "Category name must contain only letters and single spaces between words",
+    };
+  }
+
+  // Check for consecutive spaces (shouldn't happen due to trim, but just in case)
+  if (/\s{2,}/.test(trimmedName)) {
+    return {
+      valid: false,
+      message: "Use only single spaces between words",
     };
   }
 
@@ -246,16 +256,19 @@ export const validateCategoryName = (name) => {
 
 export const validateCategoryDescription = (desc) => {
   if (!desc) return { valid: true }; // Optional field
-  
+
   const trimmedDesc = desc.trim();
   if (desc !== trimmedDesc) {
-    return { valid: false, message: "Remove spaces before/after the description" };
+    return {
+      valid: false,
+      message: "Remove spaces before/after the description",
+    };
   }
 
   if (trimmedDesc.length > 200) {
-    return { 
-      valid: false, 
-      message: "Description cannot exceed 200 characters" 
+    return {
+      valid: false,
+      message: "Description cannot exceed 200 characters",
     };
   }
 
@@ -265,9 +278,9 @@ export const validateCategoryDescription = (desc) => {
 
   // Allows letters, numbers, spaces, and basic punctuation
   if (!/^[A-Za-z0-9\s.,!?-]+$/.test(trimmedDesc)) {
-    return { 
-      valid: false, 
-      message: "Description contains invalid characters" 
+    return {
+      valid: false,
+      message: "Description contains invalid characters",
     };
   }
 
@@ -285,17 +298,17 @@ export const validateSupplierName = (name) => {
   }
 
   if (trimmedName.length < 3 || trimmedName.length > 50) {
-    return { 
-      valid: false, 
-      message: "Supplier name must be 3-50 characters long" 
+    return {
+      valid: false,
+      message: "Supplier name must be 3-50 characters long",
     };
   }
 
   // Letters, numbers, spaces, hyphens, and apostrophes allowed
   if (!/^[A-Za-z0-9\s\-']+$/.test(trimmedName)) {
-    return { 
-      valid: false, 
-      message: "Supplier name contains invalid characters" 
+    return {
+      valid: false,
+      message: "Supplier name contains invalid characters",
     };
   }
 
@@ -333,7 +346,8 @@ export const validateSupplierAddress = (address) => {
   if (!/^[A-Za-z0-9\s.,'-]+$/.test(trimmedAddress)) {
     return {
       valid: false,
-      message: "Address contains invalid characters (only letters, numbers, spaces, and ,.-' allowed)",
+      message:
+        "Address contains invalid characters (only letters, numbers, spaces, and ,.-' allowed)",
     };
   }
 

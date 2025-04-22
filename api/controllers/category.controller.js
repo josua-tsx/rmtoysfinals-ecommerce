@@ -1,7 +1,7 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import { validateCategoryDescription, validateCategoryName } from "../utils/validations.js";
+import { validateCategoryDescription, validateCategoryNamee } from "../utils/validations.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
@@ -11,7 +11,7 @@ export const addCategory = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
-  const categoryNameCheck = validateCategoryName(categoryName)
+  const categoryNameCheck = validateCategoryNamee(categoryName)
   if (!categoryNameCheck.valid) {
     return next(handleMakeError(400, categoryNameCheck.message))
   }
