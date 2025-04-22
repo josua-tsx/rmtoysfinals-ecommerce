@@ -1,5 +1,5 @@
 export const setCookies = (res, accessToken) => {
-  res.cookie('accessToken', token, {
+  res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure: true, // Essential for HTTPS
     sameSite: 'none', // Required for cross-site requests
