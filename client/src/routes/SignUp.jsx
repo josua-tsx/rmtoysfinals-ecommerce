@@ -144,7 +144,7 @@ export default function SignUp() {
               disabled={isPending}
               className="border p-2 px-5  bg-primary w-[100px] border-black  hover:opacity-95   font-medium text-white rounded-[5px]"
             >
-              sign up
+              Sign Up
             </button>
           </div>
 
