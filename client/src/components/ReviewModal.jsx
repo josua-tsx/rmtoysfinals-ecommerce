@@ -1,10 +1,11 @@
 import { IoIosClose } from "react-icons/io";
-import {  useState } from "react";
+import { useState } from "react";
 import ReviewCard from "./ReviewCard.jsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { FaPaperPlane } from "react-icons/fa";
+
 
 export default function ReviewModal({ singleProduct, closeModal }) {
   const [showReview, setShowReview] = useState(false);
@@ -71,27 +72,46 @@ export default function ReviewModal({ singleProduct, closeModal }) {
 
             {/* add review goes here */}
             <form
-               onSubmit={handleSubmitReview}
+              onSubmit={handleSubmitReview}
               className={`${
                 showReview ? "flex" : "hidden"
               } flex-col gap-5 bg-card border rounded-[5px] p-3  border-black`}
             >
               <div className="flex gap-2 flex-col ">
-                <h1 className="text-center">How satisfied are you with the product?</h1>
-                <input
-                  type="number"
-                  value={rating}
-                  min={1}
-                  max={5}
-                  className="outline-none border p-1 text-center border-black rounded-[5px]"
-                  onChange={(e) => {
-                    const value = Math.max(
-                      1,
-                      Math.min(5, Number(e.target.value))
-                    ); // Ensures rating is between 1 and 5
-                    setRating(value);
-                  }}
-                />
+                <h1 className="text-center">
+                  How satisfied are you with the product?
+                </h1>
+                <div className="flex items-center border border-black rounded-[5px] bg-yellow justify-center gap-4">
+                  <button
+                    className="text-[30px] text-green-700"
+                    type="button"
+                    onClick={() => {
+                      setRating(rating + 1);
+                      if (rating === 5) {
+                        setRating(5);
+                        return toast.error("The max rating is 5");
+                      }
+                    }}
+                    disabled={rating === 5}
+                  >
+                    +
+                  </button>
+                  <p className="text-lg md:text-xl">{rating}</p>
+                  <button
+                    className="text-[30px] text-red-700"
+                    type="button"
+                    onClick={() => {
+                      setRating(rating - 1);
+                      if (rating === 1) {
+                        setRating(1);
+                        return toast.error("The min rating is 1");
+                      }
+                    }}
+                    disabled={rating === 1}
+                  >
+                    -
+                  </button>
+                </div>
               </div>
 
               <div className=" flex flex-col gap-2 ">
@@ -105,27 +125,26 @@ export default function ReviewModal({ singleProduct, closeModal }) {
                     className="border h-[150px] p-2 border-black rounded-[5px] w-full resize-none outline-none"
                   ></textarea>
                   <div className="w-full">
-                  <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white transition  disabled:opacity-70"
-              >
-                {isSubmitting ? (
-                  "Submitting..."
-                ) : (
-                  <>
-                    <FaPaperPlane />
-                    Submit Review
-                  </>
-                )}
-                </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white transition  disabled:opacity-70"
+                    >
+                      {isSubmitting ? (
+                        "Submitting..."
+                      ) : (
+                        <>
+                          <FaPaperPlane />
+                          Submit Review
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
             </form>
-
           </div>
-          <div className="bg-card h-[655px] w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
+          <div className="bg-card h-full w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
             {/* REVIEW CARD GOES HERE */}
 
             {singleProduct?.reviews?.length > 0 ? (
