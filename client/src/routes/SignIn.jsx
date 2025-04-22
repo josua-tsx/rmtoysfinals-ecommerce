@@ -8,7 +8,7 @@ import { useUserStore } from "../stores/useUserStore";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
-import CreditPointsAuto from "../components/CreditPointsAuto";
+
 
 export default function SignIn() {
 
@@ -70,11 +70,11 @@ export default function SignIn() {
         {/* FORM */}
         <form 
         onSubmit={handleFormSubmit}
-         className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[50px] pb-[80px] shadow-lg">
+         className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[70px] shadow-lg">
          
           <div className="flex justify-between flex-col">
             <label htmlFor="email" className=" mb-2">Email: </label>
-            <input type="text" name="email" id="email" value={email} onChange={handleInputChange(setEmail)} className="outline-none p-3 bg-transparent border-black border rounded-[5px]" />
+            <input type="text" name="email" id="email" value={email} onChange={handleInputChange(setEmail)} className="outline-none p-2 bg-transparent border-black border rounded-[5px]" />
           </div>
           <div className="flex justify-between flex-col">
             <label htmlFor="password" className=" mb-2">Password: </label>
@@ -85,7 +85,7 @@ export default function SignIn() {
                 id="password"
                 value={password}
                 onChange={handleInputChange(setPassword)}
-                className=" outline-none p-3 bg-transparent w-full border-[#313031] border rounded-[5px]"
+                className=" outline-none p-2 bg-transparent w-full border-[#313031] border rounded-[5px]"
               />
               <label
                 htmlFor=""
@@ -103,7 +103,7 @@ export default function SignIn() {
           </div>
 
           <div className="flex justify-center gap-2">
-            <button disabled={isPending} className="border w-[100px] p-2 px-5 mt-10  bg-primary border-black hover:opacity-95   font-medium text-white rounded-[5px]">
+            <button disabled={isPending} className="border w-[100px] p-2 px-5 mt-4  bg-primary border-black hover:opacity-95   font-medium text-white rounded-[5px]">
               {
                 isPending ? "Loading.." : "Sign In"
               }

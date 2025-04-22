@@ -61,7 +61,7 @@ export default function SignUp() {
         </div>
         <form
           onSubmit={handleFormSubmit}
-          className="relative border flex gap-2 bg-card flex-col border-[#313031] p-4 rounded-[5px] pt-[50px] pb-[80px] shadow-lg"
+          className="relative border flex gap-2 bg-card flex-col border-[#313031] p-4 rounded-[5px] pt-[40px] pb-[70px] shadow-lg"
         >
           <div className="flex justify-between flex-col">
             <label htmlFor="email" className=" mb-2">
@@ -73,7 +73,7 @@ export default function SignUp() {
               id="email"
               value={email}
               onChange={handleInputChange(setEmail)}
-              className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
+              className=" outline-none p- bg-transparent border-[#313031] border rounded-[5px]"
             />
             <p className="text-sm pt-1 text-green-700">
               (Enter a valid email. Numbers are not allowed after "@")
@@ -89,7 +89,7 @@ export default function SignUp() {
               id="username"
               value={username}
               onChange={handleInputChange(setUsername)}
-              className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
+              className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
              <p className="text-sm pt-1 text-green-700">
               (Username must be 3-30 characters long and contain no special characters.)
@@ -106,7 +106,7 @@ export default function SignUp() {
                 id="password"
                 value={password}
                 onChange={handleInputChange(setPassword)}
-                className=" outline-none p-3 bg-transparent w-full border-[#313031] border rounded-[5px]"
+                className=" outline-none p-2 bg-transparent w-full border-[#313031] border rounded-[5px]"
               />
               <label
                 htmlFor=""
@@ -135,11 +135,11 @@ export default function SignUp() {
               id="confirmPassword"
               value={confirmPassword}
               onChange={handleInputChange(setConfirmPassword)}
-              className=" outline-none p-3 bg-transparent border-[#313031] border rounded-[5px]"
+              className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
           </div>
 
-          <div className="flex justify-center mt-10 gap-2">
+          <div className="flex justify-center mt-4 gap-2">
             <button
               disabled={isPending}
               className="border p-2 px-5  bg-primary w-[100px] border-black  hover:opacity-95   font-medium text-white rounded-[5px]"
