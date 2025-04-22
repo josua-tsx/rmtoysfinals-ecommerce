@@ -168,6 +168,14 @@ export const signout = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: true, 
+      sameSite: 'none',
+      path: '/', 
+    });
+
     // Update isLoggedIn only for validatorStaff or admin
     if (validUser.role === "validatorStaff" || validUser.role === "admin") {
       const validUserEmail = validUser.email;
@@ -182,8 +190,6 @@ export const signout = async (req, res, next) => {
         },
         { new: true }
       );
-
-      res.clearCookie("accessToken");
 
       await sendEmail(
         ADMIN_EMAIL,
@@ -202,18 +208,17 @@ export const signout = async (req, res, next) => {
         )}`
       );
 
-      res.clearCookie("accessToken");
-
       return res.status(200).json({ message: "Logged out successfully!" });
     }
 
     res.clearCookie("accessToken");
-    // res.clearCookie("refreshToken");
     return res.status(200).json({ message: "Logged out successfully!" });
   } catch (error) {
     next(error);
   }
 };
+
+
 // REFRESH TOKEN
 
 // export const refreshToken = async (req, res, next) => {
