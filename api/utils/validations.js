@@ -360,23 +360,3 @@ export const validateSupplierAddress = (address) => {
 
   return { valid: true };
 };
-
-  // Double spaces check
-  if (/\s{2,}/.test(trimmedAddress)) {
-    return {
-      valid: false,
-      message: "Remove double spaces in the address",
-    };
-  }
-
-  // Optional: Validate allowed characters
-  if (!/^[A-Za-z0-9\s.,'-]+$/.test(trimmedAddress)) {
-    return {
-      valid: false,
-      message:
-        "Address contains invalid characters (only letters, numbers, spaces, and ,.-' allowed)",
-    };
-  }
-
-  return { valid: true };
-};
