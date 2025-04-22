@@ -77,6 +77,10 @@ export const userPlaceOrder = async (req, res, next) => {
         const now = new Date();
         const lockExpiry = new Date(user.creditLock);
 
+        console.log(
+          `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
+        );
+
         if (lockExpiry <= now) {
           console.log("Clearing expired lock");
           await User.findByIdAndUpdate(
@@ -85,8 +89,9 @@ export const userPlaceOrder = async (req, res, next) => {
             { session }
           );
         } else {
-          // Format the lock expiry date for better readability
+          // Show time in user's local timezone explicitly
           const expiryDate = lockExpiry.toLocaleString("en-US", {
+            timeZone: "Asia/Manila", // Explicitly set your timezone
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -97,7 +102,8 @@ export const userPlaceOrder = async (req, res, next) => {
           return next(
             handleMakeError(
               400,
-              `Your credits are currently locked. You cannot use credits until ${expiryDate}.`
+              `⏳ Credits locked until ${expiryDate} (your local time). ` +
+                `Current server time: ${now.toLocaleString()}.`
             )
           );
         }
