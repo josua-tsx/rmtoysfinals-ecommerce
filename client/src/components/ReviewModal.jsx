@@ -96,7 +96,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
                   >
                     +
                   </button>
-                  <p className="text-lg md:text-xl">{rating}</p>
+                  <p className="text-lg">{rating}</p>
                   <button
                     className="text-[30px] text-red-700"
                     type="button"
@@ -144,8 +144,8 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               </div>
             </form>
           </div>
-          <div className="bg-card h-full w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
-            {/* REVIEW CARD GOES HERE */}
+          <div className="bg-card h-[520px] md:h-[650px] w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
+            {/* REVIEW CARD GOES HERE */} 
 
             {singleProduct?.reviews?.length > 0 ? (
               [...singleProduct?.reviews]
