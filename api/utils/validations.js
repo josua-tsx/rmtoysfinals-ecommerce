@@ -304,19 +304,19 @@ export const validateSupplierName = (name) => {
     };
   }
 
-  // Allow letters, numbers, spaces, and common punctuation
-  if (!/^[A-Za-z0-9\s\-'.,&()]+$/.test(trimmedName)) {
+  // Allow letters, numbers, spaces, and common punctuation (including . for abbreviations)
+  if (!/^[A-Za-z0-9\s\-',.&()]+$/.test(trimmedName)) {
     return {
       valid: false,
-      message: "Supplier name contains invalid characters (only letters, numbers, spaces, and -'.,&() allowed)",
+      message: "Supplier name contains invalid characters (only letters, numbers, spaces, and -',.&() allowed)",
     };
   }
 
-  // Additional check to prevent names starting/ending with punctuation
-  if (/^[-'.,&()]|[-'.,&()]$/.test(trimmedName)) {
+  // Prevent names starting/ending with HYPHENS/APOSTROPHES only (but allow trailing .)
+  if (/^[-']|[-']$/.test(trimmedName)) {
     return {
       valid: false,
-      message: "Supplier name cannot start or end with punctuation",
+      message: "Supplier name cannot start or end with hyphens/apostrophes",
     };
   }
 
