@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { FaArrowTurnDown } from 'react-icons/fa6'
 import { IoIosClose } from 'react-icons/io'
 import axiosInstance from '../lib/axios'
 import toast from 'react-hot-toast'

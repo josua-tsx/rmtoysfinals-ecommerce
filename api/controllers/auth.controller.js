@@ -202,6 +202,8 @@ export const signout = async (req, res, next) => {
         )}`
       );
 
+      res.clearCookie("accessToken");
+
       return res.status(200).json({ message: "Logged out successfully!" });
     }
 
