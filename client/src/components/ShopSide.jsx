@@ -78,6 +78,7 @@ export default function ShopSide({
   };
 
   const handleResetFilter = () => {
+    setSearchTerm("")
     setSelectedCategory("");
     setFilterCategory("");
     setFilterColor("");
