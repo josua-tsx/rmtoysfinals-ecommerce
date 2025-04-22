@@ -250,7 +250,7 @@ export default function OrderSummaryModal({ onClose }) {
                       information in your profile page.
                       <span>
                         {" "}
-                        <Link to={"/profile"}>Click here!</Link>{" "}
+                        <Link to={"/profile"} className="underline text-blue-700" >Click here!</Link>{" "}
                       </span>
                     </p>
                   </div>
