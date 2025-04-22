@@ -70,21 +70,38 @@ export const userPlaceOrder = async (req, res, next) => {
     // Check credit availability if using credits
     if (usedCredits > 0) {
       const user = await User.findById(userId).session(session);
- 
+
       // if user select usedCredits, this if verify if credit lock is already done then proceed to set credit lock to null to let the user use their cretis again
+      // If user selects usedCredits, verify if credit lock is already done
       if (user.creditLock) {
         const now = new Date();
-        console.log(`Checking lock: ${user.creditLock} vs ${now}`);
-        if (new Date(user.creditLock) <= now) {
+        const lockExpiry = new Date(user.creditLock);
+
+        if (lockExpiry <= now) {
           console.log("Clearing expired lock");
           await User.findByIdAndUpdate(
             userId,
             { $set: { creditLock: null } },
             { session }
           );
+        } else {
+          // Format the lock expiry date for better readability
+          const expiryDate = lockExpiry.toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          return next(
+            handleMakeError(
+              400,
+              `Your credits are currently locked. You cannot use credits until ${expiryDate}.`
+            )
+          );
         }
       }
-
     }
 
     // Create order
