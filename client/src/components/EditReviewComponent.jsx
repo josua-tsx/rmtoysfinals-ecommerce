@@ -63,20 +63,37 @@ export default function EditReviewComponent({ singleReview ,onClose}) {
           </button>
        <div className="flex gap-2 flex-col  ">
          <h1>HOW MANY STAR WOULD YOU GIVE?</h1>
-         <input
-           type="number"
-            value={newRating}
-           min={1}
-           max={5}
-           className="outline-none border p-1 text-center border-black rounded-[5px]"
-           onChange={(e) => {
-             const value = Math.max(
-               1,
-               Math.min(5, Number(e.target.value))
-             ); // Ensures rating is between 1 and 5
-             setNewRating(value);
-           }}
-         />
+         <div className="flex items-center border border-black rounded-[5px] bg-yellow justify-center gap-4">
+                  <button
+                    className="text-[30px] text-green-700"
+                    type="button"
+                    onClick={() => {
+                      setNewRating(newRating + 1);
+                      if (newRating === 5) {
+                        setNewRating(5);
+                        return toast.error("The max rating is 5");
+                      }
+                    }}
+                    disabled={newRating === 5}
+                  >
+                    +
+                  </button>
+                  <p className="text-lg">{newRating}</p>
+                  <button
+                    className="text-[30px] text-red-700"
+                    type="button"
+                    onClick={() => {
+                      setNewRating(newRating - 1);
+                      if (newRating === 1) {
+                        setNewRating(1);
+                        return toast.error("The min rating is 1");
+                      }
+                    }}
+                    disabled={newRating === 1}
+                  >
+                    -
+                  </button>
+                </div>
        </div>
         <div className=" flex flex-col gap-2 ">
                        <h1>Add your comment here</h1>
