@@ -85,10 +85,6 @@ export const userPlaceOrder = async (req, res, next) => {
         }
       }
 
-      if (user.credits <= usedCredits) {
-        await session.abortTransaction();
-        return next(handleMakeError(400, "Insufficient credits"));
-      }
     }
 
     // Create order
