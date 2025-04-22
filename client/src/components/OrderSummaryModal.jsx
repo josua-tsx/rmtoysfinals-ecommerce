@@ -305,7 +305,7 @@ export default function OrderSummaryModal({ onClose }) {
 
               <select
                 name="paymentMethod"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                className="w-full p-2 border outline-none border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               >
                 <option value="Cod">Cash on Delivery</option>
                 <option value="GcashQR">GCash QR</option>
