@@ -4,13 +4,13 @@ import { useUserStore } from "../stores/useUserStore";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import useOrderStore from "../stores/useOrderStore";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import formatPrice from "../reusable/formatPrice";
 import { IoIosClose } from "react-icons/io";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
-  const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);;
+  const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
 
   const queryClient = useQueryClient();
 
@@ -144,7 +144,9 @@ export default function OrderSummaryModal({ onClose }) {
       inputs;
 
     if (!fullName || !phoneNumber || !currentAddress)
-      return toast.error("Please update required fields first in Profile -> Change Information");
+      return toast.error(
+        "Please update required fields first in Profile -> Change Information"
+      );
 
     // Before submitting
     if (useCredits === "yes" && currentUser?.credits <= 0) {
@@ -243,8 +245,13 @@ export default function OrderSummaryModal({ onClose }) {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
-                      <strong>Note:</strong> 
-                      To be able to place an order you must update required information in your profile page.
+                      <strong>Note:</strong>
+                      To be able to place an order you must update required
+                      information in your profile page.
+                      <span>
+                        {" "}
+                        <Link to={"/profile"}>Click here!</Link>{" "}
+                      </span>
                     </p>
                   </div>
                 </div>
