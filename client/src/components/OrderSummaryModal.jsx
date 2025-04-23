@@ -268,7 +268,7 @@ export default function OrderSummaryModal({ onClose }) {
                     name="fullName"
                     className={`w-full p-2 border ${currentUser?.fullName ? "" : "border-red-700" } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
                     value={currentUser?.fullName || ""}
-                    disabled
+                    // disabled
                   />
                    {
                   !currentUser?.fullName && (
@@ -288,7 +288,7 @@ export default function OrderSummaryModal({ onClose }) {
                     name="phoneNumber"
                     className={`w-full p-2 border ${currentUser?.phoneNumber ? "" : "border-red-700" } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
                     value={currentUser?.phoneNumber || ""}
-                    disabled
+                    // disabled
                   />
                   {
                   !currentUser?.phoneNumber && (
@@ -309,7 +309,7 @@ export default function OrderSummaryModal({ onClose }) {
                   name="currentAddress"
                   className={`w-full p-2 border ${activeAddress?.fullAddress ? "" : "border-red-700" } border-gray-300 rounded-md outline-none focus:ring-primary focus:border-primary`}
                   value={activeAddress?.fullAddress || "" }
-                  disabled
+                  // disabled
                 />
                 {
                   !activeAddress?.fullAddress && (
