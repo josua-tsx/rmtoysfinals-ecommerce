@@ -19,7 +19,7 @@ export const sendSMS = async (phoneNumber, message) => {
         );
 
        console.log(response.data)
-    } catch (error) {s
+    } catch (error) {
         console.log(error)
         throw error;
     }
