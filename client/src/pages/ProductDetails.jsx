@@ -102,12 +102,13 @@ export default function ProductDetails() {
           </div>
         ) : (
           <div className="flex flex-col md:flex-row flex-wrap gap-3">
-            <div className="flex w-[320px] md:w-[400px] justify-between mx-auto flex-col gap-2">
+            <div className="flex w-[320px]  md:w-[400px] justify-between mx-auto flex-col gap-2">
               {/* main picture */}
               <div className="border h-full flex items-center bg-card rounded-[5px] border-black p-3">
                 <img
                   src={singleProduct?.productImages[0]}
                   alt="product-main-image"
+                  className="w-[240px] mx-auto md:w-full"
                 />
               </div>
 
