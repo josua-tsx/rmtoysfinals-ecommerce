@@ -262,26 +262,40 @@ export default function OrderSummaryModal({ onClose }) {
                   <label className="block text-sm  text-black mb-1">
                     Full Name
                   </label>
+                  <div className="flex flex-col gap-2">
                   <input
                     type="text"
                     name="fullName"
-                    className="w-full p-2 border border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary"
+                    className={`w-full p-2 border ${currentUser?.fullName ? "" : "border-red-700" } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
                     value={currentUser?.fullName || ""}
-                    disabled={!activeAddress?.fullAddress}
+                    disabled
                   />
+                   {
+                  !currentUser?.fullName && (
+                    <span className="text-sm text-red-700">You don't have a full name. Update it in your profile page.</span>
+                  )
+                 }
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm  text-black mb-1">
                     Phone Number
                   </label>
+                  <div className="flex flex-col gap-2">
                   <input
                     type="tel"
                     name="phoneNumber"
-                    className="w-full p-2 border border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary"
+                    className={`w-full p-2 border ${currentUser?.phoneNumber ? "" : "border-red-700" } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
                     value={currentUser?.phoneNumber || ""}
-                    disabled={!activeAddress?.fullAddress}
+                    disabled
                   />
+                  {
+                  !currentUser?.phoneNumber && (
+                    <span className="text-sm text-red-700">You don't have a phone number. Update it in your profile page.</span>
+                  )
+                 }
+                  </div>
                 </div>
               </div>
 
@@ -289,13 +303,20 @@ export default function OrderSummaryModal({ onClose }) {
                 <label className="block text-sm  text-black mb-1">
                   Shipping Address
                 </label>
+                <div className="flex flex-col gap-2">
                 <input
                   type="text"
                   name="currentAddress"
-                  className="w-full p-2 border border-gray-300 rounded-md outline-none focus:ring-primary focus:border-primary"
-                  value={activeAddress?.fullAddress || ""}
-                  disabled={!activeAddress?.fullAddress}
+                  className={`w-full p-2 border ${activeAddress?.fullAddress ? "" : "border-red-700" } border-gray-300 rounded-md outline-none focus:ring-primary focus:border-primary`}
+                  value={activeAddress?.fullAddress || "" }
+                  disabled
                 />
+                {
+                  !activeAddress?.fullAddress && (
+                    <span className="text-sm text-red-700">You don't have a shipping adddress. Create a shipping address in your profile page.</span>
+                  )
+                 }
+                </div>
               </div>
             </div>
 

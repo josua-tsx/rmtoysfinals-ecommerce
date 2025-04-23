@@ -96,7 +96,9 @@ export default function Navbar() {
               <div></div>
             ) : (
               <div>
-                <Link className="md:hidden text-lg" to={`/sign-in`}>Sign In</Link>
+                <Link className="md:hidden text-lg" to={`/sign-in`}>
+                  Sign In
+                </Link>
               </div>
             )}
           </div>

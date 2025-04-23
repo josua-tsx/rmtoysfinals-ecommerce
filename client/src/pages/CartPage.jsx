@@ -68,7 +68,7 @@ export default function CartPage() {
         <CreditPointsAuto />
 
         <form className="flex flex-col md:flex-row pb-10 bg-yellow gap-4">
-          <div className="flex flex-col  gap-3 border  rounded-[5px]  h-[400px] md:h-[550px]  overflow-y-auto md:flex-1 ">
+          <div className="flex flex-col  gap-3  rounded-[5px]  h-[400px] md:h-[550px]  overflow-y-auto md:flex-1 ">
             {/* PRODUCTS GOES HERE */}
 
             {cart?.items?.length > 0 ? (
