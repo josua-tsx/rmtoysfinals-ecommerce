@@ -1,9 +1,9 @@
 export const validateEmail = (email) => {
   if (!email) return false;
 
-  // Standard email regex + custom rules
-  const emailRegex = /^[a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z]+$/;
-
+  // Updated regex to allow numbers in local part and domain
+  const emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/;
+  
   return emailRegex.test(email.trim());
 };
 
@@ -90,10 +90,10 @@ export const validatePassword = (password) => {
     };
   }
 
-  if (password.length < 12) {
+  if (password.length < 8) {
     return {
       valid: false,
-      message: "Password must be at least 12 characters",
+      message: "Password must be at least 8 characters",
     };
   }
 

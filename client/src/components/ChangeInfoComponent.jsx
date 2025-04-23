@@ -256,7 +256,7 @@ export default function ChangeInfoComponent() {
                       htmlFor=""
                       className="absolute right-2 top-4 flex items-center gap-2"
                     >
-                      <p className="text-xs">SHOW PASSWORD</p>
+                      <p className="text-xs">Show Password</p>
                       <input
                         type="checkbox"
                         onChange={togglePassword}

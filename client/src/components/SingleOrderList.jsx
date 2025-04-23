@@ -195,12 +195,12 @@ export default function SingleOrderList({ order, onClose }) {
 
         {order.paymentMethod === "GcashQR" && (
           <div className="border border-black flex flex-col p-2 gap-5 bg-card  rounded-[5px]">
-            <div className="flex flex-row md:flex-col gap-5">
+            <div className="flex flex-col gap-5">
               <div className="h-full">
                 <img
                   src={order?.gcashQRmethod?.proofOfPaymentImage}
                   alt="receipt imgae"
-                  className="h-[450px] md:h-[550px] w-auto rounded-[5px]"
+                  className="h-[250px] md:h-[550px] max-w-[370px] object-cover rounded-[5px]"
                 />
               </div>
 

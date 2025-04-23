@@ -112,7 +112,7 @@ export default function SignUp() {
                 htmlFor=""
                 className="absolute right-2 top-4 flex items-center gap-2"
               >
-                <p className="text-xs">SHOW PASSWORD</p>
+                <p className="text-xs">Show Password</p>
                 <input
                   type="checkbox"
                   onChange={togglePassword}
@@ -121,7 +121,7 @@ export default function SignUp() {
                 />
               </label>
               <p className="text-sm text-green-700">
-                (Password must be at least 12 characters.)
+                (Password must be at least 8 characters.)
               </p>
             </div>
           </div>
