@@ -21,7 +21,7 @@ export default function FiveStarReviews() {
   if (isError) return <p>Error.</p>;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col bg-yellow h-screen gap-4">
       {fiveStarReviews.length > 0 ? (
         fiveStarReviews?.map((five) => (
           <ReviewCardTwo key={five._id} review={five} />
