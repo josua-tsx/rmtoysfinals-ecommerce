@@ -49,7 +49,7 @@ export default function WishListPage() {
         <CreditPointsAuto/>
 
         <div className="flex flex-col  lg:flex-row gap-6">
-          <div className="flex-1">
+          <div className="h-[550px] overflow-y-auto bg-yellow md:flex-1">
             {wishlist?.items?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {wishlist.items.map((wish) => (

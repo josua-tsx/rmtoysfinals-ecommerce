@@ -66,7 +66,7 @@ export default function WishlistCard({ productWish }) {
   };
 
   return (
-    <div className="border w-[253px] mx-auto md:w-full border-black bg-card relative flex justify-center items-center flex-col rounded-[5px]">
+    <div className="border w-[220px] text-sm mx-auto md:w-full border-black bg-card relative flex justify-center items-center flex-col rounded-[5px]">
       <ConfirmModal
         isOpen={isOpen}
         title={"Confirm Delete Wish"}
@@ -92,12 +92,12 @@ export default function WishlistCard({ productWish }) {
       <div className="">
         <img
           src={productWish?.productId?.productImages[0]}
-          className="h-[150px] w-auto object-cover"
+          className="h-[100px] w-auto object-cover"
         />
       </div>
 
       <div className="flex-1 p-2 border-t rounded-t-none border-black rounded-[5px] flex flex-col bg-white w-full">
-        <div className="flex flex-col gap-2 justify-between">
+        <div className="flex flex-col gap-1 justify-between">
           <h1 className="text-sm">{productWish?.productId?.productName}</h1>
           <p className="text-sm">
             {formatPrice(productWish?.productId?.price)} PHP

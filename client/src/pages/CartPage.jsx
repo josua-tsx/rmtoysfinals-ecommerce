@@ -50,7 +50,7 @@ export default function CartPage() {
   if (isError) return <div>Error loading cart.</div>;
 
   return (
-    <section className="pt-[130px] bg-yellow text-sm md:text-normal font-main p-3">
+    <section className="pt-[130px] bg-yellow  text-sm md:text-normal font-main p-3">
       {openOrderModal && (
         <OrderSummaryModal onClose={() => setOrderModal(false)} />
       )}
@@ -67,8 +67,8 @@ export default function CartPage() {
 
         <CreditPointsAuto />
 
-        <form className="flex flex-col md:flex-row gap-4">
-          <div className="flex flex-col gap-3 h-[550px] overflow-y-auto flex-1 ">
+        <form className="flex flex-col md:flex-row pb-10 bg-yellow gap-4">
+          <div className="flex flex-col  gap-3  h-[400px] md:h-[550px]  overflow-y-auto md:flex-1 ">
             {/* PRODUCTS GOES HERE */}
 
             {cart?.items?.length > 0 ? (
