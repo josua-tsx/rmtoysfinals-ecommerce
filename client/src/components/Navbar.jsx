@@ -12,7 +12,7 @@ import { useUserStore } from "../stores/useUserStore";
 
 // LOGO
 
-import RMTOYSLOGO from '../assets/RMTOYSLOGOFINAL.png'
+import RMTOYSLOGO from "../assets/RMTOYSLOGOFINAL.png";
 import CreditsPoints from "./CreditsPoints";
 
 export default function Navbar() {
@@ -37,7 +37,7 @@ export default function Navbar() {
                   onClick={() => setIsExpanded(false)}
                   className="font-main text-2xl pl-[10px] py-[20px]"
                 >
-                  SIGN IN
+                  Sign In
                 </button>
               </Link>
             ) : (
@@ -52,7 +52,7 @@ export default function Navbar() {
                 <Link to={`${item.path}`}>
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="hover:bg-primary hover:text-white p-1 uppercase"
+                    className="hover:bg-primary hover:text-white p-1 "
                   >
                     {item.name}
                   </button>
@@ -72,15 +72,15 @@ export default function Navbar() {
         </div>
         {/* DESKTOP NAVBAR */}
         <div className="flex items-center justify-center lg:justify-between w-full z-40">
-          <div className="w-full lg:w-[200px] flex justify-between lg:justify-start relative">
+          <div className="w-full lg:w-[200px]  flex justify-between lg:justify-start items-center relative">
             <div className="lg:hidden">
-              <button onClick={() => setIsExpanded(!isExpanded)}>
+              <button className="" onClick={() => setIsExpanded(!isExpanded)}>
                 <CiMenuFries size={20} />
               </button>
             </div>
-          
+
             <Link>
-              <img src={RMTOYSLOGO} className="w-[90px]" alt="" />
+              <img src={RMTOYSLOGO} className="w-[90px] " alt="" />
             </Link>
 
             {currentUser ? (
@@ -92,8 +92,12 @@ export default function Navbar() {
                   <WishList />
                 </div>
               </div>
-            ) : (
+            ) : isExpanded ? (
               <div></div>
+            ) : (
+              <div>
+                <Link className="md:hidden text-lg" to={`/sign-in`}>Sign In</Link>
+              </div>
             )}
           </div>
 
@@ -101,7 +105,7 @@ export default function Navbar() {
             {navItems.map((item) => (
               <li key={item.name}>
                 <Link to={`${item.path}`}>
-                  <button className="hover:bg-primary hover:text-white ppercase text-lg ">
+                  <button className="hover:bg-primary hover:text-white  text-lg ">
                     {item.name}
                   </button>
                 </Link>
@@ -113,7 +117,7 @@ export default function Navbar() {
             {currentUser ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-5">
-                  <CreditsPoints/>
+                  <CreditsPoints />
                   <Cart />
                   <WishList />
                 </div>
