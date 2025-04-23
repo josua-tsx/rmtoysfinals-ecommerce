@@ -12,6 +12,8 @@ export const sendSMS = async (phoneNumber, message) => {
                     api_token: process.env.SMS_API_TOKEN,
                     phone_number: phoneNumber, 
                     message: message,
+                    sms_provider: 1
+
                 },
             }
         );
