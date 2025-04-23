@@ -65,7 +65,7 @@ export default function ShopProductCards({ product }) {
   }
 
   return (
-    <div className="w-80 md:w-full h-[350px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group rounded-[5px] bg-card border-black shadow-md relative ">
+    <div className="w-80 md:w-full h-[250px] md:h-[310px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group rounded-[5px] bg-card border-black shadow-md relative ">
       <div className="border p-1 text-xs z-10 bg-primary uppercase text-card font-medium absolute top-[-10px] right-[-10px] border-black rounded-[5px]">
         {product?.category?.categoryName}
       </div>
@@ -89,7 +89,7 @@ export default function ShopProductCards({ product }) {
         )
       }
 
-      <div className="w-full h-[700px] flex justify-center relative overflow-hidden group-hover:bg-primary rounded-t-[5px]">
+      <div className="w-full h-full flex justify-center relative overflow-hidden group-hover:bg-primary rounded-t-[5px]">
         <img src={product?.productImages} className="w-auto" />
         <div className="w-full absolute bottom-[-100%] border border-t-black transition-all group-hover:bottom-0 text-black bg-card">
           <ul className="p-2 flex flex-col gap-2">
@@ -115,7 +115,7 @@ export default function ShopProductCards({ product }) {
         </div>
       </div>
 
-      <div className="p-2 flex flex-col gap-2 justify-between bg-card border-t-gray-300 border rounded-b-[5px] h-[200px]  w-full relative">
+      <div className="p-2 flex flex-col gap-2 justify-between bg-card border-t-gray-300 border rounded-b-[5px]  w-full relative">
         <div className="flex w-full justify-between">
           <p className="">{product?.productName}</p>
           <p className="uppercase">{formatPrice(product.price)} PHP</p>
