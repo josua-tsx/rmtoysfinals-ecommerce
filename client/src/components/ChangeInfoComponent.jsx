@@ -248,8 +248,7 @@ export default function ChangeInfoComponent() {
                         className=" outline-none p-3  w-full bg-gray-200   border-[#313031] border rounded-[5px]"
                       />
                       <p className="text-sm pt-1 lowercase text-green-700">
-                        (Phone number should be valid number. It should start
-                        with 09 and exact 11 numbers)
+                        (Password must be at least 8 characters)
                       </p>
                     </div>
                     <label
