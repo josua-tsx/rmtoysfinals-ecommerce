@@ -120,6 +120,9 @@ export const PROFANITY_LIST = [
   "bungol",
   "bungal",
   "epep",
+  "pota",
+  "gago",
+  "tanga",
 
   // Tagalog Misspellings/Leetspeak
   "put@ng ina",
