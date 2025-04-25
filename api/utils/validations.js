@@ -12,50 +12,32 @@ export const validateFullName = (fullName) => {
     return { valid: false, message: "Full name is required" };
   }
 
-  // Check for leading/trailing spaces
+  // Trim and check for leading/trailing spaces
   const trimmedName = fullName.trim();
   if (fullName !== trimmedName) {
-    return {
-      valid: false,
-      message: "Remove spaces before/after the name",
-    };
+    return { valid: false, message: "Remove spaces before/after the name" };
   }
 
-  // Length check
+  // Length check (2-100 chars)
   if (trimmedName.length < 2 || trimmedName.length > 100) {
-    return {
-      valid: false,
-      message: "Name must be 2-100 characters",
-    };
+    return { valid: false, message: "Name must be 2-100 characters" };
   }
 
-  // Allow letters, apostrophes, hyphens, spaces, and dots (for middle initials)
+  // Allow letters, apostrophes, hyphens, spaces, and dots
   if (!/^[\p{L}' .-]+$/u.test(trimmedName)) {
-    return {
-      valid: false,
-      message: "Use only letters, hyphens (-), apostrophes ('), or dots (.)",
+    return { 
+      valid: false, 
+      message: "Use only letters, spaces, hyphens (-), apostrophes ('), or dots (.)" 
     };
   }
 
-  // Check for consecutive spaces or invalid punctuation usage
-  if (/\s{2,}/.test(trimmedName) || /[-'.]\s|[\s-'.]$/.test(trimmedName)) {
-    return {
-      valid: false,
-      message: "Fix spacing between names",
-    };
-  }
-
-  // Additional check for valid dot usage (only for middle initials)
-  if (/\.(?!\s|$)/.test(trimmedName)) {
-    return {
-      valid: false,
-      message: "Dot can only be used for middle initials (followed by a space or at end)",
-    };
+  // Check for double spaces or invalid punctuation placement
+  if (/\s{2,}/.test(trimmedName) || /[-']\s|[\s-']$/.test(trimmedName)) {
+    return { valid: false, message: "Fix spacing between names" };
   }
 
   return { valid: true };
 };
-
 export const validateUsername = (username) => {
   if (!username) {
     return { valid: false, message: "Username is required" };
