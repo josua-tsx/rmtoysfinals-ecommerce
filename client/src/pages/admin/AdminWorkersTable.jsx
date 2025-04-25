@@ -157,10 +157,10 @@ export default function AdminWorkersTable() {
                     <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
                       {worker?.isLoggedIn === true ? <div className="flex items-center gap-2">
                         <p>Online</p>
-                        <div className="bg-green-400 h-[20px] rounded-full w-[20px]"></div>
+                        <div className="bg-green-400 border border-black h-[20px] rounded-full w-[20px]"></div>
                       </div> : <div className="flex items-center gap-2">
                         <p>Ofline</p>
-                        <div className="bg-red-400 h-[20px] rounded-full w-[20px]"></div>
+                        <div className="bg-red-400 h-[20px] border border-black rounded-full w-[20px]"></div>
                       </div>}
                     </td>
 
