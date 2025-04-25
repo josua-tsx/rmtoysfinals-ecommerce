@@ -106,7 +106,7 @@ export default function ProfileComponent({ setActiveComponent }) {
 
           {/* ADDRESSES */}
           <div className="flex flex-col justify-between gap-5">
-            <div className="flex flex-col lowercase gap-5">
+            <div className="flex flex-col gap-5">
               {isCurrentUserAddressPending ? (
                 <div className="flex justify-center items-center">
                   <LoadingSpinner />
@@ -134,7 +134,7 @@ export default function ProfileComponent({ setActiveComponent }) {
                   </div>
                 ))
               ) : (
-                <p className="text-sm lowercase">(You have no saved address)</p>
+                <p className="text-red-700">(You have no saved address. You need to update it.)</p>
               )}
             </div>
           </div>
