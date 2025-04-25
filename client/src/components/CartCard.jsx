@@ -147,12 +147,12 @@ export default function CartCard({ productCart }) {
             id="quantity"
             min={1}
             max={productCart?.productId?.stocks?.quantity}
-            value={quantity}
+            value={quantity === 0 ? setQuantity(1) : quantity}
             onChange={handleQuantityChange}
             className="w-14 p-1 text-center border rounded-[5px]  border-black"
           />
           <div className="text-sm w-[90px]">
-            (STOCKS {productCart?.productId?.stocks?.quantity})
+            (STOCKS {productCart?.productId?.stocks?.quantity })
           </div>
         </div>
         <div className="flex items-center gap-3">

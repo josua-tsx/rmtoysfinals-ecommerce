@@ -88,6 +88,8 @@ export default function Shop() {
     queryClient.resetQueries({ queryKey: ["products"] });
   }, [selectedCategory, sortBy, sortOrder, queryClient]);
 
+  console.log(products)
+
   if (isLoading) return <LoadingSpinner fullScreen />;
   
   if (isError) return (

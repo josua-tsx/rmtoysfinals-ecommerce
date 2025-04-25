@@ -7,7 +7,6 @@ import Stocks from "../models/stocks.model.js";
 import User from "../models/user.models.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
-
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
@@ -47,6 +46,8 @@ export const userPlaceOrder = async (req, res, next) => {
       quantity: item.quantity || 1,
     }));
 
+  
+
     let totalItemsOrdered = orderItems.reduce(
       (sum, item) => sum + (item.quantity || 0),
       0
@@ -54,6 +55,13 @@ export const userPlaceOrder = async (req, res, next) => {
 
     // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
     for (const item of orderItemsWithQuantity) {
+
+      if (item.quantity <= 0) {
+        await session.abortTransaction();
+        return next(handleMakeError(400, "Item quantity must be greater than zero"));
+      }
+      
+
       const productStock = await Stocks.findOne({ product: item.productId });
 
       if (!productStock || productStock.quantity < item.quantity) {

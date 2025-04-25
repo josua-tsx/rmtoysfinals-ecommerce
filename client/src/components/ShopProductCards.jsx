@@ -14,6 +14,8 @@ export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate()
 
+
+
   const { mutate: addToCartMutation } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.post(`/cart`, productId);
