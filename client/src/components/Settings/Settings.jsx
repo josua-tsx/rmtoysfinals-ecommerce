@@ -31,7 +31,7 @@ export default function Settings() {
       <button onClick={() => setShowSetting(!showSetting)} className="relative">
         <BsThreeDotsVertical size={25} />
       </button>
-      <div className={`absolute ${showSetting ? "block" : "hidden"} left-[30px] top-[-120px] lg:top-[45px] lg:-left-[170px] w-[180px] rounded-[5px] p-3 border-black border bg-card`}>
+      <div className={`absolute ${showSetting ? "block" : "hidden"} left-[30px] top-[0] lg:top-[45px] lg:-left-[170px] w-[180px] rounded-[5px] p-3 border-black border bg-card`}>
         <ul className="flex flex-col justify-end h-full gap-2">
             {
               currentUser.role === "admin" || currentUser.role === "validatorStaff" ? <li className="uppercase p-1 hover:bg-gray-300 ">

@@ -45,6 +45,16 @@ export default function Navbar() {
             )}
           </div>
 
+          
+          {currentUser ? (
+            <div className="flex-1 flex border-t-gray-400 border justify-between items-center py-2 mb-[20px] px-1 bg-card">
+              <Profile />
+              <Settings />
+            </div>
+          ) : (
+            ""
+          )}
+
           {/* RENDER NAVBAR LIST ITEMS */}
           <ul className=" p-3 font-main lg:flex  gap-7 h-screen flex flex-col  justify-start text-xl shadow-lg">
             {navItems.map((item) => (
@@ -61,14 +71,6 @@ export default function Navbar() {
             ))}
           </ul>
 
-          {currentUser ? (
-            <div className="flex-1 flex border-t-gray-400 border justify-between items-center py-2 px-1 bg-card">
-              <Profile />
-              <Settings />
-            </div>
-          ) : (
-            ""
-          )}
         </div>
         {/* DESKTOP NAVBAR */}
         <div className="flex items-center justify-center lg:justify-between w-full z-40">
