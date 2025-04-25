@@ -42,7 +42,7 @@ export default function ProfilePage() {
               ))}
             </ul>
           </div>
-          <main className="flex-1 bg-card border rounded-[5px]bg-yellow border-black p-4">
+          <main className="flex-1 bg-card border rounded-[5px]  border-black p-4">
             <ActiveComponent setActiveComponent={setActiveComponent} />
           </main>
         </div>
