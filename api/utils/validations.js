@@ -13,32 +13,43 @@ export const validateFullName = (fullName) => {
   }
 
   // Check for leading/trailing spaces
-  if (fullName !== fullName.trim()) {
+  const trimmedName = fullName.trim();
+  if (fullName !== trimmedName) {
     return {
       valid: false,
       message: "Remove spaces before/after the name",
     };
   }
 
-  if (fullName.length < 2 || fullName.length > 100) {
+  // Length check
+  if (trimmedName.length < 2 || trimmedName.length > 100) {
     return {
       valid: false,
       message: "Name must be 2-100 characters",
     };
   }
 
-  if (!/^[\p{L}' -]+$/u.test(fullName)) {
+  // Allow letters, apostrophes, hyphens, spaces, and dots (for middle initials)
+  if (!/^[\p{L}' .-]+$/u.test(trimmedName)) {
     return {
       valid: false,
-      message: "Use only letters, hyphens (-), or apostrophes (')",
+      message: "Use only letters, hyphens (-), apostrophes ('), or dots (.)",
     };
   }
 
-  // Check for consecutive spaces or invalid space usage
-  if (/\s{2,}/.test(fullName) || /[-']\s|[\s-']$/.test(fullName)) {
+  // Check for consecutive spaces or invalid punctuation usage
+  if (/\s{2,}/.test(trimmedName) || /[-'.]\s|[\s-'.]$/.test(trimmedName)) {
     return {
       valid: false,
       message: "Fix spacing between names",
+    };
+  }
+
+  // Additional check for valid dot usage (only for middle initials)
+  if (/\.(?!\s|$)/.test(trimmedName)) {
+    return {
+      valid: false,
+      message: "Dot can only be used for middle initials (followed by a space or at end)",
     };
   }
 

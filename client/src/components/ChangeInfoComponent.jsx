@@ -232,7 +232,7 @@ export default function ChangeInfoComponent() {
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
                     (Fullname must be 2-100 characters long. Fullname must only
-                    use letters, spaces, hyphens (-), or apostrophes (') )
+                    use letters, spaces, hyphens (-), or apostrophes (') or (.) )
                   </p>
                 </div>
               </div>
