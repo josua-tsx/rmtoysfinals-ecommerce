@@ -23,11 +23,11 @@ export const validateFullName = (fullName) => {
     return { valid: false, message: "Name must be 2-100 characters" };
   }
 
-  // Allow letters, apostrophes, hyphens, spaces, and dots
-  if (!/^[\p{L}' .-]+$/u.test(trimmedName)) {
+  // Allow letters, apostrophes, hyphens, spaces, and SINGLE dots
+  if (!/^[\p{L}' .-]+$/u.test(trimmedName) || /\.{2,}/.test(trimmedName)) {
     return { 
       valid: false, 
-      message: "Use only letters, spaces, hyphens (-), apostrophes ('), or dots (.)" 
+      message: "Use only letters, spaces, hyphens (-), apostrophes ('), or single dots (.)" 
     };
   }
 
@@ -38,6 +38,7 @@ export const validateFullName = (fullName) => {
 
   return { valid: true };
 };
+
 export const validateUsername = (username) => {
   if (!username) {
     return { valid: false, message: "Username is required" };
