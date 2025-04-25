@@ -10,7 +10,6 @@ import { useState } from "react";
 export default function ProfileComponent({ setActiveComponent }) {
   const currentUser = useUserStore((state) => state.currentUser);
   const queryClient = useQueryClient();
- 
 
   const {
     data: currentUserAddress = [],
@@ -42,7 +41,6 @@ export default function ProfileComponent({ setActiveComponent }) {
       toast.error(err.response.data.message || "something went wrong!");
     },
   });
-  
 
   const handleUpdateCurrentAddress = (addressId) => {
     updateIsActive({ addressId });
@@ -54,8 +52,6 @@ export default function ProfileComponent({ setActiveComponent }) {
 
   return (
     <div className="">
-
-
       <h1 className="text-xl">Profile</h1>
       <div className="my-5 flex flex-col gap-10  max-h-[666px] overflow-y-auto">
         <div className="flex flex-col items-center gap-4 justify-center">
@@ -75,42 +71,27 @@ export default function ProfileComponent({ setActiveComponent }) {
               <Buttons buttonName={"Edit Information"} />
             </div>
           </div>
-          <div className="flex flex-col md:flex-row justify-between gap-5">
-            <div className="flex-1">
-              <label htmlFor="email">Email:</label>
-              <input
-                value={currentUser.email}
-                disabled
-                type="email"
-                name="email"
-                id="email"
-                className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
-              />
+          <div className="flex justify-between flex-col gap-4 border border-black p-2 rounded-[5px] bg-card">
+            <div className="flex flex-col  justify-between gap-4">
+              <div className="flex-1 flex gap-2">
+                <label htmlFor="email">Email:</label>
+                <p>{currentUser?.email}</p>
+              </div>
+              <div className="flex-1 flex gap-2">
+                <label htmlFor="username">Username: </label>
+                <p>{currentUser?.username}</p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-col md:flex-row justify-between gap-5">
-            <div className="flex-1 flex flex-col">
-              <label htmlFor="username">Username: </label>
-              <input
-                value={currentUser.username}
-                disabled
-                type="username"
-                name="username"
-                id="username"
-                className="border w-full bg-gray-200 rounded-[5px] outline-none border-black px-5 py-2"
-              />
-            </div>
-            <div className="flex-1">
-              <label htmlFor="number">phone number:</label>
-              <input
-                value={currentUser.phoneNumber}
-                disabled
-                type="text"
-                name="number"
-                id="number"
-                className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
-              />
+            <div className="flex flex-col  justify-between gap-4">
+              <div className="flex-1 flex gap-2">
+                <label htmlFor="number">Phone number:</label>
+                <p className={`${!currentUser.phoneNumber ? "text-red-700" : ""}`}>{currentUser?.phoneNumber ? currentUser?.phoneNumber : "You need to update it."}</p>
+              </div>
+              <div className="flex-1 flex gap-2">
+                <label htmlFor="username">Full name: </label>
+                <p className={`${!currentUser.fullName ? "text-red-700" : ""}`}>{currentUser?.fullName ? currentUser?.fullName : "You need to update it."}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -127,7 +108,7 @@ export default function ProfileComponent({ setActiveComponent }) {
           <div className="flex flex-col justify-between gap-5">
             <div className="flex flex-col lowercase gap-5">
               {isCurrentUserAddressPending ? (
-                <div className="flex justify-center items-center" >
+                <div className="flex justify-center items-center">
                   <LoadingSpinner />
                 </div>
               ) : currentUserAddress.length > 0 ? (

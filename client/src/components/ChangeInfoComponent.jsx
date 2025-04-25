@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
-import { PiWarningCircleFill } from "react-icons/pi";
+
 
 import app from "../firebase/firebase";
 
@@ -12,7 +12,7 @@ import {
   getStorage,
 } from "firebase/storage";
 import { useUserStore } from "../stores/useUserStore";
-import { CiEdit } from "react-icons/ci";
+
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 
@@ -21,6 +21,7 @@ export default function ChangeInfoComponent() {
   const [imageUrl, setImageUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileError, setFileError] = useState(false);
+  const [changePassword, setChangePassword] = useState(false)
 
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -49,6 +50,7 @@ export default function ChangeInfoComponent() {
       setCurrentUser(data);
       setShowPassword(false);
       toast.success("Profile Updated Successfully");
+      setChangePassword(false)
     },
     onError: (err) => {
       toast.error(err.response.data.message);
@@ -235,8 +237,14 @@ export default function ChangeInfoComponent() {
                 </div>
               </div>
             </div>
-            <div>
-              <div className="flex  w-full gap-[10px] flex-col">
+            <div className="">
+              {
+                !changePassword ? <div className="flex flex-col gap-2 my-2">
+                  <label htmlFor="">Do you want to change your password?</label>
+                <button onClick={() => setChangePassword(!changePassword)}
+                className="border border-black p-2  rounded-[5px] bg-primary text-card ">Change Password</button>
+                </div> : (
+                  <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="password">Password: </label>
                 <div className="flex items-center  justify-between gap-5">
                   <div className="flex relative  w-full">
@@ -265,7 +273,12 @@ export default function ChangeInfoComponent() {
                     </label>
                   </div>
                 </div>
+                <button  className="border border-black p-2 rounded-[5px] bg-red-700 text-card "
+                 onClick={() => setChangePassword(!changePassword)}>Cancel</button>
               </div>
+                )
+              }
+              
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
