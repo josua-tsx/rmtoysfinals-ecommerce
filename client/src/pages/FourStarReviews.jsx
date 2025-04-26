@@ -22,13 +22,13 @@ export default function FourStarReviews() {
   if (isError) return <p>Error.</p>;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col h-[700px]  overflow-y-auto  gap-4">
       {fourStarReviews.length > 0 ? (
         fourStarReviews?.map((four) => (
           <ReviewCardTwo key={four._id} review={four} />
         ))
       ) : (
-        <p className="text-center">no four star review yet.</p>
+        <p className="text-center h-[500px]">no four star review yet.</p>
       )}
     </div>
   );

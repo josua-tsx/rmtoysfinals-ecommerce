@@ -21,11 +21,11 @@ export default function ThreeStarReviews() {
       if (isError) return <p>Error.</p>;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col h-[700px]  overflow-y-auto  gap-4">
     {threeStarReviews.length > 0 ? (
       threeStarReviews?.map((three) => <ReviewCardTwo key={three._id} review={three} />)
     ) : (
-      <p className='text-center'>no three star review yet.</p>
+      <p className='text-center h-[500px]'>no three star review yet.</p>
     )}
   </div>
   )

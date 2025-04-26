@@ -10,8 +10,17 @@ export const userAddReview = async (req, res, next) => {
   const { commentReview, rating } = req.body;
 
   try {
+    const existingReview = await Review.findOne({
+      userId,
+      productId,
+    });
+
+    if (existingReview) {
+      return next(handleMakeError(400, "You've already reviewed this product"));
+    }
+
     if (rating < 0 || rating > 5)
-      return next(handleMakeError(400, "Rating is not valid!"));
+      return next(handleMakeError(400, "Rating must be between 0-5"));
 
     if (commentReview) {
       const trimmedComment = commentReview.trim();

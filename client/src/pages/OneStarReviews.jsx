@@ -1,33 +1,33 @@
-import { useQuery } from '@tanstack/react-query'
-import axiosInstance from '../lib/axios'
-import ReviewCardTwo from '../components/ReviewCardTwo'
-import LoadingSpinner from '../reusable/LoadingSpinner'
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../lib/axios";
+import ReviewCardTwo from "../components/ReviewCardTwo";
+import LoadingSpinner from "../reusable/LoadingSpinner";
 
 export default function OneStarReviews() {
+  const {
+    data: oneStarReviews = [],
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["oneStarReview"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/review/get-oneStar`);
+      return res.data;
+    },
+  });
 
-
-    const {data: oneStarReviews = [], isPending, isError} = useQuery({
-        queryKey: ['oneStarReview'],
-        queryFn: async () => {
-            const res = await axiosInstance.get(`/review/get-oneStar`)
-            return res.data
-        }
-    })
-
-    if (isPending) return <LoadingSpinner fullScreen/>
-    if (isError) return <p>Error.</p>
+  if (isPending) return <LoadingSpinner fullScreen />;
+  if (isError) return <p>Error.</p>;
 
   return (
-    <div className="flex flex-col gap-4">
-
-        {
-            oneStarReviews.length > 0 ? (
-                oneStarReviews?.map((one) => (
-                    <ReviewCardTwo key={one._id} review={one}  />
-                )) 
-            ) :  <p className='text-center'>no one star review yet.</p>
-        }
-
+    <div className="flex flex-col h-[700px]  overflow-y-auto gap-4">
+      {oneStarReviews.length > 0 ? (
+        oneStarReviews?.map((one) => (
+          <ReviewCardTwo key={one._id} review={one} />
+        ))
+      ) : (
+        <p className="text-center h-[500px]">no one star review yet.</p>
+      )}
     </div>
-  )
+  );
 }

@@ -16,16 +16,17 @@ export default function TwoStarReviews() {
     },
   });
 
-
-  if (isPending) return <LoadingSpinner fullScreen/>
+  if (isPending) return <LoadingSpinner fullScreen />;
   if (isError) return <p>Error.</p>;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col h-[700px]  overflow-y-auto  gap-4">
       {twoStarReviews.length > 0 ? (
-        twoStarReviews?.map((two) => <ReviewCardTwo key={two._id} review={two} />)
+        twoStarReviews?.map((two) => (
+          <ReviewCardTwo key={two._id} review={two} />
+        ))
       ) : (
-        <p className='text-center'>no two star review yet.</p>
+        <p className="text-center h-[500px]">no two star review yet.</p>
       )}
     </div>
   );
