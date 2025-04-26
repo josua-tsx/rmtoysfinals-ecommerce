@@ -19,13 +19,38 @@ export default function AdminUploadProductImage({ images, setImages }) {
 
   const handleImageChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
+
+    // Check if no files were selected
+    if (selectedFiles.length === 0) return;
+
+    // Validate each file
+    for (const file of selectedFiles) {
+      // Validate file size (2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error(`"${file.name}" exceeds 2MB limit`);
+        return;
+      }
+
+      // Validate file type
+      const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+      if (!validTypes.includes(file.type)) {
+        toast.error(
+          `"${file.name}" is not a valid image type (only JPG/JPEG/PNG allowed)`
+        );
+        return;
+      }
+    }
+
+    // Validate total number of images
     if (selectedFiles.length + images.length > 4) {
       toast.error("You can only upload up to 4 images");
-    } else {
-      const newImages = selectedFiles.map((file) => URL.createObjectURL(file)); // Create a preview URL for each image
-      setImages((prevImages) => [...prevImages, ...newImages]);
-      setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+      return;
     }
+
+    // Create preview URLs and update state
+    const newImages = selectedFiles.map((file) => URL.createObjectURL(file));
+    setImages((prevImages) => [...prevImages, ...newImages]);
+    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
   };
 
   const handleImageSubmit = () => {
@@ -35,10 +60,9 @@ export default function AdminUploadProductImage({ images, setImages }) {
       const promises = files.map((file) => storeImage(file));
       Promise.all(promises)
         .then((urls) => {
-          // Successfully uploaded images, update state with URLs
           toast.success("Images uploaded successfully!");
           setImages(urls);
-          setFiles([]); // Clear the files since they've been uploaded
+          setFiles([]);
           setUploading(false);
         })
         .catch((error) => {
@@ -96,7 +120,7 @@ export default function AdminUploadProductImage({ images, setImages }) {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*"
+              accept="image/jpeg, image/png, image/jpg"
               onChange={handleImageChange}
               className="border z-10 opacity-0 cursor-pointer inset-0 bg-black absolute"
             />
@@ -135,6 +159,7 @@ export default function AdminUploadProductImage({ images, setImages }) {
           </div>
 
           <button
+            type="button"
             onClick={() => setImages([])}
             className="bg-blue-700 p-2 px-4 rounded-[5px] border border-black text-card"
           >
