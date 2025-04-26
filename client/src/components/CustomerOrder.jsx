@@ -77,6 +77,7 @@ export default function CustomerOrder() {
 
   return (
     <div>
+      <div>
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -187,6 +188,7 @@ export default function CustomerOrder() {
           <span>no order</span>
         )}
       </div>
+    </div>
     </div>
   );
 }

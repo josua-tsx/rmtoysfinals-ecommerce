@@ -24,11 +24,11 @@ export default function Navbar() {
       <nav className="flex justify-between max-w-[1280px] mx-auto relative">
         {/* MOBILE NAVBAR */}
         <div
-          className={` absolute flex flex-col h-screen w-44 transition-all ${
+          className={` absolute flex flex-col h-screen w-48 transition-all ${
             isExpanded
               ? "opacity-100 translate-x-0"
               : "opacity-0 translate-x-[-900px]"
-          } left-[-15px] top-[-15px] backdrop-blur-sm z-50`}
+          } left-[-15px] top-[-15px] shadow-gray-500  shadow-xl backdrop-blur-sm z-50`}
         >
           <div>
             {!currentUser ? (
@@ -56,7 +56,10 @@ export default function Navbar() {
           )}
 
           {/* RENDER NAVBAR LIST ITEMS */}
-          <ul className=" p-3 font-main lg:flex  gap-7 h-screen flex flex-col  justify-start text-xl shadow-lg">
+          <ul className=" p-3 font-main lg:flex relative  gap-7 h-screen flex flex-col  justify-start text-xl shadow-lg">
+           <div className="absolute right-4 top-4">
+         
+           </div>
             {navItems.map((item) => (
               <li key={item.name}>
                 <Link to={`${item.path}`}>
@@ -82,7 +85,7 @@ export default function Navbar() {
             </div>
 
             <Link>
-              <img src={RMTOYSLOGO} className="w-[90px] " alt="" />
+              <img src={RMTOYSLOGO} className="w-[75px] md:w-[90px] " alt="" />
             </Link>
 
             {currentUser ? (

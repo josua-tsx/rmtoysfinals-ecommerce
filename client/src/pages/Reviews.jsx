@@ -16,7 +16,7 @@ export default function Reviews() {
   };
 
   return (
-    <section className="pt-[130px] text-sm md:text-normal bg-yellow h-full p-3 font-main">
+    <section className="pt-[130px] text-sm md:text-normal border border-black bg-yellow h-full p-3 font-main">
       <div className="max-w-[1280px] mx-auto">
         <h1 className="text-3xl mb-5">Reviews</h1>
         <CreditPointsAuto/>

@@ -170,7 +170,7 @@ export default function ChangeInfoComponent() {
          <p className="text-sm text-green-700">
             (File size must be less than 2MB )
           </p>
-          <p className="text-sm text-green-700">
+          <p className="text-sm text-center text-green-700">
             (Image.png, image.jpeg, and image.jgp are only allowed. )
           </p>
          </div>

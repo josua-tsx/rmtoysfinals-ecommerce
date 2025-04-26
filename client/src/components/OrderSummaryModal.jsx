@@ -228,7 +228,7 @@ export default function OrderSummaryModal({ onClose }) {
             <div className="bg-card p-4 rounded-lg">
               <h3 className="text-lg mb-3">Customer Information</h3>
 
-              <div className="bg-yellow-50 border-l-4 my-2 rounded border-red-700 p-3  text-red-700">
+              <div className="bg-yellow-50 border-l-4 my-2  rounded border-red-700 p-3  text-red-700">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg

@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import useOrderStore from "../stores/useOrderStore";
+import FooterSection from "../components/FooterSection";
 
 const RootLayout = () => {
  // 🧠 User store
@@ -61,15 +62,18 @@ const RootLayout = () => {
 
 
   return (
-    <div className="font-main-text h-screen bg-yellow">
+    <div className="font-main-text h-full flex flex-col justify-between bg-yellow"> 
       <header>
         <Navbar />
       </header>
 
       {/* Main Content */}
-      <main className="">
+      <main className="bg-yellow">
         <Outlet />
       </main>
+      <footer className="bg-yellow">
+        <FooterSection/>
+      </footer>
       <Toaster position="bottom-right" />
     </div>
   );
@@ -87,7 +91,7 @@ const RequiredAuth = () => {
       </header>
 
       {/* Main Content */}
-      <main className="bg-yellow h-screen">
+      <main className="">
         <Outlet />
       </main>
       <Toaster position="bottom-right" />

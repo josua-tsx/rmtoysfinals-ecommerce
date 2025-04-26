@@ -50,14 +50,14 @@ export default function SignIn() {
    try {
     loginMutation({email, password})
    } catch (error) {
-    console.log(error)
+    console.log(error)  
    }
 
   }
 
   return (
     <section className="pt-[180px] h-full bg-yellow p-4 font-main ">
-      <div className="max-w-[600px] bg-yellow h-screen mx-auto overflow-hidden">
+      <div className="max-w-[600px]  mx-auto overflow-hidden">
 
       <div className="relative px-2  mb-4 flex justify-end w-full">
          <div className="relative flex-1">
@@ -122,8 +122,9 @@ export default function SignIn() {
           <div className="relative flex-1">
           <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"}/>
           </div>
-          <div className="text-sm  flex gap-2">
-            No account yet? {" "} <Link to={`/sign-up`} className="text-indigo-500 hover:underline  text-normal"> Sign Up Here!</Link>
+          <div className="text-sm  flex items-center gap-2">
+            No account yet? {" "} 
+            <Link to={`/sign-up`} className="text-indigo-500 hover:underline  text-[18px]"> Sign Up Here!</Link>
           </div>
         </div>
       </div>

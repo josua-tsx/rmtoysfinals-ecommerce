@@ -23,8 +23,8 @@ export default function ProfilePage() {
   const ActiveComponent = MENU_ITEMS.find(item => item.name === activeComponent).component || ProfileComponent;
 
   return (
-    <section className="pt-[130px] pb-[50px]  bg-yellow p-3 font-main">
-      <div className="max-w-[1280px] bg-yellow h-full  mx-auto">
+    <section className="pt-[130px] pb-[50px] h-full bg-yellow p-3 font-main">
+      <div className="max-w-[1280px]  mx-auto">
         <h1 className="text-4xl mb-5">MY PROFILE</h1>
         <div className="flex flex-col md:flex-row gap-2">
           <div className="border h-[210px] md:w-[300px] border-black p-2 bg-card rounded-[5px]">
