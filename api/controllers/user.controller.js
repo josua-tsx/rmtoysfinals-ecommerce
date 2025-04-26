@@ -22,8 +22,10 @@ export const updateProfile = async (req, res, next) => {
 
   if (!username.trim() || !email.trim() || !avatar)
     return next(
-      handleMakeError(400, "You can't leave some information empty!")
+      handleMakeError(400, "You can't leave email and username empty!")
     );
+
+    
 
   if (username) {
     const userNameCheck = validateUsername(username);

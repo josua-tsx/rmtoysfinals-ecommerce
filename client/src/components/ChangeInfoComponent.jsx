@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
 
-
 import app from "../firebase/firebase";
 
 import {
@@ -21,7 +20,7 @@ export default function ChangeInfoComponent() {
   const [imageUrl, setImageUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileError, setFileError] = useState(false);
-  const [changePassword, setChangePassword] = useState(false)
+  const [changePassword, setChangePassword] = useState(false);
 
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +49,7 @@ export default function ChangeInfoComponent() {
       setCurrentUser(data);
       setShowPassword(false);
       toast.success("Profile Updated Successfully");
-      setChangePassword(false)
+      setChangePassword(false);
     },
     onError: (err) => {
       toast.error(err.response.data.message);
@@ -79,16 +78,28 @@ export default function ChangeInfoComponent() {
     }
   };
 
-  // handleuploadImage
 
-  useEffect(() => {
-    if (file) {
-      handleProfilePhotoUpload(file);
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!validTypes.includes(selectedFile.type)) {
+      toast.error("Only JPG/JPEG/PNG files are allowed");
+      return;
     }
-  }, [file]);
+
+    // Validate file size (2MB)
+    if (selectedFile.size > 2 * 1024 * 1024) {
+      toast.error("File size must be less than 2MB");
+      return;
+    }
+
+    setFile(selectedFile);
+  };
 
   const handleProfilePhotoUpload = (file) => {
-    setFileError("");
     setUploadProgress(0);
 
     if (!file) {
@@ -123,6 +134,12 @@ export default function ChangeInfoComponent() {
     );
   };
 
+  useEffect(() => {
+    if (file) {
+      handleProfilePhotoUpload(file);
+    }
+  }, [file]);
+
   return (
     <div>
       <h1 className="text-xl">Change Information</h1>
@@ -133,8 +150,8 @@ export default function ChangeInfoComponent() {
             hidden
             type="file"
             ref={fileRef}
-            accept="image/.*"
-            onChange={(e) => setFile(e.target.files[0])}
+            accept="image/jpeg, image/png, image/jpg"
+            onChange={handleFileChange}
             name="image"
           />
           <img
@@ -149,6 +166,14 @@ export default function ChangeInfoComponent() {
           >
             Change Avatar
           </button>
+         <div className="flex flex-col items-center">
+         <p className="text-sm text-green-700">
+            (File size must be less than 2MB )
+          </p>
+          <p className="text-sm text-green-700">
+            (Image.png, image.jpeg, and image.jgp are only allowed. )
+          </p>
+         </div>
         </div>
 
         <div className="flex flex-col gap-5 w-[90%] md:w-[70%] mx-auto ">
@@ -222,9 +247,6 @@ export default function ChangeInfoComponent() {
               </div>
             </div>
 
-
-
-            
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="fullName">Full Name: </label>
@@ -239,54 +261,62 @@ export default function ChangeInfoComponent() {
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
                     (Fullname must be 2-100 characters long. Fullname must only
-                    use letters, spaces, hyphens (-), apostrophes ('), or dot (.) )
+                    use letters, spaces, hyphens (-), apostrophes ('), or dot
+                    (.) )
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="">
-              {
-                !changePassword ? <div className="flex flex-col gap-2 my-2">
+              {!changePassword ? (
+                <div className="flex flex-col gap-2 my-2">
                   <label htmlFor="">Do you want to change your password?</label>
-                <button onClick={() => setChangePassword(!changePassword)}
-                className="border border-black p-2  rounded-[5px] bg-primary text-card ">Change Password</button>
-                </div> : (
-                  <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="password">Password: </label>
-                <div className="flex items-center  justify-between gap-5">
-                  <div className="flex relative  w-full">
-                    <div className="flex flex-col w-full">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        id="password"
-                        className=" outline-none p-3  w-full bg-gray-200   border-[#313031] border rounded-[5px]"
-                      />
-                      <p className="text-sm pt-1 lowercase text-green-700">
-                        (Password must be at least 8 characters)
-                      </p>
-                    </div>
-                    <label
-                      htmlFor=""
-                      className="absolute right-2 top-4 flex items-center gap-2"
-                    >
-                      <p className="text-xs">Show Password</p>
-                      <input
-                        type="checkbox"
-                        onChange={togglePassword}
-                        checked={showPassword}
-                        className="border  size-[20px]  border-black"
-                      />
-                    </label>
-                  </div>
+                  <button
+                    onClick={() => setChangePassword(!changePassword)}
+                    className="border border-black p-2  rounded-[5px] bg-primary text-card "
+                  >
+                    Change Password
+                  </button>
                 </div>
-                <button  className="border border-black p-2 rounded-[5px] bg-red-700 text-card "
-                 onClick={() => setChangePassword(!changePassword)}>Cancel</button>
-              </div>
-                )
-              }
-              
+              ) : (
+                <div className="flex  w-full gap-[10px] flex-col">
+                  <label htmlFor="password">Password: </label>
+                  <div className="flex items-center  justify-between gap-5">
+                    <div className="flex relative  w-full">
+                      <div className="flex flex-col w-full">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          id="password"
+                          className=" outline-none p-3  w-full bg-gray-200   border-[#313031] border rounded-[5px]"
+                        />
+                        <p className="text-sm pt-1 lowercase text-green-700">
+                          (Password must be at least 8 characters)
+                        </p>
+                      </div>
+                      <label
+                        htmlFor=""
+                        className="absolute right-2 top-4 flex items-center gap-2"
+                      >
+                        <p className="text-xs">Show Password</p>
+                        <input
+                          type="checkbox"
+                          onChange={togglePassword}
+                          checked={showPassword}
+                          className="border  size-[20px]  border-black"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  <button
+                    className="border border-black p-2 rounded-[5px] bg-red-700 text-card "
+                    onClick={() => setChangePassword(!changePassword)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
