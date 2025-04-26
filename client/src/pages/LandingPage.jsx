@@ -8,7 +8,7 @@ export default function LandingPage() {
   return (
     <section className="font-main  relative overflow-hidden">
       <div className="relative z-2 overflow-y-auto max-w-[1280px] mx-auto p-4">
-        <div className="flex items-center relative flex-col gap-20 pb-32 lg:pt-52 lg:gap-4  lg:flex-row justify-between">
+        <div className="flex items-center relative flex-col gap-20 md:pb-32 lg:pt-52 lg:gap-4  lg:flex-row justify-between">
           <div className="flex flex-col gap-3">
           <CreditPointsAuto/>
             <div className="flex md:pl-10 lg:pl-0">
