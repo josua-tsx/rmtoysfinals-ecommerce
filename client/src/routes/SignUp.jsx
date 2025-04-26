@@ -72,6 +72,7 @@ export default function SignUp() {
               name="email"
               id="email"
               value={email}
+               placeholder="Ex: example@domain.com"
               onChange={handleInputChange(setEmail)}
               className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
@@ -88,6 +89,7 @@ export default function SignUp() {
               name="username"
               id="username"
               value={username}
+                placeholder="Ex: johndoe123"
               onChange={handleInputChange(setUsername)}
               className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
