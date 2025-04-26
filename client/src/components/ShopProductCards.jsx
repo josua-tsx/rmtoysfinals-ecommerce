@@ -120,7 +120,7 @@ export default function ShopProductCards({ product }) {
       <div className="p-2 flex flex-col gap-2 justify-between bg-card border-t-gray-300 border rounded-b-[5px]  w-full relative">
         <div className="flex w-full justify-between">
           <p className="">{product?.productName}</p>
-          <p className="uppercase">{formatPrice(product.price)} PHP</p>
+          <p className="uppercase text-blue-700">{formatPrice(product.price)} PHP</p>
         </div>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">

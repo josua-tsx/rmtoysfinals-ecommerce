@@ -182,7 +182,7 @@ export default function ShippingAddressComponent() {
       <h1 className="text-xl">Shipping Address</h1>
 
       <div className="w-[90%] md:w-[80%] mx-auto my-5">
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+        <div className="bg-yellow-50 border-l-4 border-red-700 text-red-700 p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg
@@ -199,7 +199,7 @@ export default function ShippingAddressComponent() {
               </svg>
             </div>
             <div className="ml-3 flex flex-col gap-2">
-              <p className="text-md text-black">
+              <p className="text-md ">
                 <strong>Important:</strong> Your delivery address must be valid
                 and accurate. Incomplete or false addresses may result in
                 automatic cancellation of your order.

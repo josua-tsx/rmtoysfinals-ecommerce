@@ -11,6 +11,14 @@ const UserModelSchema = new mongoose.Schema(
       trim: true,
     },
 
+    firstName: {
+      type: String
+    },
+
+    lastName: {
+      type: String,
+    },
+
     fullName: {
       type: String,
     },

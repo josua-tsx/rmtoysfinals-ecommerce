@@ -6,7 +6,7 @@ export const requireAuth = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
 
   // if accessToken either expired or undefined
-  if (!accessToken) return next(handleMakeError(401, "Unauthorized"));
+  if (!accessToken) return next(handleMakeError(401, "Sign in first to continue"));
 
   try {
     const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);

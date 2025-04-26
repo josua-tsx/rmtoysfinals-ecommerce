@@ -217,7 +217,7 @@ export default function OrderSummaryModal({ onClose }) {
 
             <button
               onClick={onClose}
-              className="border  border-black  text-card bg-primary rounded-[5px] px-5 right-0 -top-8"
+              className="border  border-black  text-card bg-red-700 rounded-[5px] px-5 right-0 -top-8"
             >
               <IoIosClose size={25} />
             </button>
@@ -228,7 +228,7 @@ export default function OrderSummaryModal({ onClose }) {
             <div className="bg-card p-4 rounded-lg">
               <h3 className="text-lg mb-3">Customer Information</h3>
 
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+              <div className="bg-yellow-50 border-l-4 my-2 rounded border-red-700 p-3  text-red-700">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg
@@ -369,7 +369,7 @@ export default function OrderSummaryModal({ onClose }) {
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+              <div className="bg-yellow-50 border-l-4 rounded border-red-700 p-3  text-red-700">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg
@@ -386,7 +386,7 @@ export default function OrderSummaryModal({ onClose }) {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-yellow-700">
+                    <p className="text-sm ">
                       <strong>Note:</strong> You can only use your credits once
                       every 24 hours.
                     </p>

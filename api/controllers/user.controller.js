@@ -6,11 +6,24 @@ import { logAuditTrail } from "./audit.controller.js";
 
 import Address from "../models/address.models.js";
 import Review from "../models/review.model.js";
-import { validateEmail, validateFullName, validatePassword, validatePHMobile, validateUsername } from "../utils/validations.js";
+import {
+  validateEmail,
+  validateFullName,
+  validatePassword,
+  validatePHMobile,
+  validateUsername,
+} from "../utils/validations.js";
 
 export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
-  const { username, email, password, avatar, phoneNumber, fullName } = req.body;
+  const { username, email, password, avatar, phoneNumber, fullName} = req.body;
+
+ 
+
+  if (!username.trim() || !email.trim() || !avatar)
+    return next(
+      handleMakeError(400, "You can't leave some information empty!")
+    );
 
   if (username) {
     const userNameCheck = validateUsername(username);
@@ -26,16 +39,16 @@ export const updateProfile = async (req, res, next) => {
   }
 
   if (fullName) {
-    const fullNameCheck = validateFullName(fullName)
+    const fullNameCheck = validateFullName(fullName);
     if (!fullNameCheck.valid) {
-      return next(handleMakeError(400, fullNameCheck.message))
+      return next(handleMakeError(400, fullNameCheck.message));
     }
   }
 
   if (phoneNumber) {
-    const phoneNumberCheck = validatePHMobile(phoneNumber)
+    const phoneNumberCheck = validatePHMobile(phoneNumber);
     if (!phoneNumberCheck.valid) {
-      return next(handleMakeError(400, phoneNumberCheck.message))
+      return next(handleMakeError(400, phoneNumberCheck.message));
     }
   }
 

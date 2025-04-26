@@ -156,7 +156,7 @@ export default function ChangeInfoComponent() {
             <h1 className="my-5">Personal Information</h1>
           </div>
 
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <div className="bg-yellow-50 border-l-4 text-red-700 border-red-700 p-4 mb-6">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
@@ -173,7 +173,7 @@ export default function ChangeInfoComponent() {
                 </svg>
               </div>
               <div className="ml-3 flex flex-col gap-2">
-                <p className="text-md text-black">
+                <p className="text-md ">
                   <strong>Important:</strong> Your phone number is very
                   important — this is where we’ll send SMS updates about your
                   orders and other important notifications. Please make sure
@@ -193,6 +193,7 @@ export default function ChangeInfoComponent() {
                     name="email"
                     defaultValue={currentUser.email}
                     id="email"
+                    placeholder="Ex: example@domain.com"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
@@ -210,6 +211,7 @@ export default function ChangeInfoComponent() {
                     name="username"
                     defaultValue={currentUser.username}
                     id="username"
+                    placeholder="Ex: johndoe123"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
@@ -219,6 +221,10 @@ export default function ChangeInfoComponent() {
                 </div>
               </div>
             </div>
+
+
+
+            
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="fullName">Full Name: </label>
@@ -228,6 +234,7 @@ export default function ChangeInfoComponent() {
                     name="fullName"
                     defaultValue={currentUser.fullName}
                     id="fullName"
+                    placeholder="Ex: John Doe"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
@@ -237,6 +244,7 @@ export default function ChangeInfoComponent() {
                 </div>
               </div>
             </div>
+            
             <div className="">
               {
                 !changePassword ? <div className="flex flex-col gap-2 my-2">
@@ -289,7 +297,7 @@ export default function ChangeInfoComponent() {
                       type="number"
                       name="phoneNumber"
                       id="phoneNumber"
-                      placeholder="phone number"
+                      placeholder="Ex: 09*******83"
                       defaultValue={currentUser.phoneNumber}
                       className="border border-black px-5 py-2  bg-gray-200 rounded-[5px] outline-none"
                     />

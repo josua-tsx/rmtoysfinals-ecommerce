@@ -96,7 +96,7 @@ export default function CustomerOrder() {
 
       <h1 className="text-xl">Your Order</h1>
 
-      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-2">
+      <div className="bg-yellow-50 border-l-4 border-red-700 text-red-700 p-4 mb-2">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg
@@ -113,7 +113,7 @@ export default function CustomerOrder() {
               </svg>
             </div>
             <div className="ml-3 flex flex-col gap-2">
-              <p className="text-md text-black">
+              <p className="text-md ">
                 <strong>Important:</strong> Once your order status changes to Shipped, or Out for Delivery, it can no longer be cancelled. Only orders with a Pending and Processing status are eligible for cancellation. Thank you for understanding!
               </p>
             </div>

@@ -222,7 +222,7 @@ export default function AdminAddProducts() {
               </div>
 
               <div className="mb-3">
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div className="bg-yellow-50 border-l-4 border-red-700 text-red-700 p-4 mb-6">
                   <div className="flex">
                     <div className="flex-shrink-0">
                       <svg
@@ -239,7 +239,7 @@ export default function AdminAddProducts() {
                       </svg>
                     </div>
                     <div className="ml-3 flex flex-col gap-2">
-                      <p className="text-md text-black">
+                      <p className="text-md ">
                         <strong>Important:</strong> Always include COLOR in label and value for filtering purposes. example: LABEL: color VALUE: yellow
                       </p>
                     </div>

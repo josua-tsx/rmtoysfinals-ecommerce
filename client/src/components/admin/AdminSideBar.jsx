@@ -148,7 +148,7 @@ export default function AdminSideBar() {
     },
 
     {
-      name: "Audit Trail",
+      name: "Logs",
       path: "/admin/audit",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin"],
