@@ -50,7 +50,7 @@ export default function SignIn() {
   };
 
   return (
-    <section className="pt-[180px] h-full bg-yellow p-4 font-main ">
+    <section className="pt-[180px] md:pb-32 h-full bg-yellow p-4 font-main ">
       <div className="max-w-[600px]  mx-auto overflow-hidden">
         <div className="relative px-2  mb-4 flex justify-end w-full">
           <div className="relative flex-1">
