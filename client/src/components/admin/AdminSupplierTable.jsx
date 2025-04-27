@@ -87,7 +87,7 @@ export default function AdminSupplierTable() {
         isOpen={isModalOpen}
         title={"Confirm delete"}
         message={
-          "Are you sure you want to delete this supplier? This action cannot be undone."
+          "This data might in used in different module, are you sure you want to delete this supplier? This action cannot be undone."
         }
         onConfirm={handleConfirm}
         onCancel={handleCancel}

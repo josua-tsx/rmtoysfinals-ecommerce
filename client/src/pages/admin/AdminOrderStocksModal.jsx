@@ -19,6 +19,8 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
 
   const [selectedVatValue, setSelectedVatValue] = useState(null);
 
+
+
   // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
   const calculateTotalExpenses =
     Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
@@ -66,8 +68,6 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
 
     setSelectedVatValue(selectedVatValue);
   };
-
-  console.log(selectedVatValue);
 
   const {
     data: suppliers = [],

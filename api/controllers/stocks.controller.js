@@ -1,6 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
+import Supplier from "../models/supplier.model.js";
 // import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
 import { orderStockHistory } from "./orderStockHistory.contoller.js";
@@ -50,9 +51,10 @@ export const OrderStocks = async (req, res, next) => {
 
     // Price validation
     if (Number(shopPrice) < Number(supplierPrice)) {
-      return next(handleMakeError(400, "Shop price cannot be lower than supplier price"));
+      return next(
+        handleMakeError(400, "Shop price cannot be lower than supplier price")
+      );
     }
-
 
     const newDelivery = new Stocks({
       product,
@@ -70,6 +72,8 @@ export const OrderStocks = async (req, res, next) => {
       vatShopPrice,
       vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * quantity,
     });
+
+    await newDelivery.save();
 
     await orderStockHistory({
       action: "admin_ordered_stock",
@@ -98,7 +102,10 @@ export const OrderStocks = async (req, res, next) => {
       { new: true, runValidators: true }
     );
 
-    await newDelivery.save();
+    await Supplier.findByIdAndUpdate(supplier, {
+      $push: { product: newDelivery.product },
+    });
+
     res.status(201).json(newDelivery);
   } catch (error) {
     next(error);
@@ -142,10 +149,11 @@ export const reorderStock = async (req, res, next) => {
       );
     }
 
-
     // Price validation
     if (Number(shopPrice) < Number(supplierPrice)) {
-      return next(handleMakeError(400, "Shop price cannot be lower than supplier price"));
+      return next(
+        handleMakeError(400, "Shop price cannot be lower than supplier price")
+      );
     }
 
     // 1. First find the existing stock
@@ -168,7 +176,7 @@ export const reorderStock = async (req, res, next) => {
         quantity: updatedQuantity, // Use the summed quantity
         category,
         shippingPrice,
-        totalCost: (supplierPrice * updatedQuantity) + shippingPrice,
+        totalCost: supplierPrice * updatedQuantity + shippingPrice,
         deliveryStatus: "delivered",
         deliveryId,
         dateDelivery,
@@ -382,9 +390,10 @@ export const getStocks = async (req, res, next) => {
             select: "categoryName",
           },
         ],
-      }).populate({
+      })
+      .populate({
         path: "vat",
-        select: "vatPercent vatValue"
+        select: "vatPercent vatValue",
       })
       .populate({
         path: "supplier",

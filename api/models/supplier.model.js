@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const SupplierModelSchema = new mongoose.Schema(
   {
+    product: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
     supplierName: {
       type: String,
       required: [true, "Supplier name is required"],
@@ -10,7 +16,7 @@ const SupplierModelSchema = new mongoose.Schema(
     contactPerson: {
       type: String,
       required: [true, "Contact person is required"],
-  },
+    },
     contactNumber: {
       type: String,
       required: true,

@@ -23,8 +23,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
 
   useEffect(() => {
     if (singleStock) {
-      setProductId(singleStock?.product._id);
-      setSupplier(singleStock?.supplier._id);
+      setProductId(singleStock?.product?._id);
+      setSupplier(singleStock?.supplier?._id);
       setSupplierPrice(singleStock?.supplierPrice);
       setShippingPrice(singleStock?.shippingPrice);
       setDeliveryId(singleStock?.deliveryId);
@@ -174,7 +174,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
                 {vats.length > 0 &&
                   vats.map((vat) => (
                     <option key={vat._id} value={vat?.vatValue}>
-                      {vat.vatPercent} %
+                      {vat?.vatPercent} %
                     </option>
                   ))}
               </select>
