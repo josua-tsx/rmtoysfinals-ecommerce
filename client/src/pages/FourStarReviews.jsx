@@ -18,10 +18,13 @@ export default function FourStarReviews() {
 
   console.log(fourStarReviews);
 
-  if (isPending) return <LoadingSpinner fullScreen/>;
   if (isError) return <p>Error.</p>;
 
-  return (
+  return isPending ? (
+    <div className="flex justify-center items-center flex-col h-[500px]">
+      <LoadingSpinner />
+    </div>
+  ) : (
     <div className="flex flex-col h-[700px]  overflow-y-auto  gap-4">
       {fourStarReviews.length > 0 ? (
         fourStarReviews?.map((four) => (

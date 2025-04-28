@@ -16,19 +16,23 @@ export default function FiveStarReviews() {
     },
   });
 
-
-  if (isPending) return <LoadingSpinner fullScreen/>;
   if (isError) return <p>Error.</p>;
 
-  return (
-    <div className="flex flex-col h-[700px]  overflow-y-auto  gap-4">
-      {fiveStarReviews.length > 0 ? (
-        fiveStarReviews?.map((five) => (
-          <ReviewCardTwo key={five._id} review={five} />
-        ))
-      ) : (
-        <p className="text-center h-[500px]">no five star review yet.</p>
-      )}
+  return isPending ? (
+    <div className="flex justify-center items-center flex-col h-[500px]">
+      <LoadingSpinner />
     </div>
+  ) : (
+    <>
+      <div className="flex flex-col h-[700px]  overflow-y-auto  gap-4">
+        {fiveStarReviews.length > 0 ? (
+          fiveStarReviews?.map((five) => (
+            <ReviewCardTwo key={five._id} review={five} />
+          ))
+        ) : (
+          <p className="text-center h-[500px]">no five star review yet.</p>
+        )}
+      </div>
+    </>
   );
 }

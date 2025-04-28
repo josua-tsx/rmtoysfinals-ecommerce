@@ -16,10 +16,13 @@ export default function OneStarReviews() {
     },
   });
 
-  if (isPending) return <LoadingSpinner fullScreen />;
   if (isError) return <p>Error.</p>;
 
-  return (
+  return isPending ? (
+    <div className="flex justify-center items-center flex-col h-[500px]">
+      <LoadingSpinner />
+    </div>
+  ) : (
     <div className="flex flex-col h-[700px]  overflow-y-auto gap-4">
       {oneStarReviews.length > 0 ? (
         oneStarReviews?.map((one) => (

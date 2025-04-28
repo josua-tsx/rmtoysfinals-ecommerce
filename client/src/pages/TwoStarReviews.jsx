@@ -16,10 +16,13 @@ export default function TwoStarReviews() {
     },
   });
 
-  if (isPending) return <LoadingSpinner fullScreen />;
   if (isError) return <p>Error.</p>;
 
-  return (
+  return isPending ? (
+    <div className="flex justify-center items-center flex-col h-[500px]">
+      <LoadingSpinner />
+    </div>
+  ) : (
     <div className="flex flex-col h-[700px]  overflow-y-auto  gap-4">
       {twoStarReviews.length > 0 ? (
         twoStarReviews?.map((two) => (
