@@ -10,59 +10,56 @@ import useOrderStore from "../stores/useOrderStore";
 import FooterSection from "../components/FooterSection";
 
 const RootLayout = () => {
- // 🧠 User store
- const { checkAuth } = useUserStore();
- const currentUser = useUserStore((state) => state.currentUser);
- const clearUser = useUserStore((state) => state.clearUser);
+  // 🧠 User store
+  const { checkAuth } = useUserStore();
+  const currentUser = useUserStore((state) => state.currentUser);
+  const clearUser = useUserStore((state) => state.clearUser);
 
- // 📦 Order store
- const currentOrder = useOrderStore((state) => state.currentOrder);
- const clearOrder = useOrderStore((state) => state.clearOrder);
+  // 📦 Order store
+  const currentOrder = useOrderStore((state) => state.currentOrder);
+  const clearOrder = useOrderStore((state) => state.clearOrder);
 
- // 🔍 Check auth on mount
- useEffect(() => {
-   checkAuth();
- }, [checkAuth]);
+  // 🔍 Check auth on mount
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
- // 🧹 Clear order if exists
- useEffect(() => {
-   if (currentOrder) {
-     clearOrder();
-   }
- }, [currentOrder]);
+  // 🧹 Clear order if exists
+  useEffect(() => {
+    if (currentOrder) {
+      clearOrder();
+    }
+  }, [currentOrder]);
 
- // 🔁 Query: fetch stocks
- const {
-   data: stocks = [],
- } = useQuery({
-   queryKey: ["stocks"],
-   queryFn: async () => {
-     const res = await axiosInstance.get("/stocks/get-stocks");
-     return res.data;
-   },
- });
+  // 🔁 Query: fetch stocks
+  const { data: stocks = [] } = useQuery({
+    queryKey: ["stocks"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/stocks/get-stocks");
+      return res.data;
+    },
+  });
 
- // ❌ Mutation: sign-out user
- const { mutate: signOut } = useMutation({
-   mutationFn: () => axiosInstance.post("/auth/signout"),
-   onSuccess: clearUser,
- });
+  // ❌ Mutation: sign-out user
+  const { mutate: signOut } = useMutation({
+    mutationFn: () => axiosInstance.post("/auth/signout"),
+    onSuccess: clearUser,
+  });
 
- // 🚫 Sign out if user is blocked
- useEffect(() => {
-   if (currentUser?.status === "blocked") {
-     signOut();
-   }
- }, [currentUser, signOut]);
+  // 🚫 Sign out if user is blocked
+  useEffect(() => {
+    if (currentUser?.status === "blocked") {
+      signOut();
+    }
+  }, [currentUser, signOut]);
 
- // ⛔️ Redirect blocked users to sign-in
- if (currentUser?.status === "blocked") {
-   return <Navigate to="/sign-in" />;
- }
-
+  // ⛔️ Redirect blocked users to sign-in
+  if (currentUser?.status === "blocked") {
+    return <Navigate to="/sign-in" />;
+  }
 
   return (
-    <div className="font-main-text h-full flex flex-col justify-between bg-yellow"> 
+    <div className="font-main-text h-full flex flex-col justify-between bg-yellow">
       <header>
         <Navbar />
       </header>
@@ -72,7 +69,7 @@ const RootLayout = () => {
         <Outlet />
       </main>
       <footer className="bg-yellow">
-        <FooterSection/>
+        <FooterSection />
       </footer>
       <Toaster position="bottom-right" />
     </div>
@@ -94,7 +91,19 @@ const RequiredAuth = () => {
       <main className="">
         <Outlet />
       </main>
-      <Toaster position="bottom-right" />
+      <Toaster
+        position="top-right"
+      
+        toastOptions={{
+          style: {
+            width: "300px",
+            position: 'relative',
+            right: '0', // Move left/right
+            bottom: '-60px', // Move up/down
+            transform: 'translateY(20px)', // Fine adjustment
+          },
+        }}
+      />
     </div>
   );
 };
@@ -143,7 +152,13 @@ const ValidatorStaffLayout = () => {
       </main>
       <Toaster />
     </div>
-  )
-}
+  );
+};
 
-export { RootLayout, AdminLayout, RequiredAuth,  ValidatorStaffLayout, RequiredAuthGcashPage };
+export {
+  RootLayout,
+  AdminLayout,
+  RequiredAuth,
+  ValidatorStaffLayout,
+  RequiredAuthGcashPage,
+};

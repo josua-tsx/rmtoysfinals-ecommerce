@@ -67,12 +67,12 @@ export default function ShopProductCards({ product }) {
   }
 
   return (
-    <div className="w-80 md:w-full h-[250px] md:h-[310px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group rounded-[5px] bg-card border-black shadow-md relative ">
+    <div className="w-72 md:w-full h-[250px] md:h-[310px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group rounded-[5px] bg-card border-black shadow-md relative ">
       <div className="border p-1 text-xs z-10 bg-primary uppercase text-card font-medium absolute top-[-10px] right-[-10px] border-black rounded-[5px]">
         {product?.category?.categoryName}
       </div>
 
-      {!product?.discount && !product?.discount ? (
+      {product?.discount && product?.discount ? (
         <div className="absolute  text-xs border top-5 -right-[10px] z-10 bg-red-700 text-card p-1 rounded-[5px]  border-black">
           DISCOUNTED
         </div>
