@@ -60,12 +60,12 @@ export const userPlaceOrder = async (req, res, next) => {
         );
       }
 
-      if (item.quantity > 15) {
+      if (item.quantity > 10) {
         await session.abortTransaction();
         return next(
           handleMakeError(
             400,
-            "You can only order up to 15 items per product at a time"
+            "You can only order up to 10 items per product at a time"
           )
         );
       }
