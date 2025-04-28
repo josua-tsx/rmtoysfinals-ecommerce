@@ -93,47 +93,12 @@ export const deleteSupplier = async (req, res, next) => {
       return next(handleMakeError(400, "Supplier not found!"));
     }
 
-    export const deleteSupplier = async (req, res, next) => {
-      const userId = req.user.id;
-      const { supplierId } = req.params;
-
-      try {
-        const singleSupplier = await Supplier.findById(supplierId);
-
-        if (!singleSupplier) {
-          return next(handleMakeError(400, "Supplier not found!"));
-        }
-
-        const supplierInUse = await Stocks.exists({
-          supplier: supplierId,
-        })
-
-        if (supplierInUse || singleSupplier?.product?.length > 0) {
-          return next(
-            handleMakeError(400, "Supplier is in use and cannot be deleted. Edit it instead.")
-          );
-        }
-
-        const supplierName = singleSupplier.supplierName;
-
-        await Supplier.findByIdAndDelete(supplierId);
-
-        await logAuditTrail({
-          action: "delete_supplier",
-          userId,
-          targetId: singleSupplier._id,
-          targetType: "Supplier",
-          details: {
-            supplierName, // Use the correct variable name
-          },
-          role: "admin",
-        });
-
-        res.status(200).json({ message: "Successfully deleted the supplier" });
-      } catch (error) {
-        next(error);
-      }
-    };
+    const supplierInUse = await Stocks.exists({ supplier: supplierId })
+    if (supplierInUse || singleSupplier?.product?.length > 0) {
+      return next(
+        handleMakeError(400, "Supplier is in use and cannot be deleted")
+      );
+    }
 
     const supplierName = singleSupplier.supplierName;
 
