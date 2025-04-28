@@ -52,8 +52,6 @@ const AddressModelSchema = new mongoose.Schema(
   }
 );
 
-// AddressModelSchema.index({ userId: 1, fullAddress: 1 }, { unique: true });
-
 const Address = mongoose.model("Address", AddressModelSchema);
 
 export default Address;

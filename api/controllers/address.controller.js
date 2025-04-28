@@ -7,7 +7,7 @@ export const addAddress = async (req, res, next) => {
   const userId = req.user.id;
 
   const {
-    country = "Philippines", // Set default value
+    country,
     region,
     stateProvince,
     city,
@@ -26,13 +26,8 @@ export const addAddress = async (req, res, next) => {
     return next(handleMakeError(400, "Please input required fields!"));
   }
 
-  // Trim inputs
-  const trimmedBarangay = barangay.trim();
-  const trimmedStreet = streetBuildingHouseNum.trim();
-  const trimmedCity = city.trim();
-
-  // Validate barangay format
-  if (!/^[a-zA-Z\s'-]{2,100}$/.test(trimmedBarangay)) {
+  // 1. Validate barangay
+  if (!/^[a-zA-Z\s'-]{2,100}$/.test(barangay.trim())) {
     return next(
       handleMakeError(
         400,
@@ -41,8 +36,8 @@ export const addAddress = async (req, res, next) => {
     );
   }
 
-  // Validate street format
-  if (!/^[a-zA-Z0-9\s\.,#'-]{5,200}$/.test(trimmedStreet)) {
+  // 2. Validate street
+  if (!/^[a-zA-Z0-9\s\.,#'-]{5,200}$/.test(streetBuildingHouseNum.trim())) {
     return next(
       handleMakeError(
         400,
@@ -53,14 +48,12 @@ export const addAddress = async (req, res, next) => {
 
   try {
     // Construct full address string
-    const fullAddress = `${trimmedStreet}, ${trimmedBarangay}, ${trimmedCity}, Philippines`;
+    const fullAddress = `${streetBuildingHouseNum.trim()}, ${barangay.trim()}, ${city.trim()}, Philippines`;
 
     // Check if the address already exists for this user
     const existingAddress = await Address.findOne({
       userId,
-      fullAddress: {
-        $regex: new RegExp(`^${fullAddress.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}$`, "i"),
-      },
+      fullAddress: fullAddress,
     });
 
     if (existingAddress) {
@@ -69,9 +62,9 @@ export const addAddress = async (req, res, next) => {
       );
     }
 
-    // Check if the user already has 3 addresses (using countDocuments)
-    const addressCount = await Address.countDocuments({ userId });
-    if (addressCount >= 3) {
+    // Check if the user already has 3 addresses
+    const userAddresses = await Address.countDocuments({ userId });
+    if (userAddresses > 3) {
       return next(handleMakeError(400, "You can only have 3 addresses!"));
     }
 
@@ -80,35 +73,26 @@ export const addAddress = async (req, res, next) => {
       country,
       region,
       stateProvince,
-      city: trimmedCity,
-      barangay: trimmedBarangay,
-      streetBuildingHouseNum: trimmedStreet.replace(/[<>"&]/g, ""),
+      city,
+      barangay: barangay.trim(),
+      streetBuildingHouseNum: streetBuildingHouseNum.replace(/[<>"&]/g, ""),
       fullAddress,
       userId,
       isActive: true,
     });
 
-    // Save the new address
+    // Save the new address to the Address collection
     const savedAddress = await newAddress.save();
 
-    // Update user's address reference
-    await User.findByIdAndUpdate(
-      userId,
-      { $push: { address: savedAddress._id } },
-      { new: true }
-    );
-
-    res.status(201).json({
-      success: true,
-      message: "Address added successfully",
-      data: savedAddress
+    // Add the new address ID to the user's address array
+    await User.findByIdAndUpdate(userId, {
+      $push: { address: savedAddress._id },
     });
+
+    // Return the saved address as the response
+    res.status(201).json(savedAddress);
   } catch (error) {
-    // Handle specific errors
-    if (error.name === 'ValidationError') {
-      return next(handleMakeError(400, error.message));
-    }
-    next(error);
+    next(error); // Pass the error to the error handling middleware
   }
 };
 

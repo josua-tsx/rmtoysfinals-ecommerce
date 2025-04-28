@@ -21,6 +21,7 @@ import reviewRoute from "../api/routes/review.route.js";
 import vatRoute from "../api/routes/vat.route.js"
 import sendEmailRoute from "../api/routes/sendEmail.route.js"
 import orderStockHistory from "../api/routes/orderStockHistory.route.js"
+import Address from "./models/address.models.js";
 
 // Load environment variables from .env file
 config();
@@ -70,6 +71,26 @@ app.use(`/api/history`, orderStockHistory)
 
 // Error handling middleware
 app.use(handleError);
+
+
+async function safeDropFullAddressIndex() {
+  try {
+    const indexes = await Address.collection.indexes();
+    const fullAddressIndex = indexes.find(index => index.name === "fullAddress_1");
+
+    if (fullAddressIndex) {
+      await Address.collection.dropIndex("fullAddress_1");
+      console.log("✅ Dropped fullAddress_1 index.");
+    } else {
+      console.log("ℹ️ No fullAddress_1 index found, nothing to drop.");
+    }
+  } catch (error) {
+    console.error("❌ Error while checking/dropping index:", error);
+  }
+}
+
+// Call it once somewhere after mongoose.connect()
+safeDropFullAddressIndex();
 
 // Server startup
 app.listen(PORT, () => {
