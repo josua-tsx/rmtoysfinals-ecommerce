@@ -48,7 +48,7 @@ export default function Contact() {
               </p>
               <div className="flex items-center justify-center gap-2 mt-4">
                 <FaPhone size={20} />
-                <p className="text-xl font-medium"> (+63) 9123456789101</p>
+                <p className="text-xl font-medium"> (+63) 0934587893</p>
               </div>
             </div>
 
