@@ -133,26 +133,35 @@ export default function OrderSummaryModal({ onClose }) {
   });
 
   const handleGcashQRpaymentMethod = (orderData) => {
-    if (currentUser.creditLock) {
-      const now = new Date();
-      const lockExpiry = new Date(currentUser.creditLock);
+    if (!orderData.orderItems?.length) {
+      toast.error("Your cart is empty");
+      return;
+    }
 
-      if (lockExpiry <= now) {
-        setCurrentOrder(orderData);
-        navigate("/gcashQRpayment");
-      } else {
-        const expiryDate = lockExpiry.toLocaleString("en-US", {
-          timeZone: "Asia/Manila",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-
-        toast.error(`⏳ Credits locked until ${expiryDate}`);
+    // Check credit lock (regardless of credit usage)
+    if (useCredits === "yes") {
+      if (currentUser.creditLock) {
+        const now = new Date();
+        const lockExpiry = new Date(currentUser.creditLock);
+  
+        if (lockExpiry > now) {
+          const expiryDate = lockExpiry.toLocaleString("en-US", {
+            timeZone: "Asia/Manila",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          toast.error(`⏳ Credits locked until ${expiryDate}`);
+          return;
+        }
       }
     }
+
+    // Proceed if no lock or lock expired
+    setCurrentOrder(orderData);
+    navigate("/gcashQRpayment");
   };
 
   const handleOrderFormSubmit = (e) => {

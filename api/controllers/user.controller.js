@@ -16,16 +16,12 @@ import {
 
 export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
-  const { username, email, password, avatar, phoneNumber, fullName} = req.body;
-
- 
+  const { username, email, password, avatar, phoneNumber, fullName } = req.body;
 
   if (!username.trim() || !email.trim() || !avatar)
     return next(
       handleMakeError(400, "You can't leave email and username empty!")
     );
-
-    
 
   if (username) {
     const userNameCheck = validateUsername(username);
@@ -34,10 +30,9 @@ export const updateProfile = async (req, res, next) => {
     }
   }
 
-  if (email) {
-    if (!validateEmail(email)) {
-      return next(handleMakeError(400, "Invalid email format"));
-    }
+  const userEmailCheck = validateEmail(email);
+  if (!userEmailCheck.valid) {
+    return next(handleMakeError(400, userEmailCheck.message));
   }
 
   if (fullName) {

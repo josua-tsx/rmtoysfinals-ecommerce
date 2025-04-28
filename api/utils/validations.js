@@ -1,10 +1,33 @@
 export const validateEmail = (email) => {
-  if (!email) return false;
+  if (!email) {
+    return { valid: false, message: "Email is required" };
+  }
 
-  // Updated regex to allow numbers in local part and domain
-  const emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/;
-  
-  return emailRegex.test(email.trim());
+  const trimmedEmail = email.trim();
+  if (email !== trimmedEmail) {
+    return { valid: false, message: "Remove spaces before/after the email" };
+  }
+
+  // Split email into local and domain parts
+  const [localPart, domain] = trimmedEmail.split('@');
+
+  // Validate local part (before @)
+  if (!/^[a-zA-Z0-9]+$/.test(localPart)) {
+    return {
+      valid: false,
+      message: "Email cannot contain dots or symbols before @ - only letters and numbers allowed",
+    };
+  }
+
+  // Validate domain part (after @)
+  if (!/^(gmail|yahoo)\.com$/.test(domain)) {
+    return {
+      valid: false,
+      message: "Only @gmail.com and @yahoo.com emails are allowed",
+    };
+  }
+
+  return { valid: true };
 };
 
 export const validateFullName = (fullName) => {
@@ -25,9 +48,10 @@ export const validateFullName = (fullName) => {
 
   // Allow letters, apostrophes, hyphens, spaces, and SINGLE dots
   if (!/^[\p{L}' .-]+$/u.test(trimmedName) || /\.{2,}/.test(trimmedName)) {
-    return { 
-      valid: false, 
-      message: "Use only letters, spaces, hyphens (-), apostrophes ('), or single dots (.)" 
+    return {
+      valid: false,
+      message:
+        "Use only letters, spaces, hyphens (-), apostrophes ('), or single dots (.)",
     };
   }
 
@@ -76,7 +100,15 @@ export const validatePassword = (password) => {
     return { valid: false, message: "Password is required" };
   }
 
-  // Disallow any whitespace
+  // Check minimum length
+  if (password.length < 8) {
+    return {
+      valid: false,
+      message: "Password must be at least 8 characters",
+    };
+  }
+
+  // Disallow whitespace
   if (/\s/.test(password)) {
     return {
       valid: false,
@@ -84,10 +116,27 @@ export const validatePassword = (password) => {
     };
   }
 
-  if (password.length < 8) {
+  // Require at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
     return {
       valid: false,
-      message: "Password must be at least 8 characters",
+      message: "Password must contain at least one uppercase letter (A-Z)",
+    };
+  }
+
+  // Require at least one symbol
+  if (!/[-!@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/.test(password)) {
+    return {
+      valid: false,
+      message: "Password must contain at least one symbol (!@#$% etc.)",
+    };
+  }
+
+  // Require at least one number
+  if (!/[0-9]/.test(password)) {
+    return {
+      valid: false,
+      message: "Password must contain at least one number (0-9)",
     };
   }
 
@@ -302,7 +351,8 @@ export const validateSupplierName = (name) => {
   if (!/^[A-Za-z0-9\s\-',.&()]+$/.test(trimmedName)) {
     return {
       valid: false,
-      message: "Supplier name contains invalid characters (only letters, numbers, spaces, and -',.&() allowed)",
+      message:
+        "Supplier name contains invalid characters (only letters, numbers, spaces, and -',.&() allowed)",
     };
   }
 
@@ -348,7 +398,8 @@ export const validateSupplierAddress = (address) => {
   if (!/^[A-Za-z0-9\s.,'#-]+$/.test(trimmedAddress)) {
     return {
       valid: false,
-      message: "Address contains invalid characters (only letters, numbers, spaces, and .,-'# allowed)",
+      message:
+        "Address contains invalid characters (only letters, numbers, spaces, and .,-'# allowed)",
     };
   }
 

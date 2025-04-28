@@ -29,8 +29,9 @@ export const signup = async (req, res, next) => {
   if (password !== confirmPassword)
     return next(handleMakeError(400, "Passwords are not equal "));
 
-  if (!validateEmail(email)) {
-    return next(handleMakeError(400, "Invalid email format"));
+  const userEmailCheck = validateEmail(email);
+  if (!userEmailCheck.valid) {
+    return next(handleMakeError(400, userEmailCheck.message));
   }
 
   const userNameCheck = validateUsername(username);
@@ -168,12 +169,11 @@ export const signout = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    
-    res.clearCookie('accessToken', {
+    res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: true, 
-      sameSite: 'none',
-      path: '/', 
+      secure: true,
+      sameSite: "none",
+      path: "/",
     });
 
     // Update isLoggedIn only for validatorStaff or admin
@@ -218,56 +218,6 @@ export const signout = async (req, res, next) => {
   }
 };
 
-
-// REFRESH TOKEN
-
-// export const refreshToken = async (req, res, next) => {
-//   const { refreshToken } = req.cookies;
-
-//   if (!refreshToken)
-//     return next(handleMakeError("401", "No refresh token provided"));
-
-//   try {
-//     // check if token is valid, if token is valid then it will return the data inside the token that is saved in decoded: the data will be
-//     // userId
-//     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-//     const storedToken = await RefreshToken.findOne({
-//       userId: decoded.userId,
-//       token: refreshToken,
-//     });
-//     //  THE TTL IN THE SCHEMA WILL AUTOMATICALLY DELETE THE EXPIRED TOKEN ONCE THEIR DUE FILLED, SO I DONT HAVE TO USE THE OR || but to make sure
-//     // im just going to use it anyway
-//     if (!storedToken || storedToken.expiresAt < new Date()) {
-//       return next(handleMakeError(401, "Invalid token or expired token"));
-//     }
-
-//     // GENERATE NEW ACCESS TOKEN
-//     // OPTIONALLY: GENERATE NEW REFRESH TOKEN (TOKEN ROTATING?? IDK THE NAME)
-//     const newAccessToken = jwt.sign(
-//       { userId: decoded.userId },
-//       process.env.ACCESS_TOKEN_SECRET,
-//       { expiresIn: "15m" }
-//     );
-//     const newRefreshToken = jwt.sign(
-//       { userId: decoded.userId },
-//       process.env.REFRESH_TOKEN_SECRET,
-//       { expiresIn: "7d" }
-//     );
-
-//     setCookies(res, newAccessToken, newRefreshToken);
-
-//     // optional updating the new refresh token in the database
-//     await RefreshToken.updateOne(
-//       { userId: decoded.userId, token: refreshToken },
-//       { token: newRefreshToken } // 7 days
-//     );
-
-//     res.json({ message: "successfully generated new tokens" });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
 export const getMe = async (req, res, next) => {
   try {
     res.status(200).json(req.user);
@@ -299,8 +249,9 @@ export const addWorker = async (req, res, next) => {
     return next(handleMakeError(400, "Passwords do not match"));
   }
 
-  if (!validateEmail(email)) {
-    return next(handleMakeError(400, "Invalid email format"));
+  const userEmailCheck = validateEmail(email);
+  if (!userEmailCheck.valid) {
+    return next(handleMakeError(400, userEmailCheck.message));
   }
 
   const userNameCheck = validateUsername(username);
