@@ -9,6 +9,7 @@ import CreditPointsAuto from "../components/CreditPointsAuto";
 import { useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 import useOrderStore from "../stores/useOrderStore";
+import LoadingSpinner from "../reusable/LoadingSpinner";
 
 export default function CartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
@@ -44,7 +45,7 @@ export default function CartPage() {
     return total + item.productId.points * item.quantity;
   }, 0);
 
-  if (isPending) return <div>Loading...</div>;
+  if (isPending) return <LoadingSpinner fullScreen/>;
   if (isError) return <div>Error loading cart.</div>;
 
   return (
