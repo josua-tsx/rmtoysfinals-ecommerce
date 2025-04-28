@@ -221,7 +221,8 @@ export default function ChangeInfoComponent() {
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
-                    (Enter a valid email. Numbers are not allowed after "@")
+                    (Enter a valid email. Only gmail.com and yahoo.com are
+                    allowed domains.)
                   </p>
                 </div>
               </div>

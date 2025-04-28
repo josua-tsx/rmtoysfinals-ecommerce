@@ -6,6 +6,7 @@ import ChangeInfoComponent from "../components/ChangeInfoComponent";
 import ShippingAddressComponent from "../components/ShippingAddressComponent";
 // import WishListComponent from "../components/WishListComponent";
 import OrderHistory from "../components/OrderHistory";
+import FooterSection from "../components/FooterSection";
 
 const MENU_ITEMS = [
   { name: "profile", label: "Profile", component: ProfileComponent },
@@ -23,7 +24,7 @@ export default function ProfilePage() {
   const ActiveComponent = MENU_ITEMS.find(item => item.name === activeComponent).component || ProfileComponent;
 
   return (
-    <section className="pt-[130px] pb-[50px] h-full bg-yellow p-3 font-main">
+    <section className="pt-[130px]  h-full bg-yellow p-3 font-main">
       <div className="max-w-[1280px]  mx-auto">
         <h1 className="text-4xl mb-5">MY PROFILE</h1>
         <div className="flex flex-col md:flex-row gap-2">
@@ -47,6 +48,10 @@ export default function ProfilePage() {
           </main>
         </div>
       </div>
+
+
+      <FooterSection/>
+
     </section>
   );
 }

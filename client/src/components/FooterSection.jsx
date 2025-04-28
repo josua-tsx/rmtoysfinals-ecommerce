@@ -44,7 +44,7 @@ export default function FooterSection() {
               <FaFacebook size={24} />
               
             </a>
-            <span>RM TOYS PAGE</span>
+            <span>RM Toys page</span>
           </div>
         </div>
       </div>
