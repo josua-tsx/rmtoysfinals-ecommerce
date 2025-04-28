@@ -122,6 +122,7 @@ export default function AdminSupplierTable() {
                 <th className="font-normal p-2 pb-5">Contact Person Fullname</th>
                 <th className="font-normal p-2 pb-5">Contact Number</th>
                 <th className="font-normal p-2 pb-5">Supplier Address</th>
+                <th className="font-normal p-2 pb-5">Supplied Products Count</th>
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
               </tr>
             </thead>
@@ -142,7 +143,10 @@ export default function AdminSupplierTable() {
                       {supplier.contactNumber}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
-                      {supplier.supplierAddress}
+                      {supplier?.supplierAddress}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
+                      {supplier?.product ? supplier?.product.length : 0}
                     </td>
   
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">

@@ -1,7 +1,12 @@
 import Supplier from "../models/supplier.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import { validateFullName, validatePHMobile, validateSupplierAddress, validateSupplierName } from "../utils/validations.js";
+import {
+  validateFullName,
+  validatePHMobile,
+  validateSupplierAddress,
+  validateSupplierName,
+} from "../utils/validations.js";
 // import {
 //   isValidFullName,
 //   isValidPhoneNumber,
@@ -12,32 +17,32 @@ import { validateFullName, validatePHMobile, validateSupplierAddress, validateSu
 export const addSupplier = async (req, res, next) => {
   const userId = req.user.id;
 
-  const { contactNumber, supplierName, contactPerson ,supplierAddress } = req.body;
+  const { contactNumber, supplierName, contactPerson, supplierAddress } =
+    req.body;
 
   if (!contactNumber || !supplierName || !contactPerson || !supplierAddress) {
-    return next(handleMakeError(400, "Input all required fields"))
+    return next(handleMakeError(400, "Input all required fields"));
   }
 
-  const supplierNameCheck = validateSupplierName(supplierName)
+  const supplierNameCheck = validateSupplierName(supplierName);
   if (!supplierNameCheck.valid) {
-    return next(handleMakeError(400, supplierNameCheck.message))
+    return next(handleMakeError(400, supplierNameCheck.message));
   }
 
-  const contactNumberCheck = validatePHMobile(contactNumber)
+  const contactNumberCheck = validatePHMobile(contactNumber);
   if (!contactNumberCheck.valid) {
-    return next(handleMakeError(400, contactNumberCheck.message))
+    return next(handleMakeError(400, contactNumberCheck.message));
   }
 
-  const contactPersonCheck = validateFullName(contactPerson) 
+  const contactPersonCheck = validateFullName(contactPerson);
   if (!contactPersonCheck.valid) {
-    return next(handleMakeError(400, contactPersonCheck.message))
+    return next(handleMakeError(400, contactPersonCheck.message));
   }
 
-  const supplierAddressCheck = validateSupplierAddress(supplierAddress)
+  const supplierAddressCheck = validateSupplierAddress(supplierAddress);
   if (!supplierAddressCheck.valid) {
-    return next(handleMakeError(400, supplierAddressCheck.message))
+    return next(handleMakeError(400, supplierAddressCheck.message));
   }
- 
 
   try {
     const newSupplier = new Supplier({
@@ -88,6 +93,48 @@ export const deleteSupplier = async (req, res, next) => {
       return next(handleMakeError(400, "Supplier not found!"));
     }
 
+    export const deleteSupplier = async (req, res, next) => {
+      const userId = req.user.id;
+      const { supplierId } = req.params;
+
+      try {
+        const singleSupplier = await Supplier.findById(supplierId);
+
+        if (!singleSupplier) {
+          return next(handleMakeError(400, "Supplier not found!"));
+        }
+
+        const supplierInUse = await Stocks.exists({
+          supplier: supplierId,
+        })
+
+        if (supplierInUse || singleSupplier?.product?.length > 0) {
+          return next(
+            handleMakeError(400, "Supplier is in use and cannot be deleted. Edit it instead.")
+          );
+        }
+
+        const supplierName = singleSupplier.supplierName;
+
+        await Supplier.findByIdAndDelete(supplierId);
+
+        await logAuditTrail({
+          action: "delete_supplier",
+          userId,
+          targetId: singleSupplier._id,
+          targetType: "Supplier",
+          details: {
+            supplierName, // Use the correct variable name
+          },
+          role: "admin",
+        });
+
+        res.status(200).json({ message: "Successfully deleted the supplier" });
+      } catch (error) {
+        next(error);
+      }
+    };
+
     const supplierName = singleSupplier.supplierName;
 
     await Supplier.findByIdAndDelete(supplierId);
@@ -113,38 +160,33 @@ export const editSupplier = async (req, res, next) => {
   const userId = req.user.id;
 
   const { supplierId } = req.params;
-  const {
-    supplierName,
-    contactPerson,
-    contactNumber,
-    supplierAddress,
-  } = req.body;
+  const { supplierName, contactPerson, contactNumber, supplierAddress } =
+    req.body;
 
   if (!contactNumber || !supplierName || !contactPerson || !supplierAddress) {
-    return next(handleMakeError(400, "Input all required fields"))
+    return next(handleMakeError(400, "Input all required fields"));
   }
 
-  const supplierNameCheck = validateSupplierName(supplierName)
+  const supplierNameCheck = validateSupplierName(supplierName);
   if (!supplierNameCheck.valid) {
-    return next(handleMakeError(400, supplierNameCheck.message))
+    return next(handleMakeError(400, supplierNameCheck.message));
   }
 
-  const contactNumberCheck = validatePHMobile(contactNumber)
+  const contactNumberCheck = validatePHMobile(contactNumber);
   if (!contactNumberCheck.valid) {
-    return next(handleMakeError(400, contactNumberCheck.message))
+    return next(handleMakeError(400, contactNumberCheck.message));
   }
 
-  const contactPersonCheck = validateFullName(contactPerson) 
+  const contactPersonCheck = validateFullName(contactPerson);
   if (!contactPersonCheck.valid) {
-    return next(handleMakeError(400, contactPersonCheck.message))
+    return next(handleMakeError(400, contactPersonCheck.message));
   }
 
-  const supplierAddressCheck = validateSupplierAddress(supplierAddress)
+  const supplierAddressCheck = validateSupplierAddress(supplierAddress);
   if (!supplierAddressCheck.valid) {
-    return next(handleMakeError(400, supplierAddressCheck.message))
+    return next(handleMakeError(400, supplierAddressCheck.message));
   }
- 
- 
+
   try {
     const updateSupplier = await Supplier.findByIdAndUpdate(supplierId, {
       supplierName,
