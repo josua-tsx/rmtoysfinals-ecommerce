@@ -39,7 +39,7 @@ export default function ImageSlider() {
         slideShadows: false, // Disable slide shadows
       }}
       modules={[EffectCoverflow]}
-      initialSlide={2} // Center the second slide initially
+      initialSlide={1} // Center the second slide initially
     >
       {isPending ? (
         <div className="flex  justify-center flex-col items-center h-[200px]">
