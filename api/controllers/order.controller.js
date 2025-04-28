@@ -343,13 +343,13 @@ export const placeOrderStripe = async (req, res, next) => {
         },
       });
 
-      await mongoSession.commitTransaction();
+      await session.commitTransaction();
       res.status(200).json({ url: stripeSession.url });
     } catch (error) {
-      await mongoSession.abortTransaction();
+      await session.abortTransaction();
       next(error);
     } finally {
-      mongoSession.endSession();
+      session.endSession();
     }
   } catch (error) {
     next(error);
