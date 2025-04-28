@@ -240,7 +240,10 @@ export const placeOrderStripe = async (req, res, next) => {
         if (item.quantity > 5) {
           await session.abortTransaction();
           return next(
-            handleMakeError(400, "Maximum 5 items per product allowed")
+            handleMakeError(
+              400,
+              "You can only order up to 5 items per product at a time."
+            )
           );
         }
 

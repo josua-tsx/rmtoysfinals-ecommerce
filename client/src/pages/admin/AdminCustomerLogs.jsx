@@ -60,7 +60,7 @@ export default function AdminCustomerLogs() {
               <th className="font-normal p-2 pb-5">TIMESTAMPS</th>
               <th className="font-normal p-2 pb-5">ACTION</th>
               <th className="font-normal p-2 pb-5">AFFECTED ID</th>
-              <th className="font-normal p-2 pb-5">ADMIN EMAIL</th>
+              <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
               <th className="font-normal p-2 pb-5">ROLE</th>
             </tr>
           </thead>
