@@ -240,7 +240,7 @@ export const addWorker = async (req, res, next) => {
     !password ||
     !confirmPassword ||
     !role ||
-    jobDescription
+    !jobDescription
   ) {
     return next(handleMakeError(400, "Please input required fields"));
   }
