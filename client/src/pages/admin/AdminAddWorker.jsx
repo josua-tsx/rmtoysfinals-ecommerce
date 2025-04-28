@@ -163,7 +163,6 @@ export default function AdminAddWorker() {
                 className="border outline-none border-black rounded-[5px] py-1"
               >
                 <option>Select Role</option>
-                <option value="staff">Staff</option>
                 <option value="validatorStaff">Validator Staff</option>
               </select>
             </div>
