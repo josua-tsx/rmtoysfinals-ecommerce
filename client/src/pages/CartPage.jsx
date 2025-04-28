@@ -116,7 +116,7 @@ export default function CartPage() {
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
                       <strong>Note:</strong>
-                     You can only order 10 items per product at a time to avoid spam.
+                     You can only order 5 items per product at a time.
                      
                     </p>
                   </div>

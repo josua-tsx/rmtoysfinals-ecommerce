@@ -196,10 +196,11 @@ export const userPlaceOrder = async (req, res, next) => {
 };
 
 export const placeOrderStripe = async (req, res, next) => {
-  const userId = req.user.id;
-  let session = null; // Initialize session variable at the start
+  const session = await mongoose.startSession();
 
   try {
+    await session.startTransaction();
+
     const {
       orderItems,
       shippingAddress,
@@ -214,152 +215,135 @@ export const placeOrderStripe = async (req, res, next) => {
       usedCredits,
     } = req.body;
 
+    // Validate order items
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      await session.abortTransaction();
       return next(handleMakeError(400, "Invalid or empty products array"));
     }
 
-    if (orderItems.length === 0) {
-      return next(
-        handleMakeError(400, "You can't place an order without products!")
-      );
+    // Validate stock and quantities
+    for (const item of orderItems) {
+      if (item.quantity <= 0) {
+        await session.abortTransaction();
+        return next(handleMakeError(400, "Quantity must be > 0"));
+      }
+
+      if (item.quantity > 5) {
+        await session.abortTransaction();
+        return next(handleMakeError(400, "Max 5 items per product"));
+      }
+
+      const productStock = await Stocks.findOne({
+        product: item.productId,
+      }).session(session);
+
+      if (!productStock || productStock.quantity < item.quantity) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, `Insufficient stock for ${item.productName}`)
+        );
+      }
     }
 
-    // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
+    // Validate credits
+    if (usedCredits > 0) {
+      const user = await User.findById(req.user.id).session(session);
+      if (user.creditLock) {
+        const now = new Date();
+        const lockExpiry = new Date(user.creditLock);
 
-    // Start a MongoDB session if needed for transactions
-    const mongoSession = await mongoose.startSession();
-    session = mongoSession; // Assign to the session variable
+        console.log(
+          `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
+        );
 
-    try {
-      await mongoSession.startTransaction();
-
-      for (const item of orderItems) {
-        if (item.quantity <= 0) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(400, "Item quantity must be greater than zero")
+        if (lockExpiry <= now) {
+          await User.findByIdAndUpdate(
+            userId,
+            { $set: { creditLock: null } },
+            { session: mongoSession }
           );
-        }
+        } else {
+          const expiryDate = lockExpiry.toLocaleString("en-US", {
+            timeZone: "Asia/Manila",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
 
-        if (item.quantity > 5) {
-          await session.abortTransaction();
           return next(
-            handleMakeError(
-              400,
-              "You can only order up to 5 items per product at a time"
-            )
-          );
-        }
-
-        const productStock = await Stocks.findOne({ product: item.productId });
-
-        if (!productStock || productStock.quantity < item.quantity) {
-          // If stock is insufficient
-          return next(
-            handleMakeError(
-              400,
-              `Not enough stock for ${item.productId.productName}`
-            )
+            handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
           );
         }
       }
+    }
 
-      // Check credit availability if using credits
-      if (usedCredits > 0) {
-        const user = await User.findById(userId).session(mongoSession);
-
-        if (user.creditLock) {
-          const now = new Date();
-          const lockExpiry = new Date(user.creditLock);
-
-          console.log(
-            `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
-          );
-
-          if (lockExpiry <= now) {
-            await User.findByIdAndUpdate(
-              userId,
-              { $set: { creditLock: null } },
-              { session: mongoSession }
-            );
-          } else {
-            const expiryDate = lockExpiry.toLocaleString("en-US", {
-              timeZone: "Asia/Manila",
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-
-            return next(
-              handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
-            );
-          }
-        }
-      }
-
-      const lineItems = orderItems.map((product) => {
-        if (!product.productId) {
-          return next(
-            handleMakeError(400, "Missing productId in one of the order items")
-          );
-        }
-
-        return {
-          price_data: {
-            currency: "php",
-            product_data: {
-              name: product.productName,
-              images: [product.productImages],
-            },
-            unit_amount: Math.round(product.price * 100),
-          },
-          quantity: product.quantity,
-        };
-      });
-
-      const stripeSession = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: lineItems,
-        mode: "payment",
-        success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-        metadata: {
-          userId: req.user._id.toString(),
-          orderItems: JSON.stringify(
-            orderItems.map((item) => ({
-              productId: item.productId._id,
-              productName: item.productId.productName,
-              price: item.productId.price,
-              quantity: item.quantity,
-            }))
-          ),
-          shippingAddress: JSON.stringify(shippingAddress),
-          paymentMethod: JSON.stringify(paymentMethod),
-          taxPrice: taxPrice.toString(),
-          shippingPrice: shippingPrice.toString(),
-          discount: discount.toString(),
-          subtotal: subtotal.toString(),
-          totalPrice: totalPrice.toString(),
-          notes: notes || "",
-          totalPoints: totalPoints.toString(),
-          usedCredits: usedCredits.toString(),
+    // Prepare line items with proper validation
+    const lineItems = orderItems.map((item) => ({
+      price_data: {
+        currency: "php",
+        product_data: {
+          name: item.productName,
+          images: [item.productImages],
         },
-      });
+        unit_amount: Math.round(item.price * 100),
+      },
+      quantity: item.quantity,
+    }));
 
-      await mongoSession.commitTransaction();
-      res.status(200).json({ url: stripeSession.url });
-    } catch (error) {
-      await mongoSession.abortTransaction();
-      next(error);
-    } finally {
-      mongoSession.endSession();
+    // Validate and construct URLs
+    const baseUrl = process.env.CLIENT_URL;
+    if (!baseUrl || !baseUrl.startsWith("http")) {
+      await session.abortTransaction();
+      return next(handleMakeError(500, "Invalid client URL configuration"));
     }
+
+    const successUrl = `${baseUrl}/purchase-success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${baseUrl}/purchase-cancel`;
+
+    // Create Stripe session
+    const stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: lineItems,
+      mode: "payment",
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: {
+        userId: req.user.id,
+        orderData: JSON.stringify({
+          orderItems: orderItems.map((item) => ({
+            productId: item.productId,
+            productName: item.productName,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          shippingAddress,
+          paymentMethod,
+          taxPrice,
+          shippingPrice,
+          discount,
+          subtotal,
+          totalPrice,
+          notes,
+          totalPoints,
+          usedCredits,
+        }),
+      },
+    });
+
+    await session.commitTransaction();
+    res.json({ url: stripeSession.url });
   } catch (error) {
-    next(error);
+    await session.abortTransaction();
+    console.error("Stripe checkout error:", error);
+    next(handleMakeError(500, "Failed to create Stripe checkout session"));
+  } finally {
+    session.endSession();
   }
 };
+
+
 
 export const checkOutSuccess = async (req, res, next) => {
   try {
