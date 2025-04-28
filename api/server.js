@@ -73,24 +73,24 @@ app.use(`/api/history`, orderStockHistory)
 app.use(handleError);
 
 
-async function safeDropFullAddressIndex() {
-  try {
-    const indexes = await Address.collection.indexes();
-    const fullAddressIndex = indexes.find(index => index.name === "fullAddress_1");
+// async function safeDropFullAddressIndex() {
+//   try {
+//     const indexes = await Address.collection.indexes();
+//     const fullAddressIndex = indexes.find(index => index.name === "fullAddress_1");
 
-    if (fullAddressIndex) {
-      await Address.collection.dropIndex("fullAddress_1");
-      console.log("✅ Dropped fullAddress_1 index.");
-    } else {
-      console.log("ℹ️ No fullAddress_1 index found, nothing to drop.");
-    }
-  } catch (error) {
-    console.error("❌ Error while checking/dropping index:", error);
-  }
-}
+//     if (fullAddressIndex) {
+//       await Address.collection.dropIndex("fullAddress_1");
+//       console.log("✅ Dropped fullAddress_1 index.");
+//     } else {
+//       console.log("ℹ️ No fullAddress_1 index found, nothing to drop.");
+//     }
+//   } catch (error) {
+//     console.error("❌ Error while checking/dropping index:", error);
+//   }
+// }
 
-// Call it once somewhere after mongoose.connect()
-safeDropFullAddressIndex();
+// // Call it once somewhere after mongoose.connect()
+// safeDropFullAddressIndex();
 
 // Server startup
 app.listen(PORT, () => {
