@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 export default function AdminAddWorker() {
   const queryClient = useQueryClient();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -38,7 +38,6 @@ export default function AdminAddWorker() {
     },
   });
 
-  
   const togglePassword = () => {
     setShowPassword(!showPassword);
   };
@@ -86,8 +85,9 @@ export default function AdminAddWorker() {
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
               <p className="text-sm pt-1 text-green-700">
-              (Enter a valid email. Only letters, numbers, and ., _, %, + are allowed before '@'.)
-            </p>
+                (Enter a valid email. Only gmail.com and yahoo.com are allowed
+                domains.)
+              </p>
             </div>
             <div className="flex justify-between flex-col">
               <label htmlFor="username" className="uppercase mb-2 ">
@@ -101,9 +101,10 @@ export default function AdminAddWorker() {
                 onChange={handleInputChange(setUsername)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
-               <p className="text-sm pt-1 text-green-700">
-              (Username must be 5-50 letters and contain no numbers or special characters.)
-            </p>
+              <p className="text-sm pt-1 text-green-700">
+                (Username must be 5-50 letters and contain no numbers or special
+                characters.)
+              </p>
             </div>
 
             <div className="flex justify-between flex-col">
@@ -187,12 +188,12 @@ export default function AdminAddWorker() {
               ADD WORKER
             </button>
             <button
-                onClick={() => navigate(`/admin/worker`)}
-                type="button"
-                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
-              >
-                Cancel
-              </button>
+              onClick={() => navigate(`/admin/worker`)}
+              type="button"
+              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>

@@ -239,7 +239,7 @@ export const addWorker = async (req, res, next) => {
     !email ||
     !password ||
     !confirmPassword ||
-    role ||
+    !role ||
     jobDescription
   ) {
     return next(handleMakeError(400, "Please input required fields"));
