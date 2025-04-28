@@ -72,8 +72,8 @@ export default function ShopProductCards({ product }) {
         {product?.category?.categoryName}
       </div>
 
-      {product?.discount && product?.discount ? (
-        <div className="absolute  text-xs border top-5 -right-[33px] z-10 bg-red-700 text-card p-1 rounded-[5px]  border-black">
+      {!product?.discount && !product?.discount ? (
+        <div className="absolute  text-xs border top-5 -right-[10px] z-10 bg-red-700 text-card p-1 rounded-[5px]  border-black">
           DISCOUNTED
         </div>
       ) : (
@@ -82,7 +82,7 @@ export default function ShopProductCards({ product }) {
 
       {
         product?.stocks?.quantity === 0 ? (
-          <div className="absolute flex gap-1 items-center  text-sm border top-[-15px] -left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">
+          <div className="absolute flex gap-1 items-center  text-sm border top-[-10px] -left-[10px] md:-left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">
           <span><CgUnavailable size={20} /></span>
           OUT OF STOCK 
         </div>
