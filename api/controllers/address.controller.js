@@ -49,22 +49,27 @@ export const addAddress = async (req, res, next) => {
   try {
     // Construct full address string
     const fullAddress =
-      `${streetBuildingHouseNum.trim()}, ${barangay.trim()}, ${city.trim()}`.trim();
+      `${streetBuildingHouseNum.trim()}, ${barangay.trim()}, ${city.trim()}, Philippines`.trim();
 
     // Check if the address already exists for this user
     const existingAddress = await Address.findOne({
       userId,
-      fullAddress,
+      fullAddress: {
+        $regex: new RegExp(
+          `^${fullAddress.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}$`,
+          "i"
+        ),
+      },
     });
 
     if (existingAddress) {
       return next(
-        handleMakeError(400, "This address is already in your list!")
+        handleMakeError(400, "This address already exists in your address book")
       );
     }
 
     // Check if the user already has 3 addresses
-    const userAddresses = await Address.find({ userId });
+    const userAddresses = await Address.findOne({ userId });
     if (userAddresses.length >= 3) {
       return next(handleMakeError(400, "You can only have 3 addresses!"));
     }

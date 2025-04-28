@@ -78,7 +78,6 @@ export default function ChangeInfoComponent() {
     }
   };
 
-
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
@@ -166,14 +165,14 @@ export default function ChangeInfoComponent() {
           >
             Change Avatar
           </button>
-         <div className="flex flex-col items-center">
-         <p className="text-sm text-green-700">
-            (File size must be less than 2MB )
-          </p>
-          <p className="text-sm text-center text-green-700">
-            (Image.png, image.jpeg, and image.jgp are only allowed. )
-          </p>
-         </div>
+          <div className="flex flex-col items-center">
+            <p className="text-sm text-green-700">
+              (File size must be less than 2MB )
+            </p>
+            <p className="text-sm text-center text-green-700">
+              (Image.png, image.jpeg, and image.jgp are only allowed. )
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-5 w-[90%] md:w-[70%] mx-auto ">
@@ -292,7 +291,8 @@ export default function ChangeInfoComponent() {
                           className=" outline-none p-3  w-full bg-gray-200   border-[#313031] border rounded-[5px]"
                         />
                         <p className="text-sm pt-1 lowercase text-green-700">
-                          (Password must be at least 8 characters)
+                          (Password must be at least 8 characters and contain at
+                          least 1 uppercase letter, symbol, and number)
                         </p>
                       </div>
                       <label

@@ -72,12 +72,13 @@ export default function SignUp() {
               name="email"
               id="email"
               value={email}
-               placeholder="Ex: example@domain.com"
+              placeholder="Ex: example@domain.com"
               onChange={handleInputChange(setEmail)}
               className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
             <p className="text-sm pt-1 text-green-700">
-              (Enter a valid email. Numbers are not allowed after "@")
+              (Enter a valid email. Only gmail.com and yahoo.com are allowed
+              domains.)
             </p>
           </div>
           <div className="flex justify-between flex-col">
@@ -89,12 +90,13 @@ export default function SignUp() {
               name="username"
               id="username"
               value={username}
-                placeholder="Ex: johndoe123"
+              placeholder="Ex: johndoe123"
               onChange={handleInputChange(setUsername)}
               className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
-             <p className="text-sm pt-1 text-green-700">
-              (Username must be 3-30 characters long and contain no special characters.)
+            <p className="text-sm pt-1 text-green-700">
+              (Username must be 3-30 characters long and contain no special
+              characters.)
             </p>
           </div>
           <div className="flex justify-between flex-col">
@@ -123,7 +125,8 @@ export default function SignUp() {
                 />
               </label>
               <p className="text-sm text-green-700">
-                (Password must be at least 8 characters.)
+                (Password must be at least 8 characters and contain at least 1
+                uppercase letter, symbol, and number)
               </p>
             </div>
           </div>
@@ -171,7 +174,6 @@ export default function SignUp() {
           </div>
         </div>
       </div>
- 
     </section>
   );
 }
