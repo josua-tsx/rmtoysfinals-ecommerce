@@ -11,9 +11,7 @@ import { IoIosClose } from "react-icons/io";
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
-
   const queryClient = useQueryClient();
-
   const navigate = useNavigate();
 
   const [notes, setNotes] = useState("");
@@ -22,6 +20,8 @@ export default function OrderSummaryModal({ onClose }) {
   const [shippingFee, setShippingFee] = useState(35);
   const [cartItems, setCartItems] = useState({});
   const [useCredits, setUseCredits] = useState("no");
+
+  console.log(currentUser);
 
   const {
     data: activeAddress,
@@ -107,7 +107,9 @@ export default function OrderSummaryModal({ onClose }) {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`Order placed!`);
-      toast.success(`Track your order status in your order status page in your profile!`);
+      toast.success(
+        `Track your order status in your order status page in your profile!`
+      );
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -131,8 +133,26 @@ export default function OrderSummaryModal({ onClose }) {
   });
 
   const handleGcashQRpaymentMethod = (orderData) => {
-    setCurrentOrder(orderData);
-    navigate("/gcashQRpayment");
+    if (currentUser.creditLock) {
+      const now = new Date();
+      const lockExpiry = new Date(currentUser.creditLock);
+
+      if (lockExpiry <= now) {
+        setCurrentOrder(orderData);
+        navigate("/gcashQRpayment");
+      } else {
+        const expiryDate = lockExpiry.toLocaleString("en-US", {
+          timeZone: "Asia/Manila",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        toast.error(`⏳ Credits locked until ${expiryDate}`);
+      }
+    }
   };
 
   const handleOrderFormSubmit = (e) => {
@@ -251,7 +271,12 @@ export default function OrderSummaryModal({ onClose }) {
                       information in your profile page.
                       <span>
                         {" "}
-                        <Link to={"/profile"} className="underline text-blue-700" >Click here!</Link>{" "}
+                        <Link
+                          to={"/profile"}
+                          className="underline text-blue-700"
+                        >
+                          Click here!
+                        </Link>{" "}
                       </span>
                     </p>
                   </div>
@@ -264,18 +289,21 @@ export default function OrderSummaryModal({ onClose }) {
                     Full Name
                   </label>
                   <div className="flex flex-col gap-2">
-                  <input
-                    type="text"
-                    name="fullName"
-                    className={`w-full p-2 border ${currentUser?.fullName ? "" : "border-red-700" } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
-                    value={currentUser?.fullName || ""}
-                    // disabled
-                  />
-                   {
-                  !currentUser?.fullName && (
-                    <span className="text-sm text-red-700">You don't have a full name. Update it in your profile page.</span>
-                  )
-                 }
+                    <input
+                      type="text"
+                      name="fullName"
+                      className={`w-full p-2 border ${
+                        currentUser?.fullName ? "" : "border-red-700"
+                      } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
+                      value={currentUser?.fullName || ""}
+                      // disabled
+                    />
+                    {!currentUser?.fullName && (
+                      <span className="text-sm text-red-700">
+                        You don't have a full name. Update it in your profile
+                        page.
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -284,18 +312,21 @@ export default function OrderSummaryModal({ onClose }) {
                     Phone Number
                   </label>
                   <div className="flex flex-col gap-2">
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    className={`w-full p-2 border ${currentUser?.phoneNumber ? "" : "border-red-700" } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
-                    value={currentUser?.phoneNumber || ""}
-                    // disabled
-                  />
-                  {
-                  !currentUser?.phoneNumber && (
-                    <span className="text-sm text-red-700">You don't have a phone number. Update it in your profile page.</span>
-                  )
-                 }
+                    <input
+                      type="tel"
+                      name="phoneNumber"
+                      className={`w-full p-2 border ${
+                        currentUser?.phoneNumber ? "" : "border-red-700"
+                      } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
+                      value={currentUser?.phoneNumber || ""}
+                      // disabled
+                    />
+                    {!currentUser?.phoneNumber && (
+                      <span className="text-sm text-red-700">
+                        You don't have a phone number. Update it in your profile
+                        page.
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -305,18 +336,21 @@ export default function OrderSummaryModal({ onClose }) {
                   Shipping Address
                 </label>
                 <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  name="currentAddress"
-                  className={`w-full p-2 border ${activeAddress?.fullAddress ? "" : "border-red-700" } border-gray-300 rounded-md outline-none focus:ring-primary focus:border-primary`}
-                  value={activeAddress?.fullAddress || "" }
-                  // disabled
-                />
-                {
-                  !activeAddress?.fullAddress && (
-                    <span className="text-sm text-red-700">You don't have a shipping adddress. Create a shipping address in your profile page.</span>
-                  )
-                 }
+                  <input
+                    type="text"
+                    name="currentAddress"
+                    className={`w-full p-2 border ${
+                      activeAddress?.fullAddress ? "" : "border-red-700"
+                    } border-gray-300 rounded-md outline-none focus:ring-primary focus:border-primary`}
+                    value={activeAddress?.fullAddress || ""}
+                    // disabled
+                  />
+                  {!activeAddress?.fullAddress && (
+                    <span className="text-sm text-red-700">
+                      You don't have a shipping adddress. Create a shipping
+                      address in your profile page.
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

@@ -193,6 +193,9 @@ export const userPlaceOrder = async (req, res, next) => {
 };
 
 export const placeOrderStripe = async (req, res, next) => {
+
+  const userId = req.user.id
+
   try {
     const {
       orderItems,
@@ -217,6 +220,50 @@ export const placeOrderStripe = async (req, res, next) => {
         handleMakeError(400, "You can't place an order without products!")
       );
     }
+
+     // Check credit availability if using credits
+     if (usedCredits > 0) {
+      const user = await User.findById(userId).session(session);
+
+      // if user select usedCredits, this if verify if credit lock is already done then proceed to set credit lock to null to let the user use their cretis again
+      // If user selects usedCredits, verify if credit lock is already done
+      if (user.creditLock) {
+        const now = new Date();
+        const lockExpiry = new Date(user.creditLock);
+
+        console.log(
+          `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
+        );
+
+        if (lockExpiry <= now) {
+          await User.findByIdAndUpdate(
+            userId,
+            { $set: { creditLock: null } },
+            { session }
+          );
+        } else {
+
+
+          const expiryDate = lockExpiry.toLocaleString("en-US", {
+            timeZone: "Asia/Manila", 
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          return next(
+            handleMakeError(
+              400,
+              `⏳ Credits locked until ${expiryDate}`
+            )
+          );
+        }
+      }
+    }
+
+    
 
     const lineItems = orderItems.map((product) => {
       if (!product.productId) {
@@ -427,6 +474,48 @@ export const placeOrderGcashQR = async (req, res, next) => {
             "GCash QR payment requires phone number, proof of payment image, and GCash name"
           )
         );
+      }
+    }
+
+     // Check credit availability if using credits
+     if (usedCredits > 0) {
+      const user = await User.findById(userId).session(session);
+
+      // if user select usedCredits, this if verify if credit lock is already done then proceed to set credit lock to null to let the user use their cretis again
+      // If user selects usedCredits, verify if credit lock is already done
+      if (user.creditLock) {
+        const now = new Date();
+        const lockExpiry = new Date(user.creditLock);
+
+        console.log(
+          `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
+        );
+
+        if (lockExpiry <= now) {
+          await User.findByIdAndUpdate(
+            userId,
+            { $set: { creditLock: null } },
+            { session }
+          );
+        } else {
+
+
+          const expiryDate = lockExpiry.toLocaleString("en-US", {
+            timeZone: "Asia/Manila", 
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          return next(
+            handleMakeError(
+              400,
+              `⏳ Credits locked until ${expiryDate}`
+            )
+          );
+        }
       }
     }
 

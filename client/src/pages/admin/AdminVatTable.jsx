@@ -72,7 +72,7 @@ export default function AdminVatTable() {
               isOpen={isOpenModal}
               title={"Confirm delete"}
               message={
-                "Are you sure you want to delete this VAT? This action cannot be undone."
+                "This data might in used in different module, are you sure you want to delete this VAT? This action cannot be undone."
               }
               onConfirm={handleConfirmDelete}
               onCancel={handleCancelDelete}
