@@ -1371,12 +1371,12 @@ export const cancelSuccessTransact = async (req, res, next) => {
     }
 
     // Handle credit points logic
-    if (order.usedCredits) {
-      // Return the credits they used for this order
-      await User.findByIdAndUpdate(order.userId, {
-        $inc: { credits: order.usedCredits },
-      });
-    }
+    // if (order.usedCredits) {
+    //   // Return the credits they used for this order
+    //   await User.findByIdAndUpdate(order.userId, {
+    //     $inc: { credits: order.usedCredits },
+    //   });
+    // }
 
     // Deduct any credits they earned from this order (if applicable)
     if (order.totalPoints) {
