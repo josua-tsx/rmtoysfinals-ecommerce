@@ -60,12 +60,12 @@ export const userPlaceOrder = async (req, res, next) => {
         );
       }
 
-      if (item.quantity > 10) {
+      if (item.quantity > 5) {
         await session.abortTransaction();
         return next(
           handleMakeError(
             400,
-            "You can only order up to 10 items per product at a time"
+            "You can only order up to 5 items per product at a time"
           )
         );
       }
@@ -222,6 +222,38 @@ export const placeOrderStripe = async (req, res, next) => {
       return next(
         handleMakeError(400, "You can't place an order without products!")
       );
+    }
+
+    // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
+    for (const item of orderItems) {
+      if (item.quantity <= 0) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, "Item quantity must be greater than zero")
+        );
+      }
+
+      if (item.quantity > 5) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(
+            400,
+            "You can only order up to 5 items per product at a time"
+          )
+        );
+      }
+
+      const productStock = await Stocks.findOne({ product: item.productId });
+
+      if (!productStock || productStock.quantity < item.quantity) {
+        // If stock is insufficient
+        return next(
+          handleMakeError(
+            400,
+            `Not enough stock for ${item.productId.productName}`
+          )
+        );
+      }
     }
 
     // Start a MongoDB session if needed for transactions
@@ -466,6 +498,38 @@ export const placeOrderGcashQR = async (req, res, next) => {
       return next(
         handleMakeError(400, "You can't place an order without products!")
       );
+    }
+
+    // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
+    for (const item of orderItems) {
+      if (item.quantity <= 0) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, "Item quantity must be greater than zero")
+        );
+      }
+
+      if (item.quantity > 5) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(
+            400,
+            "You can only order up to 5 items per product at a time"
+          )
+        );
+      }
+
+      const productStock = await Stocks.findOne({ product: item.productId });
+
+      if (!productStock || productStock.quantity < item.quantity) {
+        // If stock is insufficient
+        return next(
+          handleMakeError(
+            400,
+            `Not enough stock for ${item.productId.productName}`
+          )
+        );
+      }
     }
 
     // Validate GCash QR payment details if payment method is GcashQR
