@@ -46,8 +46,6 @@ export const userPlaceOrder = async (req, res, next) => {
       quantity: item.quantity || 1,
     }));
 
-  
-
     let totalItemsOrdered = orderItems.reduce(
       (sum, item) => sum + (item.quantity || 0),
       0
@@ -55,12 +53,12 @@ export const userPlaceOrder = async (req, res, next) => {
 
     // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
     for (const item of orderItemsWithQuantity) {
-
       if (item.quantity <= 0) {
         await session.abortTransaction();
-        return next(handleMakeError(400, "Item quantity must be greater than zero"));
+        return next(
+          handleMakeError(400, "Item quantity must be greater than zero")
+        );
       }
-      
 
       const productStock = await Stocks.findOne({ product: item.productId });
 
@@ -96,10 +94,8 @@ export const userPlaceOrder = async (req, res, next) => {
             { session }
           );
         } else {
-
-
           const expiryDate = lockExpiry.toLocaleString("en-US", {
-            timeZone: "Asia/Manila", 
+            timeZone: "Asia/Manila",
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -108,10 +104,7 @@ export const userPlaceOrder = async (req, res, next) => {
           });
 
           return next(
-            handleMakeError(
-              400,
-              `⏳ Credits locked until ${expiryDate}`
-            )
+            handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
           );
         }
       }
@@ -193,8 +186,8 @@ export const userPlaceOrder = async (req, res, next) => {
 };
 
 export const placeOrderStripe = async (req, res, next) => {
-
-  const userId = req.user.id
+  const userId = req.user.id;
+  let session = null; // Initialize session variable at the start
 
   try {
     const {
@@ -221,100 +214,105 @@ export const placeOrderStripe = async (req, res, next) => {
       );
     }
 
-     // Check credit availability if using credits
-     if (usedCredits > 0) {
-      const user = await User.findById(userId).session(session);
+    // Start a MongoDB session if needed for transactions
+    const mongoSession = await mongoose.startSession();
+    session = mongoSession; // Assign to the session variable
 
-      // if user select usedCredits, this if verify if credit lock is already done then proceed to set credit lock to null to let the user use their cretis again
-      // If user selects usedCredits, verify if credit lock is already done
-      if (user.creditLock) {
-        const now = new Date();
-        const lockExpiry = new Date(user.creditLock);
+    try {
+      await mongoSession.startTransaction();
 
-        console.log(
-          `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
-        );
+      // Check credit availability if using credits
+      if (usedCredits > 0) {
+        const user = await User.findById(userId).session(mongoSession);
 
-        if (lockExpiry <= now) {
-          await User.findByIdAndUpdate(
-            userId,
-            { $set: { creditLock: null } },
-            { session }
+        if (user.creditLock) {
+          const now = new Date();
+          const lockExpiry = new Date(user.creditLock);
+
+          console.log(
+            `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
           );
-        } else {
 
+          if (lockExpiry <= now) {
+            await User.findByIdAndUpdate(
+              userId,
+              { $set: { creditLock: null } },
+              { session: mongoSession }
+            );
+          } else {
+            const expiryDate = lockExpiry.toLocaleString("en-US", {
+              timeZone: "Asia/Manila",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
 
-          const expiryDate = lockExpiry.toLocaleString("en-US", {
-            timeZone: "Asia/Manila", 
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-
-          return next(
-            handleMakeError(
-              400,
-              `⏳ Credits locked until ${expiryDate}`
-            )
-          );
+            return next(
+              handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
+            );
+          }
         }
       }
-    }
 
-    
+      const lineItems = orderItems.map((product) => {
+        if (!product.productId) {
+          return next(
+            handleMakeError(400, "Missing productId in one of the order items")
+          );
+        }
 
-    const lineItems = orderItems.map((product) => {
-      if (!product.productId) {
-        return next(
-          handleMakeError(400, "Missing productId in one of the order items")
-        );
-      }
-
-      return {
-        price_data: {
-          currency: "php",
-          product_data: {
-            name: product.productName,
-            images: [product.productImages],
+        return {
+          price_data: {
+            currency: "php",
+            product_data: {
+              name: product.productName,
+              images: [product.productImages],
+            },
+            unit_amount: Math.round(product.price * 100),
           },
-          unit_amount: Math.round(product.price * 100),
+          quantity: product.quantity,
+        };
+      });
+
+      const stripeSession = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: lineItems,
+        mode: "payment",
+        success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+        metadata: {
+          userId: req.user._id.toString(),
+          orderItems: JSON.stringify(
+            orderItems.map((item) => ({
+              productId: item.productId._id,
+              productName: item.productId.productName,
+              price: item.productId.price,
+              quantity: item.quantity,
+            }))
+          ),
+          shippingAddress: JSON.stringify(shippingAddress),
+          paymentMethod: JSON.stringify(paymentMethod),
+          taxPrice: taxPrice.toString(),
+          shippingPrice: shippingPrice.toString(),
+          discount: discount.toString(),
+          subtotal: subtotal.toString(),
+          totalPrice: totalPrice.toString(),
+          notes: notes || "",
+          totalPoints: totalPoints.toString(),
+          usedCredits: usedCredits.toString(),
         },
-        quantity: product.quantity,
-      };
-    });
+      });
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-      metadata: {
-        userId: req.user._id.toString(),
-        orderItems: JSON.stringify(
-          orderItems.map((item) => ({
-            productId: item.productId._id, // Only pass productId (not the whole object)
-            productName: item.productId.productName,
-            price: item.productId.price,
-            quantity: item.quantity,
-          }))
-        ), // Convert array to string
-        shippingAddress: JSON.stringify(shippingAddress),
-        paymentMethod: JSON.stringify(paymentMethod),
-        taxPrice: taxPrice.toString(),
-        shippingPrice: shippingPrice.toString(),
-        discount: discount.toString(),
-        subtotal: subtotal.toString(),
-        totalPrice: totalPrice.toString(),
-        notes: notes || "",
-        totalPoints: totalPoints.toString(),
-        usedCredits: usedCredits.toString(),
-      },
-    });
-
-    res.status(200).json({ url: session.url });
+      await mongoSession.commitTransaction();
+      res.status(200).json({ url: stripeSession.url });
+    } catch (error) {
+      await mongoSession.abortTransaction();
+      next(error);
+    } finally {
+      mongoSession.endSession();
+    }
   } catch (error) {
     next(error);
   }
@@ -477,8 +475,8 @@ export const placeOrderGcashQR = async (req, res, next) => {
       }
     }
 
-     // Check credit availability if using credits
-     if (usedCredits > 0) {
+    // Check credit availability if using credits
+    if (usedCredits > 0) {
       const user = await User.findById(userId).session(session);
 
       // if user select usedCredits, this if verify if credit lock is already done then proceed to set credit lock to null to let the user use their cretis again
@@ -498,10 +496,8 @@ export const placeOrderGcashQR = async (req, res, next) => {
             { session }
           );
         } else {
-
-
           const expiryDate = lockExpiry.toLocaleString("en-US", {
-            timeZone: "Asia/Manila", 
+            timeZone: "Asia/Manila",
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -510,10 +506,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
           });
 
           return next(
-            handleMakeError(
-              400,
-              `⏳ Credits locked until ${expiryDate}`
-            )
+            handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
           );
         }
       }
