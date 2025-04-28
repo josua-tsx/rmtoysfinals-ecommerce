@@ -71,7 +71,18 @@ const RootLayout = () => {
       <footer className="bg-yellow">
         <FooterSection />
       </footer>
-      <Toaster position="bottom-right" />
+      <Toaster
+      position="top-right"
+        toastOptions={{
+          style: {
+            width: "300px",
+            position: "relative",
+            right: "0", // Move left/right
+            bottom: "-60px", // Move up/down
+            transform: "translateY(20px)", // Fine adjustment
+          },
+        }}
+      />
     </div>
   );
 };
@@ -93,14 +104,13 @@ const RequiredAuth = () => {
       </main>
       <Toaster
         position="top-right"
-      
         toastOptions={{
           style: {
             width: "300px",
-            position: 'relative',
-            right: '0', // Move left/right
-            bottom: '-60px', // Move up/down
-            transform: 'translateY(20px)', // Fine adjustment
+            position: "relative",
+            right: "0", // Move left/right
+            bottom: "-60px", // Move up/down
+            transform: "translateY(20px)", // Fine adjustment
           },
         }}
       />
@@ -118,7 +128,17 @@ const RequiredAuthGcashPage = () => {
       <main>
         <Outlet />
       </main>
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          style: {
+            width: "300px",
+            position: "relative",
+            right: "0", // Move left/right
+            bottom: "-60px", // Move up/down
+            transform: "translateY(20px)", // Fine adjustment
+          },
+        }}
+      />
     </div>
   );
 };
