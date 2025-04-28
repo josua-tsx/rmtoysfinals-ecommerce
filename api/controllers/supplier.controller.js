@@ -7,6 +7,7 @@ import {
   validateSupplierAddress,
   validateSupplierName,
 } from "../utils/validations.js";
+import Stocks from "../models/stocks.model.js";
 // import {
 //   isValidFullName,
 //   isValidPhoneNumber,
