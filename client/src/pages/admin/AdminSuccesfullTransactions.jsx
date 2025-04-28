@@ -16,8 +16,14 @@ export default function AdminSuccesfullTransactions({
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
+  // FOR REFUND
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+
+
+  // FOR CANCEL
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [isCancelSelectedId, setIsCancelSelectedId] = useState(null)
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -100,11 +106,25 @@ export default function AdminSuccesfullTransactions({
       success?.status.toLowerCase().includes(searchTerm)
   );
 
-  console.log(filteredSuccessOrder)
 
-  const handleCancelSuccessTransact = (orderId) => {
-    cancelSuccessMutation({ orderId });
+  const handleCancelSuccessTransact = () => {
+
+    if (isCancelSelectedId) {
+      cancelSuccessMutation({ orderId: isCancelSelectedId });
+      handleCloseCancelSuccess()
+    }
+
   };
+
+  const handleOpenCancelSuccess = (orderId) => {
+    setIsCancelModalOpen(true)
+    setIsCancelSelectedId(orderId)
+  }
+
+  const handleCloseCancelSuccess = () => {
+    setIsCancelModalOpen(false)
+    setIsCancelSelectedId(null)
+  }
 
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
@@ -131,6 +151,16 @@ export default function AdminSuccesfullTransactions({
         onConfirm={handleUpdateToRefunded}
         onCancel={handleCancel}
       />
+
+      <ConfirmModal
+        isOpen={isCancelModalOpen}
+        title={"Cancel Success Order"}
+        message={
+          "Are you sure you want to cancel this order? This action can not be undone."
+        }
+        onConfirm={handleCancelSuccessTransact}
+        onCancel={handleCloseCancelSuccess}
+      /> 
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>SUCCESFUL TRANSACTIONS</h1>
@@ -217,7 +247,7 @@ export default function AdminSuccesfullTransactions({
                           </button>
                           <button
                             onClick={() =>
-                              handleCancelSuccessTransact(success._id)
+                             handleOpenCancelSuccess(success._id)
                             }
                             type="button"
                             className="text-red-700"

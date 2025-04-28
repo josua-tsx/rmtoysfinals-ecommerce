@@ -7,6 +7,7 @@ import useOrderStore from "../stores/useOrderStore";
 import { Link, useNavigate } from "react-router-dom";
 import formatPrice from "../reusable/formatPrice";
 import { IoIosClose } from "react-icons/io";
+import LoadingSpinner from "../reusable/LoadingSpinner";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -240,7 +241,7 @@ export default function OrderSummaryModal({ onClose }) {
     }
   };
 
-  if (isActivePending || isCartPending) return <p>loading...</p>;
+  if (isActivePending || isCartPending) return <div className="absolute inset-0 backdrop-blur-sm  z-10"><LoadingSpinner fullScreen/></div>;
   if (isActiveError || isCartError) return <p>error...</p>;
 
   return (
