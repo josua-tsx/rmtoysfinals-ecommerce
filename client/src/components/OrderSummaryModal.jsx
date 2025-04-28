@@ -138,12 +138,20 @@ export default function OrderSummaryModal({ onClose }) {
       return;
     }
 
+    // Validate all items before proceeding
+    for (const item of orderData.orderItems) {
+      if (item.quantity > 5) {
+        toast.error("You can only order up to 5 items per product at a time.");
+        return;
+      }
+    }
+
     // Check credit lock (regardless of credit usage)
     if (useCredits === "yes") {
       if (currentUser.creditLock) {
         const now = new Date();
         const lockExpiry = new Date(currentUser.creditLock);
-  
+
         if (lockExpiry > now) {
           const expiryDate = lockExpiry.toLocaleString("en-US", {
             timeZone: "Asia/Manila",

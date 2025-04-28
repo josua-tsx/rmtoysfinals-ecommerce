@@ -225,36 +225,6 @@ export const placeOrderStripe = async (req, res, next) => {
     }
 
     // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
-    for (const item of orderItems) {
-      if (item.quantity <= 0) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, "Item quantity must be greater than zero")
-        );
-      }
-
-      if (item.quantity > 5) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(
-            400,
-            "You can only order up to 5 items per product at a time"
-          )
-        );
-      }
-
-      const productStock = await Stocks.findOne({ product: item.productId });
-
-      if (!productStock || productStock.quantity < item.quantity) {
-        // If stock is insufficient
-        return next(
-          handleMakeError(
-            400,
-            `Not enough stock for ${item.productId.productName}`
-          )
-        );
-      }
-    }
 
     // Start a MongoDB session if needed for transactions
     const mongoSession = await mongoose.startSession();
@@ -262,6 +232,37 @@ export const placeOrderStripe = async (req, res, next) => {
 
     try {
       await mongoSession.startTransaction();
+
+      for (const item of orderItems) {
+        if (item.quantity <= 0) {
+          await session.abortTransaction();
+          return next(
+            handleMakeError(400, "Item quantity must be greater than zero")
+          );
+        }
+
+        if (item.quantity > 5) {
+          await session.abortTransaction();
+          return next(
+            handleMakeError(
+              400,
+              "You can only order up to 5 items per product at a time"
+            )
+          );
+        }
+
+        const productStock = await Stocks.findOne({ product: item.productId });
+
+        if (!productStock || productStock.quantity < item.quantity) {
+          // If stock is insufficient
+          return next(
+            handleMakeError(
+              400,
+              `Not enough stock for ${item.productId.productName}`
+            )
+          );
+        }
+      }
 
       // Check credit availability if using credits
       if (usedCredits > 0) {
