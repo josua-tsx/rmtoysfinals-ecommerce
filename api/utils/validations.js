@@ -37,10 +37,10 @@ export const validateEmail = (email) => {
   }
 
   // Extra check: If domain ends with .com, ensure no extra 'm's (blocks .comm, .commm, etc.)
-  if (/\.com+$/i.test(domain)) {
+  if (/\.com[^a-zA-Z]|\.comm+$/i.test(domain)) {
     return {
       valid: false,
-      message: "Invalid domain (.com should not have extra 'm's)",
+      message: "Invalid domain (.com should not have extra letters)",
     };
   }
 
