@@ -27,11 +27,20 @@ export const validateEmail = (email) => {
     };
   }
 
-  // Validate domain part (no consecutive dots, must have at least one dot)
-  if (!/^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)+$/.test(domain)) {
+  // Validate domain part (no consecutive dots, valid TLD, no repeated 'm' in .com)
+  if (!/^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/.test(domain)) {
     return {
       valid: false,
-      message: "Domain must be valid (no consecutive dots, at least one dot)",
+      message:
+        "Domain must be valid (no consecutive dots, valid TLD like .com, .net)",
+    };
+  }
+
+  // Extra check: If domain ends with .com, ensure no extra 'm's (blocks .comm, .commm, etc.)
+  if (/\.com+$/i.test(domain)) {
+    return {
+      valid: false,
+      message: "Invalid domain (.com should not have extra 'm's)",
     };
   }
 
