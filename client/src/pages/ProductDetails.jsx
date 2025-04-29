@@ -129,14 +129,14 @@ export default function ProductDetails() {
               {/* PRODUCT DEATAILS */}
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2 w-full">
-                  <h1 className="text-2xl md:text-4xl ">
+                  <h1 className="text-2xl md:text-4xl break-all ">
                     {singleProduct.productName}
                   </h1>
                 </div>
 
                 <div className="flex gap-8">
                   <p>Description:</p>
-                  <p>{singleProduct.productDescription}</p>
+                  <p className="break-all">{singleProduct.productDescription}</p>
                 </div>
 
                 {/* STARS */}

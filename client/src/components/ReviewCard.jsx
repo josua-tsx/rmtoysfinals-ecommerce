@@ -94,7 +94,7 @@ export default function ReviewCard({ review }) {
   const isCurrentUserReview = currentUser?._id === review?.userId?._id;
 
   return (
-    <div className="relative mb-4 rounded-xl border border-black bg-yellow p-5 shadow-sm">
+    <div className="relative mb-4 rounded-xl border  border-black max-w-full  bg-yellow p-5 shadow-sm">
       {openEditModal && singleReview && !isPending && !isError && (
         <EditReviewComponent
           singleReview={singleReview}
@@ -161,7 +161,11 @@ export default function ReviewCard({ review }) {
           </div>
 
           {/* Review content */}
-          <div className="mt-3">
+
+          {/* Review content */}
+          <div className="mt-3 break-all">
+            {" "}
+            {/* Forces text to wrap */}
             <p className="text-gray-700">{review?.commentReview}</p>
           </div>
         </div>

@@ -50,7 +50,7 @@ export default function ReviewCardTwo({ review }) {
           </div>
 
           {/* Review content */}
-          <div className="mt-3">
+          <div className="mt-3 break-all">
             <p className="text-gray-700">{review?.commentReview}</p>
           </div>
         </div>
