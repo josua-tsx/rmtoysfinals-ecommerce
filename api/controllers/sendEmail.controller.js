@@ -4,8 +4,12 @@ import { sendEmail } from "../nodemailer/nodemailer.js";
 export const sendContactEmail = async (req, res, next) => {
   const { senderEmail, message, website } = req.body;
   try {
-    if (!senderEmail.trim() || !message.trim())
-      return next(handleMakeError(400, "Input required fields!"));
+    if (!senderEmail.trim())
+      return next(handleMakeError(400, "Please input your email"));
+
+    if (!message.trim()) {
+      return next(handleMakeError(400, "Please input message"))
+    }
 
     if (website) return res.status(400).json({ error: "Spam detected" });
 
