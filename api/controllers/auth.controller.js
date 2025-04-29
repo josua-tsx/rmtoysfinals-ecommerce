@@ -23,8 +23,21 @@ export const signup = async (req, res, next) => {
   const email = req.body.email.toLowerCase();
   const username = req.body.username.toLowerCase();
 
-  if (!username || !email || !password || !confirmPassword)
-    return next(handleMakeError(400, "All fields are required"));
+  if (!username) {
+    return next(handleMakeError(400, "Please input username"));
+  }
+
+  if (!email) {
+    return next(handleMakeError(400, "Please input email"));
+  }
+
+  if (!password) {
+    return next(handleMakeError(400, "Please input password"));
+  }
+
+  if (!confirmPassword) {
+    return next(handleMakeError(400, "Please input confirm password"));
+  }
 
   if (password !== confirmPassword)
     return next(handleMakeError(400, "Passwords are not equal "));
@@ -97,8 +110,13 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password)
-    return next(handleMakeError(400, "Please input required fields"));
+  if (!email) {
+    return next(handleMakeError(400, "Please input email"));
+  }
+
+  if (!password) {
+    return next(handleMakeError(400, "Please input password"));
+  }
 
   try {
     const validUser = await User.findOne({ email });
