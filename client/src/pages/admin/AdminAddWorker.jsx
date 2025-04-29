@@ -85,8 +85,7 @@ export default function AdminAddWorker() {
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
               <p className="text-sm pt-1 text-green-700">
-                (Enter a valid email. Only gmail.com and yahoo.com are allowed
-                domains.)
+                (Enter a valid email.)
               </p>
             </div>
             <div className="flex justify-between flex-col">

@@ -9,21 +9,29 @@ export const validateEmail = (email) => {
   }
 
   // Split email into local and domain parts
-  const [localPart, domain] = trimmedEmail.split('@');
+  const parts = trimmedEmail.split("@");
 
-  // Validate local part (before @)
-  if (!/^[a-zA-Z0-9]+$/.test(localPart)) {
+  // Check if email has exactly one @
+  if (parts.length !== 2) {
+    return { valid: false, message: "Email must contain exactly one @" };
+  }
+
+  const [localPart, domain] = parts;
+
+  // Validate local part (no consecutive dots, only letters, numbers, and single dots)
+  if (!/^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*$/.test(localPart)) {
     return {
       valid: false,
-      message: "Email cannot contain dots or symbols before @ - only letters and numbers allowed",
+      message:
+        "Local part (before @) can only contain letters, numbers, and single dots (no consecutive dots)",
     };
   }
 
-  // Validate domain part (after @)
-  if (!/^(gmail|yahoo)\.com$/.test(domain)) {
+  // Validate domain part (no consecutive dots, must have at least one dot)
+  if (!/^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)+$/.test(domain)) {
     return {
       valid: false,
-      message: "Only @gmail.com and @yahoo.com emails are allowed",
+      message: "Domain must be valid (no consecutive dots, at least one dot)",
     };
   }
 

@@ -107,8 +107,7 @@ export default function AdminEditWorker() {
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
               <p className="text-sm pt-1 text-green-700">
-                (Enter a valid email. Only letters, numbers, and ., _, %, + are
-                allowed before '@'.)
+                (Enter a valid email.)
               </p>
             </div>
             <div className="flex justify-between flex-col">

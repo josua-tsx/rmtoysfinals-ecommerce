@@ -149,7 +149,7 @@ export default function AdminProductOverview() {
     return <p>Error loading categories</p>;
 
   return (
-    <div className="flex flex-col bg-yellow gap-16">
+    <div className="flex flex-col text-sm md:text-normal bg-yellow gap-16">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
         {isProductPending ? (
           <div className="flex justify-center h-[150px] items-center">

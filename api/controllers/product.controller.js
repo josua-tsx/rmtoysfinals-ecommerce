@@ -34,7 +34,7 @@ export const addProduct = async (req, res, next) => {
   }
 
   if (!category) {
-    return next(handleMakeError(400, "Category is required!"));
+    return next(handleMakeError(400, "Please select category"));
   }
 
   if (
@@ -398,7 +398,7 @@ export const editProduct = async (req, res, next) => {
     }
 
     if (!category) {
-      return next(handleMakeError(400, "You need category"));
+      return next(handleMakeError(400, "Please select category"));
     }
 
     if (
