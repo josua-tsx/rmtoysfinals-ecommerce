@@ -145,23 +145,24 @@ export default function AdminUploadProductImage({ images, setImages }) {
                 </button>
               </div>
             ))}
-          </div>
+          </div>  
         </div>
       </div>
 
       <div className="border border-black rounded-[5px] bg-card p-4">
         <h1>UPLOAD IMAGE</h1>
-        <div className="flex gap-2 justify-between items-center pt-5 pb-2">
-          <div onClick={handleImageSubmit} className="flex-1">
-            <Buttons
-              buttonName={`${uploading ? "uploading" : "Upload image"}`}
-            />
-          </div>
+        <div className="flex flex-col md:flex-row gap-2 justify-between items-center pt-5 pb-2">
+          <button type="button"
+            onClick={handleImageSubmit}
+            className="border w-full md:w-[80%] border-black bg-primary text-card p-2 rounded-[5px]"
+          >
+            {uploading ? "Uploading" : "Upload Image"}
+          </button>
 
           <button
             type="button"
             onClick={() => setImages([])}
-            className="bg-blue-700 p-2 px-4 rounded-[5px] border border-black text-card"
+            className="bg-blue-700 p-2 px-4 rounded-[5px] border w-full  md:w-[20%] border-black text-card"
           >
             Reset
           </button>

@@ -62,7 +62,7 @@ export default function AdminAddWorker() {
   };
 
   return (
-    <section className="bg-yellow h-screen font-main">
+    <section className="bg-yellow text-sm md:text-normal h-screen font-main">
       <AdminHeader title={"ADD NEW WORKER"} />
 
       <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col">
@@ -182,14 +182,14 @@ export default function AdminAddWorker() {
             </div>
           </div>
 
-          <div className="flex p-2 gap-2">
+          <div className="flex flex-col md:flex-row p-2 gap-2">
             <button className="border flex-1 bg-primary text-card rounded-[5px] border-black p-2">
               ADD WORKER
             </button>
             <button
               onClick={() => navigate(`/admin/worker`)}
               type="button"
-              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
             >
               Cancel
             </button>

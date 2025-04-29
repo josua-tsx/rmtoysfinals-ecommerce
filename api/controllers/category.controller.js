@@ -1,24 +1,32 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import { validateCategoryDescription, validateCategoryNamee } from "../utils/validations.js";
+import {
+  validateCategoryDescription,
+  validateCategoryNamee,
+} from "../utils/validations.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
   const userId = req.user.id;
 
-  if (!categoryName || !categoryDescription) {
-    return next(handleMakeError(400, "Please input required fields!"));
+  if (!categoryName) {
+    return next(handleMakeError(400, "Please input category name"));
   }
 
-  const categoryNameCheck = validateCategoryNamee(categoryName)
+  if (!categoryDescription) {
+    return next(handleMakeError(400, "Please input category description"));
+  }
+
+  const categoryNameCheck = validateCategoryNamee(categoryName);
   if (!categoryNameCheck.valid) {
-    return next(handleMakeError(400, categoryNameCheck.message))
+    return next(handleMakeError(400, categoryNameCheck.message));
   }
 
-  const categoryDescriptionCheck = validateCategoryDescription(categoryDescription)
+  const categoryDescriptionCheck =
+    validateCategoryDescription(categoryDescription);
   if (!categoryDescriptionCheck.valid) {
-    return next(handleMakeError(400, categoryDescriptionCheck.message))
+    return next(handleMakeError(400, categoryDescriptionCheck.message));
   }
 
   try {
@@ -94,18 +102,23 @@ export const editCategory = async (req, res, next) => {
   const { categoryId } = req.params;
   const { categoryName, categoryDescription } = req.body;
 
-  if (!categoryName || !categoryDescription) {
-    return next(handleMakeError(400, "Please input required fields!"));
+  if (!categoryName) {
+    return next(handleMakeError(400, "Please input category name"));
   }
 
-  const categoryNameCheck = validateCategoryNamee(categoryName)
+  if (!categoryDescription) {
+    return next(handleMakeError(400, "Please input category description"));
+  }
+
+  const categoryNameCheck = validateCategoryNamee(categoryName);
   if (!categoryNameCheck.valid) {
-    return next(handleMakeError(400, categoryNameCheck.message))
+    return next(handleMakeError(400, categoryNameCheck.message));
   }
 
-  const categoryDescriptionCheck = validateCategoryDescription(categoryDescription)
+  const categoryDescriptionCheck =
+    validateCategoryDescription(categoryDescription);
   if (!categoryDescriptionCheck.valid) {
-    return next(handleMakeError(400, categoryDescriptionCheck.message))
+    return next(handleMakeError(400, categoryDescriptionCheck.message));
   }
 
   try {

@@ -26,7 +26,7 @@ export default function AdminAuditTrailLogs() {
             id="audit"
             value={componenent}
             onChange={handleSelectChange}
-            className="border border-black outline-none p-2 rounded-[5px] bg-card w-[300px]"
+            className="border border-black outline-none p-2 rounded-[5px] bg-card w-full  "
           >
             <option value="admin">Admin logs</option>
             <option value="customer">Customer logs</option>

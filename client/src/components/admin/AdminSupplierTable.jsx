@@ -82,7 +82,7 @@ export default function AdminSupplierTable() {
     <p>loading....</p>;
   }
   return (
-    <div className="font-main border rounded-[5px] border-black bg-card relative ">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
       <ConfirmModal
         isOpen={isModalOpen}
         title={"Confirm delete"}
@@ -101,10 +101,10 @@ export default function AdminSupplierTable() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search supplier name, id"
-            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            placeholder="search supplier.."
+            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
-          <IoSearch className="absolute right-0" size={30} />
+          <IoSearch className="absolute right-0" size={25} />
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">

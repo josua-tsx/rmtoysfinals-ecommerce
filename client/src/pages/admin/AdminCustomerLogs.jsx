@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import { IoSearch } from "react-icons/io5";
 
 const ACTION_TYPES = ["user_add_order", "newly_created_user", "user_added_review"];
 
@@ -33,18 +34,18 @@ export default function AdminCustomerLogs() {
 
 
   return (
-    <div className="font-main border rounded-[5px] border-black bg-card relative ">
+    <div className="font-main text-sm md:text-normal border rounded-[5px] border-black bg-card relative ">
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>ADMIN LOGS</h1>
+        <h1>CUSTOMER LOGS</h1>
         <div className="flex items-center relative">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search products.."
-            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            placeholder="search customer logs.."
+            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
-          {/* <IoSearch className="absolute right-0" size={30} /> */}
+          <IoSearch className="absolute right-0" size={25} />
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">

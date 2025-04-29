@@ -234,15 +234,12 @@ export const addWorker = async (req, res, next) => {
     req.body; // Extract confirmPassword
   const userId = req.user.id;
 
-  if (
-    !username ||
-    !email ||
-    !password ||
-    !confirmPassword ||
-    !role ||
-    !jobDescription
-  ) {
-    return next(handleMakeError(400, "Please input required fields"));
+  if (!role) {
+    return next(handleMakeError(400, "Please select role"));
+  }
+
+  if (!jobDescription) {
+    return next(handleMakeError(400, "Please input job description"));
   }
 
   if (password !== confirmPassword) {

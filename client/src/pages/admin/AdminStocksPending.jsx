@@ -51,7 +51,7 @@ export default function AdminStocksPending() {
   }
 
   return (
-    <section className="bg-yellow h-screen font-main">
+    <section className="bg-yellow text-sm md:text-normal h-screen font-main">
       <AdminHeader title={"PENDING STOCKS"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
@@ -65,7 +65,7 @@ export default function AdminStocksPending() {
         <div className="relative border border-black flex flex-col rounded-[5px] w-full md:w-[70%] h-full mx-auto bg-card">
           <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
 
-          <div className="p-4 flex flex-col gap-4">
+          <div className="p-4 flex flex-col overflow-x-auto gap-4">
             {
               isProductsPending ? (
                 <div className="flex justify-center">
@@ -80,7 +80,7 @@ export default function AdminStocksPending() {
                         alt=""
                         className="h-[50px] w-[50px] object-cover rounded-[5px]"
                       />
-                      <div className="flex justify-between w-full items-center">
+                      <div className="flex justify-between gap-4 w-full items-center">
                         <div className="flex gap-4">
                           <div className="flex gap-2 items-center">
                             <p className="text-blue-700">Product Name: </p>

@@ -14,7 +14,7 @@ export default function AdminSideBar() {
   // Define sidebar items with their allowed roles
   const adminSideBarItems = [
     {
-      name: "overview",
+      name: "Overview",
       path: "",
       icon: <IoIosStats size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
@@ -84,20 +84,20 @@ export default function AdminSideBar() {
       allowedRoles: ["admin"],
       inner: [
         {
-          name: "user table",
+          name: "User Table",
           path: "/admin/user",
         },
         {
-          name: "worker table",
+          name: "Worker Table",
           path: "/admin/worker",
         },
         {
-          name: "add worker",
+          name: "Add Worker",
           path: "/admin/addWorker",
         },
       ],
     },
- 
+
     {
       name: "Stocks",
       icon: <MdCategory size={20} />,
@@ -116,29 +116,24 @@ export default function AdminSideBar() {
           name: "Order Stock History",
           path: "/admin/stockHistory",
         },
-
-      
       ],
     },
 
     {
-      name: "VALUE ADDED TAX",
+      name: "Value added tax",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin"],
       inner: [
         {
           name: "VAT Table",
-          path: "/admin/vat"
+          path: "/admin/vat",
         },
         {
           name: "Add VAT",
-          path: "/admin/addVat"
+          path: "/admin/addVat",
         },
       ],
     },
-
- 
-
 
     {
       name: "Order Transactions",
@@ -154,11 +149,8 @@ export default function AdminSideBar() {
       allowedRoles: ["admin"],
     },
 
-
-
-
     {
-      name: "return to shop",
+      name: "Return to shop",
       path: "/shop",
       icon: <MdKeyboardReturn size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
@@ -190,7 +182,6 @@ export default function AdminSideBar() {
     })
     .filter((item) => item !== null);
 
-
   // const filteredSideBarItems = adminSideBarItems.filter(item =>
   //   item.allowedRoles.includes(currentUser.role)
   // )
@@ -213,8 +204,8 @@ export default function AdminSideBar() {
 
   return (
     <aside
-      className={`z-50  border transition-all border-r-gray-500 p-3 bg-card h-full  ${
-        toggleSideBar ? "w-52" : "w-16"
+      className={`z-50 text-sm md:text-[18px] border transition-all border-r-gray-500 p-3 bg-card h-full  ${
+        toggleSideBar ? "w-44 md:w-52" : "w-16"
       } font-main`}
     >
       <div className="flex h-full flex-col gap-8">
@@ -245,7 +236,7 @@ export default function AdminSideBar() {
               >
                 <Link
                   to={item.path}
-                  className="uppercase w-full flex justify-between items-center"
+                  className=" w-full flex gap-4 justify-between items-center"
                 >
                   <div>{item.icon}</div>
                   <p
@@ -257,7 +248,7 @@ export default function AdminSideBar() {
                   </p>
 
                   {toggleSideBar && item.inner && (
-                    <div className="absolute flex flex-col gap-2 border z-50 transition-all w-[200px] left-[200px] invisible group-hover:visible text-center opacity-0 group-hover:opacity-100 translate-x-0 group-hover:translate-x-2  bg-card rounded-[5px] border-black p-3 top-1 uppercase">
+                    <div className="absolute flex flex-col gap-2 border z-50 transition-all w-[150px] md:w-[200px] left-[175px] md:left-[200px] invisible group-hover:visible text-center opacity-0 group-hover:opacity-100 translate-x-0 group-hover:translate-x-2  bg-card rounded-[5px] border-black p-3 top-1">
                       {item.inner.map((inner, index) => (
                         <Link
                           to={inner.path}
@@ -283,14 +274,14 @@ export default function AdminSideBar() {
           </ul>
         </nav>
 
-        <div className="border-t-gray-300 border flex items-center gap-5  pt-3">
+        <div className="border-t-gray-300 border flex items-center gap-5  px-1 py-3">
           <img
             src={currentUser.avatar}
             alt="avatar.image"
-            className={`w-[40px] border border-black rounded-full object-cover`}
+            className={`w-[50px] border border-black rounded-full object-cover`}
           />
-          <h1 className={` ${toggleSideBar ? "block" : "hidden"} uppercase`}>
-            {currentUser.role} dashboard
+          <h1 className={` ${toggleSideBar ? "block" : "hidden"} `}>
+            {currentUser.role} Dashboard
           </h1>
         </div>
       </div>

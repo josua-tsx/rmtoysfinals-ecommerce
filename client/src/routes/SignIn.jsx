@@ -47,7 +47,7 @@ export default function SignIn() {
     } catch (error) {
       console.log(error);
     }
-  };
+}
 
   return (
     <section className="pt-[180px] md:pb-32 h-full bg-yellow p-4 font-main ">

@@ -83,7 +83,7 @@ export default function AdminCategoryEdit() {
   }
 
   return (
-    <section className="bg-yellow h-screen font-main">
+    <section className="bg-yellow h-screen text-sm md:text-normal font-main">
       <AdminHeader title={"EDIT CATEGORY"} />
 
       <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col relative">
@@ -126,14 +126,14 @@ export default function AdminCategoryEdit() {
             </div>
           </div>
 
-          <div className="flex p-2 gap-2 flex-row">
-            <button className="flex-1 border border-black bg-primary text-card rounded-[5px] uppercase p-2">
-              UPDATE Category
+          <div className="flex flex-col p-2 gap-2 md:flex-row">
+            <button className="flex-1 border border-black bg-primary text-card rounded-[5px]  p-2">
+              Update Category
             </button>
             <button
               onClick={() => handleCancel()}
               type="button"
-              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
             >
               Cancel
             </button>

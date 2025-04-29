@@ -101,7 +101,7 @@ export default function AdminProductsTable() {
   if (isError) return <p>Error loading filters</p>;
 
   return (
-    <div className="font-main border rounded-[5px] border-black bg-card relative ">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
       {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
@@ -113,15 +113,15 @@ export default function AdminProductsTable() {
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>PRODUCTS TABLE</h1>
-        <div className="flex items-center relative">
+        <div className="flex relative items-center">
           <input
             type="text"
             placeholder="search products.."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            className="border w-[130px] md:w-[300px] border-black relative rounded-[5px] p-1 focus:outline-none"
           />
-          <IoSearch className="absolute right-0" size={30} />
+          <IoSearch className="absolute right-0" size={25} />
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">

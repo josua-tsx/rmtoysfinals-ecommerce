@@ -18,10 +18,12 @@ export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
   const { username, email, password, avatar, phoneNumber, fullName } = req.body;
 
-  if (!username.trim() || !email.trim() || !avatar)
-    return next(
-      handleMakeError(400, "You can't leave email and username empty!")
-    );
+  if (!username.trim()) {
+    return next(handleMakeError(400, "You can't leave username empty!"));
+  }
+
+  if (!email.trim())
+    return next(handleMakeError(400, "You can't leave email empty!"));
 
   if (username) {
     const userNameCheck = validateUsername(username);
@@ -186,33 +188,28 @@ export const editWorker = async (req, res, next) => {
   const { email, username, password, role, jobDescription } = req.body;
   const userId = req.user.id;
 
-  if (!username || !email || !password || !role || !jobDescription) {
-    return next(handleMakeError(400, "Please input required fields"));
+  if (!role) {
+    return next(handleMakeError(400, "Please select role"));
   }
 
-  // if (!isValidEmail(email)) {
-  //   return next(
-  //     handleMakeError(
-  //       400,
-  //       "Invalid email format or email should be all lowercase."
-  //     )
-  //   );
-  // }
+  if (!jobDescription) {
+    return next(handleMakeError(400, "Please input job description"));
+  }
 
-  // if (!isValidPassword(password)) {
-  //   return next(
-  //     handleMakeError(
-  //       400,
-  //       "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-  //     )
-  //   );
-  // }
+  const userEmailCheck = validateEmail(email);
+  if (!userEmailCheck.valid) {
+    return next(handleMakeError(400, userEmailCheck.message));
+  }
 
-  // if (!isValidUsername(username)) {
-  //   return next(
-  //     handleMakeError(400, "Invalid username. Username does not allow number.")
-  //   );
-  // }
+  const userNameCheck = validateUsername(username);
+  if (!userNameCheck.valid) {
+    return next(handleMakeError(400, userNameCheck.message));
+  }
+
+  const passwordCheck = validatePassword(password);
+  if (!passwordCheck.valid) {
+    return next(handleMakeError(400, passwordCheck.message));
+  }
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -222,14 +219,6 @@ export const editWorker = async (req, res, next) => {
   try {
     let hashedPassword;
     if (password) {
-      // if (!isValidPassword(password)) {
-      //   return next(
-      //     handleMakeError(
-      //       400,
-      //       "Password must be at least 8 characters, include one uppercase letter, one number, and one special character."
-      //     )
-      //   );
-      // }
       hashedPassword = await bcypt.hash(password, 10);
     }
 

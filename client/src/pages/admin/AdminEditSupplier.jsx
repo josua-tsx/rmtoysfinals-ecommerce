@@ -106,7 +106,7 @@ export default function AdminEditSupplier() {
   }
 
   return (
-    <section className="bg-yellow h-screen font-main">
+    <section className="bg-yellow h-screen text-sm md:text-normal font-main">
       <AdminHeader title={"EDIT SUPPLIER"} />
 
       <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col">
@@ -188,14 +188,14 @@ export default function AdminEditSupplier() {
             </p>
           </div>
 
-          <div className="flex gap-2 p-2">
+          <div className="flex flex-col md:flex-row gap-2 p-2">
             <button className="border flex-1 bg-primary text-card rounded-[5px] border-black p-2">
-              UPDATE SUPPLIER
+              Update Supplier
             </button>
             <button
               onClick={() => handleCancel()}
               type="button"
-              className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+              className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
             >
               Cancel
             </button>

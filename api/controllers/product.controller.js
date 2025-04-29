@@ -25,18 +25,25 @@ export const addProduct = async (req, res, next) => {
     points,
   } = req.body;
 
-  if (!productName || !productDescription) {
-    return next(handleMakeError(400, "Please input required fields"));
+  if (!productName) {
+    return next(handleMakeError(400, "Please input product name"));
+  }
+
+  if (!productDescription) {
+    return next(handleMakeError(400, "Please input product description"));
   }
 
   if (!category) {
     return next(handleMakeError(400, "Category is required!"));
   }
 
-  if (!productImages || !Array.isArray(productImages) || productImages.length === 0) {
+  if (
+    !productImages ||
+    !Array.isArray(productImages) ||
+    productImages.length === 0
+  ) {
     return next(handleMakeError(400, "At least one product image is required"));
   }
-
 
   const productNameCheck = validateProductName(productName);
   if (!productNameCheck.valid) {
@@ -198,27 +205,6 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
-// export const getNoStocksProducts = async (req, res, next) => {
-//   try {
-//     const products = await Product.find({ status: { $ne: "draft" } })
-//       .populate({
-//         path: "supplier",
-//         select: "supplierName",
-//       })
-//       .populate({
-//         path: "category",
-//         select: "categoryName",
-//       })
-//       .populate({
-//         path: "stocks",
-//         select: "stockQuantity",
-//       });
-
-//     res.status(200).json(products);
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 export const getStockStatusPendings = async (req, res, next) => {
   try {
@@ -403,16 +389,26 @@ export const editProduct = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!productName || !productDescription) {
-      return next(handleMakeError(400, "Please input required fields"));
+    if (!productName) {
+      return next(handleMakeError(400, "Please input product name"));
+    }
+
+    if (!productDescription) {
+      return next(handleMakeError(400, "Please input product description"));
     }
 
     if (!category) {
       return next(handleMakeError(400, "You need category"));
     }
 
-    if (!productImages || !Array.isArray(productImages) || productImages.length === 0) {
-      return next(handleMakeError(400, "At least one product image is required"));
+    if (
+      !productImages ||
+      !Array.isArray(productImages) ||
+      productImages.length === 0
+    ) {
+      return next(
+        handleMakeError(400, "At least one product image is required")
+      );
     }
 
     if (price <= 0) {
@@ -565,12 +561,30 @@ export const addDraft = async (req, res, next) => {
     productDescription,
     productDetails,
     stocks,
-    discount,
     productImages,
-    filters,
     category,
-    supplier,
+    points
   } = req.body;
+
+  if (!productName) {
+    return next(handleMakeError(400, "Please input product name"));
+  }
+
+  if (!productDescription) {
+    return next(handleMakeError(400, "Please input product description"));
+  }
+
+  if (!category) {
+    return next(handleMakeError(400, "Category is required!"));
+  }
+
+  if (
+    !productImages ||
+    !Array.isArray(productImages) ||
+    productImages.length === 0
+  ) {
+    return next(handleMakeError(400, "At least one product image is required"));
+  }
 
   try {
     const newDraft = new Product({
@@ -579,11 +593,10 @@ export const addDraft = async (req, res, next) => {
       productDescription,
       productDetails,
       stocks,
-      discount,
       productImages,
-      filters,
       status: "draft",
       category,
+      points
     });
 
     await newDraft.save();

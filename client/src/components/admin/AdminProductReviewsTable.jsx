@@ -56,7 +56,7 @@ export default function AdminProductReviewsTable() {
   if (isError) return <p>Error.</p>;
 
   return (
-    <div className="font-main border rounded-[5px] border-black bg-card relative ">
+    <div className="font-main text-sm md:text-normal border rounded-[5px] border-black bg-card relative ">
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>REVIEWS TABLE</h1>
         <div className="flex items-center relative">
@@ -65,9 +65,9 @@ export default function AdminProductReviewsTable() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search review id, product id, comments"
-            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
-          <IoSearch className="absolute right-0" size={30} />
+          <IoSearch className="absolute right-0" size={25} />
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">

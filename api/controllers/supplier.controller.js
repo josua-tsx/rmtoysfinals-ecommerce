@@ -21,8 +21,20 @@ export const addSupplier = async (req, res, next) => {
   const { contactNumber, supplierName, contactPerson, supplierAddress } =
     req.body;
 
-  if (!contactNumber || !supplierName || !contactPerson || !supplierAddress) {
-    return next(handleMakeError(400, "Input all required fields"));
+  if (!contactNumber) {
+    return next(handleMakeError(400, "Please input contact number"));
+  }
+
+  if (!supplierName) {
+    return next(handleMakeError(400, "Please input supplier name"));
+  }
+
+  if (!contactPerson) {
+    return next(handleMakeError(400, "Please input contact person"));
+  }
+
+  if (!supplierAddress) {
+    return next(handleMakeError(400, "Please input supplier address"));
   }
 
   const supplierNameCheck = validateSupplierName(supplierName);
@@ -94,7 +106,7 @@ export const deleteSupplier = async (req, res, next) => {
       return next(handleMakeError(400, "Supplier not found!"));
     }
 
-    const supplierInUse = await Stocks.exists({ supplier: supplierId })
+    const supplierInUse = await Stocks.exists({ supplier: supplierId });
     if (supplierInUse || singleSupplier?.product?.length > 0) {
       return next(
         handleMakeError(400, "Supplier is in use and cannot be deleted")
@@ -129,8 +141,20 @@ export const editSupplier = async (req, res, next) => {
   const { supplierName, contactPerson, contactNumber, supplierAddress } =
     req.body;
 
-  if (!contactNumber || !supplierName || !contactPerson || !supplierAddress) {
-    return next(handleMakeError(400, "Input all required fields"));
+  if (!contactNumber) {
+    return next(handleMakeError(400, "Please input contact number"));
+  }
+
+  if (!supplierName) {
+    return next(handleMakeError(400, "Please input supplier name"));
+  }
+
+  if (!contactPerson) {
+    return next(handleMakeError(400, "Please input contact person"));
+  }
+
+  if (!supplierAddress) {
+    return next(handleMakeError(400, "Please input supplier address"));
   }
 
   const supplierNameCheck = validateSupplierName(supplierName);

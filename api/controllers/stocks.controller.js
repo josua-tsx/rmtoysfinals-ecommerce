@@ -25,6 +25,27 @@ export const OrderStocks = async (req, res, next) => {
   } = req.body;
 
   try {
+
+    if (!dateDelivery) {
+      return next(handleMakeError(400, "Please input date delivery"))
+    }
+
+    if (!vat) {
+      return next(handleMakeError(400, "Please select VAT"))
+    }
+
+    if (!supplier) {
+      return next(handleMakeError(400, "Please select Supplier"))
+    }
+
+    if (!shopPrice) {
+      return next(handleMakeError(400, "Please input shop price"))
+    }
+
+    if (!shippingPrice) {
+      return next(handleMakeError(400, "Please input shipping Price"))
+    }
+
     // Validate required fields
     if (
       !product ||
@@ -133,6 +154,27 @@ export const reorderStock = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
+
+    if (!dateDelivery) {
+      return next(handleMakeError(400, "Please input date delivery"))
+    }
+
+    if (!vatPercent) {
+      return next(handleMakeError(400, "Please select VAT"))
+    }
+
+    if (!supplier) {
+      return next(handleMakeError(400, "Please select Supplier"))
+    }
+
+    if (!shopPrice) {
+      return next(handleMakeError(400, "Please input shop price"))
+    }
+
+    if (!shippingPrice) {
+      return next(handleMakeError(400, "Please input shipping Price"))
+    }
+
     if (
       !dateDelivery ||
       !vatPercent ||
@@ -273,108 +315,6 @@ export const getPendingDeliveries = async (req, res, next) => {
   }
 };
 
-// export const confirmDelivery = async (req, res, next) => {
-//   const { deliveryId } = req.params;
-
-//   try {
-//     // Validate deliveryId
-//     if (!mongoose.Types.ObjectId.isValid(deliveryId)) {
-//       return res.status(400).json({ message: "Invalid delivery ID format!" });
-//     }
-
-//     // Find the stock by deliveryId
-//     const stock = await Stocks.findById(deliveryId);
-//     if (!stock) {
-//       return res.status(400).json({ message: "Delivery not found!" });
-//     }
-
-//     // Update the delivery status in Stocks
-//     stock.deliveryStatus = "delivered";
-//     await stock.save();
-
-//     // Ensure stock contains a productId
-//     if (!stock.product) {
-//       return res.status(400).json({ message: "No product associated with this delivery!" });
-//     }
-
-//     console.log(stock)
-
-//     // Update the corresponding product's status to "published"
-//     const updatedProduct = await Product.findByIdAndUpdate(
-//       stock.product,
-//       { status: "published",
-//         price: stock.shopPrice,
-//         stocks: stock._id,
-//       },
-//       { new: true, runValidators: true }
-//     );
-
-//     if (!updatedProduct) {
-//       return res.status(400).json({ message: "Associated product not found!" });
-//     }
-
-//     res.status(200).json({
-//       message: "Delivery confirmed, product status updated!",
-//       delivery: stock,
-//       product: updatedProduct,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
-//   const { deliveryId } = req.params;
-
-//   try {
-//     // 1. Find the delivery record
-//     const delivery = await DeliverStocks.findById(deliveryId);
-//     if (!delivery) {
-//       return res.status(404).json({ message: "Delivery not found" });
-//     }
-
-//     // 2. Update delivery status to "delivered"
-//     delivery.deliveryStatus = "delivered";
-//     await delivery.save();
-
-//     // 3. Update product status to "active"
-//     await Product.findByIdAndUpdate(
-//       delivery.productId,
-//       { status: "published" },
-//       { new: true }
-//     );
-
-//     // 4. Update or create stock record
-//     let stock = await Stocks.findOne({ product: delivery.productId });
-
-//     if (!stock) {
-//       stock = new Stocks({
-//         product: delivery.productId,
-//         quantity: delivery.quantity,
-//         supplierPrice: delivery.supplierPrice,
-//         shopPrice: delivery.shopPrice,
-//         shippingPrice: delivery.shippingPrice,
-//         supplier: delivery.supplier,
-//         deliveryId: delivery._id
-//       });
-//     } else {
-//       stock.quantity += delivery.quantity;
-//       stock.supplierPrice = delivery.supplierPrice; // Update to latest price
-//       stock.shopPrice = delivery.shopPrice;
-//       stock.shippingPrice = delivery.shippingPrice
-//       stock.supplier = delivery.supplier
-//     }
-
-//     await stock.save();
-
-//     res.status(200).json({
-//       message: "Delivery confirmed and stock updated",
-//       delivery,
-//       stock,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 export const getStocks = async (req, res, next) => {
   try {

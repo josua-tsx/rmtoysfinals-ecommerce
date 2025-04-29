@@ -178,7 +178,7 @@ export default function AdminAddProducts() {
   }
 
   return (
-    <section className="bg-yellow h-screen font-main">
+    <section className="bg-yellow h-screen text-sm md:text-normal font-main">
       <AdminHeader title={"ADD NEW PRODUCTS"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
@@ -415,10 +415,10 @@ export default function AdminAddProducts() {
               </div> */}
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col md:flex-row justify-end gap-2">
               <div
                 onClick={() => handleFormDraftSubmit()}
-                className="w-[100px] md:w-[200px]"
+                className=" md:w-[200px]"
               >
                 <Buttons
                   buttonType={"button"}
@@ -427,14 +427,14 @@ export default function AdminAddProducts() {
                 />
               </div>
 
-              <button className="flex-1 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
+              <button className="flex-1 p-2 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
                 Add This Product
                 <FaCheckCircle />
               </button>
               <button
                 onClick={() => navigate(`/admin/products`)}
                 type="button"
-                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+                className="bg-red-600 p-2  md:w-[20%] border border-black rounded-[5px] text-card "
               >
                 Cancel
               </button>

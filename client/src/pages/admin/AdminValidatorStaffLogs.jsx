@@ -42,16 +42,16 @@ export default function AdminValidatorStaffLogs() {
   if (isError) return <p>Error.</p>
 
   return (
-   <div className="font-main border rounded-[5px] border-black bg-card relative ">
+   <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
          <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-           <h1>ADMIN LOGS</h1>
+           <h1>VALIDATOR LOGS</h1>
            <div className="flex items-center relative">
              <input
                type="text"
                value={searchTerm}
                onChange={(e) => setSearchTerm(e.target.value)}
-               placeholder="search products.."
-               className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+               placeholder="search validator logs.."
+               className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
              />
              <IoSearch className="absolute right-0" size={30} />
            </div>

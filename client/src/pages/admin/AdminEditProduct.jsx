@@ -191,7 +191,7 @@ export default function AdminEditProducts() {
   }
 
   return (
-    <section className="bg-yellow h-screen font-main">
+    <section className="bg-yellow text-sm md:text-normal h-screen font-main">
       <AdminHeader title={"ADD NEW PRODUCTS"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
@@ -465,7 +465,7 @@ export default function AdminEditProducts() {
               </div> */}
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col md:flex-row justify-end gap-2">
               {/* <div
                 onClick={() => handleFormDraftSubmit()}
                 className="w-[100px] md:w-[200px]"
@@ -480,7 +480,7 @@ export default function AdminEditProducts() {
               <button
                 onClick={() => navigate(`/admin/products`)}
                 type="button"
-                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+                className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
               >
                 Cancel
               </button>

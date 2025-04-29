@@ -47,7 +47,7 @@ export default function AdminOrderStockHistoryTable() {
   if (isStockHistoryError) return <p>Error.</p>;
 
   return (
-    <div className="font-main border rounded-[5px] border-black bg-card relative">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative">
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className="border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4">
         <h1>ORDER / REORDER STOCK HISTORY</h1>
@@ -57,9 +57,9 @@ export default function AdminOrderStockHistoryTable() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="search stocks id, product name, supplier name, category name"
-            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
-          <IoSearch className="absolute right-0" size={30} />
+          <IoSearch className="absolute right-0" size={25} />
         </div>
       </div>
       <div className="overflow-y-auto h-[600px] py-3">

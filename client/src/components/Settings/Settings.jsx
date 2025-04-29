@@ -27,29 +27,29 @@ export default function Settings() {
 
 
   return (
-    <div className="relative font-main">
+    <div className="relative font-main text-sm md:text-normal">
       <button onClick={() => setShowSetting(!showSetting)} className="relative">
         <BsThreeDotsVertical size={25} />
       </button>
-      <div className={`absolute ${showSetting ? "block" : "hidden"} left-[30px] top-[0] lg:top-[45px] lg:-left-[170px] w-[180px] rounded-[5px] p-3 border-black border bg-card`}>
+      <div className={`absolute ${showSetting ? "block" : "hidden"} left-[30px] top-[0] lg:top-[45px] lg:-left-[170px] w-[150px] md:w-[180px] rounded-[5px] p-3 border-black border bg-card`}>
         <ul className="flex flex-col justify-end h-full gap-2">
             {
-              currentUser.role === "admin" || currentUser.role === "validatorStaff" ? <li className="uppercase p-1 hover:bg-gray-300 ">
+              currentUser.role === "admin" || currentUser.role === "validatorStaff" ? <li className=" p-1 hover:bg-gray-300 ">
               <Link to={`${currentUser.role === "admin" ? `/admin` : `/validator`}`} className=" flex justify-between items-center" onClick={() => setShowSetting(false)} >
-                dashboard
+                Dashboard
                 <TbLayoutDashboardFilled size={20} />
               </Link>
             </li> : ""
             }
-            <li className="uppercase p-1 hover:bg-gray-300 ">
+            <li className=" p-1 hover:bg-gray-300 ">
               <Link to={`/profile`} onClick={() => setShowSetting(false)} className=" flex justify-between items-center">
-                profile
+                Profile
                 <CgProfile size={20} />
               </Link>
             </li>
             <li className=" p-1 hover:bg-gray-300">
               <button onClick={() => signOut()} 
-              className=" uppercase flex justify-between w-full items-center"  >
+              className="  flex justify-between w-full items-center"  >
                 Sign out
                 <FaSignOutAlt size={20} />
               </button>

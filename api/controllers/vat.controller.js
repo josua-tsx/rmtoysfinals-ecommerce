@@ -6,6 +6,10 @@ export const addVat = async (req, res, next) => {
   const { vatPercent, vatValue } = req.body;
 
   try {
+    if (!vatPercent) {
+      return next(handleMakeError(400, "Please input VAT percent"));
+    }
+
     const newVat = new Vat({
       vatPercent,
       vatValue,
@@ -65,6 +69,10 @@ export const editVat = async (req, res, next) => {
   const { vatPercent, vatValue } = req.body; // Using vatPercent (e.g., 12 for 12%)
 
   try {
+    if (!vatPercent) {
+      return next(handleMakeError(400, "Please input VAT percent"));
+    }
+
     // 1. Update the VAT record
     const updatedVat = await Vat.findByIdAndUpdate(
       vatId,
@@ -91,7 +99,7 @@ export const editVat = async (req, res, next) => {
         {
           vatShopPrice: newVatShopPrice,
           vatToRemit: newVatToRemit,
-          vat: updatedVat._id // Update VAT reference if needed
+          vat: updatedVat._id, // Update VAT reference if needed
         },
         { new: true }
       );

@@ -54,7 +54,7 @@ export default function AdminAddCategory() {
   }
 
   return (
-    <section className="bg-yellow h-screen font-main">
+    <section className="bg-yellow h-screen font-main text-sm md:text-normal">
       <AdminHeader title={"ADD NEW CATEGORY"} />
 
       <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col relative">
@@ -100,14 +100,14 @@ export default function AdminAddCategory() {
             </div>
           </div>
 
-          <div className="flex  gap-2 p-2">
-            <button className="border flex-1 border-black bg-primary text-card rounded-[5px] uppercase p-2">
+          <div className="flex flex-col md:flex-row gap-2 p-2">
+            <button className="border flex-1 border-black bg-primary text-card rounded-[5px] p-2">
               Add Category
             </button>
             <button
                 onClick={() => navigate(`/admin/category`)}
                 type="button"
-                className="bg-red-600 w-[20%] border border-black rounded-[5px] text-card "
+                className="bg-red-600 md:w-[20%] border p-2 border-black rounded-[5px] text-card "
               >
                 Cancel
               </button>

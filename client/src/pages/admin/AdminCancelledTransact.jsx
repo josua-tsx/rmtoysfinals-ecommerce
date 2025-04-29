@@ -46,7 +46,7 @@ export default function AdminCancelledTransact({
   if (iscancelledOrderError) return <p>Error.</p>;
 
   return (
-    <div className="font-main border rounded-[5px] border-black bg-card relative ">
+    <div className="font-main text-sm md:text-normal border rounded-[5px] border-black bg-card relative ">
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -61,10 +61,10 @@ export default function AdminCancelledTransact({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search success id, email, payment method"
-            className="border md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            placeholder="search cancelled transact.."
+            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
           />
-          <IoSearch className="absolute right-0" size={30} />
+          <IoSearch className="absolute right-0" size={25} />
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
