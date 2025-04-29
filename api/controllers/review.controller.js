@@ -26,9 +26,9 @@ export const userAddReview = async (req, res, next) => {
       const trimmedComment = commentReview.trim();
 
       // 1. Length validation (FIXED LOGIC)
-      if (trimmedComment.length < 1 || trimmedComment.length > 500) {
+      if (trimmedComment.length < 1 || trimmedComment.length > 300) {
         return next(
-          handleMakeError(400, "Comment must be 1-500 characters long")
+          handleMakeError(400, "Comment must be 1-300 characters long")
         );
       }
 
