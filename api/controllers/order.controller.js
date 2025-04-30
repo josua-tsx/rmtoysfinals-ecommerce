@@ -926,7 +926,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
             ...updatedOrder.orderItems.map((item) =>
               Product.findByIdAndUpdate(
                 item.productId,
-                { $addToSet: { userId: updatedOrder.userId } }, // Using $addToSet to avoid duplicates
+                { $push: { userId: updatedOrder.userId } }, // Using $addToSet to avoid duplicates
                 { new: true, runValidators: true }
               )
             ),
