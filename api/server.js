@@ -73,24 +73,42 @@ app.use(`/api/history`, orderStockHistory)
 app.use(handleError);
 
 
-// async function safeDropFullAddressIndex() {
-//   try {
-//     const indexes = await Address.collection.indexes();
-//     const fullAddressIndex = indexes.find(index => index.name === "fullAddress_1");
+async function safeDropProductIndex() {
+  try {
+    // Get all indexes from the vats collection
+    const indexes = await Vat.collection.indexes();
+    
+    // Find the problematic product_1 index
+    const productIndex = indexes.find(index => index.name === "product_1");
 
-//     if (fullAddressIndex) {
-//       await Address.collection.dropIndex("fullAddress_1");
-//       console.log("✅ Dropped fullAddress_1 index.");
-//     } else {
-//       console.log("ℹ️ No fullAddress_1 index found, nothing to drop.");
-//     }
-//   } catch (error) {
-//     console.error("❌ Error while checking/dropping index:", error);
-//   }
-// }
+    if (productIndex) {
+      // Drop the index
+      await Vat.collection.dropIndex("product_1");
+      console.log("✅ Dropped product_1 index successfully.");
+    } else {
+      console.log("ℹ️ No product_1 index found, nothing to drop.");
+    }
+  } catch (error) {
+    console.error("❌ Error while dropping product_1 index:", error);
+    
+    // Special handling for MongoDB 4.2+ where you might need to drop the index differently
+    if (error.code === 27 || error.message.includes("not found")) {
+      console.log("⚠️ Trying alternative drop method...");
+      try {
+        await mongoose.connection.db.command({
+          dropIndexes: 'vats',
+          index: 'product_1'
+        });
+        console.log("✅ Successfully dropped index using alternative method");
+      } catch (altError) {
+        console.error("❌ Failed to drop index with alternative method:", altError);
+      }
+    }
+  }
+}
 
 // // Call it once somewhere after mongoose.connect()
-// safeDropFullAddressIndex();
+safeDropProductIndex();
 
 // Server startup
 app.listen(PORT, () => {
