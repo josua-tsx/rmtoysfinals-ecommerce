@@ -17,7 +17,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   // const [discount, setDiscount] = useState(0);
-  const [vatPercent, setVatPercent] = useState(0);
+
+  const [selectedVatValue, setSelectedVatValue] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -37,7 +38,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const calculateTotalExpenses =
     (Number(supplierPrice) + Number(shippingPrice)) * Number(quantity);
 
-  const totalPriceWithVAT = Number(shopPrice) + Number(shopPrice) * vatPercent;
+  const totalPriceWithVAT = Number(shopPrice) + Number(shopPrice) * selectedVatValue?.vatValue;
   const roundedPrice = Math.round(totalPriceWithVAT);
 
   useEffect(() => {
@@ -74,6 +75,13 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
     },
   });
 
+  const handleVatOnChange = (e) => {
+    const selectedVatId = e.target.value;
+    const selectedVatValue = vats.find((vat) => vat._id === selectedVatId);
+
+    setSelectedVatValue(selectedVatValue);
+  };
+
   const hanldeFormSubmit = (e) => {
     e.preventDefault();
 
@@ -87,7 +95,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-      vatPercent,
+      vatPercent: selectedVatValue?._id,
       vatShopPrice: roundedPrice,
     });
   };
@@ -166,8 +174,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               <select
                 name="vatPercent"
                 id="vatPercent"
-                value={vatPercent}
-                onChange={(e) => setVatPercent(e.target.value)}
+                value={selectedVatValue?._id}
+                onChange={handleVatOnChange}
                 className="rounded-[5px] border border-black outline-none"
               >
                 <option value="">Select VAT Percent</option>
@@ -207,7 +215,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               />
             </div>
 
-            {vatPercent.length > 0 && (
+            {selectedVatValue?.vatPercent > 0 && (
               <p>Shop price with VAT = {totalPriceWithVAT}</p>
             )}
 
