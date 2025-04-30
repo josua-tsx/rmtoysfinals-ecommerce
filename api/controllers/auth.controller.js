@@ -108,10 +108,10 @@ export const signup = async (req, res, next) => {
 };
 
 export const signin = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { loginId, password } = req.body;
 
-  if (!email) {
-    return next(handleMakeError(400, "Please input email"));
+  if (!loginId) {
+    return next(handleMakeError(400, "Please input email or username"));
   }
 
   if (!password) {
@@ -119,14 +119,19 @@ export const signin = async (req, res, next) => {
   }
 
   try {
-    const validUser = await User.findOne({ email });
+    const validUser = await User.findOne({
+      $or: [
+        {
+          email: loginId,
+        },
+        {
+          username: loginId,
+        },
+      ],
+    });
     if (!validUser) return next(handleMakeError(404, "Invalid Credentials!"));
 
     if (validUser && (await validUser.comparePassword(password))) {
-      // const { accessToken, refreshToken } = generateTokens(validUser._id);
-      // await storeRefreshToken(validUser._id, refreshToken);
-      // setCookies(res, accessToken, refreshToken);
-
       const { accessToken } = generateTokens(validUser._id);
       // await storeRefreshToken(validUser._id, refreshToken);
       setCookies(res, accessToken);

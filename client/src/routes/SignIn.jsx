@@ -16,7 +16,7 @@ export default function SignIn() {
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
 
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("")
   const [password, setPassword] = useState("");
 
   // Toggle the password visibility
@@ -31,7 +31,7 @@ export default function SignIn() {
     },
     onSuccess: (userData) => {
       setCurrentUser(userData);
-      setEmail("");
+      setLoginId("")
       setPassword("");
       navigate(`/`);
     },
@@ -43,11 +43,11 @@ export default function SignIn() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     try {
-      loginMutation({ email, password });
+      loginMutation({ loginId, password });
     } catch (error) {
       console.log(error);
     }
-}
+  };
 
   return (
     <section className="pt-[180px] md:pb-32 h-full bg-yellow p-4 font-main ">
@@ -68,15 +68,15 @@ export default function SignIn() {
         >
           <div className="flex justify-between flex-col">
             <label htmlFor="email" className=" mb-2">
-              Email:{" "}
+              Email or Username :{" "}
             </label>
             <input
               type="text"
-              placeholder="Ex: example@domain.com"
+              placeholder="Ex: example@domain.com or johndoe123"
               name="email"
               id="email"
-              value={email}
-              onChange={handleInputChange(setEmail)}
+              value={loginId}
+              onChange={handleInputChange(setLoginId)}
               className="outline-none p-2 bg-transparent border-black border rounded-[5px]"
             />
           </div>

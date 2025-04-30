@@ -15,6 +15,7 @@ export default function SignUp() {
 
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordTwo, setShowPasswordTwo] = useState(false);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -24,6 +25,10 @@ export default function SignUp() {
   // Toggle the password visibility
   const togglePassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const togglePasswordTWo = () => {
+    setShowPasswordTwo(!showPasswordTwo);
   };
 
   const { mutate: signUpMutation, isPending } = useMutation({
@@ -129,18 +134,30 @@ export default function SignUp() {
               </p>
             </div>
           </div>
-          <div className="flex justify-between flex-col">
+          <div className="flex justify-between relative flex-col">
             <label htmlFor="password2" className=" mb-2 ">
               Confirm password:{" "}
             </label>
             <input
-              type="password"
+              type={showPasswordTwo ? "Text" : "Password"}
               name="confirmPassword"
               id="confirmPassword"
               value={confirmPassword}
               onChange={handleInputChange(setConfirmPassword)}
               className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
             />
+             <label
+                htmlFor=""
+                className="absolute right-2 top-12 flex items-center gap-2"
+              >
+                <p className="text-xs">Show Password</p>
+                <input
+                  type="checkbox"
+                  onChange={togglePasswordTWo}
+                  checked={showPasswordTwo}
+                  className="border  size-[20px]  border-black"
+                />
+              </label>
           </div>
 
           <div className="flex justify-center mt-4 gap-2">
