@@ -20,6 +20,8 @@ export default function AdminOrderStockHistoryTable() {
     },
   });
 
+  console.log(stockHistory)
+  
   const arrayStocks = Array.isArray(stockHistory) ? stockHistory : [];
 
   const filteredArrayStocks = arrayStocks.filter(

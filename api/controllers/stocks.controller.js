@@ -1,10 +1,10 @@
 import { handleMakeError } from "../middleware/handleError.js";
+import OrderStockHistory from "../models/orderStockHistory.models.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import Supplier from "../models/supplier.model.js";
 // import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
-import { orderStockHistory } from "./orderStockHistory.contoller.js";
 
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
@@ -25,25 +25,24 @@ export const OrderStocks = async (req, res, next) => {
   } = req.body;
 
   try {
-
     if (!dateDelivery) {
-      return next(handleMakeError(400, "Please input date delivery"))
+      return next(handleMakeError(400, "Please input date delivery"));
     }
 
     if (!vat) {
-      return next(handleMakeError(400, "Please select VAT"))
+      return next(handleMakeError(400, "Please select VAT"));
     }
 
     if (!supplier) {
-      return next(handleMakeError(400, "Please select Supplier"))
+      return next(handleMakeError(400, "Please select Supplier"));
     }
 
     if (!shopPrice) {
-      return next(handleMakeError(400, "Please input shop price"))
+      return next(handleMakeError(400, "Please input shop price"));
     }
 
     if (!shippingPrice) {
-      return next(handleMakeError(400, "Please input shipping Price"))
+      return next(handleMakeError(400, "Please input shipping Price"));
     }
 
     // Validate required fields
@@ -96,7 +95,7 @@ export const OrderStocks = async (req, res, next) => {
 
     await newDelivery.save();
 
-    await orderStockHistory({
+    await OrderStockHistory({
       action: "admin_ordered_stock",
       userId,
       deliveryId,
@@ -154,25 +153,24 @@ export const reorderStock = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
-
     if (!dateDelivery) {
-      return next(handleMakeError(400, "Please input date delivery"))
+      return next(handleMakeError(400, "Please input date delivery"));
     }
 
     if (!vatPercent) {
-      return next(handleMakeError(400, "Please select VAT"))
+      return next(handleMakeError(400, "Please select VAT"));
     }
 
     if (!supplier) {
-      return next(handleMakeError(400, "Please select Supplier"))
+      return next(handleMakeError(400, "Please select Supplier"));
     }
 
     if (!shopPrice) {
-      return next(handleMakeError(400, "Please input shop price"))
+      return next(handleMakeError(400, "Please input shop price"));
     }
 
     if (!shippingPrice) {
-      return next(handleMakeError(400, "Please input shipping Price"))
+      return next(handleMakeError(400, "Please input shipping Price"));
     }
 
     if (
@@ -314,7 +312,6 @@ export const getPendingDeliveries = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getStocks = async (req, res, next) => {
   try {
