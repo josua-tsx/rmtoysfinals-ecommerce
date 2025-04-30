@@ -6,7 +6,6 @@ import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { FaPaperPlane } from "react-icons/fa";
 
-
 export default function ReviewModal({ singleProduct, closeModal }) {
   const [showReview, setShowReview] = useState(false);
   const [commentReview, setCommentReview] = useState("");
@@ -61,30 +60,32 @@ export default function ReviewModal({ singleProduct, closeModal }) {
           <div className="md:w-[35%] flex flex-col gap-2">
             <div className="flex bg-card border rounded-[5px] p-3 border-black flex-col text-center gap-2">
               <div className="bg-yellow-50 border-l-4 my-1  rounded border-red-700 p-3  text-red-700">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <svg
-                                    className="h-5 w-5 text-yellow-400"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-yellow-700">
-                                    <strong>Note:</strong>
-                                   You can only add a review once for every products.
-                                  
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-yellow-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      <strong>Note: </strong>
+                      You can only add a review once for every products.
+                    </p>
+                    <p className="text-sm text-yellow-700">
+                      You can only add a review for products you've purchased
+                    </p>
+                  </div>
+                </div>
+              </div>
               <h1 className="text-normal">Add Review Here</h1>
               <button
                 onClick={() => setShowReview(!showReview)}
@@ -103,7 +104,6 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               } flex-col gap-5 bg-card border rounded-[5px] p-3  border-black`}
             >
               <div className="flex gap-2 flex-col ">
-                
                 <h1 className="text-center">
                   How satisfied are you with the product?
                 </h1>
@@ -141,9 +141,8 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               </div>
 
               <div className=" flex flex-col gap-2 ">
-                
                 <h1>Add your comment here</h1>
-                
+
                 <div className="flex flex-col items-center gap-2">
                   <textarea
                     name="review"
@@ -173,8 +172,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
             </form>
           </div>
           <div className="bg-card h-full md:h-[650px] w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
-            {/* REVIEW CARD GOES HERE */} 
-            
+            {/* REVIEW CARD GOES HERE */}
 
             {singleProduct?.reviews?.length > 0 ? (
               [...singleProduct?.reviews]

@@ -46,7 +46,7 @@ export const userAddReview = async (req, res, next) => {
       return next(
         handleMakeError(
           400,
-          "You must buy the product first before you can review!"
+          "You must buy the product first before you add can a review!"
         )
       );
     }
