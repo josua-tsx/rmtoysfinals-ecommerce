@@ -10,19 +10,19 @@ You can use your collected points as a discount to reduce the total price of you
   },
   {
     id: 2,
-    question: "What is credit points system and how to use them?",
+    question: "What if i forget my password? How to recover it?",
     answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
 You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
   {
     id: 3,
-    question: "What is credit points system and how to use them?",
+    question: "Where is your physical store located?",
     answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
 You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
   {
     id: 4,
-    question: "What is credit points system and how to use them?",
+    question: "Do you guys have refund?",
     answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
 You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
