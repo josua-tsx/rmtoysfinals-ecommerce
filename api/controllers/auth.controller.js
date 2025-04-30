@@ -62,6 +62,11 @@ export const signup = async (req, res, next) => {
     return next(handleMakeError(400, "User already exist"));
   }
 
+  const usernameExist = await User.findOne({ username });
+  if (usernameExist) {
+    return next(handleMakeError(400, "User already exist"));
+  }
+
   try {
     const newUser = new User({
       email,

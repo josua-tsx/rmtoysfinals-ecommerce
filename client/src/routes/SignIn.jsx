@@ -108,13 +108,15 @@ export default function SignIn() {
             </div>
           </div>
 
-          <div className="flex justify-center gap-2">
+          <div className="flex justify-center border  gap-2">
             <button
               disabled={isPending}
               className="border w-[100px] p-2 px-5 mt-4  bg-primary border-black hover:opacity-95   font-medium text-white rounded-[5px]"
             >
               {isPending ? "Loading.." : "Sign In"}
             </button>
+
+            <button></button>
           </div>
 
           <div className="absolute rounded-b-[5px] bottom-0 left-0 right-0 mx-auto bg-indigo-500 h-[40px]">
