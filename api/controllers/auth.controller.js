@@ -338,6 +338,8 @@ export const forgetPassword = async (req, res, next) => {
     return next(handleMakeError(400, "Please input email"));
   }
 
+  console.log(email);
+
   try {
     const validUser = await User.findOne({ email });
     if (!validUser) return next(handleMakeError(400, "Email does not exist"));

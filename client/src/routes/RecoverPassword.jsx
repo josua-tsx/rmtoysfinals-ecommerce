@@ -23,7 +23,9 @@ export default function RecoverPassword() {
 
   console.log(email);
 
-  const handleForgetPasswordSubmit = () => {
+  const handleForgetPasswordSubmit = (e) => {
+    e.preventDefault();
+
     forgetPasswordMutation({ email });
   };
 
@@ -104,7 +106,7 @@ export default function RecoverPassword() {
           <div className="text-sm  flex items-center gap-2">
             Already have an account?{" "}
             <Link
-              to={`/sign-up`}
+              to={`/sign-in`}
               className="text-indigo-500 hover:underline  text-[18px]"
             >
               {" "}
