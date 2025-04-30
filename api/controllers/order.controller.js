@@ -923,11 +923,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
               )
             ),
 
-            ...updatedOrder.orderItems.map((item) => {
-              Product.findByIdAndUpdate(item.productId, {
-                $push: { userId: updatedOrder.userId },
-              });
-            }),
+            ...updatedOrder.orderItems.map((item) =>
+              Product.findByIdAndUpdate(
+                item.productId,
+                { $addToSet: { userId: updatedOrder.userId } }, // Using $addToSet to avoid duplicates
+                { new: true, runValidators: true }
+              )
+            ),
 
             User.findByIdAndUpdate(updatedOrder.userId, {
               $inc: { credits: updatedOrder.totalPoints },
