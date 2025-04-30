@@ -258,7 +258,7 @@ export const reorderStock = async (req, res, next) => {
     });
 
     await Vat.findByIdAndUpdate(newVatPercent, {
-      $addToSet: { product: updateDeliver.vat },
+      $push: { product: updateDeliver.vat },
     });
 
     await Product.findByIdAndUpdate(
