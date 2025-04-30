@@ -349,7 +349,9 @@ export const forgetPassword = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       validUser._id,
       {
-        password: recoveryPassword,
+        $set: {
+          password: recoveryPassword,
+        },
       },
       {
         new: true,
@@ -360,7 +362,7 @@ export const forgetPassword = async (req, res, next) => {
 
     await sendEmail(
       validUser.email,
-      `Hello, ${validUser.username}, your recovery password is ${recoveryPassword}. Please update your password as you login!`
+      `Hello, ${validUser.username}, your recovery password is "${recoveryPassword}". Please update your password as you login!`
     );
 
     res.status(200).json(user);
