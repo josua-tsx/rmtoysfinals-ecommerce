@@ -11,6 +11,7 @@ import {
   validateProductDescription,
   validateProductName,
 } from "../utils/validations.js";
+import Supplier from "../models/supplier.model.js";
 
 export const addProduct = async (req, res, next) => {
   const userId = req.user.id;
@@ -347,6 +348,10 @@ export const deleteProduct = async (req, res, next) => {
     await Category.findByIdAndUpdate(singleProduct.category, {
       $pull: { products: productId },
     });
+
+    await Supplier.findByIdAndUpdate(singleProduct.supplier, {
+      $pull: {product: productId}
+    })
 
     await Cart.deleteMany({ "items.productId": productId });
 

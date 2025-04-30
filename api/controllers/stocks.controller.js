@@ -127,6 +127,8 @@ export const OrderStocks = async (req, res, next) => {
       $push: { product: newDelivery.product },
     });
 
+
+
     res.status(201).json(newDelivery);
   } catch (error) {
     next(error);
