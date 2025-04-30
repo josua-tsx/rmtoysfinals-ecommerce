@@ -202,13 +202,13 @@ export const reorderStock = async (req, res, next) => {
       );
     }
 
-    // 1. First find the existing stock
+    // find the existing product on vat, if found then pull it before adding to new one (which the logic bellow)
     const existingStock = await Stocks.findById(stockId);
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
     if (
       existingStock.vat &&
-      existingStock.vat.toString() !== newVatPercent.toString()
+      existingStock.vat !== newVatPercent
     ) {
       // Remove from old VAT
       await Vat.findByIdAndUpdate(existingStock.vat, {
