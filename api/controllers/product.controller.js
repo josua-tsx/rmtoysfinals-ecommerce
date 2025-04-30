@@ -345,6 +345,8 @@ export const deleteProduct = async (req, res, next) => {
 
     await Stocks.deleteMany({ product: productId });
 
+    await Category.deleteMany({products: productId})
+
     await Cart.deleteMany({ "items.productId": productId });
 
     await Wishlist.deleteMany({ "items.productId": productId });

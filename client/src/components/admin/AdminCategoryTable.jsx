@@ -30,6 +30,8 @@ export default function AdminCategoryTable() {
     },
   });
 
+  console.log(categories)
+
   const arrayCategories = Array.isArray(categories) ? categories : [];
 
   const { mutate: deleteCategoryMutation } = useMutation({
@@ -43,6 +45,9 @@ export default function AdminCategoryTable() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category Deleted Successfully!");
     },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong")
+    }
   });
 
   const handleClickDelete = (categoryId) => {
@@ -117,7 +122,7 @@ export default function AdminCategoryTable() {
               <th className="font-normal p-2 pb-5">ID</th>
               <th className="font-normal p-2 pb-5">Category Name</th>
               <th className="font-normal p-2 pb-5">Category Description</th>
-              {/* <th className="font-normal p-2 pb-5">Products Count</th> */}
+              <th className="font-normal p-2 pb-5">Category Products Count</th>
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>
@@ -130,6 +135,7 @@ export default function AdminCategoryTable() {
                   <td className="	">{category?.categoryName}</td>
 
                   <td className="">{category?.categoryDescription}</td>
+                  <td className="">{category?.products?.length}</td>
                   {/* <td className="">
                     {category?.products.length}
                   </td> */}
