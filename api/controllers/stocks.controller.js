@@ -3,6 +3,7 @@ import OrderStockHistory from "../models/orderStockHistory.models.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import Supplier from "../models/supplier.model.js";
+import Vat from "../models/vat.models.js";
 // import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
 
@@ -124,6 +125,10 @@ export const OrderStocks = async (req, res, next) => {
 
     await Supplier.findByIdAndUpdate(supplier, {
       $push: { product: newDelivery.product },
+    });
+
+    await Vat.findByIdAndUpdate(vat, {
+      $push: { product: newDelivery.vat },
     });
 
     res.status(201).json(newDelivery);
