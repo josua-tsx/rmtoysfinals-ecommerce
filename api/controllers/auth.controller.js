@@ -330,3 +330,51 @@ export const addWorker = async (req, res, next) => {
     next(error);
   }
 };
+
+export const forgetPassword = async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(handleMakeError(400, "Please input email"));
+  }
+
+  try {
+    const validUser = await User.findOne({ email });
+    if (!validUser) return next(handleMakeError(400, "Email does not exist"));
+
+    const recoveryPassword = recoveryPasswordRandom(10);
+
+    const user = await User.findByIdAndUpdate(
+      validUser._id,
+      {
+        password: recoveryPassword,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!user) return next(handleMakeError(400, "User not found!"));
+
+    await sendEmail(
+      validUser.email,
+      `Hello, ${validUser.username}, your recovery password is ${recoveryPassword}. Please update your password as you login!`
+    );
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const recoveryPasswordRandom = (length) => {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+
+  for (let i = 0; 1 < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return result;
+};

@@ -16,7 +16,7 @@ export default function SignIn() {
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
 
-  const [loginId, setLoginId] = useState("")
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
 
   // Toggle the password visibility
@@ -31,7 +31,7 @@ export default function SignIn() {
     },
     onSuccess: (userData) => {
       setCurrentUser(userData);
-      setLoginId("")
+      setLoginId("");
       setPassword("");
       navigate(`/`);
     },
@@ -64,7 +64,7 @@ export default function SignIn() {
         {/* FORM */}
         <form
           onSubmit={handleFormSubmit}
-          className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[70px] shadow-lg"
+          className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg"
         >
           <div className="flex justify-between flex-col">
             <label htmlFor="email" className=" mb-2">
@@ -108,7 +108,7 @@ export default function SignIn() {
             </div>
           </div>
 
-          <div className="flex justify-center border  gap-2">
+          <div className="flex justify-center items-center relative  gap-2">
             <button
               disabled={isPending}
               className="border w-[100px] p-2 px-5 mt-4  bg-primary border-black hover:opacity-95   font-medium text-white rounded-[5px]"
@@ -116,7 +116,15 @@ export default function SignIn() {
               {isPending ? "Loading.." : "Sign In"}
             </button>
 
-            <button></button>
+            <div className="text-sm absolute -bottom-8 right-0 md:top-[50%] md:bottom-[50%]  items-center gap-2">
+              <Link
+                to={`/forget-password`}
+                className="text-indigo-500 hover:underline  "
+              >
+                {" "}
+                Forget password
+              </Link>
+            </div>
           </div>
 
           <div className="absolute rounded-b-[5px] bottom-0 left-0 right-0 mx-auto bg-indigo-500 h-[40px]">
