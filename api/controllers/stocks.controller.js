@@ -206,10 +206,7 @@ export const reorderStock = async (req, res, next) => {
     const existingStock = await Stocks.findById(stockId);
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
-    if (
-      existingStock.vat &&
-      existingStock.vat !== newVatPercent
-    ) {
+    if (existingStock.vat && existingStock.vat !== newVatPercent) {
       // Remove from old VAT
       await Vat.findByIdAndUpdate(existingStock.vat, {
         $pull: { product: existingStock.product },

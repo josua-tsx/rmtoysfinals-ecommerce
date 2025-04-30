@@ -173,7 +173,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
                 <option value="">Select VAT Percent</option>
                 {vats.length > 0 &&
                   vats.map((vat) => (
-                    <option key={vat._id} value={vat?.vatValue}>
+                    <option key={vat._id} value={vat?._id}>
                       {vat?.vatPercent} %
                     </option>
                   ))}
