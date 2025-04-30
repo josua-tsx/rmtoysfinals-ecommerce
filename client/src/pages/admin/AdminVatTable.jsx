@@ -100,9 +100,9 @@ export default function AdminVatTable() {
           <thead>
             <tr className="flex justify-between">
               <th className="font-normal p-2 pb-5">ID</th>
-              <th className="font-normal p-2 pb-5">VAT PERCENT</th>
-              <th className="font-normal p-2 pb-5">VAT VALUE</th>
-              <th className="font-normal p-2 pb-5">PRODUCTS IN USE</th>
+              <th className="font-normal p-2 pb-5">VAT Percent</th>
+              <th className="font-normal p-2 pb-5">VAT Value</th>
+              <th className="font-normal p-2 pb-5">VAT Products in use</th>
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>

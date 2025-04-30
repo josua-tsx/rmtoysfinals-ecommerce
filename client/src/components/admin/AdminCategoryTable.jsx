@@ -122,7 +122,7 @@ export default function AdminCategoryTable() {
               <th className="font-normal p-2 pb-5">ID</th>
               <th className="font-normal p-2 pb-5">Category Name</th>
               <th className="font-normal p-2 pb-5">Category Description</th>
-              <th className="font-normal p-2 pb-5">Category Products Count</th>
+              <th className="font-normal p-2 pb-5">Category Products Count in use</th>
               <th className="font-normal p-2 pb-5">ACTIONS</th>
             </tr>
           </thead>

@@ -905,13 +905,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
     switch (updatedOrder.status) {
       case "Delivered":
         try {
-          // await sendSMS(
-          //   orderUserPhoneNumber,
-          //   `Your Order ${updatedOrder._id} Has been Delivered!
-          //                 "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
-          //                 From: RM TOYS"
-          // `
-          // );
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your Order ${updatedOrder._id} Has been Delivered!
+                          "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
+                          From: RM TOYS"
+          `
+          );
 
           // Update products and user credits in parallel
           await Promise.all([
