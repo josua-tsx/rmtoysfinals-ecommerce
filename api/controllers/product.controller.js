@@ -341,6 +341,10 @@ export const deleteProduct = async (req, res, next) => {
   try {
     const singleProduct = await Product.findById(productId);
 
+    const existingStocks = await Stocks.findOne({ product: productId });
+
+    if (!existingStocks) return next(handleMakeError(400, "Stock not found!"));
+
     if (!singleProduct) return next(handleMakeError(400, "Product not found"));
 
     await Stocks.deleteMany({ product: productId });
@@ -349,9 +353,9 @@ export const deleteProduct = async (req, res, next) => {
       $pull: { products: productId },
     });
 
-    await Supplier.findByIdAndUpdate(singleProduct.supplier, {
-      $pull: {product: productId}
-    })
+    await Supplier.findByIdAndUpdate(existingStocks.supplier, {
+      $pull: { product: productId },
+    });
 
     await Cart.deleteMany({ "items.productId": productId });
 
