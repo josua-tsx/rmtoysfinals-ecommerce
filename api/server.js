@@ -22,6 +22,7 @@ import vatRoute from "../api/routes/vat.route.js"
 import sendEmailRoute from "../api/routes/sendEmail.route.js"
 import orderStockHistory from "../api/routes/orderStockHistory.route.js"
 import Address from "./models/address.models.js";
+import Vat from "./models/vat.models.js";
 
 // Load environment variables from .env file
 config();
