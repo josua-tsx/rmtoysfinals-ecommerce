@@ -280,7 +280,7 @@ export default function ShippingAddressComponent() {
             </select>
           </AddressSection>
 
-          <AddressSection title={"Barangay (Ex: Lower bicutan)"}>
+          <AddressSection title={"Barangay"}>
             <input
               type="text"
               value={barangay}
@@ -290,19 +290,19 @@ export default function ShippingAddressComponent() {
               id="barangay"
               pattern="^[a-zA-Z\s'-]{2,100}$"
               title="Use only letters, hyphens, or apostrophes."
-              placeholder="input barangay"
+              placeholder="Ex: Lower bicutan"
               required
             ></input>
           </AddressSection>
 
           <AddressSection
-            title={"Street Name, Building, House No. (Ex: 14 St. #28)"}
+            title={"Street Name, Building, House No."}
           >
             <input
               value={streetBuildingHouseNum}
               onChange={handleInputChange(setStreetBuildingHouseNum)}
               className="bg-gray-200 outline-none p-2 border border-black rounded-[5px]"
-              placeholder="Street Name, Building, House No."
+              placeholder="Ex: 14 St. #28"
               type="text"
               pattern="^[a-zA-Z0-9\s\.,#'-]{5,200}$"
               title="Use letters, numbers, or symbols like .,-#"

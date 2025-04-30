@@ -322,6 +322,7 @@ export default function AdminAddProducts() {
                 <div className="flex flex-col flex-1">
                   <label htmlFor="points" className="pb-2">
                     Points
+                    (OPTIONAL)
                   </label>
                   <select
                     className="p-2 rounded-[5px] border border-black outline-none"

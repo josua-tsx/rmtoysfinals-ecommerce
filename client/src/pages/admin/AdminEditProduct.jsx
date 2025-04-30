@@ -366,14 +366,15 @@ export default function AdminEditProducts() {
                   />
                 </div>
               </div>
-              <div className="flex flex-col md:flex-row gap-2 md:items-center">
-                <div className="flex flex-col md:flex-row gap-2 md:items-center">
-                  <div className="flex flex-col flex-1">
+              <div className="flex flex-col md:flex-row gap-2 w-full md:items-center">
+                <div className="flex flex-col md:flex-row gap-2 w-full md:items-center">
+                  <div className="flex flex-col w-full flex-1">
                     <label htmlFor="points" className="pb-2">
                       Points
+                      (OPTIONAL)
                     </label>
                     <select
-                      className="p-2 rounded-[5px] border border-black outline-none"
+                      className="p-2 rounded-[5px] w-full border border-black outline-none"
                       name="points"
                       id="points"
                       value={points}
