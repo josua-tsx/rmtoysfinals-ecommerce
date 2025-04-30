@@ -127,11 +127,6 @@ export const OrderStocks = async (req, res, next) => {
       $push: { product: newDelivery.product },
     });
 
-    // ADD TO SET IS USED TO PREVENT DUPLICATE ID PUSHING ON VAT PRODUCTS
-    await Vat.findByIdAndUpdate(vat, {
-      $push: { product: newDelivery.vat },
-    });
-
     res.status(201).json(newDelivery);
   } catch (error) {
     next(error);
@@ -206,8 +201,6 @@ export const reorderStock = async (req, res, next) => {
     const existingStock = await Stocks.findById(stockId);
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
-    await Vat.deleteMany({ product: existingStock.product });
-
     // 2. Calculate the new total quantity and total cost
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
     // const updatedTotalCost = existingStock.totalCost + Number(newTotalCost);
@@ -250,10 +243,6 @@ export const reorderStock = async (req, res, next) => {
       receivedDate: dateDelivery,
       receivedQuantity: newQuantity,
       totalCost: newTotalCost,
-    });
-
-    await Vat.findByIdAndUpdate(newVatPercent, {
-      $push: { product: updateDeliver.product },
     });
 
     await Product.findByIdAndUpdate(
