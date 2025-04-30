@@ -67,6 +67,13 @@ export const deleteSingleVat = async (req, res, next) => {
   const { vatId } = req.params;
 
   try {
+    const singleVat = await Vat.findById(vatId);
+
+    const vatInUse = await Stocks.exists({ vat: vatId });
+    if (vatInUse || singleVat?.productId?.length > 0) {
+      return next(handleMakeError(400, "VAT is in use and cannot be deleted"));
+    }
+
     const deleteVat = await Vat.findByIdAndDelete(vatId);
     if (!deleteVat) return next(handleMakeError(400, "No Vat Found!"));
     res.status(200).json(deleteVat);
