@@ -163,7 +163,7 @@ export const reorderStock = async (req, res, next) => {
       return next(handleMakeError(400, "Please input date delivery"));
     }
 
-    if (!vatPercent) {
+    if (!newVatPercent) {
       return next(handleMakeError(400, "Please select VAT"));
     }
 
@@ -181,7 +181,7 @@ export const reorderStock = async (req, res, next) => {
 
     if (
       !dateDelivery ||
-      !vatPercent ||
+      !newVatPercent ||
       !supplier ||
       !shopPrice ||
       !shippingPrice
@@ -211,7 +211,7 @@ export const reorderStock = async (req, res, next) => {
       existingStock.vat.toString() !== newVatPercent.toString()
     ) {
       // Remove from old VAT
-      await Vat.findByIdAndUpdate(existingStock.vatPercent, {
+      await Vat.findByIdAndUpdate(existingStock.vat, {
         $pull: { product: existingStock.product },
       });
     }
