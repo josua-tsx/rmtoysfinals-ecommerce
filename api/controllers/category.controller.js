@@ -5,6 +5,7 @@ import {
   validateCategoryDescription,
   validateCategoryNamee,
 } from "../utils/validations.js";
+import Stocks from "../models/stocks.model.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
@@ -75,6 +76,13 @@ export const deleteCategory = async (req, res, next) => {
 
     if (!singleCategory)
       return next(handleMakeError(400, "Category not found!"));
+
+    const categoryInUse = await Stocks.exists({ category: categoryId });
+    if (categoryInUse || singleCategory?.products?.length > 0) {
+      return next(
+        handleMakeError(400, "Category is in use and cannot be deleted")
+      );
+    }
 
     const categoryName = singleCategory.categoryName;
 
