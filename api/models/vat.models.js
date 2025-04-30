@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const VatModelSchema = new mongoose.Schema(
   {
     product: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Product", unique: true },
+      { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
     ],
     vatPercent: {
       type: Number,
