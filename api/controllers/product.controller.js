@@ -205,7 +205,6 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
-
 export const getStockStatusPendings = async (req, res, next) => {
   try {
     const products = await Product.find({ status: "pending" })
@@ -345,7 +344,9 @@ export const deleteProduct = async (req, res, next) => {
 
     await Stocks.deleteMany({ product: productId });
 
-    await Category.deleteMany({products: productId})
+    await Category.findByIdAndUpdate(singleProduct.category, {
+      $pull: { products: productId },
+    });
 
     await Cart.deleteMany({ "items.productId": productId });
 
@@ -565,7 +566,7 @@ export const addDraft = async (req, res, next) => {
     stocks,
     productImages,
     category,
-    points
+    points,
   } = req.body;
 
   if (!productName) {
@@ -598,7 +599,7 @@ export const addDraft = async (req, res, next) => {
       productImages,
       status: "draft",
       category,
-      points
+      points,
     });
 
     await newDraft.save();
