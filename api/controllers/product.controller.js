@@ -12,6 +12,7 @@ import {
   validateProductName,
 } from "../utils/validations.js";
 import Supplier from "../models/supplier.model.js";
+import Vat from "../models/vat.models.js";
 
 export const addProduct = async (req, res, next) => {
   const userId = req.user.id;
@@ -355,6 +356,10 @@ export const deleteProduct = async (req, res, next) => {
 
     await Supplier.findByIdAndUpdate(existingStocks.supplier, {
       $pull: { product: productId },
+    });
+
+    await Vat.findByIdAndUpdate(existingStocks.vat, {
+      $pull: { productId: productId },
     });
 
     await Cart.deleteMany({ "items.productId": productId });
