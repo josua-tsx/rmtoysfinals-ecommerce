@@ -346,11 +346,15 @@ export const forgetPassword = async (req, res, next) => {
 
     const recoveryPassword = recoveryPasswordRandom(10);
 
+    // Hash the recovery password before saving
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(recoveryPassword, salt);
+
     const user = await User.findByIdAndUpdate(
       validUser._id,
       {
         $set: {
-          password: recoveryPassword,
+          password: hashedPassword,
         },
       },
       {
