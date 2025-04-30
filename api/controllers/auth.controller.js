@@ -13,6 +13,7 @@ import {
   validateUsername,
 } from "../utils/validations.js";
 import { sendEmail } from "../nodemailer/nodemailer.js";
+import bcrypt from "bcryptjs/dist/bcrypt.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
