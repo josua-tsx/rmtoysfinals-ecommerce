@@ -127,7 +127,9 @@ export const OrderStocks = async (req, res, next) => {
       $push: { product: newDelivery.product },
     });
 
-
+    await Vat.findByIdAndUpdate(vat, {
+      $addToSet: { productId: newDelivery.product },
+    });
 
     res.status(201).json(newDelivery);
   } catch (error) {
@@ -230,6 +232,10 @@ export const reorderStock = async (req, res, next) => {
       },
       { new: true } // Return the updated document
     );
+
+    await Vat.findByIdAndUpdate(newVatPercent, {
+      $addToSet: { productId: updateDeliver.product },
+    });
 
     await orderStockHistory({
       action: "admin_reordered_stock",

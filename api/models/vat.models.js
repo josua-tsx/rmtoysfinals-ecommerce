@@ -10,6 +10,13 @@ const VatModelSchema = new mongoose.Schema(
     vatValue: {
       type: Number,
     },
+
+    productId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true }
 );
