@@ -209,7 +209,7 @@ export const reorderStock = async (req, res, next) => {
     if (existingStock._id && existingStock._id !== newVatPercent) {
       await Vat.findByIdAndUpdate(
         existingStock._id, // This is the old VAT document ID
-        { $pull: { products: existingStock.product } }
+        { $pull: { product: existingStock.product } }
       );
     }
 
@@ -260,9 +260,8 @@ export const reorderStock = async (req, res, next) => {
     await Vat.findByIdAndUpdate(
       newVatPercent,
       {
-        $addToSet: { product: product },
-      },
-      { upsert: true }
+        $push: { product: product },
+      }
     );
 
     await Product.findByIdAndUpdate(
