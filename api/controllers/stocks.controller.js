@@ -212,18 +212,7 @@ export const reorderStock = async (req, res, next) => {
       await Vat.findByIdAndUpdate(existingStock.vat, {
         $pull: { product: existingStock.product },
       });
-
-      // Add to new VAT (with duplicate protection)
-      await Vat.findByIdAndUpdate(newVatPercent, {
-        $pull: { product: existingStock.product }, // Remove if exists
-        $push: { product: existingStock.product }, // Add safely
-      });
-    } else if (!existingStock.vat) {
-      // Case where product had no VAT before
-      await Vat.findByIdAndUpdate(newVatPercent, {
-        $push: { product: existingStock.product },
-      });
-    }
+    } 
 
     // 2. Calculate the new total quantity and total cost
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
@@ -267,6 +256,10 @@ export const reorderStock = async (req, res, next) => {
       receivedDate: dateDelivery,
       receivedQuantity: newQuantity,
       totalCost: newTotalCost,
+    });
+
+    await Vat.findByIdAndUpdate(newVatPercent, {
+      $push: { product: updateDeliver.product },
     });
 
     await Product.findByIdAndUpdate(
