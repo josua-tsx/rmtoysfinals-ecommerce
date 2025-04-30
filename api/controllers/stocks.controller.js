@@ -258,9 +258,13 @@ export const reorderStock = async (req, res, next) => {
       totalCost: newTotalCost,
     });
 
-    await Vat.findByIdAndUpdate(newVatPercent, {
-      $push: { product: updateDeliver.vat },
-    });
+    await Vat.findOneAndUpdate(
+      { vatPercent: newVatPercent },
+      { 
+        $addToSet: { product: product },
+      },
+      { upsert: true }
+    );
 
     await Product.findByIdAndUpdate(
       existingStock.product,
