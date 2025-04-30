@@ -40,11 +40,14 @@ export const userAddReview = async (req, res, next) => {
       }
     }
 
-    const findProduct = await Product.findOne({ userId: userId });
+    const findProduct = await Product.findById(productId);
 
-    if (!findProduct) {
+    if (!findProduct.userId.includes(userId)) {
       return next(
-        handleMakeError(400, "You must buy first before you can review!")
+        handleMakeError(
+          400,
+          "You must buy the product first before you can review!"
+        )
       );
     }
 
