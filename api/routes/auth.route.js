@@ -2,6 +2,7 @@ import express from "express";
 // import { addWorker, getMe, refreshToken, signin, signout, signup } from '../controllers/auth.controller.js'
 import {
   addWorker,
+  forgetPassword,
   getMe,
   signin,
   signout,
@@ -14,11 +15,13 @@ const router = express.Router();
 
 router.post(`/signup`, signup);
 router.post(`/signin`, signin);
+router.post(`/forget-password`, forgetPassword)
 router.post(`/signout`, requireAuth, signout);
 // ADD WORKER
 
 router.post(`/add-worker`, requireAuth, requireAdmin, addWorker);
 router.post(`/send-email`, sendEmail);
+
 
 // refresh token
 // router.post(`/refresh-token`, refreshToken)
