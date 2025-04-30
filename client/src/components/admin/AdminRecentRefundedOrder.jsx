@@ -41,7 +41,7 @@ export default function AdminRecentRefundedOrder() {
               <img
                 src={latestrefundedOrder.imageUrl}
                 alt="product image"
-                className="w-[50px]"
+                className="w-[50px] hidden md:block"
               />
             ) : (
               <img
@@ -49,7 +49,7 @@ export default function AdminRecentRefundedOrder() {
                   latestrefundedOrder.orderItems[0].productId.productImages[0]
                 }
                 alt="product image"
-                className="w-[50px]"
+                className="w-[50px] hidden md:block"
               />
             )}
             <div className="text-xs">

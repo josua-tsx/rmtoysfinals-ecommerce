@@ -45,13 +45,13 @@ export default function AdminRecentSuccessOrder() {
                   <img
                     src={latestOrder.imageUrl}
                     alt="product image"
-                    className="w-[50px]"
+                    className="w-[50px] hidden md:block"
                   />
                 ) : (
                   <img
                     src={latestOrder.orderItems[0].productId.productImages[0]}
                     alt="product image"
-                    className="w-[50px]"
+                    className="w-[50px] hidden md:block"
                   />
                 )}
                 <div className="text-xs">
