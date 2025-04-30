@@ -200,8 +200,8 @@ export default function AdminProductOverview() {
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between gap-16 md:gap-4">
-        <div className="border border-black w-full h-[400px] md:h-[422px] md:w-[50%] bg-card relative rounded-[5px]">
+      <div className="flex flex-col md:flex-row  justify-between gap-16 md:gap-4">
+        <div className="border border-black w-full flex-1 bg-card relative rounded-[5px]">
           <div className="absolute -top-11 -left-1 border rounded-[5px]  bg-primary text-card border-black p-1">
             <h1>CATEGORIES DISTRIBUTION</h1>
           </div>
@@ -326,8 +326,8 @@ export default function AdminProductOverview() {
               </div>
 
               <div className="p-4 text-sm flex flex-col gap-3 items-center">
-                <p className="text-lg">LATEST REVIEW</p>
-                <p>{new Date(latestReview.createdAt).toLocaleString()}</p>
+                <p className="">LATEST REVIEW</p>
+                <p className="text-xs">{new Date(latestReview.createdAt).toLocaleString()}</p>
                 <img
                   src={latestReview?.userId?.avatar}
                   alt="avatar"
