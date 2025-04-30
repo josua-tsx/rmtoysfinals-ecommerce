@@ -1,11 +1,11 @@
 import { handleMakeError } from "../middleware/handleError.js";
-import OrderStockHistory from "../models/orderStockHistory.models.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import Supplier from "../models/supplier.model.js";
 import Vat from "../models/vat.models.js";
 // import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
+import { orderStockHistory } from "./orderStockHistory.contoller.js";
 
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
@@ -96,7 +96,7 @@ export const OrderStocks = async (req, res, next) => {
 
     await newDelivery.save();
 
-    await OrderStockHistory({
+    await orderStockHistory({
       action: "admin_ordered_stock",
       userId,
       deliveryId,
@@ -206,11 +206,23 @@ export const reorderStock = async (req, res, next) => {
     const existingStock = await Stocks.findById(stockId);
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
-    if (existingStock._id && existingStock._id !== newVatPercent) {
-      await Vat.findByIdAndUpdate(
-        existingStock._id, // This is the old VAT document ID
-        { $pull: { product: existingStock.product } }
-      );
+    // Only process VAT changes if the VAT is actually being changed
+    if (existingStock.vat && existingStock.vat.toString() !== newVatPercent) {
+      // Remove from old VAT
+      await Vat.findByIdAndUpdate(existingStock.vat, {
+        $pull: { product: existingStock.product },
+      });
+
+      // Add to new VAT (with duplicate protection)
+      await Vat.findByIdAndUpdate(newVatPercent, {
+        $pull: { product: existingStock.product }, // Remove if exists
+        $addToSet: { product: existingStock.product }, // Add safely
+      });
+    } else if (!existingStock.vat) {
+      // Case where product had no VAT before
+      await Vat.findByIdAndUpdate(newVatPercent, {
+        $addToSet: { product: existingStock.product },
+      });
     }
 
     // 2. Calculate the new total quantity and total cost
@@ -241,7 +253,7 @@ export const reorderStock = async (req, res, next) => {
       { new: true } // Return the updated document
     );
 
-    await OrderStockHistory({
+    await orderStockHistory({
       action: "admin_reordered_stock",
       userId,
       deliveryId,
@@ -255,10 +267,6 @@ export const reorderStock = async (req, res, next) => {
       receivedDate: dateDelivery,
       receivedQuantity: newQuantity,
       totalCost: newTotalCost,
-    });
-
-    await Vat.findByIdAndUpdate(newVatPercent, {
-      $push: { product: updateDeliver.product },
     });
 
     await Product.findByIdAndUpdate(
