@@ -233,7 +233,7 @@ export const reorderStock = async (req, res, next) => {
         deliveryId,
         dateDelivery,
         discount,
-        vatPercent: newVatPercent,
+        vat: newVatPercent,
         vatShopPrice,
         vatToRemit:
           (Number(vatShopPrice) - Number(shopPrice)) * updatedQuantity,
