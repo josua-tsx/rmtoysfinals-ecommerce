@@ -44,20 +44,19 @@ export default function AdminSalesOverview() {
   });
 
   // Calculate total VAT to remit
-const totalVatToRemit = Array.isArray(successOrderData)
-? successOrderData.reduce((totalVat, order) => {
-    const orderVat = order.orderItems?.reduce((orderTotal, item) => {
-      if (!item?.productId) return orderTotal;
-      const vatPerUnit = item.productId.price - item.productId.preVatPrice;
-      return orderTotal + (vatPerUnit * item.quantity);
-    }, 0) || 0;
-    
-    return totalVat + orderVat;
-  }, 0)
-: 0;
+  const totalVatToRemit = Array.isArray(successOrderData)
+    ? successOrderData.reduce((totalVat, order) => {
+        const orderVat =
+          order.orderItems?.reduce((orderTotal, item) => {
+            if (!item?.productId) return orderTotal;
+            const vatPerUnit =
+              item.productId.price - item.productId.preVatPrice;
+            return orderTotal + vatPerUnit * item.quantity;
+          }, 0) || 0;
 
-
-
+        return totalVat + orderVat;
+      }, 0)
+    : 0;
 
   // TOTAL CUSTOMER
   const {
@@ -100,10 +99,6 @@ const totalVatToRemit = Array.isArray(successOrderData)
         return total + item?.totalCost;
       }, 0)
     : 0;
-
-  
-
- 
 
   // GET ALL ORDERS (PENDING SO ON)
 
@@ -194,7 +189,10 @@ const totalVatToRemit = Array.isArray(successOrderData)
             <LoadingSpinner />
           </div>
         ) : (
-          <AdminStatCard title={"TOTAL VAT TO REMIT"} value={`${formatPrice(totalVatToRemit)} PHP`} />
+          <AdminStatCard
+            title={"TOTAL VAT TO REMIT"}
+            value={`${formatPrice(totalVatToRemit)} PHP`}
+          />
         )}
 
         {isPendingPending ? (
@@ -202,7 +200,10 @@ const totalVatToRemit = Array.isArray(successOrderData)
             <LoadingSpinner />
           </div>
         ) : (
-          <AdminStatCard title={"TOTAL PROFIT"} value={`${formatPrice(totalRevenue - totalExpenses)} PHP`} />
+          <AdminStatCard
+            title={"TOTAL PROFIT"}
+            value={`${formatPrice(totalRevenue - totalExpenses)} PHP`}
+          />
         )}
 
         {isCustomerPending ? (

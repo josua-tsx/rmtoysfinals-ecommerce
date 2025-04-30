@@ -206,13 +206,14 @@ export const reorderStock = async (req, res, next) => {
     const existingStock = await Stocks.findById(stockId);
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
 
-    // Only process VAT changes if the VAT is actually being changed
-    if (existingStock.vat && existingStock.vat.toString() !== newVatPercent) {
-      // Remove from old VAT
+    if (
+      existingStock.vat &&
+      existingStock.vat.toString() !== newVatPercent.toString()
+    ) {
       await Vat.findByIdAndUpdate(existingStock.vat, {
         $pull: { product: existingStock.product },
       });
-    } 
+    }
 
     // 2. Calculate the new total quantity and total cost
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
