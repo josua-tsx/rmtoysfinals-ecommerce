@@ -129,7 +129,7 @@ export const OrderStocks = async (req, res, next) => {
 
     // ADD TO SET IS USED TO PREVENT DUPLICATE ID PUSHING ON VAT PRODUCTS
     await Vat.findByIdAndUpdate(vat, {
-      $addToSet: { product: newDelivery.vat },
+      $push: { product: newDelivery.vat },
     });
 
     res.status(201).json(newDelivery);
@@ -216,12 +216,12 @@ export const reorderStock = async (req, res, next) => {
       // Add to new VAT (with duplicate protection)
       await Vat.findByIdAndUpdate(newVatPercent, {
         $pull: { product: existingStock.product }, // Remove if exists
-        $addToSet: { product: existingStock.product }, // Add safely
+        $push: { product: existingStock.product }, // Add safely
       });
     } else if (!existingStock.vat) {
       // Case where product had no VAT before
       await Vat.findByIdAndUpdate(newVatPercent, {
-        $addToSet: { product: existingStock.product },
+        $push: { product: existingStock.product },
       });
     }
 
