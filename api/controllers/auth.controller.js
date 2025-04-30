@@ -369,7 +369,7 @@ export const forgetPassword = async (req, res, next) => {
       `Hello, ${validUser.username}, your recovery password is "${recoveryPassword}". Please update your password as you login!`
     );
 
-    res.status(200).json(user);
+    res.status(200).json({success: true, message: "Recovery password is sent to your email!"});
   } catch (error) {
     next(error);
   }
