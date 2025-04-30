@@ -905,20 +905,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
     switch (updatedOrder.status) {
       case "Delivered":
         try {
-          // Send email
-          // await sendEmail(
-          //   userEmail,
-          //   `Your Order ${updatedOrder._id} Has been Delivered!`,
-          //   "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase."
+          // await sendSMS(
+          //   orderUserPhoneNumber,
+          //   `Your Order ${updatedOrder._id} Has been Delivered!
+          //                 "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
+          //                 From: RM TOYS"
+          // `
           // );
-
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your Order ${updatedOrder._id} Has been Delivered!
-                          "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
-                          From: RM TOYS"
-          `
-          );
 
           // Update products and user credits in parallel
           await Promise.all([
@@ -929,6 +922,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
                 { new: true, runValidators: true }
               )
             ),
+
+            ...updatedOrder.orderItems.map((item) => {
+              Product.findByIdAndUpdate(item.productId, {
+                $push: { userId: updatedOrder.userId },
+              });
+            }),
 
             User.findByIdAndUpdate(updatedOrder.userId, {
               $inc: { credits: updatedOrder.totalPoints },
@@ -943,12 +942,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
                   }),
                 ]
               : []),
-
-            // Stocks.findOneAndUpdate(
-            //   { product: { $in: updatedOrder.orderItems.map(item => item.productId) } },
-            //   { $inc: { totalCost: -updatedOrder.totalPrice } },
-            //   { new: true, runValidators: true }
-            // )
           ]);
 
           // Audit trail

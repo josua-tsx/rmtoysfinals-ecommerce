@@ -44,17 +44,17 @@ const ProductModelSchema = new mongoose.Schema(
 
     sold: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     points: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     status: {
       type: String,
-      enum: ["draft", "pending" ,"processing" ,"published"],
+      enum: ["draft", "pending", "processing", "published"],
       // default: "draft"
     },
 
@@ -72,6 +72,13 @@ const ProductModelSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
     },
+
+    userId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
 
     reviews: [
       {
