@@ -127,8 +127,9 @@ export const OrderStocks = async (req, res, next) => {
       $push: { product: newDelivery.product },
     });
 
+    // ADD TO SET IS USED TO PREVENT DUPLICATE ID PUSHING ON VAT PRODUCTS
     await Vat.findByIdAndUpdate(vat, {
-      $push: { product: newDelivery.vat },
+      $addToSet: { product: newDelivery.vat },
     });
 
     res.status(201).json(newDelivery);
@@ -150,7 +151,7 @@ export const reorderStock = async (req, res, next) => {
     deliveryId,
     dateDelivery,
     discount,
-    vatPercent,
+    vatPercent: newVatPercent,
     vatShopPrice,
   } = req.body;
   const { stockId } = req.params;
@@ -203,8 +204,17 @@ export const reorderStock = async (req, res, next) => {
 
     // 1. First find the existing stock
     const existingStock = await Stocks.findById(stockId);
-
     if (!existingStock) return next(handleMakeError(400, "No stock found!"));
+
+    if (
+      existingStock.vat &&
+      existingStock.vat.toString() !== newVatPercent.toString()
+    ) {
+      // Remove from old VAT
+      await Vat.findByIdAndUpdate(existingStock.vatPercent, {
+        $pull: { product: existingStock.product },
+      });
+    }
 
     // 2. Calculate the new total quantity and total cost
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
@@ -226,7 +236,7 @@ export const reorderStock = async (req, res, next) => {
         deliveryId,
         dateDelivery,
         discount,
-        vatPercent,
+        vatPercent: newVatPercent,
         vatShopPrice,
         vatToRemit:
           (Number(vatShopPrice) - Number(shopPrice)) * updatedQuantity,
@@ -234,7 +244,7 @@ export const reorderStock = async (req, res, next) => {
       { new: true } // Return the updated document
     );
 
-    await orderStockHistory({
+    await OrderStockHistory({
       action: "admin_reordered_stock",
       userId,
       deliveryId,
@@ -243,15 +253,15 @@ export const reorderStock = async (req, res, next) => {
       quantityOrdered: newQuantity,
       supplierPrice,
       shippingPrice,
-      vatPercentApplied: vatPercent,
+      vatPercentApplied: newVatPercent,
       shopPrice,
       receivedDate: dateDelivery,
       receivedQuantity: newQuantity,
       totalCost: newTotalCost,
     });
 
-    await Vat.findByIdAndUpdate(vatPercent, {
-      $push: { product: newDelivery.vat },
+    await Vat.findByIdAndUpdate(newVatPercent, {
+      $addToSet: { product: newDelivery.vat },
     });
 
     await Product.findByIdAndUpdate(
