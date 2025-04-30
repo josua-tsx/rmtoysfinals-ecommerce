@@ -332,6 +332,9 @@ export const addWorker = async (req, res, next) => {
   }
 };
 
+// Simple in-memory store for tracking reset attempts
+const passwordResetAttempts = new Map(); // Stores { email: lastAttemptTimestamp }
+
 export const forgetPassword = async (req, res, next) => {
   const { email } = req.body;
 
@@ -339,38 +342,49 @@ export const forgetPassword = async (req, res, next) => {
     return next(handleMakeError(400, "Please input email"));
   }
 
-  console.log(email);
-
   try {
+    // Check if the email has a recent reset attempt
+    const lastAttempt = passwordResetAttempts.get(email);
+    if (lastAttempt) {
+      const cooldownMs = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const timeSinceLastAttempt = Date.now() - lastAttempt;
+
+      if (timeSinceLastAttempt < cooldownMs) {
+        const timeLeftMinutes = Math.ceil((cooldownMs - timeSinceLastAttempt) / (1000 * 60));
+        return next(handleMakeError(429, `Please wait ${timeLeftMinutes} minute(s) before requesting another reset.`));
+      }
+    }
+
+    // Record this attempt (even before checking user existence to prevent email probing)
+    passwordResetAttempts.set(email, Date.now());
+
     const validUser = await User.findOne({ email });
-    if (!validUser) return next(handleMakeError(400, "Email does not exist"));
+    if (!validUser) {
+      // Return a generic message to prevent email enumeration
+      return next(handleMakeError(400, "If this email exists, a recovery link has been sent."));
+    }
 
     const recoveryPassword = recoveryPasswordRandom(10);
-
-    // Hash the recovery password before saving
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(recoveryPassword, salt);
 
     const user = await User.findByIdAndUpdate(
       validUser._id,
-      {
-        $set: {
-          password: hashedPassword,
-        },
-      },
-      {
-        new: true,
-      }
+      { $set: { password: hashedPassword } },
+      { new: true }
     );
 
     if (!user) return next(handleMakeError(400, "User not found!"));
 
     await sendEmail(
       validUser.email,
-      `Hello, ${validUser.username}, your recovery password is "${recoveryPassword}". Please update your password as you login!`
+      `Hello, ${validUser.username}, your recovery password is "${recoveryPassword}". Please update your password after logging in!`
     );
 
-    res.status(200).json({success: true, message: "Recovery password is sent to your email!"});
+    res.status(200).json({
+      success: true,
+      message: "Recovery password sent to your email. Please wait 5 minutes before requesting another."
+    });
   } catch (error) {
     next(error);
   }
