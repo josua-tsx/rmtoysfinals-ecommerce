@@ -297,6 +297,11 @@ export const addWorker = async (req, res, next) => {
     return next(handleMakeError(400, "User already exists"));
   }
 
+  const usernameExist = await User.findOne({ username });
+  if (usernameExist) {
+    return next(handleMakeError(400, "Username already exist"));
+  }
+
   try {
     const newUser = new User({
       email,
