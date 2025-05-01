@@ -66,8 +66,8 @@ export const OrderStocks = async (req, res, next) => {
     }
 
     // Quantity specific validation
-    if (Number(quantity) <= 0) {
-      return next(handleMakeError(400, "Quantity must be at least 1"));
+    if (Number(quantity) <= 10) {
+      return next(handleMakeError(400, "Quantity must be at least 10"));
     }
 
     // Price validation
