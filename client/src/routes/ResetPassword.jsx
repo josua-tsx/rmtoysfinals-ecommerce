@@ -47,7 +47,7 @@ export default function ResetPassword() {
       return;
     }
 
-    resetPasswordMutation({ token, password });
+    resetPasswordMutation({ token, newPassword: password });
   };
 
   return (
@@ -127,11 +127,11 @@ export default function ResetPassword() {
           </div>
 
           <div className="flex justify-center w-full">
-            <button disabled={isPending}
-            className="border border-black p-2 text-white rounded-[5px] bg-primary">
-              {
-                isPending ? "Loading.." : "Reset Password"
-              }
+            <button
+              disabled={isPending}
+              className="border border-black p-2 text-white rounded-[5px] bg-primary"
+            >
+              {isPending ? "Loading.." : "Reset Password"}
             </button>
           </div>
 
