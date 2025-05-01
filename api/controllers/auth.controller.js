@@ -389,7 +389,7 @@ export const forgetPassword = async (req, res, next) => {
 
     await sendEmail(
       validUser.email,
-      `Hello ${validUser.username},\n\nYou requested a password reset. Click the link below to set a new password (expires in 15 minutes):\n\n${resetLink}\n\nIf you didn't request this, ignore this email.`
+      `Hello ${validUser.username},\n\nYou requested a password reset. Click the link below to set a new password (expires in 15 minutes):\n\nhttps://www.rmtoys.store/reset-password?token=${resetToken}\n\nIf you didn't request this, ignore this email.`
     );
 
     res.status(200).json({
