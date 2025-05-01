@@ -18,45 +18,43 @@ export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
   const { username, email, password, avatar, phoneNumber, fullName } = req.body;
 
-  if (!username.trim()) {
-    return next(handleMakeError(400, "You can't leave username empty!"));
-  }
-
-  if (!email.trim())
-    return next(handleMakeError(400, "You can't leave email empty!"));
-
-  if (username) {
+  // Validate fields if they exist
+  if (username !== undefined) {
+    if (!username.trim()) {
+      return next(handleMakeError(400, "Username cannot be empty!"));
+    }
     const userNameCheck = validateUsername(username);
     if (!userNameCheck.valid) {
       return next(handleMakeError(400, userNameCheck.message));
     }
+    const usernameExist = await User.findOne({ username, _id: { $ne: id } });
+    if (usernameExist) {
+      return next(handleMakeError(400, "Username already exists"));
+    }
   }
 
-  if (email) {
+  if (email !== undefined) {
+    if (!email.trim()) {
+      return next(handleMakeError(400, "Email cannot be empty!"));
+    }
     const userEmailCheck = validateEmail(email);
     if (!userEmailCheck.valid) {
       return next(handleMakeError(400, userEmailCheck.message));
     }
-
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email, _id: { $ne: id } });
     if (userExists) {
-      return next(handleMakeError(400, "Email already exist"));
+      return next(handleMakeError(400, "Email already exists"));
     }
   }
 
-  if (fullName) {
+  if (fullName !== undefined && fullName) {
     const fullNameCheck = validateFullName(fullName);
     if (!fullNameCheck.valid) {
       return next(handleMakeError(400, fullNameCheck.message));
     }
-
-    const usernameExist = await User.findOne({ username });
-    if (usernameExist) {
-      return next(handleMakeError(400, "Username already exist"));
-    }
   }
 
-  if (phoneNumber) {
+  if (phoneNumber !== undefined && phoneNumber) {
     const phoneNumberCheck = validatePHMobile(phoneNumber);
     if (!phoneNumberCheck.valid) {
       return next(handleMakeError(400, phoneNumberCheck.message));
