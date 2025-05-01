@@ -59,7 +59,6 @@ export const signup = async (req, res, next) => {
   if (!passwordCheck.valid) {
     return next(handleMakeError(400, passwordCheck.message));
   }
-
   const userExists = await User.findOne({ email });
   if (userExists) {
     return next(handleMakeError(400, "Email already exist"));
@@ -377,6 +376,7 @@ export const forgetPassword = async (req, res, next) => {
         )
       );
     }
+    // hello
 
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 MINUTES TOKEN EXPIRATION
