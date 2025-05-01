@@ -37,7 +37,7 @@ export default function RecoverPassword() {
             <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
           </div>
           <span className="border bg-[#313031] opacity-80 text-white  py-1 rounded-[5px] px-3">
-            Forget Password
+            FORGET PASSWORD
           </span>
         </div>
    

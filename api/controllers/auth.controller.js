@@ -59,6 +59,7 @@ export const signup = async (req, res, next) => {
   if (!passwordCheck.valid) {
     return next(handleMakeError(400, passwordCheck.message));
   }
+
   const userExists = await User.findOne({ email });
   if (userExists) {
     return next(handleMakeError(400, "Email already exist"));
@@ -385,13 +386,17 @@ export const forgetPassword = async (req, res, next) => {
     validUser.resetTokenExpiry = resetTokenExpiry;
     await validUser.save();
 
-    const resetLink = `https://www.rmtoys.store/forget-password?token=${resetToken}`;
+    const resetLink = `https://www.rmtoys.store/reset-password?token=${resetToken}`;
 
     await sendEmail(
       validUser.email,
-      `Hello ${validUser.username},\n\nYou requested a password reset. Click the link below to set a new password (expires in 15 minutes):\n\nhttps://www.rmtoys.store/reset-password?token=${resetToken}\n\nIf you didn't request this, ignore this email.`
+      `Password Reset Request`,
+      `Hello ${validUser.username},\n\n` +
+        `You requested a password reset. Visit this link to set a new password (expires in 15 minutes):\n\n` +
+        `${resetLink}\n\n` +
+        `(If the link doesn't work, copy and paste it into your browser)\n\n` +
+        `If you didn't request this, please ignore this email.`
     );
-
     res.status(200).json({
       success: true,
       message:
@@ -405,8 +410,17 @@ export const forgetPassword = async (req, res, next) => {
 export const resetPassword = async (req, res, next) => {
   const { token, newPassword } = req.body;
 
-  if (!token || !newPassword) {
-    return next(handleMakeError(400, "Token and new password are required."));
+  if (!token) {
+    return next(handleMakeError(400, "Token is required."));
+  }
+
+  if (!newPassword) {
+    return next(handleMakeError(400, "Please input new password"));
+  }
+
+  const passwordCheck = validatePassword(newPassword);
+  if (!passwordCheck.valid) {
+    return next(handleMakeError(400, passwordCheck.message));
   }
 
   try {

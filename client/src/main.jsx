@@ -67,6 +67,7 @@ import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
 
 import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
 import RecoverPassword from "./routes/RecoverPassword.jsx";
+import ResetPassword from "./routes/ResetPassword.jsx";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +108,10 @@ const router = createBrowserRouter([
       {
         path: `/forget-password`,
         element: <RecoverPassword/>
+      },
+      {
+        path: `/reset-password`,
+        element: <ResetPassword/>
       },
       {
         path: `/shop`,
