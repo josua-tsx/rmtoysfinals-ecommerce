@@ -37,12 +37,22 @@ export const updateProfile = async (req, res, next) => {
     if (!userEmailCheck.valid) {
       return next(handleMakeError(400, userEmailCheck.message));
     }
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return next(handleMakeError(400, "Email already exist"));
+    }
   }
 
   if (fullName) {
     const fullNameCheck = validateFullName(fullName);
     if (!fullNameCheck.valid) {
       return next(handleMakeError(400, fullNameCheck.message));
+    }
+
+    const usernameExist = await User.findOne({ username });
+    if (usernameExist) {
+      return next(handleMakeError(400, "Username already exist"));
     }
   }
 
@@ -51,16 +61,6 @@ export const updateProfile = async (req, res, next) => {
     if (!phoneNumberCheck.valid) {
       return next(handleMakeError(400, phoneNumberCheck.message));
     }
-  }
-
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return next(handleMakeError(400, "Email already exist"));
-  }
-
-  const usernameExist = await User.findOne({ username });
-  if (usernameExist) {
-    return next(handleMakeError(400, "Username already exist"));
   }
 
   try {
