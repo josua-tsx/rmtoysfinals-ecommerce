@@ -51,6 +51,16 @@ export const updateProfile = async (req, res, next) => {
     }
   }
 
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return next(handleMakeError(400, "Email already exist"));
+  }
+
+  const usernameExist = await User.findOne({ username });
+  if (usernameExist) {
+    return next(handleMakeError(400, "Username already exist"));
+  }
+
   try {
     let hashedPassword;
     if (password) {

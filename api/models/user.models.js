@@ -12,7 +12,7 @@ const UserModelSchema = new mongoose.Schema(
     },
 
     firstName: {
-      type: String
+      type: String,
     },
 
     lastName: {
@@ -26,7 +26,7 @@ const UserModelSchema = new mongoose.Schema(
     username: {
       type: String,
       required: [true, "Username is required"],
-      unique: true
+      unique: true,
     },
 
     password: {
@@ -75,13 +75,21 @@ const UserModelSchema = new mongoose.Schema(
 
     creditLock: {
       type: Date,
-      default: null
+      default: null,
     },
 
     isLoggedIn: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+
+    resetToken: {
+      type: String,
+    },
+
+    resetTokenExpiry: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

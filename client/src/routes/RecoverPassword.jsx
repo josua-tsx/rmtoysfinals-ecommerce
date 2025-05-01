@@ -40,7 +40,7 @@ export default function RecoverPassword() {
             Forget Password
           </span>
         </div>
-    {/* wadwa */}
+   
         {/* FORM */}
         <form
           onSubmit={handleForgetPasswordSubmit}
@@ -110,7 +110,7 @@ export default function RecoverPassword() {
               className="text-indigo-500 hover:underline  text-[18px]"
             >
               {" "}
-              Sign Ip Here!
+              Sign In Here!
             </Link>
           </div>
         </div>

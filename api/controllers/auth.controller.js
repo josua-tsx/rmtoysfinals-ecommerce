@@ -15,6 +15,8 @@ import {
 import { sendEmail } from "../nodemailer/nodemailer.js";
 import bcrypt from "bcryptjs/dist/bcrypt.js";
 
+import crypto from "crypto";
+
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 // REGISTER
@@ -350,8 +352,15 @@ export const forgetPassword = async (req, res, next) => {
       const timeSinceLastAttempt = Date.now() - lastAttempt;
 
       if (timeSinceLastAttempt < cooldownMs) {
-        const timeLeftMinutes = Math.ceil((cooldownMs - timeSinceLastAttempt) / (1000 * 60));
-        return next(handleMakeError(429, `Please wait ${timeLeftMinutes} minute(s) before requesting another reset.`));
+        const timeLeftMinutes = Math.ceil(
+          (cooldownMs - timeSinceLastAttempt) / (1000 * 60)
+        );
+        return next(
+          handleMakeError(
+            429,
+            `Please wait ${timeLeftMinutes} minute(s) before requesting another reset.`
+          )
+        );
       }
     }
 
@@ -361,43 +370,92 @@ export const forgetPassword = async (req, res, next) => {
     const validUser = await User.findOne({ email });
     if (!validUser) {
       // Return a generic message to prevent email enumeration
-      return next(handleMakeError(400, "If this email exists, a recovery link has been sent."));
+      return next(
+        handleMakeError(
+          400,
+          "If this email exists, a recovery link has been sent."
+        )
+      );
     }
 
-    const recoveryPassword = recoveryPasswordRandom(10);
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(recoveryPassword, salt);
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 MINUTES TOKEN EXPIRATION
 
-    const user = await User.findByIdAndUpdate(
-      validUser._id,
-      { $set: { password: hashedPassword } },
-      { new: true }
-    );
+    validUser.resetToken = resetToken;
+    validUser.resetTokenExpiry = resetTokenExpiry;
+    await validUser.save();
 
-    if (!user) return next(handleMakeError(400, "User not found!"));
+    const resetLink = `https://www.rmtoys.store/forget-password?token=${resetToken}`;
 
     await sendEmail(
       validUser.email,
-      `Hello, ${validUser.username}, your recovery password is "${recoveryPassword}". Please update your password after logging in!`
+      `Hello ${validUser.username},\n\nYou requested a password reset. Click the link below to set a new password (expires in 15 minutes):\n\n${resetLink}\n\nIf you didn't request this, ignore this email.`
     );
 
     res.status(200).json({
       success: true,
-      message: "Recovery password sent to your email. Please wait 5 minutes before requesting another."
+      message:
+        "Recovery password sent to your email. Please wait 5 minutes before requesting another.",
     });
   } catch (error) {
     next(error);
   }
 };
 
-const recoveryPasswordRandom = (length) => {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
+export const resetPassword = async (req, res, next) => {
+  const { token, newPassword } = req.body;
 
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  if (!token || !newPassword) {
+    return next(handleMakeError(400, "Token and new password are required."));
   }
 
-  return result;
+  try {
+    // Find user by token and check expiry
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() }, // Token not expired
+    });
+
+    if (!user) {
+      return next(handleMakeError(400, "Invalid or expired token."));
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
+
+// const recoveryPassword = recoveryPasswordRandom(10);
+// const salt = await bcrypt.genSalt(10);
+// const hashedPassword = await bcrypt.hash(recoveryPassword, salt);
+
+// const user = await User.findByIdAndUpdate(
+//   validUser._id,
+//   { $set: { password: hashedPassword } },
+//   { new: true }
+// );
+
+// if (!user) return next(handleMakeError(400, "User not found!"));
+
+// const recoveryPasswordRandom = (length) => {
+//   const chars =
+//     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//   let result = "";
+
+//   for (let i = 0; i < length; i++) {
+//     result += chars.charAt(Math.floor(Math.random() * chars.length));
+//   }
+
+//   return result;
+// };
