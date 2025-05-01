@@ -22,13 +22,13 @@ You can use your collected points as a discount to reduce the total price of you
   },
   {
     id: 4,
-    question: "Do you guys have refund?",
+    question: "Do you guys do refund?",
     answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
 You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },
   {
     id: 5,
-    question: "What is credit points system and how to use them?",
+    question: "Do you offer international delivery?",
     answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
 You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
   },

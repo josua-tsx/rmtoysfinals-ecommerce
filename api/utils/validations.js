@@ -18,26 +18,81 @@ export const validateEmail = (email) => {
 
   const [localPart, domain] = parts;
 
-  // Validate local part (no consecutive dots, only letters, numbers, and single dots)
-  if (!/^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*$/.test(localPart)) {
+  // Validate local part characters (only letters, numbers, dots, hyphens, underscores)
+  if (!/^[a-zA-Z0-9._-]+$/.test(localPart)) {
     return {
       valid: false,
-      message:
-        "Local part (before @) can only contain letters, numbers, and single dots (no consecutive dots)",
+      message: "Local part can only contain letters, numbers, ., -, or _",
     };
   }
 
-  // Validate domain part (no consecutive dots, valid TLD, no repeated 'm' in .com)
-  if (!/^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/.test(domain)) {
+  // Check for consecutive valid symbols in local part (., -, _)
+  if (/([._-])\1/.test(localPart)) {
     return {
       valid: false,
-      message:
-        "Domain must be valid (no consecutive dots, valid TLD like .com, .net)",
+      message: "Local part cannot have consecutive symbols (., -, _)",
     };
   }
 
-  // Extra check: If domain ends with .com, ensure no extra 'm's (blocks .comm, .commm, etc.)
-  if (/\.com[^a-zA-Z]|\.comm+$/i.test(domain)) {
+  // Check local part starts/ends correctly
+  if (
+    localPart.startsWith(".") ||
+    localPart.startsWith("-") ||
+    localPart.startsWith("_") ||
+    localPart.endsWith(".") ||
+    localPart.endsWith("-") ||
+    localPart.endsWith("_")
+  ) {
+    return {
+      valid: false,
+      message: "Local part cannot start or end with ., -, or _",
+    };
+  }
+
+  // Validate domain part characters (only letters, numbers, dots, hyphens)
+  if (!/^[a-zA-Z0-9.-]+$/.test(domain)) {
+    return {
+      valid: false,
+      message: "Domain can only contain letters, numbers, ., or -",
+    };
+  }
+
+  // Check for consecutive valid symbols in domain (., -)
+  if (/([.-])\1/.test(domain)) {
+    return {
+      valid: false,
+      message: "Domain cannot have consecutive symbols (., -)",
+    };
+  }
+
+  // Check domain starts/ends correctly
+  if (
+    domain.startsWith(".") ||
+    domain.startsWith("-") ||
+    domain.endsWith(".") ||
+    domain.endsWith("-")
+  ) {
+    return {
+      valid: false,
+      message: "Domain cannot start or end with . or -",
+    };
+  }
+
+  // Check for valid TLD (at least 2 letters, no numbers)
+  const domainParts = domain.split(".");
+  const tld = domainParts[domainParts.length - 1];
+  if (!/^[a-zA-Z]{2,}$/.test(tld)) {
+    return {
+      valid: false,
+      message: "TLD must be at least 2 letters and contain no numbers",
+    };
+  }
+
+  // Check for .com with no extra letters
+  if (
+    domain.toLowerCase().endsWith(".com") &&
+    domain !== domain.toLowerCase().split(".com")[0] + ".com"
+  ) {
     return {
       valid: false,
       message: "Invalid domain (.com should not have extra letters)",
@@ -46,6 +101,7 @@ export const validateEmail = (email) => {
 
   return { valid: true };
 };
+
 
 export const validateFullName = (fullName) => {
   if (!fullName) {
