@@ -32,9 +32,11 @@ export const updateProfile = async (req, res, next) => {
     }
   }
 
-  const userEmailCheck = validateEmail(email);
-  if (!userEmailCheck.valid) {
-    return next(handleMakeError(400, userEmailCheck.message));
+  if (email) {
+    const userEmailCheck = validateEmail(email);
+    if (!userEmailCheck.valid) {
+      return next(handleMakeError(400, userEmailCheck.message));
+    }
   }
 
   if (fullName) {
