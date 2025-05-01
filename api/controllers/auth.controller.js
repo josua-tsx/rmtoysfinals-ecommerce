@@ -434,12 +434,24 @@ export const resetPassword = async (req, res, next) => {
       return next(handleMakeError(400, "Invalid or expired token."));
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
-    user.resetToken = undefined;
-    user.resetTokenExpiry = undefined;
-    await user.save();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
+          password: hashedPassword,
+          resetToken: undefined,
+          resetTokenExpiry: undefined,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return next(handleMakeError(500, "Failed to update password."));
+    }
 
     return res.status(200).json({
       success: true,
