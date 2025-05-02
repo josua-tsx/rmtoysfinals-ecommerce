@@ -11,26 +11,22 @@ You can use your collected points as a discount to reduce the total price of you
   {
     id: 2,
     question: "What if i forget my password? How to recover it?",
-    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
-You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
+    answer: `If you forget your password, don’t worry—it’s easy to recover it. Just go to the Sign In page and click on the “Forgot Password?” link. You’ll be asked to enter the email address associated with your account. After submitting your email, please wait for an email from our store with instructions on how to reset your password. Follow the steps in the email to create a new password and regain access to your account.`,
   },
   {
     id: 3,
     question: "Where is your physical store located?",
-    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
-You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
+    answer: `13St. p6b Lower Bicutan Taguig City`,
   },
   {
     id: 4,
     question: "Do you guys do refund?",
-    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
-You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
+    answer: `Yes`,
   },
   {
     id: 5,
     question: "Do you offer international delivery?",
-    answer: `The credit points system rewards you with points every time you complete a successful purchase. Each product includes a certain number of credit points. These points are automatically added to your account after checkout.
-You can use your collected points as a discount to reduce the total price of your next order. The more you shop, the more points you earn — helping you save on future purchases!`,
+    answer: `No`,
   },
 ];
 
