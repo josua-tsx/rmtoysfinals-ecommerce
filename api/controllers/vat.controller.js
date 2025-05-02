@@ -12,7 +12,7 @@ export const addVat = async (req, res, next) => {
 
     const vatCount = await Vat.find();
 
-    if ((vatCount.length = 1)) {
+    if (vatCount.length = 1) {
       return next(
         handleMakeError(
           400,
