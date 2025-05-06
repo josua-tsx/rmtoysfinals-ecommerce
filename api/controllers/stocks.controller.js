@@ -101,6 +101,7 @@ export const OrderStocks = async (req, res, next) => {
       userId,
       deliveryId,
       supplier,
+      category: "",
       quantityOrdered: quantity,
       supplierPrice,
       shippingPrice,

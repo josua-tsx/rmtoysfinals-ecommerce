@@ -52,9 +52,9 @@ const OrderStockHistorySchemaModel = new mongoose.Schema(
       required: true,
     },
     totalCost: {
-        type: Number,
-        required: true
-    }
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );
