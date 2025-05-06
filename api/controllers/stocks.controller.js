@@ -5,7 +5,7 @@ import Supplier from "../models/supplier.model.js";
 import Vat from "../models/vat.models.js";
 // import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
-import { orderStockHistory } from "./orderStockHistory.contoller.js";
+import { orderStockLogs } from "./orderStockHistory.contoller.js";
 
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
@@ -96,7 +96,7 @@ export const OrderStocks = async (req, res, next) => {
 
     await newDelivery.save();
 
-    await orderStockHistory({
+    await orderStockLogs({
       action: "admin_ordered_stock",
       userId,
       deliveryId,
@@ -237,7 +237,7 @@ export const reorderStock = async (req, res, next) => {
       $addToSet: { productId: updateDeliver.product },
     });
 
-    await orderStockHistory({
+    await orderStockLogs({
       action: "admin_reordered_stock",
       userId,
       deliveryId,

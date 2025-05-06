@@ -1,7 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import OrderStockHistory from "../models/orderStockHistory.models.js";
 
-export const orderStockHistory = async ({
+export const orderStockLogs = async ({
   action,
   userId,
   deliveryId,
