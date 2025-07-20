@@ -18,9 +18,9 @@ import wishlistRoutes from "../api/routes/wishlist.route.js";
 import orderRoutes from "../api/routes/order.route.js";
 import auditRoute from "../api/routes/audit.route.js";
 import reviewRoute from "../api/routes/review.route.js";
-import vatRoute from "../api/routes/vat.route.js"
-import sendEmailRoute from "../api/routes/sendEmail.route.js"
-import orderStockHistory from "../api/routes/orderStockHistory.route.js"
+import vatRoute from "../api/routes/vat.route.js";
+import sendEmailRoute from "../api/routes/sendEmail.route.js";
+import orderStockHistory from "../api/routes/orderStockHistory.route.js";
 import Address from "./models/address.models.js";
 import Vat from "./models/vat.models.js";
 
@@ -33,20 +33,20 @@ const PORT = process.env.PORT;
 const allowedOrigins = [
   "https://rmtoysfinals-8jgr.vercel.app", // Your Vercel frontend
   "http://localhost:5173", // For local testing (optional)
-  "https://www.rmtoys.store"
+  "https://www.rmtoys.store",
+  "http://localhost:8081", // react native
 ];
 
 // CORS configuration
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true, // Must be true
-  exposedHeaders: ["set-cookie"], // Helps with cookie issues,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-
-
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true, // Must be true
+    exposedHeaders: ["set-cookie"], // Helps with cookie issues,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 console.log(process.env.CLIENT_URL);
 
@@ -67,18 +67,17 @@ app.use(`/api/order`, orderRoutes);
 app.use(`/api/audit`, auditRoute);
 app.use(`/api/review`, reviewRoute);
 app.use(`/api/vat`, vatRoute);
-app.use(`/api/send`, sendEmailRoute)
-app.use(`/api/history`, orderStockHistory)
+app.use(`/api/send`, sendEmailRoute);
+app.use(`/api/history`, orderStockHistory);
 
 // Error handling middleware
 app.use(handleError);
-
 
 // async function safeDropProductIndex() {
 //   try {
 //     // Get all indexes from the vats collection
 //     const indexes = await Vat.collection.indexes();
-    
+
 //     // Find the problematic product_1 index
 //     const productIndex = indexes.find(index => index.name === "product_1");
 
@@ -91,7 +90,7 @@ app.use(handleError);
 //     }
 //   } catch (error) {
 //     console.error("❌ Error while dropping product_1 index:", error);
-    
+
 //     // Special handling for MongoDB 4.2+ where you might need to drop the index differently
 //     if (error.code === 27 || error.message.includes("not found")) {
 //       console.log("⚠️ Trying alternative drop method...");
