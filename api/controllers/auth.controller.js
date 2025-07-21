@@ -104,10 +104,13 @@ export const signup = async (req, res, next) => {
     });
 
     res.status(201).json({
-      _id: newUser._id,
-      email: newUser.email,
-      username: newUser.username,
-      role: newUser.role,
+     accessToken,
+      user: {
+        _id: newUser._id,
+        email: newUser.email,
+        username: newUser.username,
+        role: newUser.role,
+      },
     });
   } catch (error) {
     next(error);
