@@ -151,7 +151,10 @@ export const signin = async (req, res, next) => {
       // JOKES ON YOU I CANT USE .select("-password") in this messy code because if i put that after User.FindOne -
       // now i cant compare my password because it wouldnt work because there is no password to compare
       const { password: pass, ...rest } = validUser._doc;
-      res.json(rest);
+      res.json({
+        accessToken,
+        ...rest
+      });
     } else {
       next(handleMakeError(400, "Invalid Credentials"));
     }
