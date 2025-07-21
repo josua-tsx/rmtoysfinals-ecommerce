@@ -103,15 +103,17 @@ export const signup = async (req, res, next) => {
       role: "customer",
     });
 
-    res.status(201).json({
-      accessToken,
-      user: {
-        _id: newUser._id,
-        email: newUser.email,
-        username: newUser.username,
-        role: newUser.role,
-      },
-    });
+    console.log(
+      res.status(201).json({
+        accessToken,
+        user: {
+          _id: newUser._id,
+          email: newUser.email,
+          username: newUser.username,
+          role: newUser.role,
+        },
+      })
+    );
   } catch (error) {
     next(error);
     console.log("Error in sign-up controller");
