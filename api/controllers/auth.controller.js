@@ -103,17 +103,15 @@ export const signup = async (req, res, next) => {
       role: "customer",
     });
 
-    console.log(
-      res.status(201).json({
-        accessToken,
-        user: {
-          _id: newUser._id,
-          email: newUser.email,
-          username: newUser.username,
-          role: newUser.role,
-        },
-      })
-    );
+    res.status(201).json({
+      accessToken,
+      user: {
+        _id: newUser._id,
+        email: newUser.email,
+        username: newUser.username,
+        role: newUser.role,
+      },
+    });
   } catch (error) {
     next(error);
     console.log("Error in sign-up controller");
@@ -153,12 +151,11 @@ export const signin = async (req, res, next) => {
       // JOKES ON YOU I CANT USE .select("-password") in this messy code because if i put that after User.FindOne -
       // now i cant compare my password because it wouldnt work because there is no password to compare
       const { password: pass, ...rest } = validUser._doc;
-      console.log(
-        res.json({
-          accessToken,
-          ...rest,
-        })
-      );
+
+      res.json({
+        accessToken,
+        user: rest,
+      });
     } else {
       next(handleMakeError(400, "Invalid Credentials"));
     }
