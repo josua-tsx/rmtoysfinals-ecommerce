@@ -3,7 +3,7 @@ import User from "../models/user.models.js";
 import { handleMakeError } from "./handleError.js";
 
 export const requireAuth = async (req, res, next) => {
-  const accessToken = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];.
+  const accessToken = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
 
   // if accessToken either expired or undefined
   if (!accessToken) return next(handleMakeError(401, "Sign in first to continue"));
