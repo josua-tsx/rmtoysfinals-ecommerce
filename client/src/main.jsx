@@ -62,7 +62,6 @@ import PurchaseSuccessPage from "./pages/PurchaseSuccessPage.jsx";
 import AdminVat from "./pages/admin/AdminVat.jsx";
 import AdminAddVat from "./pages/admin/AdminAddVat.jsx";
 import AdminEditVat from "./pages/admin/AdminEditVat.jsx";
-import FaqPage from "./pages/FaqPage.jsx";
 import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
 
 import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
@@ -133,10 +132,7 @@ const router = createBrowserRouter([
         path: `/contact`,
         element: <Contact />,
       },
-      {
-        path: `/faq`,
-        element: <FaqPage/>
-      }
+     
     ],
   },
 
@@ -235,10 +231,7 @@ const router = createBrowserRouter([
         path: "/admin/supplier",
         element: <AdminSupplier />,
       },
-      {
-        path: "/admin/addSupplier",
-        element: <AdminAddSupplier />,
-      },
+   
       {
         path: "/admin/editSupplier/:editSupplierId",
         element: <AdminEditSupplier />,
@@ -250,10 +243,7 @@ const router = createBrowserRouter([
         path: "/admin/category",
         element: <AdminCategory />,
       },
-      {
-        path: "/admin/addCategory",
-        element: <AdminAddCategory />,
-      },
+ 
       {
         path: "/admin/editCategory/:editCategoryId",
         element: <AdminCategoryEdit />,
@@ -285,10 +275,7 @@ const router = createBrowserRouter([
         path: "/admin/worker",
         element: <AdminWorker />,
       },
-      {
-        path: "/admin/addWorker",
-        element: <AdminAddWorker />,
-      },
+
 
       // VAT
 

@@ -82,7 +82,7 @@ export default function AdminCategoryTable() {
   }
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
+    <div className="font-main border text-sm md:text-normal  rounded-[5px] border-black bg-card relative ">
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       {/* CARD */}
 

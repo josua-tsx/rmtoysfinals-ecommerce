@@ -88,6 +88,7 @@ export default function AdminWorkersTable() {
         onCancel={handleCancel}
       />
 
+         <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>WORKER TABLE</h1>
         <div className="flex items-center relative">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 
 const List = [
@@ -30,7 +30,7 @@ You can use your collected points as a discount to reduce the total price of you
   },
 ];
 
-export default function FaqPage() {
+export default function Faq() {
   const [openAnswer, setOpenAnswer] = useState(null);
 
   const handleToggleList = (id) => {
@@ -38,8 +38,8 @@ export default function FaqPage() {
   };
 
   return (
-    <section className="pt-[130px] bg-yellow h-screen p-3 font-main">
-      <div className="max-w-[1280px] h-full mx-auto">
+    <section className=" bg-yellow p-3 font-main pt-28">
+      <div className="">
         <div className="flex flex-col justify-center items-center h-full ">
           <div className="text-4xl mb-5">FAQs</div>
           <div className="flex flex-col  md:w-[750px] gap-5">

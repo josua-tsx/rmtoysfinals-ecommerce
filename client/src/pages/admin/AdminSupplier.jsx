@@ -1,25 +1,43 @@
-import AdminSupplierTable from '../../components/admin/AdminSupplierTable'
-import AdminHeader from '../../reusable/Admin/AdminHeader'
+import { useState } from "react";
+import AdminSupplierTable from "../../components/admin/AdminSupplierTable";
+import AdminHeader from "../../reusable/Admin/AdminHeader";
+import AdminAddSupplier from "./AdminAddSupplier";
+import { IoMdAdd } from "react-icons/io";
 
 export default function AdminSupplier() {
+  const [showAdd, setShowAdd] = useState(false);
+
+  const toggleAddCategory = () => {
+    setShowAdd(!showAdd);
+  };
+
   return (
     <section className="bg-yellow h-screen">
-    <AdminHeader title={"SUPPLIER"}/>
-    <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
-
-      {/* main */}
-      <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-       
-        {/* CARD */}
-        {/* <AdminStatCard title={"TOTAL PRODUCTS"} value={300}/>
+      <AdminHeader title={"SUPPLIER"} />
+      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-16 flex-col">
+        {/* main */}
+        <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
+          {/* CARD */}
+          {/* <AdminStatCard title={"TOTAL PRODUCTS"} value={300}/>
         <AdminStatCard title={"TOTAL CATEGORIES"} value={5}/>
         <AdminStatCard title={"STOCKS"} value={300}/>
         <AdminStatCard title={"STOCKS"} value={300}/> */}
-      </div>
+        </div>
 
-      <AdminSupplierTable/>
-     
-    </div>
-  </section>
-  )
+        <div className="w-full  flex justify-end">
+          <button
+            onClick={toggleAddCategory}
+            className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px]"
+          >
+            {showAdd ? "Cancel" : "Add Supplier"}
+            <IoMdAdd />
+          </button>
+        </div>
+
+        {showAdd && <AdminAddSupplier />}
+
+        <AdminSupplierTable />
+      </div>
+    </section>
+  );
 }

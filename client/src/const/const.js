@@ -4,5 +4,5 @@ export const navItems = [
     { name: "Popular", path: "/popular" },
     { name: "Contacts", path: "/contact" },
     { name: "Reviews", path: "/reviews" },
-    { name: "FAQ", path: "/faq" },
+
 ];

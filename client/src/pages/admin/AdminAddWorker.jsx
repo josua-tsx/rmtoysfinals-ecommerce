@@ -42,6 +42,14 @@ export default function AdminAddWorker() {
     setShowPassword(!showPassword);
   };
 
+  const handleClear = () => {
+      setEmail("");
+      setUsername("");
+      setPassword("");
+      setConfirmPassword("");
+      setJobDescription("");
+  }
+
   const handleAddWorkerFormSubmit = (e) => {
     e.preventDefault();
 
@@ -62,10 +70,7 @@ export default function AdminAddWorker() {
   };
 
   return (
-    <section className="bg-yellow text-sm md:text-normal h-screen font-main">
-      <AdminHeader title={"ADD NEW WORKER"} />
-
-      <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col">
+    
         <form
           onSubmit={handleAddWorkerFormSubmit}
           className="border flex flex-col gap-5 relative rounded-[5px] border-black bg-card"
@@ -186,15 +191,14 @@ export default function AdminAddWorker() {
               ADD WORKER
             </button>
             <button
-              onClick={() => navigate(`/admin/worker`)}
+              onClick={handleClear}
               type="button"
               className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
             >
-              Cancel
+              Clear
             </button>
           </div>
         </form>
-      </div>
-    </section>
+  
   );
 }

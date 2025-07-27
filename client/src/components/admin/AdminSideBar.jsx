@@ -57,10 +57,6 @@ export default function AdminSideBar() {
           name: "Category Table",
           path: "/admin/category",
         },
-        {
-          name: "Add Category",
-          path: "/admin/addCategory",
-        },
       ],
     },
     {
@@ -72,10 +68,7 @@ export default function AdminSideBar() {
           name: "Supplier Table",
           path: "/admin/supplier",
         },
-        {
-          name: "Add Supplier",
-          path: "/admin/addSupplier",
-        },
+   
       ],
     },
     {
@@ -91,10 +84,7 @@ export default function AdminSideBar() {
           name: "Worker Table",
           path: "/admin/worker",
         },
-        {
-          name: "Add Worker",
-          path: "/admin/addWorker",
-        },
+    
       ],
     },
 
