@@ -53,13 +53,14 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   const { mutate: deleteAllCategories } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/category/delete-multi-category`, {
-        data,
+        categoryIds: data,
       });
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Categories are deleted succesfully!");
+      setSelectedIds([])
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong");
@@ -110,6 +111,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
       )
     ) {
       deleteAllCategories(selectedIds);
+      
     }
   };
 
