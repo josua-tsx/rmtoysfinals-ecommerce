@@ -69,8 +69,7 @@ export const getCategories = async (req, res, next) => {
 
 export const deleteMultiCategory = async (req, res, next) => {
   const { categoryIds } = req.body;
-  const userId = req.user.id
-
+  const userId = req.user.id;
 
   if (!Array.isArray(categoryIds)) {
     return next(handleMakeError(400, "CategoryIds should be an array"));
@@ -79,14 +78,12 @@ export const deleteMultiCategory = async (req, res, next) => {
   try {
     const categories = await Category.find({
       _id: {
-        $in: {
-          categoryIds,
-        },
+        $in: categoryIds,
       },
     });
 
     if (categories.length !== categoryIds.length) {
-      const foundIds = categories.map((c) => c._id.toStringt());
+      const foundIds = categories.map((c) => c._id.toString());
       const missingIds = categoryIds.filter((id) => !foundIds.includes(id));
       return next(
         handleMakeError(400, `Categories not found: ${missingIds.join(", ")}`)
@@ -130,7 +127,20 @@ export const deleteMultiCategory = async (req, res, next) => {
     await Category.deleteMany({ _id: { $in: categoryIds } });
 
     // Create audit trail entries for each deleted category
-  
+    await Promise.all(
+      categoryIds.map((id) =>
+        logAuditTrail({
+          action: "delete_category",
+          userId,
+          targetId: id,
+          targetType: "Category",
+          details: {
+            categoryName: categoryNames[id],
+          },
+          role: "admin",
+        })
+      )
+    );
 
     res.status(200).json({
       message: `${categoryIds.length} categories deleted successfully`,
@@ -138,7 +148,7 @@ export const deleteMultiCategory = async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
-    next(error)
+    next(error);
   }
 };
 
