@@ -106,7 +106,7 @@ export const deleteMultiSupplier = async (req, res, next) => {
   try {
     const supplier = await Supplier.find({ _id: { $in: supplierIds } });
 
-    if (supplier.length !== supplierIds) {
+    if (supplier.length !== supplierIds.length) {
       const foundIds = supplier.map((s) => s._id.toString());
       const missingIds = supplier.filter((id) => !foundIds.includes(id));
       return next(
@@ -155,7 +155,7 @@ export const deleteMultiSupplier = async (req, res, next) => {
           targetId: id,
           targetType: "Supplier",
           details: {
-            categoryName: supplierNames[id],
+            supplierName: supplierNames[id],
           },
           role: "admin",
         })
