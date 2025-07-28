@@ -130,20 +130,7 @@ export const deleteMultiCategory = async (req, res, next) => {
     await Category.deleteMany({ _id: { $in: categoryIds } });
 
     // Create audit trail entries for each deleted category
-    await Promise.all(
-      categoryIds.map((id) =>
-        logAuditTrail({
-          action: "delete_category",
-          userId,
-          targetId: id,
-          targetType: "Category",
-          details: {
-            categoryName: categoryNames[id],
-          },
-          role: "admin",
-        })
-      )
-    );
+  
 
     res.status(200).json({
       message: `${categoryIds.length} categories deleted successfully`,
