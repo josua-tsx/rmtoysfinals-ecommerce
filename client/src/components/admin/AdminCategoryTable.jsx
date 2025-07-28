@@ -52,7 +52,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
 
   const { mutate: deleteAllCategories } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/delete-multi-category`, {
+      const res = await axiosInstance.post(`/category/delete-multi-category`, {
         data,
       });
       return res.data;

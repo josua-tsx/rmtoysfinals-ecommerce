@@ -69,6 +69,8 @@ export const getCategories = async (req, res, next) => {
 
 export const deleteMultiCategory = async (req, res, next) => {
   const { categoryIds } = req.body;
+  const userId = req.user.id
+
 
   if (!Array.isArray(categoryIds)) {
     return next(handleMakeError(400, "CategoryIds should be an array"));
