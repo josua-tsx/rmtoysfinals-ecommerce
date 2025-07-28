@@ -5,12 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import formatPrice from "../../reusable/formatPrice";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 
-export default function AdminProductsTable() {
+export default function AdminProductsTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -18,6 +18,10 @@ export default function AdminProductsTable() {
   const [deleteProductId, setDeleteProductId] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  console.log(selectedIds);
 
   const {
     data: products = [],
@@ -70,21 +74,74 @@ export default function AdminProductsTable() {
     },
   });
 
+  const { mutate: deleteMultiProd } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/product/delete-multi-prod`, {
+        productIds: data,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      toast.success("Products are deleted successfully!");
+      setSelectedIds([]);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
+  useEffect(() => {
+    if (!enableMultiDel) {
+      setSelectedIds([]);
+    }
+  }, [enableMultiDel]);
+
   const handleDeleteClick = (productId) => {
-    setDeleteProductId(productId); 
-    setIsConfirmModalOpen(true); 
+    setDeleteProductId(productId);
+    setIsConfirmModalOpen(true);
   };
 
   const confirmDelete = () => {
     if (deleteProductId) {
-      deleteProductMutation(deleteProductId); 
-      cancelDelete()
+      deleteProductMutation(deleteProductId);
+      cancelDelete();
     }
   };
 
   const cancelDelete = () => {
-    setDeleteProductId(null); 
-    setIsConfirmModalOpen(false); 
+    setDeleteProductId(null);
+    setIsConfirmModalOpen(false);
+  };
+
+  const pushMultipleProd = (productIds) => {
+    setSelectedIds((prev) =>
+      prev.includes(productIds)
+        ? prev.filter((id) => id !== productIds)
+        : [...prev, productIds]
+    );
+  };
+
+  const cancelMultiDel = () => {
+    setSelectedIds([]);
+  };
+
+  const handleMultiDelete = () => {
+    if (selectedIds.length === 0) {
+      toast.error("Please select at least one product to delete");
+      return;
+    }
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedIds.length} products?`
+      )
+    ) {
+      deleteMultiProd(selectedIds);
+    }
   };
 
   const filteredProducts = productArray.filter(
@@ -96,7 +153,6 @@ export default function AdminProductsTable() {
   const navigateToeditPage = (editId) => {
     navigate(`/admin/editProduct/${editId}`);
   };
-
 
   if (isError) return <p>Error loading filters</p>;
 
@@ -125,11 +181,12 @@ export default function AdminProductsTable() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        {
-          isPending ? (
-            <div className="flex h-full justify-center items-center"><LoadingSpinner/></div>
-          ) : (
-            <table className="w-full divide-y divide-gray-700">
+        {isPending ? (
+          <div className="flex h-full justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <table className="w-full divide-y divide-gray-700">
             <thead>
               <tr className="">
                 <th className="font-normal p-2 pb-5">ID</th>
@@ -159,40 +216,40 @@ export default function AdminProductsTable() {
                       />
                       {product.productName}
                     </td>
-  
+
                     <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
                       {product.category && product.category.categoryName}
                     </td>
-  
+
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {formatPrice(product?.price)} PHP
                     </td>
-  
+
                     <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                       {product.status}
                     </td>
-  
+
                     <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                       {product?.reviews?.length}
                     </td>
-  
+
                     <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                       {product?.sold}
                     </td>
-  
+
                     <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
                       {product?.discount
-                        ? formatPrice(product?.discount) 
+                        ? formatPrice(product?.discount)
                         : "no discount"}
                     </td>
-  
+
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {product?.points}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {new Date(product.createdAt).toLocaleString()}
                     </td>
-  
+
                     {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
                     {product.stocks}
                   </td> */}
@@ -217,6 +274,17 @@ export default function AdminProductsTable() {
                           ? "ADD TO SLIDER"
                           : "REMOVE FROM SLIDER"}
                       </button>
+
+                      {enableMultiDel ? (
+                        <input
+                          type="checkbox"
+                          id="wdwadwk"
+                          checked={selectedIds.includes(product._id)}
+                          onChange={() => pushMultipleProd(product._id)}
+                        />
+                      ) : (
+                        ""
+                      )}
                     </td>
                   </tr>
                 ))
@@ -225,9 +293,25 @@ export default function AdminProductsTable() {
               )}
             </tbody>
           </table>
-          )
-        }
+        )}
       </div>
+
+      {selectedIds && selectedIds.length > 0 && (
+        <div className=" w-full flex gap-2 justify-end p-3">
+          <button
+            onClick={cancelMultiDel}
+            className="border bg-green-700 text-white rounded-[5px] border-black p-2"
+          >
+            Cancel Detete
+          </button>
+          <button
+            onClick={() => handleMultiDelete()}
+            className="border bg-red-700 text-white rounded-[5px] border-black p-2"
+          >
+            Confirm Detete
+          </button>
+        </div>
+      )}
     </div>
   );
 }

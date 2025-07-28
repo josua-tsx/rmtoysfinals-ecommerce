@@ -3,6 +3,7 @@ import {
   addDraft,
   addProduct,
   deleteDraft,
+  deleteMultiProduct,
   deleteProduct,
   editProduct,
   getBestProducts,
@@ -23,6 +24,8 @@ const router = express.Router();
 
 router.post(`/add-product`, requireAuth, requireAdmin, addProduct);
 router.get(`/get-products`, getProducts);
+
+router.post(`/delete-multi-prod`, requireAuth, requireAdmin, deleteMultiProduct)
 
 // router.get(`/get-nostockProducts`, getNoStocksProducts);
 
@@ -47,6 +50,7 @@ router.get(`/get-product/:id`, getSingleProduct);
 
 router.put(`/add-to-slider/:productId`, toggleBestProduct)
 router.get(`/get-bestProducts`, getBestProducts)
+
 
 // DRAFT
 router.post(`/add-draft`, requireAuth, requireAdmin, addDraft);

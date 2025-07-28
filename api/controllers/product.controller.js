@@ -390,6 +390,90 @@ export const deleteProduct = async (req, res, next) => {
   }
 };
 
+export const deleteMultiProduct = async (req, res, next) => {
+  const { productIds } = req.body;
+  const userId = req.user.id;
+
+  if (!Array.isArray(productIds)) {
+    return next(handleMakeError(400, "ProductIds should be an array"));
+  }
+
+  try {
+    const products = await Product.find({ _id: { $in: productIds } });
+
+    if (products.length !== productIds.length) {
+      const foundIds = products.map((c) => c._id.toString());
+      const missingIds = productIds.filter((id) => !foundIds.includes(id));
+      return next(
+        handleMakeError(400, `Products not found: ${missingIds.join(", ")}`)
+      );
+    }
+
+    const stocks = await Stocks.find({ product: { $in: productIds } });
+
+    if (!stocks.length) {
+      return next(handleMakeError(400, "Stocks not found!"));
+    }
+
+    // Delete related data for each product
+    for (const product of products) {
+      const { _id, category } = product;
+
+      // Delete stocks
+      await Stocks.deleteMany({ product: _id });
+
+      // Update category
+      await Category.findByIdAndUpdate(category, {
+        $pull: { products: _id },
+      });
+
+      // Delete from related collections
+      await Cart.deleteMany({ "items.productId": _id });
+      await Wishlist.deleteMany({ "items.productId": _id });
+      await Review.deleteMany({ productId: _id });
+      await Order.deleteMany({ "orderItems.productId": _id });
+
+      // Delete from supplier and vat based on existing stock info
+      const stockForProduct = stocks.find((s) => s.product.toString() === _id.toString());
+
+      if (stockForProduct) {
+        await Supplier.findByIdAndUpdate(stockForProduct.supplier, {
+          $pull: { product: _id },
+        });
+
+        await Vat.findByIdAndUpdate(stockForProduct.vat, {
+          $pull: { productId: _id },
+        });
+      }
+    }
+
+    // Finally delete the products
+    await Product.deleteMany({ _id: { $in: productIds } });
+
+    await Promise.all(
+        products.map(product => 
+          logAuditTrail({
+            action: "delete_product",
+            userId,
+            targetId: product._id,
+            targetType: "Product",
+            details: {
+              productName: product.name,
+              deletedAt: new Date().toISOString()
+            },
+            role: req.user.role
+          })
+        )
+      );
+
+
+    res.status(200).json({ message: "Products and related data deleted successfully." });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
 export const editProduct = async (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;

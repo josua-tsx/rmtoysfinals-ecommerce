@@ -49,7 +49,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     },
   });
 
-  const { mutate: deleteMultiSupplier, isPending } = useMutation({
+  const { mutate: deleteMultiSupplier } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/supplier/delete-multi-sup`, {
         supplierIds: data,
@@ -91,6 +91,11 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     setSelectedId(supplierId);
     setIsModalOpen(true);
   };
+
+  const cancelMultiDel = () => {
+    setSelectedIds([])
+    console.log("clicked")
+  }
 
   const pushMultipleSup = (supplierId) => {
     setSelectedIds((prev) =>
@@ -231,7 +236,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
       {selectedIds && selectedIds.length > 0 && (
         <div className=" w-full flex gap-2 justify-end p-3">
           <button
-            // onClick={cancelMultiDelete}
+            onClick={cancelMultiDel}
             className="border bg-green-700 text-white rounded-[5px] border-black p-2"
           >
             Cancel Detete
