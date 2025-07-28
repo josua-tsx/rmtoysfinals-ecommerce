@@ -67,6 +67,92 @@ export const getCategories = async (req, res, next) => {
   }
 };
 
+export const deleteMultiCategory = async (req, res, next) => {
+  const { categoryIds } = req.body;
+
+  if (!Array.isArray(categoryIds)) {
+    return next(handleMakeError(400, "CategoryIds should be an array"));
+  }
+
+  try {
+    const categories = await Category.find({
+      _id: {
+        $in: {
+          categoryIds,
+        },
+      },
+    });
+
+    if (categories.length !== categoryIds.length) {
+      const foundIds = categories.map((c) => c._id.toStringt());
+      const missingIds = categoryIds.filter((id) => !foundIds.includes(id));
+      return next(
+        handleMakeError(400, `Categories not found: ${missingIds.join(", ")}`)
+      );
+    }
+
+    // Check if any category is in use
+    const categoriesInUse = await Stocks.find({
+      category: { $in: categoryIds },
+    }).distinct("category");
+
+    const categoriesWithProducts = categories
+      .filter((c) => c.products?.length > 0)
+      .map((c) => c._id.toString());
+
+    const allUsedCategories = [
+      ...new Set([
+        ...categoriesInUse.map((id) => id.toString()),
+        ...categoriesWithProducts,
+      ]),
+    ];
+
+    if (allUsedCategories.length > 0) {
+      return next(
+        handleMakeError(
+          400,
+          `These categories are in use and cannot be deleted: ${allUsedCategories.join(
+            ", "
+          )}`
+        )
+      );
+    }
+
+    // Get category names for audit trail before deletion
+    const categoryNames = categories.reduce((acc, category) => {
+      acc[category._id] = category.categoryName;
+      return acc;
+    }, {});
+
+    // Delete all categories
+    await Category.deleteMany({ _id: { $in: categoryIds } });
+
+    // Create audit trail entries for each deleted category
+    await Promise.all(
+      categoryIds.map((id) =>
+        logAuditTrail({
+          action: "delete_category",
+          userId,
+          targetId: id,
+          targetType: "Category",
+          details: {
+            categoryName: categoryNames[id],
+          },
+          role: "admin",
+        })
+      )
+    );
+
+    res.status(200).json({
+      message: `${categoryIds.length} categories deleted successfully`,
+      deletedCount: categoryIds.length,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+};
+
 export const deleteCategory = async (req, res, next) => {
   const { categoryId } = req.params;
   const userId = req.user.id;

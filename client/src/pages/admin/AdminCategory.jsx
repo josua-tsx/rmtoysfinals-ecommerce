@@ -3,9 +3,14 @@ import AdminCategoryTable from "../../components/admin/AdminCategoryTable";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import AdminAddCategory from "./AdminAddCategory";
 import { IoMdAdd } from "react-icons/io";
+import { MdDelete } from "react-icons/md";
 
 export default function AdminCategory() {
   const [showAdd, setShowAdd] = useState(false);
+
+  const [enableMultiDel, setEnableMultiDel] = useState(false);
+
+  console.log(enableMultiDel)
 
   const toggleAddCategory = () => {
     setShowAdd(!showAdd);
@@ -23,21 +28,29 @@ export default function AdminCategory() {
         <AdminStatCard title={"STOCKS"} value={300}/> */}
         </div>
 
-        <div className="w-full  flex justify-end">
+        <div className="w-full  flex justify-start gap-2">
+            
           <button
             onClick={toggleAddCategory}
             className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px]"
           >
-            {
-              showAdd ? "Cancel" :  "Add Category"
-            }
+            {showAdd ? "Cancel" : "Add Category"}
             <IoMdAdd />
           </button>
+
+          <button
+            onClick={() => setEnableMultiDel(!enableMultiDel)}
+            className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px]"
+          >
+            Multiple delete
+            <MdDelete />
+          </button>
+
         </div>
 
         {showAdd && <AdminAddCategory />}
 
-        <AdminCategoryTable />
+        <AdminCategoryTable enableMultiDel={enableMultiDel} />
       </div>
     </section>
   );

@@ -5,11 +5,11 @@ import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 
-export default function AdminCategoryTable() {
+export default function AdminCategoryTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -17,6 +17,8 @@ export default function AdminCategoryTable() {
 
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const {
     data: categories = [],
@@ -29,8 +31,6 @@ export default function AdminCategoryTable() {
       return res.data;
     },
   });
-
-  console.log(categories)
 
   const arrayCategories = Array.isArray(categories) ? categories : [];
 
@@ -46,9 +46,45 @@ export default function AdminCategoryTable() {
       toast.success("Category Deleted Successfully!");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong")
-    }
+      toast.error(err.response.data.message || "something went wrong");
+    },
   });
+
+  const { mutate: deleteAllCategories } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/delete-multi-category`, {
+        data,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Categories are deleted succesfully!");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong");
+    },
+  });
+
+  console.log(selectedIds);
+
+  useEffect(() => {
+    if (!enableMultiDel) {
+      setSelectedIds([]);
+    }
+  }, [enableMultiDel]);
+
+  const pushMultipleCate = (categoryId) => {
+    setSelectedIds((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const cancelMultiDelete = () => {
+    setSelectedIds([]);
+  };
 
   const handleClickDelete = (categoryId) => {
     setSelectedId(categoryId);
@@ -59,6 +95,21 @@ export default function AdminCategoryTable() {
     if (setSelectedId) {
       deleteCategoryMutation(selectedId);
       setIsOpenModal(false);
+    }
+  };
+
+  const handleDelteMulti = () => {
+    if (selectedIds.length === 0) {
+      toast.error("Please select at least one category");
+      return;
+    }
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedIds.length} categories?`
+      )
+    ) {
+      deleteAllCategories(selectedIds);
     }
   };
 
@@ -90,7 +141,7 @@ export default function AdminCategoryTable() {
         isOpen={isOpenModal}
         title={"Confirm delete"}
         message={
-         "This data might in used in different module, are you sure you want to delete this Category? This action cannot be undone."
+          "This data might in used in different module, are you sure you want to delete this Category? This action cannot be undone."
         }
         onConfirm={handleConfirm}
         onCancel={handleCancel}
@@ -110,57 +161,85 @@ export default function AdminCategoryTable() {
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-       {
-        isCategoryPending ? (
+        {isCategoryPending ? (
           <div className="flex justify-center h-full items-center">
-            <LoadingSpinner/>
+            <LoadingSpinner />
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">
-          <thead>
-            <tr className="">
-              <th className="font-normal p-2 pb-5">ID</th>
-              <th className="font-normal p-2 pb-5">Category Name</th>
-              <th className="font-normal p-2 pb-5">Category Description</th>
-              <th className="font-normal p-2 pb-5">Category Products Count in use</th>
-              <th className="font-normal p-2 pb-5">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700 ">
-            {filterdArrayCategories.length > 0 &&
-              filterdArrayCategories.map((category) => (
-                <tr key={category._id}>
-                  <td className="px-4 ">{category._id}</td>
+            <thead>
+              <tr className="">
+                <th className="font-normal p-2 pb-5">ID</th>
+                <th className="font-normal p-2 pb-5">Category Name</th>
+                <th className="font-normal p-2 pb-5">Category Description</th>
+                <th className="font-normal p-2 pb-5">
+                  Category Products Count in use
+                </th>
+                <th className="font-normal p-2 pb-5">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700 ">
+              {filterdArrayCategories.length > 0 &&
+                filterdArrayCategories.map((category) => (
+                  <tr key={category._id}>
+                    <td className="px-4 ">{category._id}</td>
 
-                  <td className="	">{category?.categoryName}</td>
+                    <td className="	">{category?.categoryName}</td>
 
-                  <td className="">{category?.categoryDescription}</td>
-                  <td className="">{category?.products?.length}</td>
-                  {/* <td className="">
+                    <td className="">{category?.categoryDescription}</td>
+                    <td className="">{category?.products?.length}</td>
+                    {/* <td className="">
                     {category?.products.length}
                   </td> */}
 
-                  <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                    <button
-                      onClick={() => navigateToEdit(category._id)}
-                      className="text-green-600 hover:text-indigo-300 mr-2"
-                    >
-                      <CiEdit size={25} />
-                    </button>
-                    <button
-                      onClick={() => handleClickDelete(category._id)}
-                      className="text-red-600 hover:text-red-300"
-                    >
-                      <MdDelete size={25} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-        )
-       }
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
+                      <button
+                        onClick={() => navigateToEdit(category._id)}
+                        className="text-green-600 hover:text-indigo-300 mr-2"
+                      >
+                        <CiEdit size={25} />
+                      </button>
+                      <button
+                        onClick={() => handleClickDelete(category._id)}
+                        className="text-red-600 hover:text-red-300"
+                      >
+                        <MdDelete size={25} />
+                      </button>
+
+                      {enableMultiDel ? (
+                        <input
+                          type="checkbox"
+                          id="wdwadwk"
+                          checked={selectedIds.includes(category._id)}
+                          onChange={() => pushMultipleCate(category._id)}
+                        />
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        )}
       </div>
+
+      {selectedIds && selectedIds.length > 0 && (
+        <div className=" w-full flex gap-2 justify-end p-3">
+          <button
+            onClick={cancelMultiDelete}
+            className="border bg-green-700 text-white rounded-[5px] border-black p-2"
+          >
+            Cancel Detete
+          </button>
+          <button
+            onClick={() => handleDelteMulti()}
+            className="border bg-red-700 text-white rounded-[5px] border-black p-2"
+          >
+            Confirm Detete
+          </button>
+        </div>
+      )}
     </div>
   );
 }

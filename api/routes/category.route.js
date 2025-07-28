@@ -2,6 +2,7 @@ import express from "express";
 import {
   addCategory,
   deleteCategory,
+  deleteMultiCategory,
   editCategory,
   getCategories,
   getSingleCategory,
@@ -15,5 +16,6 @@ router.get(`/get-categories`, getCategories);
 router.delete(`/delete-category/:categoryId`, requireAuth, requireAdmin , deleteCategory);
 router.put(`/edit-category/:categoryId`, requireAuth, requireAdmin ,editCategory);
 router.get(`/get-single/:categoryId`, getSingleCategory);
+router.post(`/delete-multi-category`, requireAdmin, requireAuth, deleteMultiCategory)
 
 export default router;
