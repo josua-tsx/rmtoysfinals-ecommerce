@@ -95,6 +95,83 @@ export const getSuppliers = async (req, res, next) => {
   }
 };
 
+export const deleteMultiSupplier = async (req, res, next) => {
+  const { supplierIds } = req.body;
+  const userId = req.user.id;
+
+  if (!Array.isArray(supplierIds)) {
+    return next(handleMakeError(400, "SupplierIds should be an array"));
+  }
+
+  try {
+    const supplier = await Supplier.find({ _id: { $in: supplierIds } });
+
+    if (supplier.length !== supplierIds) {
+      const foundIds = supplier.map((s) => s._id.toString());
+      const missingIds = supplier.filter((id) => !foundIds.includes(id));
+      return next(
+        handleMakeError(400, `Suppliers not found ${missingIds.join(", ")}`)
+      );
+    }
+
+    const supplierInUse = await Supplier.find({
+      supplier: supplierIds,
+    }).distinct("supplier");
+
+    const supplierWithProducts = supplier
+      .filter((s) => s.product?.length > 0)
+      .map((s) => s._id.toString());
+
+    const allUsedSuppliers = [
+      ...new Set([
+        ...supplierInUse.map((id) => id.toString()),
+        ...supplierWithProducts,
+      ]),
+    ];
+
+    if (allUsedSuppliers.length > 0) {
+      return next(
+        handleMakeError(
+          400,
+          `These suppliers are in use and cannot be deleted ${allUsedSuppliers.join(
+            ", "
+          )}`
+        )
+      );
+    }
+
+    const supplierNames = supplier.reduce((acc, supplier) => {
+      acc[supplier._id] = supplier.supplierName;
+      return acc;
+    }, {});
+
+    await Supplier.deleteMany({ _id: { $in: supplierIds } });
+
+    await Promise.all(
+      supplierIds.map((id) =>
+        logAuditTrail({
+          action: "delete_supplier",
+          userId,
+          targetId: id,
+          targetType: "Supplier",
+          details: {
+            categoryName: supplierNames[id],
+          },
+          role: "admin",
+        })
+      )
+    );
+
+    res.status(200).json({
+      message: `${supplierIds.length} suppliers deleted successfully`,
+      deletedCount: supplierIds.length,
+    });
+  } catch (error) {
+    next(error);
+    console.log(error);
+  }
+};
+
 export const deleteSupplier = async (req, res, next) => {
   const userId = req.user.id;
   const { supplierId } = req.params;
