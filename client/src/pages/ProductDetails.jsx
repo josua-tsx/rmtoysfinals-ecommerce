@@ -10,10 +10,13 @@ import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import formatPrice from "../reusable/formatPrice.js";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
+import { useUserStore } from "../stores/useUserStore.js";
 
 export default function ProductDetails() {
   const params = useParams();
   const queryClient = useQueryClient();
+
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const [hideShowDetails, setHideShowDetails] = useState(true);
   const [showModalReview, setShowModalReview] = useState(false);
@@ -59,8 +62,14 @@ export default function ProductDetails() {
     },
   });
 
+
+
   const handleAddToCart = (productId) => {
-    addToCartMutation({ productId });
+    if (currentUser) {
+      addToCartMutation({ productId });
+    } else {
+      console.log("etits")
+    }
   };
 
   const handleAddToWishList = (productId) => {
@@ -136,7 +145,9 @@ export default function ProductDetails() {
 
                 <div className="flex gap-8">
                   <p>Description:</p>
-                  <p className="break-all">{singleProduct.productDescription}</p>
+                  <p className="break-all">
+                    {singleProduct.productDescription}
+                  </p>
                 </div>
 
                 {/* STARS */}
@@ -199,9 +210,11 @@ export default function ProductDetails() {
                 <div className="flex items-center gap-5">
                   <p>Product Details</p>
                   <button onClick={() => setHideShowDetails(!hideShowDetails)}>
-                    {
-                      hideShowDetails ? <MdOutlineKeyboardArrowDown size={25} /> : <MdOutlineKeyboardArrowUp size={25}/>
-                    }
+                    {hideShowDetails ? (
+                      <MdOutlineKeyboardArrowDown size={25} />
+                    ) : (
+                      <MdOutlineKeyboardArrowUp size={25} />
+                    )}
                   </button>
                 </div>
 

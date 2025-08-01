@@ -9,12 +9,16 @@ import toast from "react-hot-toast";
 import formatPrice from "../reusable/formatPrice";
 
 import { CgUnavailable } from "react-icons/cg";
+import { useUserStore } from "../stores/useUserStore";
+import { addToGuestCart } from "../lib/utils";
 
 export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
+  const currentUser = useUserStore((state) => state.currentUser);
 
+  console.log(currentUser);
 
   const { mutate: addToCartMutation } = useMutation({
     mutationFn: async (productId) => {
@@ -55,7 +59,11 @@ export default function ShopProductCards({ product }) {
   );
 
   const handleAddToCart = (productId) => {
-    addToCartMutation({ productId });
+    if (currentUser) {
+      addToCartMutation({ productId });
+    } else {
+      addToGuestCart(productId)
+    }
   };
 
   const handleAddToWishList = (productId) => {
@@ -80,37 +88,46 @@ export default function ShopProductCards({ product }) {
         ""
       )}
 
-      {
-        product?.stocks?.quantity === 0 ? (
-          <div className="absolute flex gap-1 items-center  text-sm border top-[-10px] -left-[10px] md:-left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">
-          <span><CgUnavailable size={20} /></span>
-          OUT OF STOCK 
+      {product?.stocks?.quantity === 0 ? (
+        <div className="absolute flex gap-1 items-center  text-sm border top-[-10px] -left-[10px] md:-left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">
+          <span>
+            <CgUnavailable size={20} />
+          </span>
+          OUT OF STOCK
         </div>
-        ) : (
-          ""
-        )
-      }
+      ) : (
+        ""
+      )}
 
       <div className="w-full h-full flex justify-center relative overflow-hidden group-hover:bg-primary rounded-t-[5px]">
         <img src={product?.productImages} className="w-auto" />
         <div className="w-full absolute bottom-[-100%] border border-t-black transition-all group-hover:bottom-0 text-black bg-card">
           <ul className="p-2 flex flex-col gap-2">
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
-              <button className="w-full text-start" onClick={() => handleAddToCart(product._id)}>
+              <button
+                className="w-full text-start"
+                onClick={() => handleAddToCart(product._id)}
+              >
                 Add To Cart
               </button>
               <FaCartPlus size={20} />
             </li>
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
-              <button className="w-full text-start" onClick={() => handleAddToWishList(product._id)}>
+              <button
+                className="w-full text-start"
+                onClick={() => handleAddToWishList(product._id)}
+              >
                 Add To Wishlist
               </button>
               <IoHeart size={20} />
             </li>
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
-              <button className="w-full text-start" 
+              <button
+                className="w-full text-start"
                 onClick={() => navigate(`/product/${product._id}`)}
-              >View Details</button>
+              >
+                View Details
+              </button>
               <FaEye size={20} />
             </li>
           </ul>
@@ -120,7 +137,9 @@ export default function ShopProductCards({ product }) {
       <div className="p-2 flex flex-col gap-2 justify-between bg-card border-t-gray-300 border rounded-b-[5px]  w-full relative">
         <div className="flex w-full justify-between">
           <p className="">{product?.productName}</p>
-          <p className="uppercase text-blue-700">{formatPrice(product.price)} PHP</p>
+          <p className="uppercase text-blue-700">
+            {formatPrice(product.price)} PHP
+          </p>
         </div>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">

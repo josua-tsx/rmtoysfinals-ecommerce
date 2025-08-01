@@ -67,7 +67,6 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     },
   });
 
-  console.log(selectedIds);
 
   useEffect(() => {
     if (!enableMultiDel) {
@@ -115,7 +114,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     }
   };
 
-  const handleCancel = () => {
+    const handleCancel = () => {
     setSelectedId(null);
     setIsOpenModal(false);
   };
