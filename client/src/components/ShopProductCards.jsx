@@ -10,7 +10,7 @@ import formatPrice from "../reusable/formatPrice";
 
 import { CgUnavailable } from "react-icons/cg";
 import { useUserStore } from "../stores/useUserStore";
-import { addToGuestCart } from "../lib/utils";
+import { addToGuestCart, getGuestCart } from "../lib/utils";
 
 export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
@@ -62,7 +62,11 @@ export default function ShopProductCards({ product }) {
     if (currentUser) {
       addToCartMutation({ productId });
     } else {
-      addToGuestCart(productId)
+      addToGuestCart(productId);
+      toast.success("Added to guest cart");
+      // Optional: Update UI to show guest cart count
+      const updatedCart = getGuestCart();
+      console.log("Guest cart updated:", updatedCart);
     }
   };
 
