@@ -195,8 +195,7 @@ export const userPlaceOrder = async (req, res, next) => {
   }
 };
 
-export const placeOrderStripe = async (req, res, next) => {
-  const userId = req.user?.id; // Make optional for guest checkout
+export const guestOrderStripe = async (req, res, next) => {
   const session = await mongoose.startSession();
 
   try {
@@ -211,7 +210,7 @@ export const placeOrderStripe = async (req, res, next) => {
       totalPrice,
       notes,
       totalPoints,
-      usedCredits = 0, // Default to 0 for guests
+      usedCredits,
     } = req.body;
 
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
@@ -221,16 +220,20 @@ export const placeOrderStripe = async (req, res, next) => {
     try {
       await session.startTransaction();
 
-      // Validate order items and check stock
+      // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
       for (const item of orderItems) {
         if (!item.productId) {
           await session.abortTransaction();
-          return next(handleMakeError(400, "Missing product ID in order items"));
+          return next(
+            handleMakeError(400, "Missing product ID in order items")
+          );
         }
 
         if (item.quantity <= 0) {
           await session.abortTransaction();
-          return next(handleMakeError(400, "Quantity must be greater than zero"));
+          return next(
+            handleMakeError(400, "Quantity must be greater than zero")
+          );
         }
 
         if (item.quantity > 5) {
@@ -249,7 +252,9 @@ export const placeOrderStripe = async (req, res, next) => {
 
         if (!productStock) {
           await session.abortTransaction();
-          return next(handleMakeError(400, `Product ${item.productId} not found`));
+          return next(
+            handleMakeError(400, `Product ${item.productId} not found`)
+          );
         }
 
         if (productStock.quantity < item.quantity) {
@@ -260,8 +265,141 @@ export const placeOrderStripe = async (req, res, next) => {
         }
       }
 
-      // Validate credits for authenticated users
-      if (userId && usedCredits > 0) {
+      const lineItems = orderItems.map((product) => {
+        if (!product.productId) {
+          return next(
+            handleMakeError(400, "Missing productId in one of the order items")
+          );
+        }
+
+        return {
+          price_data: {
+            currency: "php",
+            product_data: {
+              name: product.productName,
+              images: [product.productImages],
+            },
+            unit_amount: Math.round(product.price * 100),
+          },
+          quantity: product.quantity,
+        };
+      });
+
+      const stripeSession = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: lineItems,
+        mode: "payment",
+        success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+        metadata: {
+          userId: new Date().toString(),
+          orderItems: JSON.stringify(
+            orderItems.map((item) => ({
+              productId: item.productId._id,
+              productName: item.productId.productName,
+              price: item.productId.price,
+              quantity: item.quantity,
+            }))
+          ),
+          shippingAddress: JSON.stringify(shippingAddress),
+          paymentMethod: JSON.stringify(paymentMethod),
+          taxPrice: taxPrice.toString(),
+          shippingPrice: shippingPrice.toString(),
+          discount: discount.toString(),
+          subtotal: subtotal.toString(),
+          totalPrice: totalPrice.toString(),
+          notes: notes || "",
+          totalPoints: totalPoints.toString(),
+          usedCredits: usedCredits.toString(),
+        },
+      });
+
+      await session.commitTransaction();
+      res.status(200).json({ url: stripeSession.url });
+    } catch (error) {
+      await session.abortTransaction();
+      next(error);
+    } finally {
+      session.endSession();
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const placeOrderStripe = async (req, res, next) => {
+  const userId = req.user.id;
+  const session = await mongoose.startSession();
+
+  try {
+    const {
+      orderItems,
+      shippingAddress,
+      paymentMethod,
+      taxPrice,
+      shippingPrice,
+      discount,
+      subtotal,
+      totalPrice,
+      notes,
+      totalPoints,
+      usedCredits,
+    } = req.body;
+
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      return next(handleMakeError(400, "Invalid or empty products array"));
+    }
+
+    try {
+      await session.startTransaction();
+
+      // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
+      for (const item of orderItems) {
+        if (!item.productId) {
+          await session.abortTransaction();
+          return next(
+            handleMakeError(400, "Missing product ID in order items")
+          );
+        }
+
+        if (item.quantity <= 0) {
+          await session.abortTransaction();
+          return next(
+            handleMakeError(400, "Quantity must be greater than zero")
+          );
+        }
+
+        if (item.quantity > 5) {
+          await session.abortTransaction();
+          return next(
+            handleMakeError(
+              400,
+              "You can only order up to 5 items per product at a time."
+            )
+          );
+        }
+
+        const productStock = await Stocks.findOne({
+          product: item.productId,
+        }).session(session);
+
+        if (!productStock) {
+          await session.abortTransaction();
+          return next(
+            handleMakeError(400, `Product ${item.productId} not found`)
+          );
+        }
+
+        if (productStock.quantity < item.quantity) {
+          await session.abortTransaction();
+          return next(
+            handleMakeError(400, `Insufficient stock for ${item.productName}`)
+          );
+        }
+      }
+
+      // Validate credits
+      if (usedCredits > 0) {
         const user = await User.findById(userId).session(session);
 
         if (user.creditLock) {
@@ -283,7 +421,7 @@ export const placeOrderStripe = async (req, res, next) => {
             );
           } else {
             await User.findByIdAndUpdate(
-              userId,
+              req.user.id,
               { $set: { creditLock: null } },
               { session }
             );
@@ -291,56 +429,53 @@ export const placeOrderStripe = async (req, res, next) => {
         }
       }
 
-      // Prepare line items for Stripe
-      const lineItems = orderItems.map((item) => {
+      const lineItems = orderItems.map((product) => {
+        if (!product.productId) {
+          return next(
+            handleMakeError(400, "Missing productId in one of the order items")
+          );
+        }
+
         return {
           price_data: {
             currency: "php",
             product_data: {
-              name: item.productName,
-              images: [item.productImages[0]], // Use first image
+              name: product.productName,
+              images: [product.productImages],
             },
-            unit_amount: Math.round(item.price * 100), // Convert to cents
+            unit_amount: Math.round(product.price * 100),
           },
-          quantity: item.quantity,
+          quantity: product.quantity,
         };
       });
 
-      // Prepare metadata for webhook
-      const metadata = {
-        orderItems: JSON.stringify(
-          orderItems.map((item) => ({
-            productId: item.productId,
-            productName: item.productName,
-            price: item.price,
-            quantity: item.quantity,
-          }))
-        ),
-        shippingAddress: JSON.stringify(shippingAddress),
-        paymentMethod,
-        taxPrice: taxPrice.toString(),
-        shippingPrice: shippingPrice.toString(),
-        discount: discount.toString(),
-        subtotal: subtotal.toString(),
-        totalPrice: totalPrice.toString(),
-        notes: notes || "",
-        totalPoints: totalPoints.toString(),
-        usedCredits: usedCredits.toString(),
-      };
-
-      // Add user ID if authenticated
-      if (userId) {
-        metadata.userId = userId.toString();
-      }
-
-      // Create Stripe checkout session
       const stripeSession = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: lineItems,
         mode: "payment",
         success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-        metadata,
+        metadata: {
+          userId: req.user._id.toString(),
+          orderItems: JSON.stringify(
+            orderItems.map((item) => ({
+              productId: item.productId._id,
+              productName: item.productId.productName,
+              price: item.productId.price,
+              quantity: item.quantity,
+            }))
+          ),
+          shippingAddress: JSON.stringify(shippingAddress),
+          paymentMethod: JSON.stringify(paymentMethod),
+          taxPrice: taxPrice.toString(),
+          shippingPrice: shippingPrice.toString(),
+          discount: discount.toString(),
+          subtotal: subtotal.toString(),
+          totalPrice: totalPrice.toString(),
+          notes: notes || "",
+          totalPoints: totalPoints.toString(),
+          usedCredits: usedCredits.toString(),
+        },
       });
 
       await session.commitTransaction();

@@ -1,5 +1,5 @@
 import express from "express";
-import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import { optionalAuth, requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 import {
   addReason,
   adminOrderRefund,
@@ -21,6 +21,7 @@ import {
   getUserFailed,
   getUserOrder,
   getUserRefund,
+  guestOrderStripe,
   placeOrderGcashQR,
   placeOrderStripe,
   updateDeliveryStatus,
@@ -34,6 +35,8 @@ const router = express.Router();
 router.post(`/place-order`, requireAuth, userPlaceOrder);
 
 router.post(`/place-order-stripe`, requireAuth, placeOrderStripe)
+
+router.post(`/place-guest-stripe`,  guestOrderStripe)
 
 router.post(`/place-order-gcashQR`, requireAuth, placeOrderGcashQR)
 
