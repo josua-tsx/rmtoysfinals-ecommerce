@@ -3,6 +3,13 @@ import bcrypt from "bcryptjs";
 
 const UserModelSchema = new mongoose.Schema(
   {
+    isGuest: {
+      type: Boolean,
+      default: false,
+    },
+    guestExpiry: {
+      type: Date
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
