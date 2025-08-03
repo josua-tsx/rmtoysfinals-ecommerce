@@ -58,7 +58,7 @@ export default function ShopProductCards({ product }) {
 
   const handleAddToCart = (productId) => {
     addToCartMutation({ productId });
-  };w
+  }
 
   const handleAddToWishList = (productId) => {
     addToWishListMutation({ productId });

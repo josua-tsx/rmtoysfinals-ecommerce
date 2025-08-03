@@ -4,10 +4,6 @@ import Stocks from "../models/stocks.model.js";
 import Wishlist from "../models/wishlist.models.js";
 
 export const addToCart = async (req, res, next) => {
-  if (!req.user) {
-    return res.status(200).json({ message: "Guest cart handled by frontend" });
-  }
-
   const { productId } = req.body;
   const userId = req.user.id;
 
