@@ -18,6 +18,8 @@ export default function ShopProductCards({ product }) {
 
   const currentUser = useUserStore((state) => state.currentUser);
 
+  console.log(currentUser);
+
   const { mutate: addToCartMutation } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.post(`/cart`, productId);
@@ -57,8 +59,16 @@ export default function ShopProductCards({ product }) {
   );
 
   const handleAddToCart = (productId) => {
-    addToCartMutation({ productId });
-  }
+    if (currentUser) {
+      addToCartMutation({ productId });
+    } else {
+      addToGuestCart(productId);
+      toast.success("Added to guest cart");
+      // Optional: Update UI to show guest cart count
+      const updatedCart = getGuestCart();
+      console.log("Guest cart updated:", updatedCart);
+    }
+  };
 
   const handleAddToWishList = (productId) => {
     addToWishListMutation({ productId });

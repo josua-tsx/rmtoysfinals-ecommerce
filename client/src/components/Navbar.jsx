@@ -14,7 +14,6 @@ import { useUserStore } from "../stores/useUserStore";
 
 import RMTOYSLOGO from "../assets/RMTOYSLOGOFINAL.png";
 import CreditsPoints from "./CreditsPoints";
-import GuestCart from "./GuestCart";
 
 export default function Navbar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -46,7 +45,6 @@ export default function Navbar() {
             )}
           </div>
 
-          
           {currentUser ? (
             <div className="flex-1 flex border-t-gray-400 border justify-between items-center py-2 mb-[20px] px-1 bg-card">
               <Profile />
@@ -58,9 +56,7 @@ export default function Navbar() {
 
           {/* RENDER NAVBAR LIST ITEMS */}
           <ul className=" p-3 font-main lg:flex relative  gap-7 h-screen flex flex-col  justify-start text-xl shadow-lg">
-           <div className="absolute right-4 top-4">
-         
-           </div>
+            <div className="absolute right-4 top-4"></div>
             {navItems.map((item) => (
               <li key={item.name}>
                 <Link to={`${item.path}`}>
@@ -74,7 +70,6 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-
         </div>
         {/* DESKTOP NAVBAR */}
         <div className="flex items-center justify-center lg:justify-between w-full z-40">
@@ -132,12 +127,11 @@ export default function Navbar() {
                 <Settings />
               </div>
             ) : (
-             <>
-                <GuestCart/>
-               <Link to={`/sign-in`}>
-                <button className="font-main text-xl">Sign in</button>
-              </Link>
-             </>
+              <>
+                <Link to={`/sign-in`}>
+                  <button className="font-main text-xl">Sign in</button>
+                </Link>
+              </>
             )}
           </div>
         </div>
