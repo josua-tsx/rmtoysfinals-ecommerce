@@ -4,31 +4,20 @@ import { handleMakeError } from "./handleError.js";
 
 export const optionalAuth = async (req, res, next) => {
   const accessToken = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
-
-  if (!accessToken) {
-    // No token - proceed as guest
-    req.user = null;
-    return next();
-  }
-
-  try {
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-    const user = await User.findById(decoded.userId);
-
-    if (!user) {
-      // Invalid user - proceed as guest
-      req.user = null;
-      return next();
+  
+  if (accessToken) {
+    try {
+      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+      const user = await User.findById(decoded.userId);
+      if (user) {
+        req.user = user;
+      }
+    } catch (error) {
+      // Token is invalid but we'll still proceed since it's optional
+      console.log("Invalid token, proceeding as guest");
     }
-
-    // Valid user - attach to request
-    req.user = user;
-    next();
-  } catch (error) {
-    // Invalid token - proceed as guest
-    req.user = null;
-    next();
   }
+  next();
 };
 
 export const requireAuth = async (req, res, next) => {
