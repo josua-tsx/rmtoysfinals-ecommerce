@@ -73,26 +73,23 @@ import GuestCheckOutModal from "./components/guest/GuestCheckOutModal.jsx";
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
-
   {
     element: (
       <ProtectedCustomerRoute>
         <RequiredAuthGcashPage />
       </ProtectedCustomerRoute>
     ),
-    children: [{
-      path: "/gcashQRpayment",
-      element: <GcashPaymentPage/>
-    }]
+    children: [
+      {
+        path: "/gcashQRpayment",
+        element: <GcashPaymentPage />,
+      },
+    ],
   },
 
   {
     path: "/",
-    element: (
-
-        <RootLayout />
-     
-    ),
+    element: <RootLayout />,
     children: [
       {
         path: `/`,
@@ -108,11 +105,11 @@ const router = createBrowserRouter([
       },
       {
         path: `/forget-password`,
-        element: <RecoverPassword/>
+        element: <RecoverPassword />,
       },
       {
         path: `/reset-password`,
-        element: <ResetPassword/>
+        element: <ResetPassword />,
       },
       {
         path: `/shop`,
@@ -136,13 +133,16 @@ const router = createBrowserRouter([
       },
       {
         path: `/guest`,
-        element: <GuestCartPage/>,
+        element: <GuestCartPage />,
       },
       {
         path: `/guestOrder`,
-        element: <GuestCheckOutModal/>,
+        element: <GuestCheckOutModal />,
       },
-     
+      {
+        path: "/gcashQRpayment",
+        element: <GcashPaymentPage />,
+      },
     ],
   },
 
@@ -173,7 +173,6 @@ const router = createBrowserRouter([
         path: `/orderSingle`,
         element: <SingleOrderList />,
       },
-      
     ],
   },
 
@@ -241,7 +240,7 @@ const router = createBrowserRouter([
         path: "/admin/supplier",
         element: <AdminSupplier />,
       },
-   
+
       {
         path: "/admin/editSupplier/:editSupplierId",
         element: <AdminEditSupplier />,
@@ -253,7 +252,7 @@ const router = createBrowserRouter([
         path: "/admin/category",
         element: <AdminCategory />,
       },
- 
+
       {
         path: "/admin/editCategory/:editCategoryId",
         element: <AdminCategoryEdit />,
@@ -272,10 +271,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/admin/stockHistory",
-        element: <AdminStockHistory/>,
+        element: <AdminStockHistory />,
       },
-
-
 
       {
         path: "/admin/user",
@@ -285,7 +282,6 @@ const router = createBrowserRouter([
         path: "/admin/worker",
         element: <AdminWorker />,
       },
-
 
       // VAT
 
@@ -357,7 +353,7 @@ const router = createBrowserRouter([
       },
       {
         path: "stockHistory",
-        element: <AdminStockHistory/>,
+        element: <AdminStockHistory />,
       },
     ],
   },
