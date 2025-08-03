@@ -14,7 +14,6 @@ const OrderModelSchema = new mongoose.Schema(
 
     guestUser: {
       name: { type: String },
-      email: { type: String },
       phone: { type: String },
     },
 
