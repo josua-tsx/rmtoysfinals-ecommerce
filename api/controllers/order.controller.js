@@ -209,8 +209,6 @@ export const guestOrderStripe = async (req, res, next) => {
       subtotal,
       totalPrice,
       notes,
-      totalPoints,
-      usedCredits,
     } = req.body;
 
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
@@ -314,8 +312,6 @@ export const guestOrderStripe = async (req, res, next) => {
           subtotal: subtotal.toString(),
           totalPrice: totalPrice.toString(),
           notes: notes || "",
-          totalPoints: totalPoints.toString(),
-          usedCredits: usedCredits.toString(),
         },
       });
 
