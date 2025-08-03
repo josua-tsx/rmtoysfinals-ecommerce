@@ -1,18 +1,20 @@
-import Buttons from "../reusable/Buttons";
-import CartCard from "../components/CartCard";
-import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../lib/axios";
 import { useEffect, useState } from "react";
-import OrderSummaryModal from "../components/OrderSummaryModal";
-import formatPrice from "../reusable/formatPrice";
-import CreditPointsAuto from "../components/CreditPointsAuto";
 import { useNavigate } from "react-router-dom";
+import useOrderStore from "../../stores/useOrderStore";
+import { getGuestCart } from "../../lib/utils";
+import LoadingSpinner from "../../reusable/LoadingSpinner";
+import OrderSummaryModal from "../OrderSummaryModal";
+import CreditPointsAuto from "../CreditPointsAuto";
+import CartCard from "../CartCard";
 import { FaShoppingCart } from "react-icons/fa";
-import useOrderStore from "../stores/useOrderStore";
-import LoadingSpinner from "../reusable/LoadingSpinner";
+import formatPrice from "../../reusable/formatPrice";
+import Buttons from "../../reusable/Buttons";
+import GuestCard from "./GuestCard";
+import GuestCheckOutModal from "./GuestCheckOutModal";
 
-export default function CartPage() {
+export default function GuestCartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
+  const [cart, setCart] = useState(getGuestCart());
 
   const navigate = useNavigate();
 
@@ -25,37 +27,18 @@ export default function CartPage() {
     }
   }, [currentOrder]);
 
-  const {
-    data: cart = [],
-    isPending,
-    isError,
-  } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/cart/get`);
-      return res.data;
-    },
-  });
-
-  console.log(cart)
-
-
-
   const totalPrice = cart?.items?.reduce((total, item) => {
-    return total + item.productId.price * item.quantity;
+    return total + item.price * item.quantity;
   }, 0);
 
-  const totalPoints = cart?.items?.reduce((total, item) => {
-    return total + item.productId.points * item.quantity;
-  }, 0);
-
-  if (isPending) return <LoadingSpinner fullScreen/>;
-  if (isError) return <div>Error loading cart.</div>;
+  const updateCart = () => {
+    setCart(getGuestCart());
+  };
 
   return (
     <section className="pt-[130px] bg-yellow  text-sm md:text-normal font-main p-3">
       {openOrderModal && (
-        <OrderSummaryModal onClose={() => setOrderModal(false)} />
+        <GuestCheckOutModal onClose={() => setOrderModal(false)} />
       )}
 
       <div className="max-w-[1280px] bg-yellow h-screen mx-auto">
@@ -76,7 +59,11 @@ export default function CartPage() {
 
             {cart?.items?.length > 0 ? (
               cart?.items.map((item) => (
-                <CartCard key={item?._id} productCart={item} />
+                <GuestCard
+                  key={item._id}
+                  refreshCart={updateCart}
+                  productCart={item}
+                />
               ))
             ) : (
               <div className="bg-white rounded-lg p-8 text-center shadow-sm border border-black">
@@ -121,8 +108,7 @@ export default function CartPage() {
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
                       <strong>Note:</strong>
-                     You can only order 5 items per product at a time.
-                     
+                      You can only order 5 items per product at a time.
                     </p>
                   </div>
                 </div>
@@ -131,9 +117,7 @@ export default function CartPage() {
                 <p>
                   Total Items: <span>{cart?.items?.length}</span>
                 </p>
-                <p>
-                  Total Points: <span>+{totalPoints}</span>
-                </p>
+
                 <p>
                   Total Price:{" "}
                   <span className="text-indigo-500">

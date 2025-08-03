@@ -5,9 +5,19 @@ const OrderModelSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
-    
+
+    isGuest: {
+      type: Boolean,
+      default: false,
+    },
+
+    guestUser: {
+      name: { type: String },
+      email: { type: String },
+      phone: { type: String },
+    },
+
     orderItems: [
       {
         productId: {
@@ -52,11 +62,11 @@ const OrderModelSchema = new mongoose.Schema(
     },
 
     usedCredits: {
-      type: Number
+      type: Number,
     },
-    
+
     points: {
-      type: Number
+      type: Number,
     },
 
     subtotal: {
@@ -73,7 +83,7 @@ const OrderModelSchema = new mongoose.Schema(
 
     totalPoints: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     paymentStatus: {
@@ -91,17 +101,17 @@ const OrderModelSchema = new mongoose.Schema(
         "Out for Delivery",
         "Delivered",
         "Cancelled",
-        "Refunded"
+        "Refunded",
       ],
       default: "Pending",
     },
 
     shopPrice: {
-      type: Number
+      type: Number,
     },
 
     totalItemsOrdered: {
-      type: Number
+      type: Number,
     },
 
     imageUrl: {
@@ -123,9 +133,9 @@ const OrderModelSchema = new mongoose.Schema(
         type: String,
       },
       gcashName: {
-        type: String
-      }
-    }
+        type: String,
+      },
+    },
   },
   {
     timestamps: true,

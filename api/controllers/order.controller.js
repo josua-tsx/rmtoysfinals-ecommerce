@@ -606,7 +606,7 @@ export const checkOutSuccess = async (req, res, next) => {
 };
 
 export const placeOrderGcashQR = async (req, res, next) => {
-  const userId = req.user.id;
+  const userId = req.user?.id; // Make userId optional with ?.
   const {
     orderItems,
     shippingAddress,
@@ -619,30 +619,24 @@ export const placeOrderGcashQR = async (req, res, next) => {
     totalPoints,
     usedCredits,
     gcashQRmethod,
+    guestUser, // Add guest user details
   } = req.body;
 
   try {
+    // Validate order items
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
       return next(handleMakeError(400, "Invalid or empty products array"));
     }
 
-    if (orderItems.length === 0) {
-      return next(
-        handleMakeError(400, "You can't place an order without products!")
-      );
-    }
-
-    // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
+    // Validate stock for each item
     for (const item of orderItems) {
       if (item.quantity <= 0) {
-        await session.abortTransaction();
         return next(
           handleMakeError(400, "Item quantity must be greater than zero")
         );
       }
 
       if (item.quantity > 5) {
-        await session.abortTransaction();
         return next(
           handleMakeError(
             400,
@@ -654,7 +648,6 @@ export const placeOrderGcashQR = async (req, res, next) => {
       const productStock = await Stocks.findOne({ product: item.productId });
 
       if (!productStock || productStock.quantity < item.quantity) {
-        // If stock is insufficient
         return next(
           handleMakeError(
             400,
@@ -664,7 +657,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
       }
     }
 
-    // Validate GCash QR payment details if payment method is GcashQR
+    // Validate GCash QR payment details
     if (paymentMethod === "GcashQR") {
       if (
         !gcashQRmethod ||
@@ -681,26 +674,33 @@ export const placeOrderGcashQR = async (req, res, next) => {
       }
     }
 
-    // Check credit availability if using credits
-    if (usedCredits > 0) {
-      const user = await User.findById(userId).session(session);
+    // For guest orders, validate guest information
+    if (!userId) {
+      if (
+        !guestUser ||
+        !guestUser.name ||
+        !guestUser.email ||
+        !guestUser.phone
+      ) {
+        return next(
+          handleMakeError(
+            400,
+            "Guest orders require name, email, and phone number"
+          )
+        );
+      }
+    }
 
-      // if user select usedCredits, this if verify if credit lock is already done then proceed to set credit lock to null to let the user use their cretis again
-      // If user selects usedCredits, verify if credit lock is already done
+    // For authenticated users using credits
+    if (userId && usedCredits > 0) {
+      const user = await User.findById(userId);
+
       if (user.creditLock) {
         const now = new Date();
         const lockExpiry = new Date(user.creditLock);
 
-        console.log(
-          `Current: ${now.toISOString()} | Lock: ${lockExpiry.toISOString()}`
-        );
-
         if (lockExpiry <= now) {
-          await User.findByIdAndUpdate(
-            userId,
-            { $set: { creditLock: null } },
-            { session }
-          );
+          await User.findByIdAndUpdate(userId, { $set: { creditLock: null } });
         } else {
           const expiryDate = lockExpiry.toLocaleString("en-US", {
             timeZone: "Asia/Manila",
@@ -716,10 +716,15 @@ export const placeOrderGcashQR = async (req, res, next) => {
           );
         }
       }
+
+      // Check if user has enough credits
+      if (user.credits < usedCredits) {
+        return next(handleMakeError(400, "Insufficient credits"));
+      }
     }
 
+    // Prepare order data
     const orderData = {
-      userId,
       orderItems,
       shippingAddress,
       paymentMethod,
@@ -729,12 +734,21 @@ export const placeOrderGcashQR = async (req, res, next) => {
       totalPrice,
       notes,
       totalPoints,
-      usedCredits,
       paymentStatus: "Pending",
       stripeSessionId: `gcashQR-${Date.now()}-${Math.random()
         .toString(36)
         .substr(2, 9)}`,
+      isGuest: !userId, // Mark as guest order
     };
+
+    // Add user ID if authenticated
+    if (userId) {
+      orderData.userId = userId;
+      orderData.usedCredits = usedCredits;
+    } else {
+      // Add guest user info
+      orderData.guestUser = guestUser;
+    }
 
     // Add GCash QR details if payment method is GcashQR
     if (paymentMethod === "GcashQR") {
@@ -745,17 +759,20 @@ export const placeOrderGcashQR = async (req, res, next) => {
       };
     }
 
+    // Create and save the order
     const newOrder = new Order(orderData);
     await newOrder.save();
 
-    await User.findByIdAndUpdate(
-      newOrder.userId,
-      {
-        $inc: { credits: -usedCredits },
-      },
-      { new: true }
-    );
+    // Update user credits if authenticated
+    if (userId && usedCredits > 0) {
+      await User.findByIdAndUpdate(
+        userId,
+        { $inc: { credits: -usedCredits } },
+        { new: true }
+      );
+    }
 
+    // Update stock for all ordered items
     for (const item of orderItems) {
       await Stocks.findOneAndUpdate(
         { product: item.productId },
@@ -764,20 +781,26 @@ export const placeOrderGcashQR = async (req, res, next) => {
       );
     }
 
-    const userCart = await Cart.findOne({ userId });
-    userCart.items = [];
-    await userCart.save();
+    // Clear cart if authenticated
+    if (userId) {
+      const userCart = await Cart.findOne({ userId });
+      if (userCart) {
+        userCart.items = [];
+        await userCart.save();
+      }
 
-    await logAuditTrail({
-      action: "user_add_order",
-      userId,
-      targetId: newOrder._id,
-      targetType: "UserOrder",
-      details: {
-        description: "Ordered using GcashQR",
-      },
-      role: "customer",
-    });
+      // Log audit trail for authenticated users
+      await logAuditTrail({
+        action: "user_add_order",
+        userId,
+        targetId: newOrder._id,
+        targetType: "UserOrder",
+        details: {
+          description: "Ordered using GcashQR",
+        },
+        role: "customer",
+      });
+    }
 
     res.status(201).json(newOrder);
   } catch (error) {

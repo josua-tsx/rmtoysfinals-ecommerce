@@ -59,7 +59,19 @@ export default function ShopProductCards({ product }) {
   );
 
   const handleAddToCart = (productId) => {
-    addToCartMutation({ productId });
+    if (currentUser) {
+      addToCartMutation({ productId });
+    } else {
+      try {
+        addToGuestCart({
+          ...product,
+          quantity: 1,
+        });
+        toast.success("Added to guest cart");
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   const handleAddToWishList = (productId) => {

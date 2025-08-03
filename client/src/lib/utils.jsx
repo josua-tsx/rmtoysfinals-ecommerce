@@ -1,5 +1,3 @@
-import toast from "react-hot-toast";
-
 // lib/utils.js
 export const getGuestCart = () => {
   const cart = localStorage.getItem("guestCart");
@@ -20,25 +18,43 @@ export const addToGuestCart = (product) => {
     throw new Error("Product already in cart");
   }
 
-  // Create a clean cart item with only necessary fields
-  const cartItem = {
-    _id: product._id,
-    productId: product._id, // Keep for backward compatibility
-    productName: product.productName,
-    price: product.price,
-    productImages: product.productImages,
-    category: product.category,
-    stocks: product.stocks,
-    productDescription: product.productDescription,
-    discount: product.discount,
-    quantity: 1,
-    // Add any other fields you need in your CartCard
-    ...(product.productDetails && { productDetails: product.productDetails }),
-    ...(product.reviews && { reviews: product.reviews }),
-    ...(product.points && { points: product.points }),
-  };
-
-  cart.items.push(cartItem);
+  cart.items.push(product);
   localStorage.setItem("guestCart", JSON.stringify(cart));
   return cart;
+};
+
+export const deleteGuestCart = (productId) => {
+  // Get current cart from localStorage
+  const cart = getGuestCart();
+
+  // Filter out the item to be removed
+  const updatedItems = cart.items.filter((item) => item._id !== productId);
+
+  // Update the cart with filtered items
+  const updatedCart = {
+    ...cart,
+    items: updatedItems,
+  };
+
+  // Save back to localStorage
+  localStorage.setItem("guestCart", JSON.stringify(updatedCart));
+
+  // Return the updated cart
+  return updatedCart;
+};
+
+export const updateQuantity = (productId, newQuantity) => {
+  const cart = getGuestCart();
+
+  const updateQuantity = cart.items.findIndex((q) => q._id === productId);
+
+  const updatedCart = {
+    ...cart,
+    items: cart.items.map((item, index) =>
+      index === updateQuantity ? { ...item, quantity: newQuantity } : item
+    ),
+  };
+
+  localStorage.setItem("guestCart", JSON.stringify(updatedCart));
+  return updatedCart;
 };

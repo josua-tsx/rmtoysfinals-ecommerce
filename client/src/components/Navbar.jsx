@@ -14,6 +14,7 @@ import { useUserStore } from "../stores/useUserStore";
 
 import RMTOYSLOGO from "../assets/RMTOYSLOGOFINAL.png";
 import CreditsPoints from "./CreditsPoints";
+import GuestCart from "./Guest/GuestCart";
 
 export default function Navbar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,6 +33,9 @@ export default function Navbar() {
         >
           <div>
             {!currentUser ? (
+
+              <>
+             
               <Link to={`/sign-in`}>
                 <button
                   onClick={() => setIsExpanded(false)}
@@ -40,6 +44,7 @@ export default function Navbar() {
                   Sign In
                 </button>
               </Link>
+              </>
             ) : (
               ""
             )}
@@ -96,8 +101,9 @@ export default function Navbar() {
             ) : isExpanded ? (
               <div></div>
             ) : (
-              <div>
-                <Link className="md:hidden text-lg" to={`/sign-in`}>
+              <div className="flex md:hidden gap-4">
+                <GuestCart/>
+                <Link className=" text-lg" to={`/sign-in`}>
                   Sign In
                 </Link>
               </div>
@@ -127,11 +133,12 @@ export default function Navbar() {
                 <Settings />
               </div>
             ) : (
-              <>
+              <div className="flex gap-8 items-center">
+                <GuestCart/>
                 <Link to={`/sign-in`}>
                   <button className="font-main text-xl">Sign in</button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
