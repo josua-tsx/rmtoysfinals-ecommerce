@@ -285,6 +285,11 @@ export const guestOrderStripe = async (req, res, next) => {
         };
       });
 
+      // Create a temporary order ID for guests
+      const tempOrderId = `guest-${Date.now()}-${Math.floor(
+        Math.random() * 1000
+      )}`;
+
       const stripeSession = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: lineItems,
@@ -292,7 +297,7 @@ export const guestOrderStripe = async (req, res, next) => {
         success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
         metadata: {
-          userId: new Date().toString(),
+          userId: tempOrderId,
           orderItems: JSON.stringify(
             orderItems.map((item) => ({
               productId: item.productId._id,
