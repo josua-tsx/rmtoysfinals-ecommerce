@@ -6,7 +6,7 @@ export const getGuestCart = () => {
   return cart ? JSON.parse(cart) : { items: [] }; // Changed to 'items' to match usage
 };
 
-export const addToGuestCart = (productId) => {
+export const addToGuestCart = (product) => {
   const cart = getGuestCart();
 
   // Ensure cart.items exists
@@ -14,12 +14,31 @@ export const addToGuestCart = (productId) => {
     cart.items = [];
   }
 
-  const existingItem = cart.items.find((item) => item.productId === productId);
+  // Check if product already exists in cart
+  const existingItem = cart.items.find((item) => item._id === product._id);
   if (existingItem) {
-    throw new Error(toast.error("Product already in Guest Cart"));
+    throw new Error("Product already in cart");
   }
 
-  cart.items.push({ productId });
+  // Create a clean cart item with only necessary fields
+  const cartItem = {
+    _id: product._id,
+    productId: product._id, // Keep for backward compatibility
+    productName: product.productName,
+    price: product.price,
+    productImages: product.productImages,
+    category: product.category,
+    stocks: product.stocks,
+    productDescription: product.productDescription,
+    discount: product.discount,
+    quantity: 1,
+    // Add any other fields you need in your CartCard
+    ...(product.productDetails && { productDetails: product.productDetails }),
+    ...(product.reviews && { reviews: product.reviews }),
+    ...(product.points && { points: product.points }),
+  };
+
+  cart.items.push(cartItem);
   localStorage.setItem("guestCart", JSON.stringify(cart));
   return cart;
 };

@@ -36,8 +36,6 @@ router.post(`/place-order`, requireAuth, userPlaceOrder);
 
 router.post(`/place-order-stripe`, requireAuth, placeOrderStripe)
 
-router.post(`/place-guest-stripe`,  guestOrderStripe)
-
 router.post(`/place-order-gcashQR`, requireAuth, placeOrderGcashQR)
 
 router.post(`/checkout-success`, requireAuth, checkOutSuccess)

@@ -37,6 +37,8 @@ export default function CartPage() {
     },
   });
 
+
+
   const totalPrice = cart?.items?.reduce((total, item) => {
     return total + item.productId.price * item.quantity;
   }, 0);
