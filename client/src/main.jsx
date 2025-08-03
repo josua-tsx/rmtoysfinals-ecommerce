@@ -67,30 +67,28 @@ import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
 import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
 import RecoverPassword from "./routes/RecoverPassword.jsx";
 import ResetPassword from "./routes/ResetPassword.jsx";
+import GuestCart from "./components/GuestCart.jsx";
 
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
-
   {
     element: (
       <ProtectedCustomerRoute>
         <RequiredAuthGcashPage />
       </ProtectedCustomerRoute>
     ),
-    children: [{
-      path: "/gcashQRpayment",
-      element: <GcashPaymentPage/>
-    }]
+    children: [
+      {
+        path: "/gcashQRpayment",
+        element: <GcashPaymentPage />,
+      },
+    ],
   },
 
   {
     path: "/",
-    element: (
-
-        <RootLayout />
-     
-    ),
+    element: <RootLayout />,
     children: [
       {
         path: `/`,
@@ -106,11 +104,11 @@ const router = createBrowserRouter([
       },
       {
         path: `/forget-password`,
-        element: <RecoverPassword/>
+        element: <RecoverPassword />,
       },
       {
         path: `/reset-password`,
-        element: <ResetPassword/>
+        element: <ResetPassword />,
       },
       {
         path: `/shop`,
@@ -133,8 +131,8 @@ const router = createBrowserRouter([
         element: <Contact />,
       },
       {
-        path: `/cart`,
-        element: <CartPage />,
+        path: `/guest`,
+        element: <GuestCart />,
       },
     ],
   },
@@ -166,7 +164,6 @@ const router = createBrowserRouter([
         path: `/orderSingle`,
         element: <SingleOrderList />,
       },
-      
     ],
   },
 
@@ -234,7 +231,7 @@ const router = createBrowserRouter([
         path: "/admin/supplier",
         element: <AdminSupplier />,
       },
-   
+
       {
         path: "/admin/editSupplier/:editSupplierId",
         element: <AdminEditSupplier />,
@@ -246,7 +243,7 @@ const router = createBrowserRouter([
         path: "/admin/category",
         element: <AdminCategory />,
       },
- 
+
       {
         path: "/admin/editCategory/:editCategoryId",
         element: <AdminCategoryEdit />,
@@ -265,10 +262,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/admin/stockHistory",
-        element: <AdminStockHistory/>,
+        element: <AdminStockHistory />,
       },
-
-
 
       {
         path: "/admin/user",
@@ -278,7 +273,6 @@ const router = createBrowserRouter([
         path: "/admin/worker",
         element: <AdminWorker />,
       },
-
 
       // VAT
 
@@ -350,7 +344,7 @@ const router = createBrowserRouter([
       },
       {
         path: "stockHistory",
-        element: <AdminStockHistory/>,
+        element: <AdminStockHistory />,
       },
     ],
   },

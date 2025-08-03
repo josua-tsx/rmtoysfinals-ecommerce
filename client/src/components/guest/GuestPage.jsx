@@ -1,7 +1,5 @@
 import Buttons from "../reusable/Buttons";
 import CartCard from "../components/CartCard";
-import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../lib/axios";
 import { useEffect, useState } from "react";
 import OrderSummaryModal from "../components/OrderSummaryModal";
 import formatPrice from "../reusable/formatPrice";
@@ -13,66 +11,111 @@ import LoadingSpinner from "../reusable/LoadingSpinner";
 
 export default function GuestPage() {
   const [openOrderModal, setOrderModal] = useState(false);
-
+  const [guestCart, setGuestCart] = useState({ items: [] });
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // IF CUSTOMER USED BACK BUTTON (NOT THE CANCEL) IT WILL CLEAR THE ORDER IN THE LOCAL STORAGE
+  // Clear order if customer used back button
   const currentOrder = useOrderStore((state) => state.currentOrder);
   const clearOrder = useOrderStore((state) => state.clearOrder);
+
   useEffect(() => {
     if (currentOrder) {
       clearOrder();
     }
   }, [currentOrder]);
 
-  const {
-    data: cart = [],
-    isPending,
-    isError,
-  } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/cart/get`);
-      return res.data;
-    },
-  });
+  // Load guest cart from localStorage
+  useEffect(() => {
+    const loadGuestCart = () => {
+      try {
+        const cartData = JSON.parse(localStorage.getItem("guestCart")) || { items: [] };
+        setGuestCart(cartData);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading guest cart:", error);
+        setGuestCart({ items: [] });
+        setIsLoading(false);
+      }
+    };
 
-  const totalPrice = cart?.items?.reduce((total, item) => {
-    return total + item.productId.price * item.quantity;
+    loadGuestCart();
+
+    // Listen for storage changes (from other tabs)
+    const handleStorageChange = () => {
+      loadGuestCart();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Calculate totals
+  const totalPrice = guestCart.items?.reduce((total, item) => {
+    return total + (item.productId?.price || 0) * (item.quantity || 1);
   }, 0);
 
-  const totalPoints = cart?.items?.reduce((total, item) => {
-    return total + item.productId.points * item.quantity;
+  const totalPoints = guestCart.items?.reduce((total, item) => {
+    return total + (item.productId?.points || 0) * (item.quantity || 1);
   }, 0);
 
-  if (isPending) return <LoadingSpinner fullScreen/>;
-  if (isError) return <div>Error loading cart.</div>;
+  if (isLoading) return <LoadingSpinner fullScreen />;
 
   return (
-    <section className="pt-[130px] bg-yellow  text-sm md:text-normal font-main p-3">
+    <section className="pt-[130px] bg-yellow text-sm md:text-normal font-main p-3 min-h-screen">
       {openOrderModal && (
-        <OrderSummaryModal onClose={() => setOrderModal(false)} />
+        <OrderSummaryModal 
+          onClose={() => setOrderModal(false)} 
+          cartItems={guestCart.items}
+          isGuest={true}
+        />
       )}
 
-      <div className="max-w-[1280px] bg-yellow h-screen mx-auto">
-        <div className="flex  w-full flex-col  mb-5 ">
-          <h1 className="text-3xl md:text-4xl">Cart</h1>
+      <div className="max-w-[1280px] bg-yellow mx-auto">
+        <div className="flex w-full flex-col mb-5">
+          <h1 className="text-3xl md:text-4xl">Your Cart</h1>
           <p className="text-gray-600 mt-2">
-            {cart?.items?.length > 1
-              ? cart?.items?.length + " items in your cart"
-              : cart?.items?.length + " item in your cart"}
+            {guestCart.items.length > 1
+              ? `${guestCart.items.length} items in your cart`
+              : guestCart.items.length === 1
+              ? "1 item in your cart"
+              : "Your cart is empty"}
           </p>
+          
+          {/* Guest user notice */}
+          {guestCart.items.length > 0 && (
+            <div className="bg-blue-50 border-l-4 my-2 rounded border-blue-700 p-3 text-blue-700">
+              <p className="text-sm">
+                <strong>Note:</strong> You're browsing as a guest.{" "}
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="text-blue-600 underline"
+                >
+                  Sign in
+                </button>{" "}
+                to save your cart and access more features.
+              </p>
+            </div>
+          )}
         </div>
 
         <CreditPointsAuto />
 
         <form className="flex flex-col md:flex-row pb-10 w-full bg-yellow gap-4">
-          <div className="flex flex-col  gap-3  rounded-[5px]  h-[400px] md:h-[550px]  overflow-y-auto md:flex-1 ">
-            {/* PRODUCTS GOES HERE */}
-
-            {cart?.items?.length > 0 ? (
-              cart?.items.map((item) => (
-                <CartCard key={item?._id} productCart={item} />
+          <div className="flex flex-col gap-3 rounded-[5px] h-[400px] md:h-[550px] overflow-y-auto md:flex-1">
+            {guestCart.items.length > 0 ? (
+              guestCart.items.map((item) => (
+                <CartCard 
+                  key={item.productId?._id || item.productId} 
+                  productCart={{
+                    ...item,
+                    // Ensure consistent structure with authenticated cart
+                    productId: typeof item.productId === 'string' 
+                      ? { _id: item.productId, ...item } 
+                      : item.productId
+                  }} 
+                  isGuest={true}
+                />
               ))
             ) : (
               <div className="bg-white rounded-lg p-8 text-center shadow-sm border border-black">
@@ -81,7 +124,6 @@ export default function GuestPage() {
                   Your Cart is empty
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  {" "}
                   Add items to your cart by clicking "Add to Cart" on products.
                   They'll appear here ready for purchase.
                 </p>
@@ -95,10 +137,10 @@ export default function GuestPage() {
             )}
           </div>
 
-          {cart?.items?.length > 0 && (
+          {guestCart.items.length > 0 && (
             <div className="border md:w-[270px] gap-2 flex flex-col bg-card rounded-[5px] p-6 border-black">
-              <h1 className=" text-xl mb-3">Order Summary</h1>
-              <div className="bg-yellow-50 border-l-4 my-2  rounded border-red-700 p-3  text-red-700">
+              <h1 className="text-xl mb-3">Order Summary</h1>
+              <div className="bg-yellow-50 border-l-4 my-2 rounded border-red-700 p-3 text-red-700">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg
@@ -117,15 +159,14 @@ export default function GuestPage() {
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
                       <strong>Note:</strong>
-                     You can only order 5 items per product at a time.
-                     
+                      You can only order 5 items per product at a time.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="flex flex-1 flex-col gap-2">
                 <p>
-                  Total Items: <span>{cart?.items?.length}</span>
+                  Total Items: <span>{guestCart.items.length}</span>
                 </p>
                 <p>
                   Total Points: <span>+{totalPoints}</span>
@@ -133,14 +174,20 @@ export default function GuestPage() {
                 <p>
                   Total Price:{" "}
                   <span className="text-indigo-500">
-                    {" "}
-                    {cart?.items ? formatPrice(totalPrice) : 0} PHP
+                    {formatPrice(totalPrice)} PHP
                   </span>
                 </p>
               </div>
               <div onClick={() => setOrderModal(true)}>
                 <Buttons buttonName={"Checkout"} />
               </div>
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="text-sm text-blue-600 underline mt-2 text-center"
+              >
+                Login to checkout with account
+              </button>
             </div>
           )}
         </form>
