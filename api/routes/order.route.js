@@ -44,7 +44,7 @@ router.post(`/place-order-stripe`, optionalAuth, placeOrderStripe);
 
 router.post(`/place-order-gcashQR`, optionalAuth, placeOrderGcashQR);
 
-router.post(`/checkout-success`, requireAuth, checkOutSuccess);
+router.post(`/checkout-success`, optionalAuth, checkOutSuccess);
 
 router.put(`/add-reason/:orderId`, requireAuth, requireAdmin, addReason);
 

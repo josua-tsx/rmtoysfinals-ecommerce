@@ -447,16 +447,24 @@ export const placeOrderStripe = async (req, res, next) => {
 };
 
 export const checkOutSuccess = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { sessionId } = req.body;
 
-    // 1. Check if order already exists for this session (prevent duplicates)
+    // 1. Validate session ID
     if (!sessionId) {
+      await session.abortTransaction();
       return next(handleMakeError(400, "Invalid session ID"));
     }
 
-    const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+    // 2. Check for existing order
+    const existingOrder = await Order.findOne({
+      stripeSessionId: sessionId,
+    }).session(session);
     if (existingOrder) {
+      await session.abortTransaction();
       return res.status(200).json({
         success: true,
         message: "Order already processed",
@@ -464,16 +472,18 @@ export const checkOutSuccess = async (req, res, next) => {
       });
     }
 
-    // 2. Retrieve Stripe session
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (!session || session.payment_status !== "paid") {
+    // 3. Retrieve Stripe session
+    const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
+    if (!stripeSession || stripeSession.payment_status !== "paid") {
+      await session.abortTransaction();
       return next(
         handleMakeError(400, "Payment not completed or session invalid")
       );
     }
 
-    // 3. Parse metadata safely
-    if (!session.metadata) {
+    // 4. Parse and validate metadata
+    if (!stripeSession.metadata) {
+      await session.abortTransaction();
       return next(handleMakeError(400, "Missing metadata in Stripe session"));
     }
 
@@ -488,66 +498,99 @@ export const checkOutSuccess = async (req, res, next) => {
       totalPrice,
       notes = "",
       totalPoints,
-      usedCredits,
-    } = session.metadata;
+      usedCredits = "0",
+    } = stripeSession.metadata;
 
-    if (!userId || !orderItemsStr) {
-      return next(handleMakeError(400, "Missing critical metadata fields"));
+    if (!orderItemsStr) {
+      await session.abortTransaction();
+      return next(handleMakeError(400, "Missing order items in metadata"));
     }
 
     let orderItems, shippingAddress;
     try {
-      orderItems = JSON.parse(orderItemsStr).map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity || 1,
-      }));
-      shippingAddress = JSON.parse(shippingAddressStr);
+      orderItems = JSON.parse(orderItemsStr);
+      shippingAddress = shippingAddressStr
+        ? JSON.parse(shippingAddressStr)
+        : {};
     } catch (err) {
+      await session.abortTransaction();
       return next(handleMakeError(400, "Invalid metadata format"));
     }
 
-    // 4. Create and save the order
-    const newOrder = new Order({
-      userId,
-      orderItems,
+    // 5. Validate stock before creating order
+    for (const item of orderItems) {
+      const productId = item.productId?._id || item.productId;
+      const quantity = item.quantity || 1;
+
+      const productStock = await Stocks.findOne({ product: productId }).session(
+        session
+      );
+      if (!productStock || productStock.quantity < quantity) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, `Insufficient stock for product ${productId}`)
+        );
+      }
+    }
+
+    // 6. Create the order
+    const orderData = {
+      orderItems: orderItems.map((item) => ({
+        productId: item.productId?._id || item.productId,
+        quantity: item.quantity || 1,
+      })),
       shippingAddress,
       paymentMethod: "Online Payment",
+      paymentStatus: "Paid",
       taxPrice: parseFloat(taxPrice) || 0,
       shippingPrice: parseFloat(shippingPrice) || 0,
       discount: parseFloat(discount) || 0,
       subtotal: parseFloat(subtotal) || 0,
       totalPrice: parseFloat(totalPrice) || 0,
       notes,
-      totalPoints,
-      usedCredits,
-      paymentStatus: "Paid",
-      stripeSessionId: sessionId, // This must be unique
-    });
+      totalPoints: parseInt(totalPoints) || 0,
+      usedCredits: parseInt(usedCredits) || 0,
+      stripeSessionId: sessionId,
+    };
 
-    await newOrder.save();
+    // Only set userId if not guest
+    if (userId && userId !== "guest") {
+      orderData.userId = userId;
+    } else {
+      orderData.isGuest = true;
+    }
 
-    await User.findByIdAndUpdate(
-      newOrder.userId,
-      {
-        $inc: { credits: -usedCredits },
-      },
-      { new: true }
-    );
+    const newOrder = new Order(orderData);
+    await newOrder.save({ session });
 
-    // 5. Update stock and clear cart
+    // 7. Update stock
     for (const item of orderItems) {
+      const productId = item.productId?._id || item.productId;
       await Stocks.findOneAndUpdate(
-        { product: item.productId },
-        { $inc: { quantity: -item.quantity } },
-        { new: true }
+        { product: productId },
+        { $inc: { quantity: -(item.quantity || 1) } },
+        { session }
       );
     }
 
-    await Cart.findOneAndUpdate(
-      { userId },
-      { $set: { items: [] } },
-      { new: true }
-    );
+    // 8. Clear cart and deduct credits only for registered users
+    if (userId && userId !== "guest") {
+      await Cart.findOneAndUpdate(
+        { userId },
+        { $set: { items: [] } },
+        { session }
+      );
+
+      if (parseInt(usedCredits) > 0) {
+        await User.findByIdAndUpdate(
+          userId,
+          { $inc: { credits: -parseInt(usedCredits) } },
+          { session }
+        );
+      }
+    }
+
+    await session.commitTransaction();
 
     res.status(200).json({
       success: true,
@@ -555,7 +598,10 @@ export const checkOutSuccess = async (req, res, next) => {
       order: newOrder,
     });
   } catch (error) {
+    await session.abortTransaction();
     next(error);
+  } finally {
+    session.endSession();
   }
 };
 
