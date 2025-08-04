@@ -40,7 +40,7 @@ const router = express.Router();
 
 router.post(`/place-order`, requireAuth, userPlaceOrder);
 
-router.post(`/place-order-stripe`, requireAuth, placeOrderStripe);
+router.post(`/place-order-stripe`, optionalAuth, placeOrderStripe);
 
 router.post(`/place-order-gcashQR`, optionalAuth, placeOrderGcashQR);
 

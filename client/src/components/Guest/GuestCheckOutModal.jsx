@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import formatPrice from "../../reusable/formatPrice";
 import useOrderStore from "../../stores/useOrderStore";
 import { useUserStore } from "../../stores/useUserStore";
+import axiosInstance from "../../lib/axios";
 
 export default function GuestCheckOutModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -78,21 +79,21 @@ export default function GuestCheckOutModal({ onClose }) {
   //     },
   //   });
 
-  //   const { mutate: placeStripeOrder } = useMutation({
-  //     mutationFn: async (data) => {
-  //       const res = await axiosInstance.post(`/order/place-order-stripe`, data);
-  //       return res.data;
-  //     },
-  //     onSuccess: (data) => {
-  //       console.log(data);
-  //       if (data.url) {
-  //         window.location.href = data.url; // redirect to Stripe checkout
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       toast.error(error?.response?.data?.message || "Stripe checkout failed");
-  //     },
-  //   });
+    const { mutate: placeStripeOrder } = useMutation({
+      mutationFn: async (data) => {
+        const res = await axiosInstance.post(`/order/place-order-stripe`, data);
+        return res.data;
+      },
+      onSuccess: (data) => {
+        console.log(data);
+        if (data.url) {
+          window.location.href = data.url; // redirect to Stripe checkout
+        }
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || "Stripe checkout failed");
+      },
+    });
 
   const handleGcashQRpaymentMethod = (orderData) => {
     if (orderData.orderItems.length === 0) {
@@ -185,7 +186,7 @@ export default function GuestCheckOutModal({ onClose }) {
         totalPoints,
       };
 
-      //   placeStripeOrder(stripeOrderData);
+        placeStripeOrder(stripeOrderData);
     }
   };
 

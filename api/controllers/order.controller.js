@@ -329,8 +329,9 @@ export const guestOrderStripe = async (req, res, next) => {
 };
 
 export const placeOrderStripe = async (req, res, next) => {
-  const userId = req.user.id;
+  const userId = req?.user?.id;
   const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
     const {
@@ -344,151 +345,182 @@ export const placeOrderStripe = async (req, res, next) => {
       totalPrice,
       notes,
       totalPoints,
-      usedCredits,
+      usedCredits = 0,
     } = req.body;
 
+    // Validate order items
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      await session.abortTransaction();
       return next(handleMakeError(400, "Invalid or empty products array"));
     }
 
-    try {
-      await session.startTransaction();
-
-      // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
-      for (const item of orderItems) {
-        if (!item.productId) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(400, "Missing product ID in order items")
-          );
-        }
-
-        if (item.quantity <= 0) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(400, "Quantity must be greater than zero")
-          );
-        }
-
-        if (item.quantity > 5) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(
-              400,
-              "You can only order up to 5 items per product at a time."
-            )
-          );
-        }
-
-        const productStock = await Stocks.findOne({
-          product: item.productId,
-        }).session(session);
-
-        if (!productStock) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(400, `Product ${item.productId} not found`)
-          );
-        }
-
-        if (productStock.quantity < item.quantity) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(400, `Insufficient stock for ${item.productName}`)
-          );
-        }
+    // Validate stock and quantities
+    for (const item of orderItems) {
+      if (!item.productId) {
+        await session.abortTransaction();
+        return next(handleMakeError(400, "Missing product ID in order items"));
       }
 
-      // Validate credits
-      if (usedCredits > 0) {
-        const user = await User.findById(userId).session(session);
-
-        if (user.creditLock) {
-          const now = new Date();
-          const lockExpiry = new Date(user.creditLock);
-
-          if (lockExpiry > now) {
-            const expiryDate = lockExpiry.toLocaleString("en-US", {
-              timeZone: "Asia/Manila",
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-            await session.abortTransaction();
-            return next(
-              handleMakeError(400, `Credits locked until ${expiryDate}`)
-            );
-          } else {
-            await User.findByIdAndUpdate(
-              req.user.id,
-              { $set: { creditLock: null } },
-              { session }
-            );
-          }
-        }
+      if (item.quantity <= 0) {
+        await session.abortTransaction();
+        return next(handleMakeError(400, "Quantity must be greater than zero"));
       }
 
-      const lineItems = orderItems.map((product) => {
-        if (!product.productId) {
-          return next(
-            handleMakeError(400, "Missing productId in one of the order items")
-          );
-        }
+      if (item.quantity > 5) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, "Maximum 5 items per product allowed")
+        );
+      }
 
-        return {
-          price_data: {
-            currency: "php",
-            product_data: {
-              name: product.productName,
-              images: [product.productImages],
-            },
-            unit_amount: Math.round(product.price * 100),
-          },
-          quantity: product.quantity,
-        };
-      });
+      const productStock = await Stocks.findOne({
+        product: item.productId,
+      }).session(session);
 
-      const stripeSession = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: lineItems,
-        mode: "payment",
-        success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-        metadata: {
-          userId: req.user._id.toString(),
-          orderItems: JSON.stringify(
-            orderItems.map((item) => ({
-              productId: item.productId._id,
-              productName: item.productId.productName,
-              price: item.productId.price,
-              quantity: item.quantity,
-            }))
-          ),
-          shippingAddress: JSON.stringify(shippingAddress),
-          paymentMethod: JSON.stringify(paymentMethod),
-          taxPrice: taxPrice.toString(),
-          shippingPrice: shippingPrice.toString(),
-          discount: discount.toString(),
-          subtotal: subtotal.toString(),
-          totalPrice: totalPrice.toString(),
-          notes: notes || "",
-          totalPoints: totalPoints.toString(),
-          usedCredits: usedCredits.toString(),
-        },
-      });
+      if (!productStock) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, `Product ${item.productId} not found in stock`)
+        );
+      }
 
-      await session.commitTransaction();
-      res.status(200).json({ url: stripeSession.url });
-    } catch (error) {
-      await session.abortTransaction();
-      next(error);
-    } finally {
-      session.endSession();
+      if (productStock.quantity < item.quantity) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, `Insufficient stock for ${item.productName}`)
+        );
+      }
     }
+
+    // Validate credits for authenticated users
+    if (userId && usedCredits > 0) {
+      const user = await User.findById(userId).session(session);
+
+      // Check credit lock
+      if (user.creditLock && new Date(user.creditLock) > new Date()) {
+        const expiryDate = new Date(user.creditLock).toLocaleString("en-US", {
+          timeZone: "Asia/Manila",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
+        );
+      }
+
+      // Check sufficient credits
+      if (user.credits < usedCredits) {
+        await session.abortTransaction();
+        return next(handleMakeError(400, "Insufficient credits"));
+      }
+    }
+
+    // Prepare Stripe line items
+    const lineItems = orderItems.map((product) => ({
+      price_data: {
+        currency: "php",
+        product_data: {
+          name: product.productName,
+          images: product.productImages?.length
+            ? [product.productImages[0]]
+            : [],
+        },
+        unit_amount: Math.round(product.price * 100),
+      },
+      quantity: product.quantity,
+    }));
+
+    // Create Stripe session
+    const stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: lineItems,
+      mode: "payment",
+      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+      metadata: {
+        userId: userId?.toString() || "guest",
+        orderItems: JSON.stringify(
+          orderItems.map((item) => ({
+            productId: item.productId,
+            productName: item.productName,
+            price: item.price,
+            quantity: item.quantity,
+          }))
+        ),
+        shippingAddress: JSON.stringify(shippingAddress),
+        paymentMethod,
+        taxPrice: taxPrice.toString(),
+        shippingPrice: shippingPrice.toString(),
+        discount: discount.toString(),
+        subtotal: subtotal.toString(),
+        totalPrice: totalPrice.toString(),
+        notes: notes || "",
+        totalPoints: totalPoints.toString(),
+        usedCredits: usedCredits.toString(),
+      },
+    });
+
+    // Create order record (but don't save yet)
+    const orderData = {
+      orderItems,
+      shippingAddress,
+      paymentMethod,
+      shippingPrice,
+      taxPrice,
+      discount,
+      subtotal,
+      totalPrice,
+      notes,
+      totalPoints,
+      paymentStatus: "Pending",
+      stripeSessionId: stripeSession.id,
+      ...(userId && { userId, usedCredits }),
+    };
+
+    const newOrder = new Order(orderData);
+
+    // Final validation before committing
+    const validationError = newOrder.validateSync();
+    if (validationError) {
+      await session.abortTransaction();
+      return next(handleMakeError(400, validationError.message));
+    }
+
+    // Save order and update stock in transaction
+    await newOrder.save({ session });
+
+    // Update stock quantities
+    await Promise.all(
+      orderItems.map((item) =>
+        Stocks.findOneAndUpdate(
+          { product: item.productId },
+          { $inc: { quantity: -item.quantity } },
+          { session }
+        )
+      )
+    );
+
+    // Update user credits if used
+    if (userId && usedCredits > 0) {
+      await User.findByIdAndUpdate(
+        userId,
+        { $inc: { credits: -usedCredits } },
+        { session }
+      );
+    }
+
+    await session.commitTransaction();
+    res.status(200).json({ url: stripeSession.url });
   } catch (error) {
-    next(error);
+    await session.abortTransaction();
+    console.error("Stripe order error:", error);
+    next(handleMakeError(500, "Failed to process Stripe payment"));
+  } finally {
+    session.endSession();
   }
 };
 
