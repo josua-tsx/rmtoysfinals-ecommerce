@@ -499,6 +499,7 @@ export const checkOutSuccess = async (req, res, next) => {
       notes = "",
       totalPoints,
       usedCredits = "0",
+      guestUser,
     } = stripeSession.metadata;
 
     if (!orderItemsStr) {
@@ -533,6 +534,16 @@ export const checkOutSuccess = async (req, res, next) => {
       }
     }
 
+    // For guest orders, validate guest information
+    if (!userId) {
+      if (!guestUser?.name || !guestUser?.phone) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, "Guest orders require name and phone number")
+        );
+      }
+    }
+
     // 6. Create the order
     const orderData = {
       orderItems: orderItems.map((item) => ({
@@ -558,6 +569,11 @@ export const checkOutSuccess = async (req, res, next) => {
       orderData.userId = userId;
     } else {
       orderData.isGuest = true;
+      orderData.guestUser = {
+        name: guestUser.name,
+        phone: guestUser.phone,
+        email: guestUser.email || null,
+      };
     }
 
     const newOrder = new Order(orderData);
