@@ -79,21 +79,21 @@ export default function GuestCheckOutModal({ onClose }) {
   //     },
   //   });
 
-    const { mutate: placeStripeOrder } = useMutation({
-      mutationFn: async (data) => {
-        const res = await axiosInstance.post(`/order/place-order-stripe`, data);
-        return res.data;
-      },
-      onSuccess: (data) => {
-        console.log(data);
-        if (data.url) {
-          window.location.href = data.url; // redirect to Stripe checkout
-        }
-      },
-      onError: (error) => {
-        toast.error(error?.response?.data?.message || "Stripe checkout failed");
-      },
-    });
+  const { mutate: placeStripeOrder } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/order/place-order-stripe`, data);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      console.log(data);
+      if (data.url) {
+        window.location.href = data.url; // redirect to Stripe checkout
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Stripe checkout failed");
+    },
+  });
 
   const handleGcashQRpaymentMethod = (orderData) => {
     if (orderData.orderItems.length === 0) {
@@ -169,10 +169,14 @@ export default function GuestCheckOutModal({ onClose }) {
     if (paymentMethod === "Online Payment") {
       const stripeOrderData = {
         orderItems: cartItems.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          productImages: item.productImages[0],
-          price: item.price,
+          productId: {
+            _id: item._id,
+            productName: item.productName,
+            productDescription: item.productDescription,
+            productImages: item.productImages,
+            stocks: item.stocks,
+            price: item.price,
+          },
           quantity: item.quantity,
         })),
         shippingAddress: currentAddress,
@@ -186,7 +190,7 @@ export default function GuestCheckOutModal({ onClose }) {
         totalPoints,
       };
 
-        placeStripeOrder(stripeOrderData);
+      placeStripeOrder(stripeOrderData);
     }
   };
 
