@@ -201,7 +201,7 @@ export default function GuestCheckOutModal({ onClose }) {
       };
 
       console.log("Sending to Stripe:", stripeOrderData);
-      // placeStripeOrder(stripeOrderData);
+      placeStripeOrder(stripeOrderData);
     }
   };
 
