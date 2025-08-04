@@ -754,7 +754,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
     // Add GCash QR details if applicable
     if (paymentMethod === "GcashQR") {
       orderData.gcashQRmethod = {
-        phoneNumber: gcashQRmethod.gcashPhoneNumber,
+        gcashPhoneNumber: gcashQRmethod.gcashPhoneNumber,
         proofOfPaymentImage: gcashQRmethod.proofOfPaymentImage,
         gcashName: gcashQRmethod.gcashName || "Not provided",
       };
