@@ -117,81 +117,87 @@ export default function GuestCheckOutModal({ onClose }) {
     navigate("/guestQRpage");
   };
 
-const handleOrderFormSubmit = (e) => {
-  e.preventDefault();
+  const handleOrderFormSubmit = (e) => {
+    e.preventDefault();
 
-  const formData = new FormData(e.target);
-  const inputs = Object.fromEntries(formData);
+    const formData = new FormData(e.target);
+    const inputs = Object.fromEntries(formData);
 
-  const { fullName, phoneNumber, paymentMethod, notes, currentAddress } = inputs;
+    const { fullName, phoneNumber, paymentMethod, notes, currentAddress } =
+      inputs;
 
-  if (!fullName || !phoneNumber || !currentAddress)
-    return toast.error("Please input required fields!");
+    if (!fullName || !phoneNumber || !currentAddress)
+      return toast.error("Please input required fields!");
 
-  const orderData = {
-    orderItems: cartItems.map((item) => ({
-      productId: {
-        _id: item._id,
-        productName: item.productName,
-        productDescription: item.productDescription,
-        productImages: item.productImages,
-        stocks: item.stocks,
-        price: item.price,
-      },
-      quantity: item.quantity,
-    })),
-    shippingAddress: currentAddress,
-    isGuest: true,
-    guestUser: {
-      name: fullName.trim(),
-      phone: phoneNumber.trim(),
-    },
-    paymentMethod,
-    taxPrice: taxes,
-    shippingPrice: shippingFee,
-    discount: totalDiscount,
-    subtotal,
-    totalPrice: totalPrice,
-    notes,
-    quantity: cartItems?.quantity,
-    totalPoints,
-  };
-
-  if (paymentMethod === "GcashQR" && cartItems.length > 0) {
-    handleGcashQRpaymentMethod(orderData);
-  }
-
-  if (paymentMethod === "Online Payment") {
-    const stripeOrderData = {
+    const orderData = {
       orderItems: cartItems.map((item) => ({
-        productId: {  // Nested structure backend expects
+        productId: {
           _id: item._id,
           productName: item.productName,
-          price: item.price,
+          productDescription: item.productDescription,
           productImages: item.productImages,
+          stocks: item.stocks,
+          price: item.price,
         },
         quantity: item.quantity,
-        // Keep flat versions for Stripe metadata
-        productName: item.productName,
-        productImages: item.productImages[0],
-        price: item.price,
       })),
       shippingAddress: currentAddress,
+      isGuest: true,
+      guestUser: {
+        name: fullName.trim(),
+        phone: phoneNumber.trim(),
+      },
       paymentMethod,
       taxPrice: taxes,
       shippingPrice: shippingFee,
       discount: totalDiscount,
       subtotal,
-      totalPrice: totalPrice.toString(),
+      totalPrice: totalPrice,
       notes,
+      quantity: cartItems?.quantity,
       totalPoints,
-      usedCredits: 0, // Add this for guest checkout
     };
 
-    console.log("Sending Stripe order data:", stripeOrderData);
-    placeStripeOrder(stripeOrderData);
-  }
-};
+    // if (paymentMethod === "Cod") {
+    //   placeOrder(orderData);
+    // }
+
+    if (paymentMethod === "GcashQR" && cartItems.length > 0) {
+      handleGcashQRpaymentMethod(orderData);
+    }
+
+    if (paymentMethod === "Online Payment") {
+      const stripeOrderData = {
+        orderItems: cartItems.map((item) => ({
+          // For backend processing
+          productId: {
+            _id: item._id,
+            productName: item.productName,
+            price: item.price,
+          },
+          // For Stripe line items
+          _id: item._id,
+          productName: item.productName,
+          productImages: item.productImages,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        shippingAddress: currentAddress,
+        paymentMethod,
+        taxPrice: taxes,
+        shippingPrice: shippingFee,
+        discount: totalDiscount,
+        subtotal,
+        totalPrice: totalPrice.toString(),
+        notes: notes || "",
+        totalPoints,
+        usedCredits: 0, // Explicitly set for guest checkout
+      };
+
+      console.log("Sending to Stripe:", stripeOrderData);
+      placeStripeOrder(stripeOrderData);
+    }
+  };
 
   //   if (isActivePending || isCartPending) return <div className="absolute inset-0 backdrop-blur-sm  z-10"><LoadingSpinner fullScreen/></div>;
   //   if (isActiveError || isCartError) return <p>error...</p>;
@@ -218,7 +224,7 @@ const handleOrderFormSubmit = (e) => {
             <div className="bg-card p-4 rounded-lg">
               <h3 className="text-lg mb-3">Customer Information</h3>
 
-              <div className="bg-yellow-50 border-l-4 my-2  rounded border-red-700 p-3  text-red-700">
+              {/* <div className="bg-yellow-50 border-l-4 my-2  rounded border-red-700 p-3  text-red-700">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg
@@ -251,7 +257,7 @@ const handleOrderFormSubmit = (e) => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -394,11 +400,6 @@ const handleOrderFormSubmit = (e) => {
                 <span className=" text-green-600">
                   -{formatPrice(totalDiscount)} PHP
                 </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-600">Points Earned</span>
-                <span className=" text-blue-600">+{totalPoints}</span>
               </div>
 
               <div className="border-t border-gray-200 pt-3 mt-3">

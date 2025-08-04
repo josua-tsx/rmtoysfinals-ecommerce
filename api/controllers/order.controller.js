@@ -329,7 +329,7 @@ export const guestOrderStripe = async (req, res, next) => {
 };
 
 export const placeOrderStripe = async (req, res, next) => {
-  const userId = req?.user?.id;
+  const userId = req?.user?.id; // Will be undefined for guests
   const session = await mongoose.startSession();
 
   try {
@@ -344,7 +344,7 @@ export const placeOrderStripe = async (req, res, next) => {
       totalPrice,
       notes,
       totalPoints,
-      usedCredits = 0, // Default for guest checkout
+      usedCredits = 0, // Default for guests
     } = req.body;
 
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
@@ -354,53 +354,43 @@ export const placeOrderStripe = async (req, res, next) => {
     try {
       await session.startTransaction();
 
-      // Stock validation
+      // Stock validation - handles both nested and flat structures
       for (const item of orderItems) {
         const productId = item.productId?._id || item._id;
-        
+
         if (!productId) {
           await session.abortTransaction();
-          return next(handleMakeError(400, "Missing product ID in order items"));
+          return next(handleMakeError(400, "Missing product ID"));
         }
 
-        if (item.quantity <= 0) {
+        // Quantity validation (same as before)
+        if (item.quantity <= 0 || item.quantity > 5) {
           await session.abortTransaction();
-          return next(handleMakeError(400, "Quantity must be greater than zero"));
-        }
-
-        if (item.quantity > 5) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(400, "You can only order up to 5 items per product")
-          );
+          return next(handleMakeError(400, "Invalid quantity"));
         }
 
         const productStock = await Stocks.findOne({
           product: productId,
         }).session(session);
-
-        if (!productStock) {
+        if (!productStock || productStock.quantity < item.quantity) {
           await session.abortTransaction();
-          return next(handleMakeError(400, `Product ${productId} not found`));
-        }
-
-        if (productStock.quantity < item.quantity) {
-          await session.abortTransaction();
-          return next(
-            handleMakeError(400, `Insufficient stock for ${item.productName}`)
-          );
+          return next(handleMakeError(400, "Insufficient stock"));
         }
       }
 
-      // Handle both nested and flat product data structures
+      // Prepare line items - handles both structures
       const lineItems = orderItems.map((item) => {
         const product = item.productId || item;
+        const productImage = Array.isArray(product.productImages)
+          ? product.productImages[0]
+          : product.productImages;
+
         return {
           price_data: {
             currency: "php",
             product_data: {
               name: product.productName,
-              images: [product.productImages[0]],
+              images: [productImage],
             },
             unit_amount: Math.round(product.price * 100),
           },
@@ -408,6 +398,7 @@ export const placeOrderStripe = async (req, res, next) => {
         };
       });
 
+      // Prepare metadata
       const metadata = {
         userId: userId || "guest",
         orderItems: JSON.stringify(
@@ -454,6 +445,7 @@ export const placeOrderStripe = async (req, res, next) => {
     next(error);
   }
 };
+
 export const checkOutSuccess = async (req, res, next) => {
   try {
     const { sessionId } = req.body;
@@ -820,7 +812,6 @@ export const getSingleUserOrder = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getAllOrder = async (req, res, next) => {
   try {
