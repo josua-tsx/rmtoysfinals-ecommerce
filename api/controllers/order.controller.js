@@ -1039,8 +1039,8 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status } = req.body;
-  const userId = req.user.id;
+  const { status, isGuest } = req.body;
+  const userId = req?.user?.id;
 
   try {
     const validStatuses = [
@@ -1057,234 +1057,188 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     const order = await Order.findById(orderId).populate("userId");
-
-    const userEmail = order?.userId.email;
-    const orderUserPhoneNumber = order?.userId.phoneNumber;
-
     if (!order) return next(handleMakeError(400, "No order found!"));
 
+    // Determine if this is a guest order
+    const isGuestOrder = isGuest || !order.userId;
+    const orderUserPhoneNumber = isGuestOrder
+      ? order?.guestUser?.phone
+      : order?.userId?.phoneNumber;
+
+    // Handle cancellation for both guest and regular orders
     if (status === "Cancelled" && order.status !== "Cancelled") {
+      // Restore stock quantities
       for (const item of order.orderItems) {
-        // ADDING BACK THE PRODUCT QUANTITY TO STOCK  QUANTITY
         await Stocks.findOneAndUpdate(
           { product: item.productId },
           { $inc: { quantity: item.quantity } },
           { new: true, runValidators: true }
         );
       }
-      if (order.usedCredits) {
+
+      // Only return credits for registered users
+      if (!isGuestOrder && order.usedCredits) {
         await User.findByIdAndUpdate(order.userId, {
-          $inc: { credits: order.usedCredits }, // Return credits to the user
+          $inc: { credits: order.usedCredits },
         });
       }
     }
 
-    const isUserAdminOrValida = await User.findById(userId);
-
+    // Prepare order update
     const orderUpdate = {
       status,
-      paymentStatus: status === "Delivered" ? "Paid" : "Pending",
+      paymentStatus: status === "Delivered" ? "Paid" : order.paymentStatus,
     };
 
+    // Update the order
     const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
       new: true,
       runValidators: true,
     });
-    if (!updatedOrder) return next(handleMakeError(400, "order not found!"));
+    if (!updatedOrder) return next(handleMakeError(400, "Order not found!"));
 
-    // Handle different status updates
-    switch (updatedOrder.status) {
-      case "Delivered":
-        try {
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your Order ${updatedOrder._id} Has been Delivered!
-                          "We're happy to let you know that your order has been successfully delivered! Enjoy your purchase.
-                          From: RM TOYS"
-          `
-          );
+    // Handle status-specific actions
+    if (!isGuestOrder && userId) {
+      // For registered users only
+      const isUserAdminOrValida = await User.findById(userId);
+      const userEmail = order?.userId?.email;
 
-          // Update products and user credits in parallel
+      switch (updatedOrder.status) {
+        case "Delivered":
           await Promise.all([
+            sendSMS(
+              orderUserPhoneNumber,
+              `Your Order ${updatedOrder._id} has been Delivered!`
+            ),
             ...updatedOrder.orderItems.map((item) =>
               Product.findByIdAndUpdate(
                 item.productId,
-                { $inc: { sold: item.quantity } },
+                {
+                  $inc: { sold: item.quantity },
+                  $addToSet: { userId: updatedOrder.userId },
+                },
                 { new: true, runValidators: true }
               )
             ),
-
-            ...updatedOrder.orderItems.map((item) =>
-              Product.findByIdAndUpdate(
-                item.productId,
-                { $addToSet: { userId: updatedOrder.userId } }, // Using $addToSet to avoid duplicates
-                { new: true, runValidators: true }
-              )
-            ),
-
             User.findByIdAndUpdate(updatedOrder.userId, {
               $inc: { credits: updatedOrder.totalPoints },
+              ...(updatedOrder.usedCredits > 0 && {
+                $set: {
+                  creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                },
+              }),
             }),
-
-            ...(updatedOrder.usedCredits > 0
-              ? [
-                  User.findByIdAndUpdate(updatedOrder.userId, {
-                    $set: {
-                      creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                    },
-                  }),
-                ]
-              : []),
           ]);
 
-          // Audit trail
-
-          if (isUserAdminOrValida.role === "admin") {
-            await logAuditTrail({
-              action: "set_OrderStatus_delivered",
-              userId,
-              targetId: updatedOrder._id,
-              targetType: "OrderStatus",
-              details: { email: userEmail }, // Consistent variable usage
-              role: "admin",
-            });
-          } else {
-            await logAuditTrail({
-              action: "set_OrderStatus_delivered",
-              userId,
-              targetId: updatedOrder._id,
-              targetType: "OrderStatus",
-              details: { email: userEmail }, // Consistent variable usage
-              role: "validatorStaff",
-            });
-          }
-        } catch (error) {
-          // Handle errors appropriately
-          console.error("Delivery processing failed:", error);
-          throw error; // Or handle differently
-        }
-        break;
-
-      case "Processing":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your ${updatedOrder._id} is on Processing.`,
-          "Your order is being processed. We will notify you once it is shipped.",
-          "From: RM TOYS"
-        );
-
-        if (isUserAdminOrValida.role === "admin") {
           await logAuditTrail({
-            action: "set_OrderStatus_Processing",
+            action: `set_OrderStatus_delivered`,
             userId,
             targetId: updatedOrder._id,
             targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "admin",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
           });
-        } else {
+          break;
+
+        case "Processing":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} is now Processing`
+          );
           await logAuditTrail({
-            action: "set_OrderStatus_Processing",
+            action: `set_OrderStatus_Processing`,
             userId,
             targetId: updatedOrder._id,
             targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "validatorStaff",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
           });
-        }
-        break;
+          break;
 
-      case "Shipped":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your ${updatedOrder._id} is Shipped!`,
-          "Your order is now on its way to you!",
-          "From: RM TOYS"
-        );
-
-        if (isUserAdminOrValida.role === "admin") {
+        case "Shipped":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} has Shipped!`
+          );
           await logAuditTrail({
-            action: "set_OrderStatus_Shipped",
+            action: `set_OrderStatus_Shipped`,
             userId,
             targetId: updatedOrder._id,
             targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "admin",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
           });
-        } else {
+          break;
+
+        case "Out for Delivery":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} is Out for Delivery!`
+          );
           await logAuditTrail({
-            action: "set_OrderStatus_Shipped",
+            action: `set_OrderStatus_OutforDelivery`,
             userId,
             targetId: updatedOrder._id,
             targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "validatorStaff",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
           });
-        }
-        break;
+          break;
 
-      case "Out for Delivery":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your order ${updatedOrder._id} is Out for Delivery!`,
-          "Your order is on the way. Expect delivery soon!",
-          "From: RM TOYS"
-        );
-
-        if (isUserAdminOrValida.role === "admin") {
+        case "Cancelled":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} has been Cancelled`
+          );
           await logAuditTrail({
-            action: "set_OrderStatus_OutforDelivery",
+            action: `set_OrderStatus_Cancelled`,
             userId,
             targetId: updatedOrder._id,
             targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "admin",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
           });
-        } else {
-          await logAuditTrail({
-            action: "set_OrderStatus_OutforDelivery",
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "validatorStaff",
-          });
-        }
-        break;
+          break;
+      }
+    } else {
+      // Minimal handling for guest orders
+      const smsMessages = {
+        Delivered: `Your guest order ${updatedOrder._id} has been delivered`,
+        Processing: `Your guest order is being processed`,
+        Shipped: `Your guest order has shipped`,
+        "Out for Delivery": `Your guest order is out for delivery`,
+        Cancelled: `Your guest order has been cancelled`,
+      };
 
-      case "Cancelled":
-        await sendSMS(
-          orderUserPhoneNumber,
-          `Your order ${updatedOrder._id} has been Cancelled`,
-          "Unfortunately, your order has been canceled. Please contact support for further assistance.",
-          "From: RM TOYS"
-        );
-
-        if (isUserAdminOrValida.role === "admin") {
-          await logAuditTrail({
-            action: "set_OrderStatus_Cancelled",
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "admin",
-          });
-        } else {
-          await logAuditTrail({
-            action: "set_OrderStatus_Cancelled",
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail }, // Consistent variable usage
-            role: "validatorStaff",
-          });
-        }
-
-        break;
+      if (smsMessages[status]) {
+        await sendSMS(orderUserPhoneNumber, smsMessages[status]);
+      }
     }
 
-    res.status(200).json({ message: "Delivery Status updated sucessfully" });
-  } catch (error) {}
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error("Order status update error:", error);
+    return next(handleMakeError(500, "Failed to update order status"));
+  }
 };
 
 export const getUserDelivered = async (req, res, next) => {
