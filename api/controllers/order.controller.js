@@ -345,10 +345,33 @@ export const placeOrderStripe = async (req, res, next) => {
       notes,
       totalPoints,
       usedCredits = 0, // Default for guests
+      guestUser,
     } = req.body;
 
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
       return next(handleMakeError(400, "Invalid or empty products array"));
+    }
+
+    // For guest orders, validate guest information
+    if (!userId) {
+      if (!guestUser?.name || !guestUser?.phone) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, "Guest orders require name and phone number")
+        );
+      }
+    }
+
+    // Add user/guest specific data
+    if (userId) {
+      orderData.userId = userId;
+      orderData.usedCredits = usedCredits;
+    } else {
+      orderData.guestUser = {
+        name: guestUser.name,
+        phone: guestUser.phone,
+        email: guestUser.email || null,
+      };
     }
 
     try {

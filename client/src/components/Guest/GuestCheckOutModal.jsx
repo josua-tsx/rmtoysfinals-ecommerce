@@ -163,7 +163,8 @@ export default function GuestCheckOutModal({ onClose }) {
     // }
 
     if (paymentMethod === "GcashQR" && cartItems.length > 0) {
-      handleGcashQRpaymentMethod(orderData);
+      // handleGcashQRpaymentMethod(orderData);
+      console.log(orderData);
     }
 
     if (paymentMethod === "Online Payment") {
@@ -182,6 +183,11 @@ export default function GuestCheckOutModal({ onClose }) {
           price: item.price,
           quantity: item.quantity,
         })),
+        isGuest: true,
+        guestUser: {
+          name: fullName.trim(),
+          phone: phoneNumber.trim(),
+        },
         shippingAddress: currentAddress,
         paymentMethod,
         taxPrice: taxes,
@@ -195,7 +201,7 @@ export default function GuestCheckOutModal({ onClose }) {
       };
 
       console.log("Sending to Stripe:", stripeOrderData);
-      placeStripeOrder(stripeOrderData);
+      // placeStripeOrder(stripeOrderData);
     }
   };
 
