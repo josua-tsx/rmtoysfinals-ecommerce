@@ -10,6 +10,7 @@ import {
   getAllOrder,
   getAllRefunded,
   getAllSuccess,
+  getGuestOrder,
   getLatestCancelledOrder,
   getLatestFailedOrder,
   getLatestRefundedOrder,
@@ -46,7 +47,7 @@ router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
 router.get(`/get-orders`, getAllOrder);
 
-router.get(`/get-guest-orders`, getAllOrder);
+router.get(`/get-guest-orders`, getGuestOrder);
 
 router.get(`/get-successOrder`, getAllSuccess)
 
