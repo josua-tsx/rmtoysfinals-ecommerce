@@ -79,21 +79,21 @@ export default function GuestCheckOutModal({ onClose }) {
   //     },
   //   });
 
-    const { mutate: placeStripeOrder } = useMutation({
-      mutationFn: async (data) => {
-        const res = await axiosInstance.post(`/order/place-order-stripe`, data);
-        return res.data;
-      },
-      onSuccess: (data) => {
-        console.log(data);
-        if (data.url) {
-          window.location.href = data.url; // redirect to Stripe checkout
-        }
-      },
-      onError: (error) => {
-        toast.error(error?.response?.data?.message || "Stripe checkout failed");
-      },
-    });
+  const { mutate: placeStripeOrder } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/order/place-order-stripe`, data);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      console.log(data);
+      if (data.url) {
+        window.location.href = data.url; // redirect to Stripe checkout
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Stripe checkout failed");
+    },
+  });
 
   const handleGcashQRpaymentMethod = (orderData) => {
     if (orderData.orderItems.length === 0) {
@@ -117,78 +117,81 @@ export default function GuestCheckOutModal({ onClose }) {
     navigate("/guestQRpage");
   };
 
-  const handleOrderFormSubmit = (e) => {
-    e.preventDefault();
+const handleOrderFormSubmit = (e) => {
+  e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const inputs = Object.fromEntries(formData);
+  const formData = new FormData(e.target);
+  const inputs = Object.fromEntries(formData);
 
-    const { fullName, phoneNumber, paymentMethod, notes, currentAddress } =
-      inputs;
+  const { fullName, phoneNumber, paymentMethod, notes, currentAddress } = inputs;
 
-    if (!fullName || !phoneNumber || !currentAddress)
-      return toast.error("Please input required fields!");
+  if (!fullName || !phoneNumber || !currentAddress)
+    return toast.error("Please input required fields!");
 
-    const orderData = {
+  const orderData = {
+    orderItems: cartItems.map((item) => ({
+      productId: {
+        _id: item._id,
+        productName: item.productName,
+        productDescription: item.productDescription,
+        productImages: item.productImages,
+        stocks: item.stocks,
+        price: item.price,
+      },
+      quantity: item.quantity,
+    })),
+    shippingAddress: currentAddress,
+    isGuest: true,
+    guestUser: {
+      name: fullName.trim(),
+      phone: phoneNumber.trim(),
+    },
+    paymentMethod,
+    taxPrice: taxes,
+    shippingPrice: shippingFee,
+    discount: totalDiscount,
+    subtotal,
+    totalPrice: totalPrice,
+    notes,
+    quantity: cartItems?.quantity,
+    totalPoints,
+  };
+
+  if (paymentMethod === "GcashQR" && cartItems.length > 0) {
+    handleGcashQRpaymentMethod(orderData);
+  }
+
+  if (paymentMethod === "Online Payment") {
+    const stripeOrderData = {
       orderItems: cartItems.map((item) => ({
-        productId: {
+        productId: {  // Nested structure backend expects
           _id: item._id,
           productName: item.productName,
-          productDescription: item.productDescription,
-          productImages: item.productImages,
-          stocks: item.stocks,
           price: item.price,
+          productImages: item.productImages,
         },
         quantity: item.quantity,
+        // Keep flat versions for Stripe metadata
+        productName: item.productName,
+        productImages: item.productImages[0],
+        price: item.price,
       })),
       shippingAddress: currentAddress,
-      isGuest: true,
-      guestUser: {
-        name: fullName.trim(),
-        phone: phoneNumber.trim(),
-      },
       paymentMethod,
       taxPrice: taxes,
       shippingPrice: shippingFee,
       discount: totalDiscount,
       subtotal,
-      totalPrice: totalPrice,
+      totalPrice: totalPrice.toString(),
       notes,
-      quantity: cartItems?.quantity,
       totalPoints,
+      usedCredits: 0, // Add this for guest checkout
     };
 
-    // if (paymentMethod === "Cod") {
-    //   placeOrder(orderData);
-    // }
-
-    if (paymentMethod === "GcashQR" && cartItems.length > 0) {
-      handleGcashQRpaymentMethod(orderData);
-    }
-
-    if (paymentMethod === "Online Payment") {
-      const stripeOrderData = {
-        orderItems: cartItems.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          productImages: item.productImages[0],
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        shippingAddress: currentAddress,
-        paymentMethod,
-        taxPrice: taxes,
-        shippingPrice: shippingFee,
-        discount: totalDiscount,
-        subtotal,
-        totalPrice: totalPrice.toString(),
-        notes,
-        totalPoints,
-      };
-
-        placeStripeOrder(stripeOrderData);
-    }
-  };
+    console.log("Sending Stripe order data:", stripeOrderData);
+    placeStripeOrder(stripeOrderData);
+  }
+};
 
   //   if (isActivePending || isCartPending) return <div className="absolute inset-0 backdrop-blur-sm  z-10"><LoadingSpinner fullScreen/></div>;
   //   if (isActiveError || isCartError) return <p>error...</p>;
