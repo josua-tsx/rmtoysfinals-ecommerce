@@ -46,6 +46,8 @@ router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
 router.get(`/get-orders`, getAllOrder);
 
+router.get(`/get-guest-orders`, getAllOrder);
+
 router.get(`/get-successOrder`, getAllSuccess)
 
 router.get(`/get-failedCancelled`, getAllFailed)

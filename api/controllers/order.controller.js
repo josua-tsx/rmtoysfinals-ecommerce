@@ -619,7 +619,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
     totalPoints,
     usedCredits = 0, // Default to 0 for guests
     gcashQRmethod,
-    guestUser // Added guest user details
+    guestUser, // Added guest user details
   } = req.body;
 
   const session = await mongoose.startSession();
@@ -636,26 +636,42 @@ export const placeOrderGcashQR = async (req, res, next) => {
     for (const item of orderItems) {
       if (item.quantity <= 0) {
         await session.abortTransaction();
-        return next(handleMakeError(400, "Item quantity must be greater than zero"));
+        return next(
+          handleMakeError(400, "Item quantity must be greater than zero")
+        );
       }
 
       if (item.quantity > 5) {
         await session.abortTransaction();
-        return next(handleMakeError(400, "Maximum 5 items per product allowed"));
+        return next(
+          handleMakeError(400, "Maximum 5 items per product allowed")
+        );
       }
 
-      const productStock = await Stocks.findOne({ product: item.productId }).session(session);
+      const productStock = await Stocks.findOne({
+        product: item.productId,
+      }).session(session);
       if (!productStock || productStock.quantity < item.quantity) {
         await session.abortTransaction();
-        return next(handleMakeError(400, `Insufficient stock for ${item.productName}`));
+        return next(
+          handleMakeError(400, `Insufficient stock for ${item.productName}`)
+        );
       }
     }
 
     // Validate GCash QR payment details
     if (paymentMethod === "GcashQR") {
-      if (!gcashQRmethod?.gcashPhoneNumber || !gcashQRmethod?.proofOfPaymentImage) {
+      if (
+        !gcashQRmethod?.gcashPhoneNumber ||
+        !gcashQRmethod?.proofOfPaymentImage
+      ) {
         await session.abortTransaction();
-        return next(handleMakeError(400, "GCash QR payment requires phone number and proof of payment"));
+        return next(
+          handleMakeError(
+            400,
+            "GCash QR payment requires phone number and proof of payment"
+          )
+        );
       }
     }
 
@@ -663,14 +679,16 @@ export const placeOrderGcashQR = async (req, res, next) => {
     if (!userId) {
       if (!guestUser?.name || !guestUser?.phone) {
         await session.abortTransaction();
-        return next(handleMakeError(400, "Guest orders require name and phone number"));
+        return next(
+          handleMakeError(400, "Guest orders require name and phone number")
+        );
       }
     }
 
     // For authenticated users using credits
     if (userId && usedCredits > 0) {
       const user = await User.findById(userId).session(session);
-      
+
       if (user.creditLock) {
         const now = new Date();
         const lockExpiry = new Date(user.creditLock);
@@ -691,7 +709,9 @@ export const placeOrderGcashQR = async (req, res, next) => {
             minute: "2-digit",
           });
           await session.abortTransaction();
-          return next(handleMakeError(400, `⏳ Credits locked until ${expiryDate}`));
+          return next(
+            handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
+          );
         }
       }
 
@@ -714,7 +734,9 @@ export const placeOrderGcashQR = async (req, res, next) => {
       totalPoints,
       paymentStatus: "Pending",
       isGuest: !userId,
-      stripeSessionId: `gcashQR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      stripeSessionId: `gcashQR-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
     };
 
     // Add user/guest specific data
@@ -725,7 +747,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
       orderData.guestUser = {
         name: guestUser.name,
         phone: guestUser.phone,
-        email: guestUser.email || null
+        email: guestUser.email || null,
       };
     }
 
@@ -734,7 +756,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
       orderData.gcashQRmethod = {
         phoneNumber: gcashQRmethod.gcashPhoneNumber,
         proofOfPaymentImage: gcashQRmethod.proofOfPaymentImage,
-        gcashName: gcashQRmethod.gcashName || 'Not provided'
+        gcashName: gcashQRmethod.gcashName || "Not provided",
       };
     }
 
@@ -844,6 +866,7 @@ export const getAllOrder = async (req, res, next) => {
       status: {
         $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
       },
+      isGuest: false,
     })
       .populate({
         path: "orderItems.productId",
@@ -864,6 +887,37 @@ export const getAllOrder = async (req, res, next) => {
     res.status(200).json(orders);
   } catch (error) {
     next(error); // Pass the error to the next middleware for error handling
+  }
+};
+
+export const getGuestOrder = async (req, res, next) => {
+  try {
+    // Fetch all orders
+    const orders = await Order.find({
+      status: {
+        $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
+      },
+      isGuest: true,
+    })
+      .populate({
+        path: "orderItems.productId",
+        select: "price preVatPrice",
+      })
+      .populate({
+        path: "userId",
+        select: "fullName email",
+      })
+      .sort({ createdAt: -1 });
+
+    // If no orders are found, return an empty array
+    if (orders.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // If orders are found, return them
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error);
   }
 };
 
