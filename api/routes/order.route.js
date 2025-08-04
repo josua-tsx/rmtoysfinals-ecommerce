@@ -1,5 +1,9 @@
 import express from "express";
-import { optionalAuth, requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import {
+  optionalAuth,
+  requireAdmin,
+  requireAuth,
+} from "../middleware/auth.middleware.js";
 import {
   addReason,
   adminOrderRefund,
@@ -35,13 +39,13 @@ const router = express.Router();
 
 router.post(`/place-order`, requireAuth, userPlaceOrder);
 
-router.post(`/place-order-stripe`, requireAuth, placeOrderStripe)
+router.post(`/place-order-stripe`, requireAuth, placeOrderStripe);
 
-router.post(`/place-order-gcashQR`, optionalAuth, placeOrderGcashQR)
+router.post(`/place-order-gcashQR`, optionalAuth, placeOrderGcashQR);
 
-router.post(`/checkout-success`, requireAuth, checkOutSuccess)
+router.post(`/checkout-success`, requireAuth, checkOutSuccess);
 
-router.put(`/add-reason/:orderId`, requireAuth, requireAdmin , addReason);
+router.put(`/add-reason/:orderId`, requireAuth, requireAdmin, addReason);
 
 router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
@@ -49,43 +53,58 @@ router.get(`/get-orders`, getAllOrder);
 
 router.get(`/get-guest-orders`, getGuestOrder);
 
-router.get(`/get-successOrder`, getAllSuccess)
+router.get(`/get-successOrder`, getAllSuccess);
 
-router.get(`/get-failedCancelled`, getAllFailed)
+router.get(`/get-failedCancelled`, getAllFailed);
 
-router.get(`/get-refundedCancelled`, getAllRefunded)
+router.get(`/get-refundedCancelled`, getAllRefunded);
 
-router.get(`/get-cancelled`, getAllCancelled)
+router.get(`/get-cancelled`, getAllCancelled);
 
-router.get(`/monthly/sales`, getMonthlySales)
+router.get(`/monthly/sales`, getMonthlySales);
 
-router.get(`/latest/success`, getLatestSuccessOrder)
+router.get(`/latest/success`, getLatestSuccessOrder);
 
-router.get(`/latest/failed`, getLatestFailedOrder)
+router.get(`/latest/failed`, getLatestFailedOrder);
 
-router.get(`/latest/refunded`, getLatestRefundedOrder)
+router.get(`/latest/refunded`, getLatestRefundedOrder);
 
-router.get(`/latest/cancelled`, getLatestCancelledOrder)
+router.get(`/latest/cancelled`, getLatestCancelledOrder);
 
-router.put(`/:orderId/paymentStatus`, requireAuth, requireAdmin ,updatePaymentStatus)
+router.put(
+  `/:orderId/paymentStatus`,
+  requireAuth,
+  requireAdmin,
+  updatePaymentStatus
+);
 
-router.put(`/cancel-success-transact`, requireAuth, requireAdmin ,cancelSuccessTransact)
+router.put(
+  `/cancel-success-transact`,
+  requireAuth,
+  requireAdmin,
+  cancelSuccessTransact
+);
 
-router.put(`/refund-order`, adminOrderRefund)
+router.put(`/refund-order`, adminOrderRefund);
 
-router.put(`/user/cancel-order`, requireAuth, userCancelOrder)
+router.put(`/user/cancel-order`, requireAuth, userCancelOrder);
 
-router.get(`/get-userDelivered`, requireAuth, getUserDelivered)
+router.get(`/get-userDelivered`, requireAuth, getUserDelivered);
 
-router.get(`/get-userCancelled`, requireAuth, getUserCancelled)
+router.get(`/get-userCancelled`, requireAuth, getUserCancelled);
 
-router.get(`/get-userRefunded`, requireAuth, getUserRefund)
+router.get(`/get-userRefunded`, requireAuth, getUserRefund);
 
-router.get(`/get-userFailed`, requireAuth, getUserFailed)
+router.get(`/get-userFailed`, requireAuth, getUserFailed);
 
-router.put(`/:orderId/status`, requireAuth, requireAdmin, updateDeliveryStatus)
+router.put(
+  `/:orderId/status`,
+  optionalAuth,
+  requireAdmin,
+  updateDeliveryStatus
+);
 
 // router.get(`/:orderId`, requireAuth, requireAdmin , getSingleUserOrder);
-router.get(`/:orderId`,  getSingleUserOrder);
+router.get(`/:orderId`, getSingleUserOrder);
 
 export default router;
