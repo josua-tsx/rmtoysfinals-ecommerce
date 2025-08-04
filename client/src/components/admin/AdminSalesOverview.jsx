@@ -109,7 +109,7 @@ export default function AdminSalesOverview() {
   } = useQuery({
     queryKey: ["Pendings"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-orders`);
+      const res = await axiosInstance.get(`/order/get-all-orders`);
       return res.data;
     },
   });

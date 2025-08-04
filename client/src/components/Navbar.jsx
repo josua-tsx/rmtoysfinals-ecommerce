@@ -101,9 +101,11 @@ export default function Navbar() {
             ) : isExpanded ? (
               <div></div>
             ) : (
-              <div className="flex md:hidden gap-4">
-                <GuestCart/>
-                <Link className=" text-lg" to={`/sign-in`}>
+              <div className="flex gap-4">
+                <div className="md:hidden">
+                  <GuestCart/>
+                </div>
+                <Link className=" md:hidden text-lg" to={`/sign-in`}>
                   Sign In
                 </Link>
               </div>

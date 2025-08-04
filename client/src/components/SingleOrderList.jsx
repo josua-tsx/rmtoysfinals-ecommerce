@@ -11,13 +11,13 @@ import { useNavigate } from "react-router-dom";
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
 
-  console.log(currentUser)
+  console.log(order);
 
   const [reasonModal, setReasonModal] = useState(false);
 
   const queryClient = useQueryClient();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const { mutate: updatePaymentStatusMutation } = useMutation({
     mutationFn: async ({ id, paymentStatus }) => {
@@ -70,19 +70,23 @@ export default function SingleOrderList({ order, onClose }) {
                   {order?.orderItems?.length}
                 </span>
               </div>
-            
-              <div className="flex gap-2">
-                <p>Total Points: </p>
-                <span className="text-indigo-700">
-                  +{order?.totalPoints}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <p>Used Credit Points: </p>
-                <span className="text-indigo-700">
-                  {order?.usedCredits ? - order?.usedCredits : 0}
-                </span>
-              </div>
+
+            {!order.guestUser && (
+                <>
+                  <div className="flex gap-2">
+                    <p>Total Points: </p>
+                    <span className="text-indigo-700">
+                      +{order?.totalPoints}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <p>Used Credit Points: </p>
+                    <span className="text-indigo-700">
+                      {order?.usedCredits ? -order?.usedCredits : 0}
+                    </span>
+                  </div>
+                </>
+              )}
               {/* <div className="flex gap-2">
                 <p>Taxes: </p>
                 <span className="text-indigo-700">{formatPrice(order.taxPrice)}</span>
@@ -95,7 +99,9 @@ export default function SingleOrderList({ order, onClose }) {
               </div>
               <div className="flex gap-2">
                 <p>Discount: </p>
-                <span className="text-indigo-700">{formatPrice(order.discount)} PHP</span>
+                <span className="text-indigo-700">
+                  {formatPrice(order.discount)} PHP
+                </span>
               </div>
               <div className="flex gap-2">
                 <p>To Ship: </p>
@@ -112,23 +118,25 @@ export default function SingleOrderList({ order, onClose }) {
                 </span>
               </div>
               {(order?.paymentStatus === "Failed" ||
-                  order?.paymentStatus === "Refunded") && (
-                  <div className="flex gap-2 items-center">
-                    <p>Reasons: </p>
-                    <p className="w-full text-red-700" >
-                        {order?.reason}
-                    </p>
-                  </div>
-                )}
+                order?.paymentStatus === "Refunded") && (
+                <div className="flex gap-2 items-center">
+                  <p>Reasons: </p>
+                  <p className="w-full text-red-700">{order?.reason}</p>
+                </div>
+              )}
             </div>
             <div className="flex flex-col text-sm">
               <div className="flex gap-2">
                 <p>Subtotal: </p>
-                <span className="text-indigo-700">{formatPrice(order.subtotal)} PHP</span>
+                <span className="text-indigo-700">
+                  {formatPrice(order.subtotal)} PHP
+                </span>
               </div>
               <div className="flex gap-2">
                 <p>Total Price: </p>
-                <span className="text-indigo-700">{formatPrice(order.totalPrice)} PHP</span>
+                <span className="text-indigo-700">
+                  {formatPrice(order.totalPrice)} PHP
+                </span>
               </div>
               <div className="flex gap-2">
                 <p>Status: </p>
@@ -142,7 +150,12 @@ export default function SingleOrderList({ order, onClose }) {
               {order?.paymentMethod === "Gcash" && (
                 <div className="flex gap-2">
                   <p>Payment Status: </p>
-                  {order.paymentStatus && order.paymentStatus === "Failed" || order.paymentStatus === "Refunded" ? <span className="text-red-700">{order.paymentStatus}</span> : <span className="text-blue-700">{order.paymentStatus}</span>}
+                  {(order.paymentStatus && order.paymentStatus === "Failed") ||
+                  order.paymentStatus === "Refunded" ? (
+                    <span className="text-red-700">{order.paymentStatus}</span>
+                  ) : (
+                    <span className="text-blue-700">{order.paymentStatus}</span>
+                  )}
                 </div>
               )}
             </div>
@@ -180,12 +193,18 @@ export default function SingleOrderList({ order, onClose }) {
                         <p>Quantity: </p>
                         <span>{item?.quantity}</span>
                       </div>
-                      {
-                        order?.status === "Delivered" ? (
-                          <button onClick={() => navigate(`/product/${item?.productId._id}`)}
-                      className="text-indigo-700 underline">Click to write a review</button>
-                        ) : ""
-                      }
+                      {order?.status === "Delivered" ? (
+                        <button
+                          onClick={() =>
+                            navigate(`/product/${item?.productId._id}`)
+                          }
+                          className="text-indigo-700 underline"
+                        >
+                          Click to write a review
+                        </button>
+                      ) : (
+                        ""
+                      )}
                     </div>
                   </div>
                 </div>
@@ -206,15 +225,18 @@ export default function SingleOrderList({ order, onClose }) {
 
               <div className="flex text-sm flex-col gap-1">
                 <div className="flex flex-col md:flex-row gap-2">
-                  <p>Gcash Number: </p>
+                  <p>Gcash Name: </p>
                   <p>{order?.gcashQRmethod?.gcashName}</p>
                 </div>
-               
+                <div className="flex flex-col md:flex-row gap-2">
+                  <p>Gcash Number: </p>
+                  <p>{order?.gcashQRmethod?.gcashPhoneNumber}</p>
+                </div>
               </div>
             </div>
 
-
-            {(currentUser.role === "admin" || currentUser.role === "validatorStaff") && (
+            {(currentUser.role === "admin" ||
+              currentUser.role === "validatorStaff") && (
               <div className="w-full flex gap-2 ">
                 <select
                   onChange={(e) => handleChangePaymentStatus(order._id, e)}
@@ -240,7 +262,6 @@ export default function SingleOrderList({ order, onClose }) {
                 )}
               </div>
             )}
-            
           </div>
         )}
       </div>

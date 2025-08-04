@@ -73,20 +73,7 @@ import GuestCheckOutModal from "./components/guest/GuestCheckOutModal.jsx";
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
-  {
-    element: (
-      <ProtectedCustomerRoute>
-        <RequiredAuthGcashPage />
-      </ProtectedCustomerRoute>
-    ),
-    children: [
-      {
-        path: "/gcashQRpayment",
-        element: <GcashPaymentPage />,
-      },
-    ],
-  },
-
+  
   {
     path: "/",
     element: <RootLayout />,
@@ -140,11 +127,26 @@ const router = createBrowserRouter([
         element: <GuestCheckOutModal />,
       },
       {
+        path: "/guestQRpage",
+        element: <GcashPaymentPage />,
+      },
+    ],
+  },
+
+  {
+    element: (
+      <ProtectedCustomerRoute>
+        <RequiredAuthGcashPage />
+      </ProtectedCustomerRoute>
+    ),
+    children: [
+      {
         path: "/gcashQRpayment",
         element: <GcashPaymentPage />,
       },
     ],
   },
+
 
   {
     element: (

@@ -26,6 +26,7 @@ import {
   getUserFailed,
   getUserOrder,
   getUserRefund,
+  getUsersOrder,
   guestOrderStripe,
   placeOrderGcashQR,
   placeOrderStripe,
@@ -49,7 +50,9 @@ router.put(`/add-reason/:orderId`, requireAuth, requireAdmin, addReason);
 
 router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
-router.get(`/get-orders`, getAllOrder);
+router.get(`/get-all-orders`, getAllOrder);
+
+router.get(`/get-orders`, getUsersOrder);
 
 router.get(`/get-guest-orders`, getGuestOrder);
 

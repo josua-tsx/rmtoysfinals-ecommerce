@@ -25,11 +25,11 @@ const RootLayout = () => {
   }, [checkAuth]);
 
   // 🧹 Clear order if exists
-  // useEffect(() => {
-  //   if (currentOrder) {
-  //     clearOrder();
-  //   }
-  // }, [currentOrder]);
+  useEffect(() => {
+    if (currentOrder) {
+      clearOrder();
+    }
+  }, [currentOrder]);
 
   // 🔁 Query: fetch stocks
   const { data: stocks = [] } = useQuery({

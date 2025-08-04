@@ -14,12 +14,17 @@ import { useBlocker, useNavigate } from "react-router-dom";
 import formatPrice from "../reusable/formatPrice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
+import { useUserStore } from "../stores/useUserStore";
+import { clearGuestOrder } from "../lib/utils";
 
 export default function GcashPaymentPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const currentOrder = useOrderStore((state) => state.currentOrder);
+  const currentUser = useUserStore((state) => state.currentUser);
+  const currentOrder =
+    useOrderStore((state) => state.currentOrder) ||
+    JSON.parse(localStorage.getItem("manual-order-backup"));
   const clearOrder = useOrderStore((state) => state.clearOrder);
 
   useEffect(() => {
@@ -29,13 +34,17 @@ export default function GcashPaymentPage() {
     }
   }, [currentOrder]);
 
-  
+  console.log(currentOrder);
 
   const [gcashPhoneNumber, setGcashPhoneNumber] = useState("");
   const [gcashName, setGcashName] = useState("");
   const [receiptImage, setReceiptImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
+
+
+
+  console.log(gcashPhoneNumber)
 
   const { mutate: placeOrderGcashQR } = useMutation({
     mutationFn: async (data) => {
@@ -47,6 +56,7 @@ export default function GcashPaymentPage() {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
       clearOrder();
+      clearGuestOrder()
       navigate("/cart");
     },
     onError: (err) => {
@@ -62,6 +72,11 @@ export default function GcashPaymentPage() {
       return;
     }
 
+    if (!gcashPhoneNumber) {
+      toast.error("no gcash number")
+      return
+    }
+
     try {
       setUploading(true);
       const downloadURL = await storeImage(receiptImage);
@@ -69,7 +84,7 @@ export default function GcashPaymentPage() {
       const orderData = {
         ...currentOrder,
         gcashQRmethod: {
-          gcashPhoneNumber,
+          gcashPhoneNumber: gcashPhoneNumber,
           gcashName,
           proofOfPaymentImage: downloadURL,
         },
@@ -146,7 +161,7 @@ export default function GcashPaymentPage() {
                   Gcash Phone Number:
                 </label>
                 <input
-                  type="tel"
+                  type="number"
                   id="gcashPhoneNumber"
                   name="gcashPhoneNumber"
                   value={gcashPhoneNumber}
@@ -321,14 +336,24 @@ export default function GcashPaymentPage() {
                   <span className="text-gray-600">Payment Method: </span>
                   <span>{currentOrder?.paymentMethod}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Credits Added: </span>
-                  <span>+{currentOrder?.totalPoints}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Credits Used: </span>
-                  <span>{currentOrder?.usedCredits}</span>
-                </div>
+                {currentUser ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">
+                        Total Credits Added:{" "}
+                      </span>
+                      <span>+{currentOrder?.totalPoints}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">
+                        Total Credits Used:{" "}
+                      </span>
+                      <span>{currentOrder?.usedCredits}</span>
+                    </div>
+                  </>
+                ) : (
+                  ""
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Price: </span>
                   <span>{formatPrice(currentOrder?.totalPrice)} PHP</span>

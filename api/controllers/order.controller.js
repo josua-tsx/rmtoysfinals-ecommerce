@@ -866,6 +866,36 @@ export const getAllOrder = async (req, res, next) => {
       status: {
         $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
       },
+    })
+      .populate({
+        path: "orderItems.productId",
+        select: "price preVatPrice",
+      })
+      .populate({
+        path: "userId",
+        select: "fullName email",
+      })
+      .sort({ createdAt: -1 });
+
+    // If no orders are found, return an empty array
+    if (orders.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // If orders are found, return them
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error); // Pass the error to the next middleware for error handling
+  }
+};
+
+export const getUsersOrder = async (req, res, next) => {
+  try {
+    // Fetch all orders
+    const orders = await Order.find({
+      status: {
+        $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
+      },
       isGuest: false,
     })
       .populate({

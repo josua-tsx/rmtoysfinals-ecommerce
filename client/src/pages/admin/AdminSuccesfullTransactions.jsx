@@ -42,6 +42,9 @@ export default function AdminSuccesfullTransactions({
     enabled: !!orderId,
   });
 
+
+  console.log(successOrderData)
+
   const { mutate: updateToRefundMutation } = useMutation({
     mutationFn: async (orderId) => {
       const res = await axiosInstance.put(`/order/refund-order`, orderId);
@@ -222,7 +225,7 @@ export default function AdminSuccesfullTransactions({
                         {success.userId?.phoneNumber}
                       </td>
                       <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {success?.totalItemsOrdered}
+                        {totalItemsBought}
                       </td>
                       <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                         {success.paymentMethod}
@@ -234,7 +237,7 @@ export default function AdminSuccesfullTransactions({
                         {success.status}
                       </td>
                       <td className="py-6 px-6 uppercase whitespace-nowrap text-center text-sm">
-                        {success.userId?.address[0]?.fullAddress}
+                        {success.userId?.address[0]?.fullAddress || success.shippingAddress}
                       </td>
                       <td className=" whitespace-nowrap text-center text-sm">
                         <div className="flex gap-2">

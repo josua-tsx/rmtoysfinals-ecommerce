@@ -129,7 +129,17 @@ export default function GuestCheckOutModal({ onClose }) {
       return toast.error("Please input required fields!");
 
     const orderData = {
-      orderItems: cartItems,
+      orderItems: cartItems.map((item) => ({
+        productId: {
+          _id: item._id,
+          productName: item.productName,
+          productDescription: item.productDescription,
+          productImages: item.productImages,
+          stocks: item.stocks,
+          price: item.price,
+        },
+        quantity: item.quantity,
+      })),
       shippingAddress: currentAddress,
       isGuest: true,
       guestUser: {
@@ -260,7 +270,7 @@ export default function GuestCheckOutModal({ onClose }) {
                   </label>
                   <div className="flex flex-col gap-2">
                     <input
-                      type="tel"
+                      type="number"
                       name="phoneNumber"
                       className={`p-2 border border-gray-300 rounded-[5px]`}
 

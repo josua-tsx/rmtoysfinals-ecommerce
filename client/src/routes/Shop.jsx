@@ -88,9 +88,6 @@ export default function Shop() {
     queryClient.resetQueries({ queryKey: ["products"] });
   }, [selectedCategory, sortBy, sortOrder, queryClient]);
 
-  console.log(products)
-
-
   
   if (isError) return (
     <div className="text-center py-10">

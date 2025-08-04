@@ -58,3 +58,8 @@ export const updateQuantity = (productId, newQuantity) => {
   localStorage.setItem("guestCart", JSON.stringify(updatedCart));
   return updatedCart;
 };
+
+export const clearGuestOrder = () => {
+  localStorage.removeItem("guestCart");
+  return { items: [] };
+};
