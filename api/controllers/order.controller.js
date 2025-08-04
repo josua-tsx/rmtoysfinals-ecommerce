@@ -331,194 +331,193 @@ export const guestOrderStripe = async (req, res, next) => {
 export const placeOrderStripe = async (req, res, next) => {
   const userId = req?.user?.id;
   const session = await mongoose.startSession();
-  session.startTransaction();
-
+  
   try {
+    await session.startTransaction();
+
+    // 1. Validate and normalize input data
     const {
       orderItems,
       shippingAddress,
-      paymentMethod,
-      taxPrice,
-      shippingPrice,
-      discount,
+      paymentMethod = 'card', // Default payment method
+      taxPrice = 0,
+      shippingPrice = 0,
+      discount = 0,
       subtotal,
       totalPrice,
-      notes,
-      totalPoints,
+      notes = '',
+      totalPoints = 0,
       usedCredits = 0,
     } = req.body;
 
-    // Validate order items
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
-      await session.abortTransaction();
-      return next(handleMakeError(400, "Invalid or empty products array"));
+      throw new Error("Order must contain at least one item");
     }
 
-    // Validate stock and quantities
-    for (const item of orderItems) {
-      if (!item.productId) {
-        await session.abortTransaction();
-        return next(handleMakeError(400, "Missing product ID in order items"));
+    // Normalize product IDs and validate items
+    const validatedItems = orderItems.map(item => {
+      const productId = item.productId || item._id;
+      if (!productId) {
+        throw new Error(`Missing product ID for ${item.productName}`);
       }
-
-      if (item.quantity <= 0) {
-        await session.abortTransaction();
-        return next(handleMakeError(400, "Quantity must be greater than zero"));
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        throw new Error(`Invalid product ID format for ${item.productName}`);
       }
-
-      if (item.quantity > 5) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, "Maximum 5 items per product allowed")
-        );
+      if (item.quantity <= 0 || item.quantity > 5) {
+        throw new Error(`Invalid quantity for ${item.productName}`);
       }
-
-      const productStock = await Stocks.findOne({
-        product: item.productId,
-      }).session(session);
-
-      if (!productStock) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, `Product ${item.productId} not found in stock`)
-        );
+      if (!item.price || item.price <= 0) {
+        throw new Error(`Invalid price for ${item.productName}`);
       }
+      return { ...item, productId };
+    });
 
-      if (productStock.quantity < item.quantity) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, `Insufficient stock for ${item.productName}`)
-        );
+    // 2. Verify stock availability
+    for (const item of validatedItems) {
+      const stock = await Stocks.findOne({ product: item.productId }).session(session);
+      if (!stock || stock.quantity < item.quantity) {
+        throw new Error(`Insufficient stock for ${item.productName}`);
       }
     }
 
-    // Validate credits for authenticated users
+    // 3. Handle user credits if authenticated
     if (userId && usedCredits > 0) {
       const user = await User.findById(userId).session(session);
+      if (!user) throw new Error("User not found");
 
-      // Check credit lock
       if (user.creditLock && new Date(user.creditLock) > new Date()) {
-        const expiryDate = new Date(user.creditLock).toLocaleString("en-US", {
-          timeZone: "Asia/Manila",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, `⏳ Credits locked until ${expiryDate}`)
-        );
+        throw new Error("User credits are currently locked");
       }
 
-      // Check sufficient credits
       if (user.credits < usedCredits) {
-        await session.abortTransaction();
-        return next(handleMakeError(400, "Insufficient credits"));
+        throw new Error("Insufficient credits");
       }
     }
 
-    // Prepare Stripe line items
-    const lineItems = orderItems.map((product) => ({
-      price_data: {
-        currency: "php",
-        product_data: {
-          name: product.productName,
-          images: product.productImages?.length
-            ? [product.productImages[0]]
-            : [],
-        },
-        unit_amount: Math.round(product.price * 100),
-      },
-      quantity: product.quantity,
-    }));
+    // 4. Prepare Stripe line items with proper validation
+    const lineItems = validatedItems.map(item => {
+      if (!item.productImages || !Array.isArray(item.productImages)) {
+        throw new Error(`Missing product images for ${item.productName}`);
+      }
 
-    // Create Stripe session
+      return {
+        price_data: {
+          currency: "php",
+          product_data: {
+            name: item.productName.substring(0, 100), // Stripe has 100-char limit
+            description: item.productDescription 
+              ? item.productDescription.substring(0, 500) 
+              : undefined,
+            images: item.productImages.slice(0, 1) // Stripe only uses first image
+          },
+          unit_amount: Math.round(Math.max(1, item.price) * 100), // Ensure at least 1 cent
+        },
+        quantity: Math.min(100, Math.max(1, item.quantity)), // Ensure 1-100 quantity
+      };
+    });
+
+    // 5. Create Stripe checkout session with enhanced metadata
+    const metadata = {
+      userId: userId || "guest",
+      orderItems: JSON.stringify(
+        validatedItems.map(item => ({
+          id: item.productId,
+          name: item.productName,
+          price: item.price,
+          qty: item.quantity
+        }))
+      ),
+      // Add other important metadata
+      totalAmount: totalPrice.toString(),
+      creditsUsed: usedCredits.toString(),
+      timestamp: new Date().toISOString()
+    };
+
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-      metadata: {
-        userId: userId?.toString() || "guest",
-        orderItems: JSON.stringify(
-          orderItems.map((item) => ({
-            productId: item.productId,
-            productName: item.productName,
-            price: item.price,
-            quantity: item.quantity,
-          }))
-        ),
-        shippingAddress: JSON.stringify(shippingAddress),
-        paymentMethod,
-        taxPrice: taxPrice.toString(),
-        shippingPrice: shippingPrice.toString(),
-        discount: discount.toString(),
-        subtotal: subtotal.toString(),
-        totalPrice: totalPrice.toString(),
-        notes: notes || "",
-        totalPoints: totalPoints.toString(),
-        usedCredits: usedCredits.toString(),
+      success_url: `${process.env.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/checkout/cancel`,
+      metadata,
+      shipping_address_collection: {
+        allowed_countries: ['PH'] // Philippines only
       },
+      phone_number_collection: {
+        enabled: true
+      }
     });
 
-    // Create order record (but don't save yet)
-    const orderData = {
-      orderItems,
+    // 6. Create and save order document
+    const orderDoc = {
+      orderItems: validatedItems,
       shippingAddress,
       paymentMethod,
-      shippingPrice,
-      taxPrice,
-      discount,
-      subtotal,
-      totalPrice,
-      notes,
-      totalPoints,
-      paymentStatus: "Pending",
+      paymentStatus: "pending",
       stripeSessionId: stripeSession.id,
-      ...(userId && { userId, usedCredits }),
+      amount: {
+        subtotal,
+        tax: taxPrice,
+        shipping: shippingPrice,
+        discount,
+        total: totalPrice
+      },
+      userInfo: userId ? { userId } : { isGuest: true },
+      notes,
+      credits: {
+        earned: totalPoints,
+        used: usedCredits
+      }
     };
 
-    const newOrder = new Order(orderData);
-
-    // Final validation before committing
-    const validationError = newOrder.validateSync();
-    if (validationError) {
-      await session.abortTransaction();
-      return next(handleMakeError(400, validationError.message));
-    }
-
-    // Save order and update stock in transaction
-    await newOrder.save({ session });
-
-    // Update stock quantities
-    await Promise.all(
-      orderItems.map((item) =>
-        Stocks.findOneAndUpdate(
+    const [newOrder] = await Promise.all([
+      Order.create([orderDoc], { session }),
+      ...validatedItems.map(item =>
+        Stocks.updateOne(
           { product: item.productId },
           { $inc: { quantity: -item.quantity } },
           { session }
         )
-      )
-    );
-
-    // Update user credits if used
-    if (userId && usedCredits > 0) {
-      await User.findByIdAndUpdate(
-        userId,
-        { $inc: { credits: -usedCredits } },
-        { session }
-      );
-    }
+      ),
+      ...(userId && usedCredits > 0 ? [
+        User.updateOne(
+          { _id: userId },
+          { $inc: { credits: -usedCredits } },
+          { session }
+        )
+      ] : [])
+    ]);
 
     await session.commitTransaction();
-    res.status(200).json({ url: stripeSession.url });
+    
+    // 7. Return success response
+    res.status(200).json({
+      success: true,
+      url: stripeSession.url,
+      sessionId: stripeSession.id,
+      orderId: newOrder._id
+    });
+
   } catch (error) {
     await session.abortTransaction();
-    console.error("Stripe order error:", error);
-    next(handleMakeError(500, "Failed to process Stripe payment"));
+    
+    // Enhanced error logging
+    console.error("Stripe Payment Error:", {
+      error: error.message,
+      userId,
+      timestamp: new Date().toISOString(),
+      stack: error.stack
+    });
+
+    // User-friendly error response
+    res.status(400).json({
+      success: false,
+      message: "Payment processing failed",
+      error: process.env.NODE_ENV === 'development' 
+        ? error.message 
+        : "Please try again or contact support",
+      code: "STRIPE_PAYMENT_FAILED"
+    });
   } finally {
     session.endSession();
   }
