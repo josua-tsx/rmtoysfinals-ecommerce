@@ -67,8 +67,9 @@ import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
 import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
 import RecoverPassword from "./routes/RecoverPassword.jsx";
 import ResetPassword from "./routes/ResetPassword.jsx";
-import GuestCartPage from "./components/Guest/GuestCartPage.jsx";
+import GuestCartPage from "./components/guest/GuestCartPage.jsx";
 import GuestCheckOutModal from "./components/guest/GuestCheckOutModal.jsx";
+
 
 const queryClient = new QueryClient();
 
