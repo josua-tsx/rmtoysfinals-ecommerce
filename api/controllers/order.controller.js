@@ -352,38 +352,22 @@ export const placeOrderStripe = async (req, res, next) => {
       return next(handleMakeError(400, "Invalid or empty products array"));
     }
 
-    // Initialize order data object
-    const orderData = {
-      orderItems,
-      shippingAddress,
-      paymentMethod,
-      taxPrice,
-      shippingPrice,
-      discount,
-      subtotal,
-      totalPrice,
-      notes: notes || "",
-      totalPoints,
-      usedCredits,
-    };
-
     // For guest orders, validate guest information
     if (!userId) {
       if (!guestUser?.name || !guestUser?.phone) {
+        await session.abortTransaction();
         return next(
           handleMakeError(400, "Guest orders require name and phone number")
         );
       }
-      // Add guest user data
-      orderData.guestUser = {
+    }
+
+    // Add user/guest specific data
+      if (!userId && guestUser) {
+         guestUser = {
         name: guestUser.name,
         phone: guestUser.phone,
-        email: guestUser.email || null,
-      };
-      orderData.isGuest = true;
-    } else {
-      // Add user ID for registered users
-      orderData.userId = userId;
+        email: guestUser.email || null
     }
 
     try {
@@ -398,7 +382,7 @@ export const placeOrderStripe = async (req, res, next) => {
           return next(handleMakeError(400, "Missing product ID"));
         }
 
-        // Quantity validation
+        // Quantity validation (same as before)
         if (item.quantity <= 0 || item.quantity > 5) {
           await session.abortTransaction();
           return next(handleMakeError(400, "Invalid quantity"));
@@ -407,7 +391,6 @@ export const placeOrderStripe = async (req, res, next) => {
         const productStock = await Stocks.findOne({
           product: productId,
         }).session(session);
-
         if (!productStock || productStock.quantity < item.quantity) {
           await session.abortTransaction();
           return next(handleMakeError(400, "Insufficient stock"));
@@ -420,10 +403,6 @@ export const placeOrderStripe = async (req, res, next) => {
         const productImage = Array.isArray(product.productImages)
           ? product.productImages[0]
           : product.productImages;
-
-        if (!productImage) {
-          throw new Error(`Missing product image for ${product.productName}`);
-        }
 
         return {
           price_data: {
