@@ -574,6 +574,7 @@ export const checkOutSuccess = async (req, res, next) => {
       totalPoints: parseInt(totalPoints) || 0,
       usedCredits: parseInt(usedCredits) || 0,
       stripeSessionId: sessionId,
+      guestUser,
     };
 
     // Only set userId if not guest
@@ -581,6 +582,11 @@ export const checkOutSuccess = async (req, res, next) => {
       orderData.userId = userId;
     } else {
       orderData.isGuest = true;
+      orderData.guestUser = {
+        name: guestUser.name,
+        phone: guestUser.phone,
+        email: guestUser.email || null,
+      };
     }
 
     const newOrder = new Order(orderData);
