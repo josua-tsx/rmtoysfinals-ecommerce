@@ -473,13 +473,11 @@ export const checkOutSuccess = async (req, res, next) => {
   try {
     const { sessionId } = req.body;
 
-    // 1. Validate session ID
     if (!sessionId) {
       await session.abortTransaction();
       return next(handleMakeError(400, "Invalid session ID"));
     }
 
-    // 2. Check for existing order
     const existingOrder = await Order.findOne({
       stripeSessionId: sessionId,
     }).session(session);
@@ -492,7 +490,6 @@ export const checkOutSuccess = async (req, res, next) => {
       });
     }
 
-    // 3. Retrieve Stripe session
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
     if (!stripeSession || stripeSession.payment_status !== "paid") {
       await session.abortTransaction();
@@ -501,7 +498,6 @@ export const checkOutSuccess = async (req, res, next) => {
       );
     }
 
-    // 4. Parse and validate metadata
     if (!stripeSession.metadata) {
       await session.abortTransaction();
       return next(handleMakeError(400, "Missing metadata in Stripe session"));
@@ -519,7 +515,7 @@ export const checkOutSuccess = async (req, res, next) => {
       notes = "",
       totalPoints,
       usedCredits = "0",
-      guestUser,
+      guestUser: guestUserStr,
     } = stripeSession.metadata;
 
     if (!orderItemsStr) {
@@ -527,18 +523,20 @@ export const checkOutSuccess = async (req, res, next) => {
       return next(handleMakeError(400, "Missing order items in metadata"));
     }
 
-    let orderItems, shippingAddress;
+    // Parse all JSON data safely
+    let orderItems, shippingAddress, guestUser;
     try {
       orderItems = JSON.parse(orderItemsStr);
       shippingAddress = shippingAddressStr
         ? JSON.parse(shippingAddressStr)
         : {};
+      guestUser = guestUserStr ? JSON.parse(guestUserStr) : {};
     } catch (err) {
       await session.abortTransaction();
       return next(handleMakeError(400, "Invalid metadata format"));
     }
 
-    // 5. Validate stock before creating order
+    // Validate stock
     for (const item of orderItems) {
       const productId = item.productId?._id || item.productId;
       const quantity = item.quantity || 1;
@@ -554,9 +552,7 @@ export const checkOutSuccess = async (req, res, next) => {
       }
     }
 
-    // For guest orders, validate guest information
-
-    // 6. Create the order
+    // Create order data
     const orderData = {
       orderItems: orderItems.map((item) => ({
         productId: item.productId?._id || item.productId,
@@ -574,17 +570,16 @@ export const checkOutSuccess = async (req, res, next) => {
       totalPoints: parseInt(totalPoints) || 0,
       usedCredits: parseInt(usedCredits) || 0,
       stripeSessionId: sessionId,
-      guestUser,
     };
 
-    // Only set userId if not guest
+    // Handle user/guest differentiation
     if (userId && userId !== "guest") {
       orderData.userId = userId;
     } else {
       orderData.isGuest = true;
       orderData.guestUser = {
-        name: guestUser.name,
-        phone: guestUser.phone,
+        name: guestUser.name || "Unknown",
+        phone: guestUser.phone || "Unknown",
         email: guestUser.email || null,
       };
     }
@@ -592,7 +587,7 @@ export const checkOutSuccess = async (req, res, next) => {
     const newOrder = new Order(orderData);
     await newOrder.save({ session });
 
-    // 7. Update stock
+    // Update stock
     for (const item of orderItems) {
       const productId = item.productId?._id || item.productId;
       await Stocks.findOneAndUpdate(
@@ -602,7 +597,7 @@ export const checkOutSuccess = async (req, res, next) => {
       );
     }
 
-    // 8. Clear cart and deduct credits only for registered users
+    // Clear cart for registered users
     if (userId && userId !== "guest") {
       await Cart.findOneAndUpdate(
         { userId },
