@@ -7,7 +7,8 @@ import { FaShoppingCart } from "react-icons/fa";
 import formatPrice from "../../reusable/formatPrice";
 import Buttons from "../../reusable/Buttons";
 import GuestCard from "./GuestCard";
-import GuestCheckOutModal from "./GuestCheckOutModal";
+
+import GuestSummaryModal from "./GuestSummaryModal";
 
 export default function GuestCartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
@@ -35,7 +36,7 @@ export default function GuestCartPage() {
   return (
     <section className="pt-[130px] bg-yellow  text-sm md:text-normal font-main p-3">
       {openOrderModal && (
-        <GuestCheckOutModal onClose={() => setOrderModal(false)} />
+        <GuestSummaryModal onClose={() => setOrderModal(false)} />
       )}
 
       <div className="max-w-[1280px] bg-yellow h-screen mx-auto">

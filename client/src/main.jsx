@@ -68,8 +68,9 @@ import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
 import RecoverPassword from "./routes/RecoverPassword.jsx";
 import ResetPassword from "./routes/ResetPassword.jsx";
 
-import GuestCheckOutModal from "./components/guest/GuestCheckOutModal.jsx";
+
 import GuestCartPage from "./components/Guest/GuestCartPage.jsx";
+import GuestSummaryModal from "./components/guest/GuestSummaryModal.jsx";
 
 const queryClient = new QueryClient();
 
@@ -124,7 +125,7 @@ const router = createBrowserRouter([
       },
       {
         path: `/guestOrder`,
-        element: <GuestCheckOutModal />,
+        element: <GuestSummaryModal/>,
       },
       {
         path: "/guestQRpage",
