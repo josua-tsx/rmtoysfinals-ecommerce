@@ -363,11 +363,12 @@ export const placeOrderStripe = async (req, res, next) => {
     }
 
     // Add user/guest specific data
-      if (!userId && guestUser) {
-         guestUser = {
+    if (!userId && guestUser) {
+      guestUser = {
         name: guestUser.name,
         phone: guestUser.phone,
-        email: guestUser.email || null
+        email: guestUser.email || null,
+      };
     }
 
     try {
