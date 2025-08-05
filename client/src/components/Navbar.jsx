@@ -14,7 +14,7 @@ import { useUserStore } from "../stores/useUserStore";
 
 import RMTOYSLOGO from "../assets/RMTOYSLOGOFINAL.png";
 import CreditsPoints from "./CreditsPoints";
-import GuestCart from "./guest/GuestCart";
+import GuestCart from "./Guestt/GuestCart";
 
 export default function Navbar() {
   const [isExpanded, setIsExpanded] = useState(false);
