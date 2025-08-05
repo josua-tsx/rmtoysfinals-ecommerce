@@ -333,7 +333,7 @@ export const placeOrderStripe = async (req, res, next) => {
   const session = await mongoose.startSession();
 
   try {
-    const {
+    let {
       orderItems,
       shippingAddress,
       paymentMethod,
