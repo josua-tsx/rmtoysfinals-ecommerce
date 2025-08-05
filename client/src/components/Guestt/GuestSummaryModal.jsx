@@ -163,8 +163,8 @@ export default function GuestSummaryModal({ onClose }) {
     // }
 
     if (paymentMethod === "GcashQR" && cartItems.length > 0) {
-      // handleGcashQRpaymentMethod(orderData);
-      // console.log(orderData);
+      handleGcashQRpaymentMethod(orderData);
+      console.log(orderData);
     }
 
     if (paymentMethod === "Online Payment") {
