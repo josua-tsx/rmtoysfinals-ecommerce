@@ -493,9 +493,7 @@ export const checkOutSuccess = async (req, res, next) => {
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
     if (!stripeSession || stripeSession.payment_status !== "paid") {
       await session.abortTransaction();
-      return next(
-        handleMakeError(400, "Payment not completed or session invalid")
-      );
+      return next(handleMakeError(400, "Payment not completed or session invalid"));
     }
 
     if (!stripeSession.metadata) {
@@ -515,22 +513,32 @@ export const checkOutSuccess = async (req, res, next) => {
       notes = "",
       totalPoints,
       usedCredits = "0",
-      guestUser: guestUserStr,
     } = stripeSession.metadata;
+
+    // Handle guest user data separately
+    let guestUser = {};
+    if (stripeSession.metadata.guestUser) {
+      try {
+        guestUser = JSON.parse(stripeSession.metadata.guestUser);
+      } catch (err) {
+        console.error('Error parsing guestUser:', err);
+        guestUser = {
+          name: 'Guest Customer',
+          phone: 'Not Provided',
+          email: null
+        };
+      }
+    }
 
     if (!orderItemsStr) {
       await session.abortTransaction();
       return next(handleMakeError(400, "Missing order items in metadata"));
     }
 
-    // Parse all JSON data safely
-    let orderItems, shippingAddress, guestUser;
+    let orderItems, shippingAddress;
     try {
       orderItems = JSON.parse(orderItemsStr);
-      shippingAddress = shippingAddressStr
-        ? JSON.parse(shippingAddressStr)
-        : {};
-      guestUser = guestUserStr ? JSON.parse(guestUserStr) : {};
+      shippingAddress = shippingAddressStr ? JSON.parse(shippingAddressStr) : {};
     } catch (err) {
       await session.abortTransaction();
       return next(handleMakeError(400, "Invalid metadata format"));
@@ -541,14 +549,10 @@ export const checkOutSuccess = async (req, res, next) => {
       const productId = item.productId?._id || item.productId;
       const quantity = item.quantity || 1;
 
-      const productStock = await Stocks.findOne({ product: productId }).session(
-        session
-      );
+      const productStock = await Stocks.findOne({ product: productId }).session(session);
       if (!productStock || productStock.quantity < quantity) {
         await session.abortTransaction();
-        return next(
-          handleMakeError(400, `Insufficient stock for product ${productId}`)
-        );
+        return next(handleMakeError(400, `Insufficient stock for product ${productId}`));
       }
     }
 
@@ -578,8 +582,8 @@ export const checkOutSuccess = async (req, res, next) => {
     } else {
       orderData.isGuest = true;
       orderData.guestUser = {
-        name: guestUser.name || "Unknown",
-        phone: guestUser.phone || "Unknown",
+        name: guestUser.name || 'Guest Customer',
+        phone: guestUser.phone || 'Not Provided',
         email: guestUser.email || null,
       };
     }
