@@ -32,10 +32,10 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PublicRoute } from "./routes/PurblicRoute.jsx";
 import { ProtectedCustomerRoute } from "./routes/ProtectedRoutes/ProtectedCustomerRoute.jsx";
 import AdminEditProducts from "./pages/admin/AdminEditProduct.jsx";
-import AdminAddSupplier from "./pages/admin/AdminAddSupplier.jsx";
+
 import AdminSupplier from "./pages/admin/AdminSupplier.jsx";
 import AdminCategory from "./pages/admin/AdminCategory.jsx";
-import AdminAddCategory from "./pages/admin/AdminAddCategory.jsx";
+
 import AdminCategoryEdit from "./pages/admin/AdminCategoryEdit.jsx";
 import AdminEditSupplier from "./pages/admin/AdminEditSupplier.jsx";
 import AdminStocks from "./pages/admin/AdminStocks.jsx";
@@ -43,7 +43,7 @@ import AdminUser from "./pages/admin/AdminUser.jsx";
 
 import AdminDraftProduct from "./pages/admin/AdminDraftProduct.jsx";
 import AdminWorker from "./pages/admin/AdminWorker.jsx";
-import AdminAddWorker from "./pages/admin/AdminAddWorker.jsx";
+
 import OrderSummaryModal from "./components/OrderSummaryModal.jsx";
 import SingleOrderList from "./components/SingleOrderList.jsx";
 import AdminOrderStatus from "./pages/admin/AdminOrderStatus.jsx";
@@ -73,7 +73,6 @@ import GuestCheckOutModal from "./components/guest/GuestCheckOutModal.jsx";
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
-  
   {
     path: "/",
     element: <RootLayout />,
@@ -146,7 +145,6 @@ const router = createBrowserRouter([
       },
     ],
   },
-
 
   {
     element: (

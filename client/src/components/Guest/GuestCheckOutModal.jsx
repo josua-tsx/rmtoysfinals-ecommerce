@@ -164,7 +164,7 @@ export default function GuestCheckOutModal({ onClose }) {
 
     if (paymentMethod === "GcashQR" && cartItems.length > 0) {
       // handleGcashQRpaymentMethod(orderData);
-      console.log(orderData);
+      // console.log(orderData);
     }
 
     if (paymentMethod === "Online Payment") {
