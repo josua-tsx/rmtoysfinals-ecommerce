@@ -38,10 +38,10 @@ export default function Faq() {
   };
 
   return (
-    <section className=" bg-yellow p-3 font-main pt-28">
+    <section className=" bg-yellow p-3 font-main pt-28 md:pt-36">
       <div className="">
         <div className="flex flex-col justify-center items-center h-full ">
-          <div className="text-4xl mb-5">FAQs</div>
+          <div className="text-3xl mb-5">FAQs</div>
           <div className="flex flex-col  md:w-[750px] gap-5">
             {List.map((faq) => (
               <li

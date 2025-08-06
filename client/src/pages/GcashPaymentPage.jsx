@@ -143,7 +143,7 @@ export default function GcashPaymentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-yellow py-8 px-4 flex items-center justify-center">
+    <div className="min-h-screen bg-yellow pt-[200px] px-4 flex items-center justify-center">
       <div className="w-full max-w-4xl border mx-auto  bg-white rounded-lg shadow-md overflow-hidden">
         <div className="md:flex">
           {/* Left Column - Payment Form */}

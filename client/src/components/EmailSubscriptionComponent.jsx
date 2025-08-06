@@ -1,0 +1,57 @@
+import React from "react";
+import columnOnePic from "../assets/column1.png";
+import { IoMdSend } from "react-icons/io";
+import { IoIosNotifications } from "react-icons/io";
+
+
+export default function EmailSubscriptionComponent() {
+  return (
+    <section className="bg-yellow p-3 font-main pt-28 md:pt-36">
+      <div className="max-w-[1280px] mx-auto p-4">
+        <h1 className="text-center text-3xl mb-5">Subscribe</h1>
+        <div className="flex border border-black bg-card p-4 rounded-[5px] ">
+          <div className="md:flex-1 flex justify-center">
+            <img
+              src={columnOnePic}
+              alt="column 1 picture"
+              className="hidden md:block h-auto w-[570px]"
+            />
+          </div>
+
+          <div className="flex flex-col md:flex-1 gap-4  w-full text-center items-center justify-center">
+            <h2 className="flex items-center gap-2">Updates
+
+                <IoIosNotifications size={30} />
+            </h2>
+
+            <h1 className="text-lg md:text-2xl">
+              Subscribe for updates to get the latest toy updates!
+            </h1>
+
+            <p className="text-gray-600">
+              {/* Be the first to know when we add new toys, restock favorites, or
+              drop exciting exclusive offers. Subscribe now and receive email
+              updates straight to your inbox — no spam, just fun! */}
+              Be the first to know when we add new toys. Subscribe now and receive email
+              updates straight to your inbox — no spam, just fun!
+            </p>
+
+            <form className="w-full relative">
+              <input
+                type="text"
+                className="border outline-none border-black w-full rounded-[5px] p-2"
+                placeholder="Input your email to subscribe!"
+              />
+              <button className="absolute bg-card hover:bg-primary group right-0 rounded-r-[5px] top-0 bottom-0 border border-black px-[10%] md:px-[5%]">
+                <IoMdSend
+                  size={30}
+                  className="text-primary group-hover:text-black"
+                />
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
