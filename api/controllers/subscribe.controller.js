@@ -40,3 +40,17 @@ export const subscribeEmail = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getSubscribedEmails = async (req, res, next) => {
+  try {
+    const getAllSubscribedEmails = await Subscribe.find();
+    if (!getAllSubscribedEmails)
+      return next(handleMakeError(400, "No subscribed emails found."));
+    res.status(200).json({
+      message: "Emails received!",
+      subscribedEmails: getAllSubscribedEmails,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,9 +1,13 @@
 import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
-import { subscribeEmail } from "../controllers/subscribe.controller.js";
+import {
+  getSubscribedEmails,
+  subscribeEmail,
+} from "../controllers/subscribe.controller.js";
 
 const router = express.Router();
 
-router.post(`/subscribe-email`, requireAuth, requireAdmin, subscribeEmail);
+router.post(`/subscribe-email`, requireAuth, subscribeEmail);
+router.get(`/get-subscribedEmails`, getSubscribedEmails);
 
 export default router;

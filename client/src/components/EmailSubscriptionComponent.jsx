@@ -2,8 +2,44 @@ import React from "react";
 import columnOnePic from "../assets/column1.png";
 import { IoMdSend } from "react-icons/io";
 import { IoIosNotifications } from "react-icons/io";
+import { useUserStore } from "../stores/useUserStore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axiosInstance from "../lib/axios";
+import toast from "react-hot-toast";
+import { useState } from "react";
+import { useEffect } from "react";
+import { FaCheck } from "react-icons/fa6";
 
 export default function EmailSubscriptionComponent() {
+  const currentUser = useUserStore((state) => state.currentUser);
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    if (currentUser) {
+      setUserEmail(currentUser?.email);
+    }
+  }, [currentUser]);
+
+  const { mutate: subscribeMutation } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/subscribe/subscribe-email`, data);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success("Subscribed Succesfully!");
+      console.log(data);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    subscribeMutation({ userEmail });
+  };
+
   return (
     <section className="bg-yellow p-3 font-main pt-28 md:pt-36">
       <div className="max-w-[1280px] mx-auto p-4">
@@ -35,17 +71,36 @@ export default function EmailSubscriptionComponent() {
               receive email updates straight to your inbox — no spam, just fun!
             </p>
 
-            <form className="w-full flex flex-col gap-2 relative">
+            <form
+              onSubmit={handleSubmit}
+              className="w-full flex flex-col gap-2 relative"
+            >
               <input
                 type="text"
-                className="border outline-none border-black w-full rounded-[5px] p-2"
+                className={`border  outline-none border-black w-full rounded-[5px] p-2`}
                 placeholder="Input your email to subscribe!"
+                value={userEmail}
+                disabled
               />
-              <button className="  md:absolute  flex justify-center items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px] top-0 bottom-0 border border-black px-[10%] md:px-[5%]">
-                <IoMdSend
-                  size={30}
-                  className="text-white   group-hover:text-black"
-                />
+              <button
+                disabled={currentUser.isSubscribed === true}
+                className={`md:absolute flex justify-center ${
+                  currentUser.isSubscribed
+                    ? "w-full rounded-l-[5px]"
+                    : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
+                } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%]`}
+              >
+                {!currentUser.isSubscribed ? (
+                  <IoMdSend
+                    size={30}
+                    className="text-white   group-hover:text-black"
+                  />
+                ) : (
+                  <FaCheck
+                    size={30}
+                    className="text-white   group-hover:text-black"
+                  />
+                )}
               </button>
             </form>
           </div>
