@@ -1,7 +1,6 @@
-import { Promise } from "mongoose";
-import { handleMakeError } from "../middleware/handleError";
-import Subscribe from "../models/subscribe.model";
-import User from "../models/user.models";
+import { handleMakeError } from "../middleware/handleError.js";
+import Subscribe from "../models/subscribe.model.js";
+import User from "../models/user.models.js";
 
 export const subscribeEmail = async (req, res, next) => {
   const { subscribedEmail } = req.body;
