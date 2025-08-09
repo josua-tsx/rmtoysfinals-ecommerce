@@ -43,6 +43,15 @@ export const verifyUserEmail = async (req, res, next) => {
 
   const validUser = await User.findOne({ email });
 
+  if (!validUser) {
+    return next(
+      handleMakeError(
+        400,
+        "If this email exist, a verification email has been sent."
+      )
+    );
+  }
+
   const verificationToken = crypto.randomBytes(32).toString("hex");
   const verificationExpires = new Date(Date.now() + 15 * 60 * 1000); // 15   hours from now
 
