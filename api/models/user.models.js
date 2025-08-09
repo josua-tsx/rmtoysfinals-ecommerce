@@ -8,7 +8,7 @@ const UserModelSchema = new mongoose.Schema(
       default: false,
     },
     guestExpiry: {
-      type: Date
+      type: Date,
     },
     email: {
       type: String,
@@ -98,11 +98,16 @@ const UserModelSchema = new mongoose.Schema(
       type: Date,
     },
 
+
     isSubscribed: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
 
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

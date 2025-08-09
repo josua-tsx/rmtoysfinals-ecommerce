@@ -22,6 +22,8 @@ export default function ChangeInfoComponent() {
   const [fileError, setFileError] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
 
+  const [isVerified, setIsVerified] = useState(false)
+
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
 
@@ -211,18 +213,21 @@ export default function ChangeInfoComponent() {
             <div>
               <div className="flex  w-full gap-[10px] flex-col">
                 <label htmlFor="email">Email: </label>
-                <div className="flex flex-col ">
+                <div className="flex flex-col relative">
                   <input
                     type="email"
                     name="email"
                     defaultValue={currentUser.email}
                     id="email"
                     placeholder="Ex: example@domain.com"
-                    className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
+                    className={`border  border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none`}
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
                     (Enter a valid email.)
                   </p>
+                  <button className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2">
+                    Verify
+                  </button>
                 </div>
               </div>
             </div>

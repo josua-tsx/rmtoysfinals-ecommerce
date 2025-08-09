@@ -13,10 +13,78 @@ import {
   validatePHMobile,
   validateUsername,
 } from "../utils/validations.js";
+import { sendEmail } from "../nodemailer/nodemailer.js";
+
+const emailVerificationAttempts = new Map();
+
+export const verifyUserEmail = async (req, res, next) => {
+  const { email } = req.body;
+
+  const lastAttempt = emailVerificationAttempts.get(email);
+
+  if (lastAttempt) {
+    const coolDown = 5 * 60 * 1000; // 5 minutes
+    const timeSinceLastAttempt = Date.now() - lastAttempt;
+
+    if (timeSinceLastAttempt < coolDown) {
+      const timeLeftMinutes = Math.ceil(
+        (coolDown - timeSinceLastAttempt) / (1000 * 60)
+      );
+      return next(
+        handleMakeError(
+          400,
+          `Please wait ${timeLeftMinutes} minute(s) before requesting another reset.`
+        )
+      );
+    }
+  }
+
+  emailVerificationAttempts.set(email, Date.now());
+
+  const validUser = await User.findOne({ email });
+
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationExpires = new Date(Date.now() + 15 * 60 * 1000); // 15   hours from now
+
+  // Update user with verification token
+  validUser.resetToken = verificationToken;
+  validUser.resetTokenExpiry = verificationExpires;
+
+  // Save the validUser (assuming 'validUser' is the document you're updating)
+  await validUser.save();
+
+  // Send verification email
+  const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
+
+  try {
+    await sendEmail({
+      to: email,
+      subject: "Verify Your Email Address",
+      html: `
+          <p>Please click the following link to verify your email:</p>
+          <a href="${verificationUrl}">${verificationUrl}</a>
+          <p>This link will expire in 24 hours.</p>
+        `,
+    });
+
+    res.status(200).json({
+      message:
+        "Verification email is sent yo your email. Please wait 5 minutes before requesting a another.",
+    });
+  } catch (emailError) {
+    return next(
+      handleMakeError(400, `Failed to send verification email: ${emailError}`)
+    );
+  }
+};
 
 export const updateProfile = async (req, res, next) => {
   const id = req.params.id;
   const { username, email, password, avatar, phoneNumber, fullName } = req.body;
+
+  const user = await User.findById(id);
+
+  if (!user) return next(handleMakeError(400, "No user found!"));
 
   // Validate fields if they exist
   if (username !== undefined) {

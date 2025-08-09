@@ -13,10 +13,12 @@ import { FaCheck } from "react-icons/fa6";
 export default function EmailSubscriptionComponent() {
   const currentUser = useUserStore((state) => state.currentUser);
   const [userEmail, setUserEmail] = useState("");
+  const [isSubscribe, setIsSubscribe] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
       setUserEmail(currentUser?.email);
+      setIsSubscribe(currentUser.isSubscribed);
     }
   }, [currentUser]);
 
@@ -83,14 +85,14 @@ export default function EmailSubscriptionComponent() {
                 disabled
               />
               <button
-                disabled={currentUser.isSubscribed === true}
+                disabled={isSubscribe === true}
                 className={`md:absolute flex justify-center ${
-                  currentUser.isSubscribed
+                  isSubscribe
                     ? "w-full rounded-l-[5px]"
                     : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
                 } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%]`}
               >
-                {!currentUser.isSubscribed ? (
+                {!isSubscribe ? (
                   <IoMdSend
                     size={30}
                     className="text-white   group-hover:text-black"

@@ -9,11 +9,13 @@ import {
   getAllWorkers,
   getSingleUser,
   updateProfile,
+  verifyUserEmail,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
 router.post(`/update/:id`, requireAuth, updateProfile);
+router.post(`/verify-email`, verifyUserEmail)
 router.get(`/getAll`, getAll);
 router.get(`/getAllCustomer`, getAllCustomer);
 router.get(`/getAllWorkers`, getAllWorkers);
