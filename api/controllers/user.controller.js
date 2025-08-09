@@ -25,7 +25,7 @@ export const verifyUserEmail = async (req, res, next) => {
   const lastAttempt = emailVerificationAttempts.get(email);
 
   if (lastAttempt) {
-    const coolDown = 5 * 60 * 1000; // 5 minutes
+    const coolDown = 1 * 60 * 1000; // 5 minutes
     const timeSinceLastAttempt = Date.now() - lastAttempt;
 
     if (timeSinceLastAttempt < coolDown) {
@@ -35,7 +35,7 @@ export const verifyUserEmail = async (req, res, next) => {
       return next(
         handleMakeError(
           400,
-          `Please wait ${timeLeftMinutes} minute(s) before requesting another reset.`
+          `Please wait ${timeLeftMinutes} minute(s) before requesting another verification email.`
         )
       );
     }
