@@ -97,6 +97,12 @@ const UserModelSchema = new mongoose.Schema(
     resetTokenExpiry: {
       type: Date,
     },
+
+    isSubscribed: {
+      type: Boolean,
+      default: false
+    }
+
   },
   {
     timestamps: true,

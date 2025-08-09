@@ -51,6 +51,8 @@ export const addToCart = async (req, res, next) => {
   }
 };
 
+
+
 export const getCarts = async (req, res, next) => {
   const userId = req.user.id;
 

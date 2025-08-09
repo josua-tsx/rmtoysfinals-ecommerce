@@ -9,7 +9,7 @@ export default function Cart() {
     data: cart = [],
     isLoading,
     isError,
-  } = useQuery({
+} = useQuery({
     queryKey: ["cart"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/cart/get`);

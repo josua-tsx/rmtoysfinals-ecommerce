@@ -23,6 +23,7 @@ import sendEmailRoute from "../api/routes/sendEmail.route.js";
 import orderStockHistory from "../api/routes/orderStockHistory.route.js";
 import Address from "./models/address.models.js";
 import Vat from "./models/vat.models.js";
+import SubscribeRoute from "./models/subscribe.model.js";
 
 // Load environment variables from .env file
 config();
@@ -69,6 +70,7 @@ app.use(`/api/review`, reviewRoute);
 app.use(`/api/vat`, vatRoute);
 app.use(`/api/send`, sendEmailRoute);
 app.use(`/api/history`, orderStockHistory);
+app.use(`/api/subscribe`, SubscribeRoute);
 
 // Error handling middleware
 app.use(handleError);

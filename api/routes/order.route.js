@@ -52,7 +52,7 @@ router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
 router.get(`/get-all-orders`, getAllOrder);
 
-router.get(`/get-orders`, getUsersOrder);
+router.get(`/get-orders`, getUsersOrder); 
 
 router.get(`/get-guest-orders`, getGuestOrder);
 
