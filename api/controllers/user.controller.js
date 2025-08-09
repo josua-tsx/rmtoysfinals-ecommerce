@@ -15,6 +15,8 @@ import {
 } from "../utils/validations.js";
 import { sendEmail } from "../nodemailer/nodemailer.js";
 
+import crypto from "crypto";
+
 const emailVerificationAttempts = new Map();
 
 export const verifyUserEmail = async (req, res, next) => {

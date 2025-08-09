@@ -22,7 +22,7 @@ export default function ChangeInfoComponent() {
   const [fileError, setFileError] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
 
-  const [isVerified, setIsVerified] = useState(false)
+  const [email, setEmail] = useState("");
 
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -52,6 +52,19 @@ export default function ChangeInfoComponent() {
       setShowPassword(false);
       toast.success("Profile Updated Successfully");
       setChangePassword(false);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
+  const { mutate: verifyEmailMutation } = useMutation({
+    mutationFn: async (email) => {
+      const res = await axiosInstance.post(`/user/verify-email`, email);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Email sent");
     },
     onError: (err) => {
       toast.error(err.response.data.message);
@@ -217,7 +230,8 @@ export default function ChangeInfoComponent() {
                   <input
                     type="email"
                     name="email"
-                    defaultValue={currentUser.email}
+                    defaultValue={currentUser.email || email}
+                    onChange={(e) => setEmail(e.target.value)}
                     id="email"
                     placeholder="Ex: example@domain.com"
                     className={`border  border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none`}
@@ -225,7 +239,11 @@ export default function ChangeInfoComponent() {
                   <p className="text-sm pt-1 lowercase text-green-700">
                     (Enter a valid email.)
                   </p>
-                  <button className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2">
+                  <button
+                    type="button"
+                    onClick={() => verifyEmailMutation({ email })}
+                    className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
+                  >
                     Verify
                   </button>
                 </div>
