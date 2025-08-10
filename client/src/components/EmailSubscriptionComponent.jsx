@@ -39,7 +39,7 @@ export default function EmailSubscriptionComponent() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    subscribeMutation({ userEmail });
+    subscribeMutation({ subscribedEmail: userEmail });
   };
 
   return (
