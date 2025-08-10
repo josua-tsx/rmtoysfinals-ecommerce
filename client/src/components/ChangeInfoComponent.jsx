@@ -36,7 +36,7 @@ export default function ChangeInfoComponent() {
 
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
-  console.log(currentUser);
+  console.log(currentUser.isEmailVerified);
 
   const fileRef = useRef(null);
 
@@ -251,14 +251,24 @@ export default function ChangeInfoComponent() {
                   <p className="text-sm pt-1 lowercase text-green-700">
                     (Enter a valid email.)
                   </p>
-                  <button
-                    type="button"
-                    disabled={isVerifying}
-                    onClick={() => handleVerifyEmail(currentUser.email)}
-                    className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
-                  >
-                    Verify
-                  </button>
+                  {currentUser && !currentUser.isEmailVerified ? (
+                    <button
+                      type="button"
+                      disabled={isVerifying}
+                      onClick={() => handleVerifyEmail(currentUser.email)}
+                      className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
+                    >
+                      Verify
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={true}
+                      className="border absolute right-0 bg-blue-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
+                    >
+                      Verified
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -135,6 +135,9 @@ export const updateProfile = async (req, res, next) => {
 
   if (!user) return next(handleMakeError(400, "No user found!"));
 
+  let isEmailChanged = false;
+  let previousEmail = user.email;
+
   // Validate fields if they exist
   if (username !== undefined) {
     if (!username.trim()) {
@@ -154,6 +157,11 @@ export const updateProfile = async (req, res, next) => {
     if (!email.trim()) {
       return next(handleMakeError(400, "Email cannot be empty!"));
     }
+
+    if (!email == user.email) {
+      isEmailChanged = true;
+    }
+
     const userEmailCheck = validateEmail(email);
     if (!userEmailCheck.valid) {
       return next(handleMakeError(400, userEmailCheck.message));
@@ -189,17 +197,25 @@ export const updateProfile = async (req, res, next) => {
       hashedPassword = await bcypt.hash(password, 10);
     }
 
+    const updateData = {
+      username,
+      email,
+      password: hashedPassword,
+      avatar,
+      phoneNumber,
+      fullName,
+    };
+
+    if (isEmailChanged) {
+      updateData.isEmailVerified = false;
+      updateData.emailVerificationToken = undefined;
+      updateData.emailVerificationExpires = undefined;
+    }
+
     const currentUser = await User.findByIdAndUpdate(
       id,
       {
-        $set: {
-          username,
-          email,
-          password: hashedPassword,
-          avatar,
-          phoneNumber,
-          fullName,
-        },
+        $set: { updateData },
       },
       { new: true }
     ).select("-password");
