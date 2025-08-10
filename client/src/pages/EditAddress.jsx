@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
-import AddressSection from "../hooks/AddressSection";
+import AddressSection from "../hooks/AddressSection.jsx";
 import {
   regions,
   getProvincesByRegion,
