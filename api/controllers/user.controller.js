@@ -16,6 +16,8 @@ import {
 import { sendEmail } from "../nodemailer/nodemailer.js";
 
 import crypto from "crypto";
+import EditAddress from "../../client/src/pages/EditAddress.jsx";
+import Subscribe from "../models/subscribe.model.js";
 
 const emailVerificationAttempts = new Map();
 
@@ -207,6 +209,11 @@ export const updateProfile = async (req, res, next) => {
     };
 
     if (isEmailChanged) {
+      if (updateData.isSubscribed) {
+        updateData.isSubscribed = false;
+        await Subscribe.findByIdAndDelete(updateData._id);
+      }
+
       updateData.isSubscribed = false;
       updateData.isEmailVerified = false;
       updateData.emailVerificationToken = undefined;
