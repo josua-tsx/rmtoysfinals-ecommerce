@@ -8,7 +8,7 @@ import {
   getCityMunByProvince,
 } from "phil-reg-prov-mun-brgy";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "../lib/axios";
+import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
 
 const EditAddress = ({ address, onClose }) => {
