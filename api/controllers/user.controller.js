@@ -69,7 +69,7 @@ export const verifyUserEmail = async (req, res, next) => {
 
   try {
     await sendEmail(
-      email,
+      validUser.email,
       "Verify Your Email Address",
       `
           <p>Please click the following link to verify your email:</p>
