@@ -18,7 +18,7 @@ export default function EmailSubscriptionComponent() {
   useEffect(() => {
     if (currentUser) {
       setUserEmail(currentUser?.email);
-      setIsSubscribe(currentUser.isSubscribed)
+      setIsSubscribe(currentUser.isSubscribed);
     }
   }, [currentUser]);
 
