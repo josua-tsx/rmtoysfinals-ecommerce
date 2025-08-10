@@ -18,7 +18,7 @@ export default function EmailSubscriptionComponent() {
   useEffect(() => {
     if (currentUser) {
       setUserEmail(currentUser?.email);
-      setIsSubscribe(currentUser.isSubscribed);
+      setIsSubscribe(currentUser.isSubscribed)
     }
   }, [currentUser]);
 
@@ -27,12 +27,16 @@ export default function EmailSubscriptionComponent() {
       const res = await axiosInstance.post(`/subscribe/subscribe-email`, data);
       return res.data;
     },
+    onMutate: async () => {
+      setIsSubscribe(true);
+    },
     onSuccess: (data) => {
       toast.success("Subscribed Succesfully!");
       console.log(data);
     },
     onError: (err) => {
       toast.error(err.response.data.message);
+      setIsSubscribe(false);
     },
   });
 
