@@ -103,14 +103,21 @@ export const signup = async (req, res, next) => {
       role: "customer",
     });
 
+    // for mobile app
+    // res.status(201).json({
+    //   accessToken,
+    //   user: {
+    //     _id: newUser._id,
+    //     email: newUser.email,
+    //     username: newUser.username,
+    //     role: newUser.role,
+    //   },
+    // });
     res.status(201).json({
-      accessToken,
-      user: {
-        _id: newUser._id,
-        email: newUser.email,
-        username: newUser.username,
-        role: newUser.role,
-      },
+      _id: newUser._id,
+      email: newUser.email,
+      username: newUser.username,
+      role: newUser.role,
     });
   } catch (error) {
     next(error);
@@ -152,8 +159,13 @@ export const signin = async (req, res, next) => {
       // now i cant compare my password because it wouldnt work because there is no password to compare
       const { password: pass, ...rest } = validUser._doc;
 
+      // for mobile app
+      // res.json({
+      //   accessToken,
+      //   user: rest,
+      // });
+
       res.json({
-        accessToken,
         user: rest,
       });
     } else {
