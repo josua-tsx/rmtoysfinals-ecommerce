@@ -47,9 +47,9 @@ export const getSubscribedEmails = async (req, res, next) => {
     if (!getAllSubscribedEmails)
       return next(handleMakeError(400, "No subscribed emails found."));
     res.status(200).json({
-      message: "Emails received!",
-      subscribedEmails: getAllSubscribedEmails,
-    });
+        message: "Emails received!",
+        subscribedEmails: getAllSubscribedEmails
+    })
   } catch (error) {
     next(error);
   }
