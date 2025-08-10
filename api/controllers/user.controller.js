@@ -75,7 +75,7 @@ export const verifyUserEmail = async (req, res, next) => {
           <p>Please click the following link to verify your email:</p>
           <a href="${verificationUrl}">${verificationUrl}</a>
           <p>This link will expire in 24 hours.</p>
-        `,
+        `
     );
 
     res.status(200).json({
@@ -86,6 +86,44 @@ export const verifyUserEmail = async (req, res, next) => {
     return next(
       handleMakeError(400, `Failed to send verification email: ${emailError}`)
     );
+  }
+};
+
+export const confirmVerifyEmail = async (req, res, next) => {
+  const { token } = req.body;
+
+  if (!token) return next(handleMakeError(400, "Token is required"));
+
+  try {
+    const validUser = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
+
+    if (!validUser)
+      return next(handleMakeError(400, "invalid or expired token."));
+
+    const updateUser = await User.findByIdAndUpdate(
+      validUser._id,
+      {
+        $set: {
+          isEmailVerified: true,
+          resetToken: undefined,
+          resetTokenExpiry: undefined,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updateUser)
+      return next(handleMakeError(400, "Failed to verify email."));
+
+    res.status(200).json({
+      message: "Email verified successfully!",
+      affected: updateUser,
+    });
+  } catch (error) {
+    next(error);
   }
 };
 

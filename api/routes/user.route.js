@@ -2,6 +2,7 @@ import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 import {
   adminUpdateUserStatus,
+  confirmVerifyEmail,
   deleteWorker,
   editWorker,
   getAll,
@@ -15,7 +16,8 @@ import {
 const router = express.Router();
 
 router.post(`/update/:id`, requireAuth, updateProfile);
-router.post(`/verify-email`, verifyUserEmail)
+router.post(`/verify-email`, verifyUserEmail);
+router.post(`/confirm-email`, confirmVerifyEmail);
 router.get(`/getAll`, getAll);
 router.get(`/getAllCustomer`, getAllCustomer);
 router.get(`/getAllWorkers`, getAllWorkers);
@@ -26,8 +28,7 @@ router.delete(
   deleteWorker
 );
 
-
-router.put(`/edit-worker/:workerId`, requireAuth, requireAdmin, editWorker)
+router.put(`/edit-worker/:workerId`, requireAuth, requireAdmin, editWorker);
 
 router.put(
   `/update-status/:customerId`,
@@ -35,7 +36,6 @@ router.put(
   requireAdmin,
   adminUpdateUserStatus
 );
-
 
 router.get(`/get-user/:userId`, getSingleUser);
 

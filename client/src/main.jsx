@@ -70,6 +70,7 @@ import ResetPassword from "./routes/ResetPassword.jsx";
 
 import GuestCartPage from "./components/Guestt/GuestCartPage.jsx";
 import GuestSummaryModal from "./components/Guestt/GuestSummaryModal.jsx";
+import VerifyEmailComponent from "./components/VerifyEmailComponent.jsx";
 
 const queryClient = new QueryClient();
 
@@ -174,6 +175,10 @@ const router = createBrowserRouter([
         path: `/orderSingle`,
         element: <SingleOrderList />,
       },
+      {
+        path: "/verify-email",
+        element: <VerifyEmailComponent/>
+      }
     ],
   },
 

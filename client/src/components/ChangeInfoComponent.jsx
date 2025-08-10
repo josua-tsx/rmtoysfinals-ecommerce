@@ -253,6 +253,7 @@ export default function ChangeInfoComponent() {
                   </p>
                   <button
                     type="button"
+                    disabled={isVerifying}
                     onClick={() => handleVerifyEmail(currentUser.email)}
                     className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
                   >
