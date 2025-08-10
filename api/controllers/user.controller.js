@@ -310,7 +310,7 @@ export const deleteWorker = async (req, res, next) => {
       },
       role: "admin",
     });
-
+// test
     res.status(200).json({ message: "Worker Deleted" });
   } catch (error) {
     next(error);
@@ -339,7 +339,7 @@ export const editWorker = async (req, res, next) => {
   const { email, username, password, role, jobDescription } = req.body;
   const userId = req.user.id;
 
-  
+
   if (!role) {
     return next(handleMakeError(400, "Please select role"));
   }
