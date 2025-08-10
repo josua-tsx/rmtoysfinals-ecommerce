@@ -207,12 +207,9 @@ export const updateProfile = async (req, res, next) => {
       fullName,
     };
 
-    if (isEmailChanged) {
-      if (updateData.isSubscribed) {
-        updateData.isSubscribed = false;
-        await Subscribe.findByIdAndDelete(updateData._id);
-      }
+    console.log(previousEmail)
 
+    if (isEmailChanged) {
       updateData.isSubscribed = false;
       updateData.isEmailVerified = false;
       updateData.emailVerificationToken = undefined;
