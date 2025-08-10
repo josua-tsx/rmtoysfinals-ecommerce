@@ -166,7 +166,7 @@ export const signin = async (req, res, next) => {
       // });
 
       res.json({
-        user: rest,
+        rest,
       });
     } else {
       next(handleMakeError(400, "Invalid Credentials"));
