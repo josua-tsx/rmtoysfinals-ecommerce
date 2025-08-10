@@ -24,6 +24,8 @@ export default function ChangeInfoComponent() {
 
   const [email, setEmail] = useState("");
 
+  const [isVerifying, setIsVerifying] = useState(false);
+
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
 
@@ -70,6 +72,16 @@ export default function ChangeInfoComponent() {
       toast.error(err.response.data.message);
     },
   });
+
+  const handleVerifyEmail = (email) => {
+    setIsVerifying(true);
+    verifyEmailMutation(
+      { email },
+      {
+        onSettled: () => setIsVerifying(false),
+      }
+    );
+  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -241,7 +253,7 @@ export default function ChangeInfoComponent() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => verifyEmailMutation({ email })}
+                    onClick={() => handleVerifyEmail(currentUser.email)}
                     className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
                   >
                     Verify

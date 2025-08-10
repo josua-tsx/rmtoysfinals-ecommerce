@@ -68,15 +68,15 @@ export const verifyUserEmail = async (req, res, next) => {
   const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
   try {
-    await sendEmail({
-      to: email,
-      subject: "Verify Your Email Address",
-      html: `
+    await sendEmail(
+      email,
+      "Verify Your Email Address",
+      `
           <p>Please click the following link to verify your email:</p>
           <a href="${verificationUrl}">${verificationUrl}</a>
           <p>This link will expire in 24 hours.</p>
         `,
-    });
+    );
 
     res.status(200).json({
       message:
