@@ -16,7 +16,6 @@ import {
 import { sendEmail } from "../nodemailer/nodemailer.js";
 
 import crypto from "crypto";
-import EditAddress from "../../client/src/pages/EditAddress.jsx";
 import Subscribe from "../models/subscribe.model.js";
 
 const emailVerificationAttempts = new Map();
@@ -67,7 +66,8 @@ export const verifyUserEmail = async (req, res, next) => {
   await validUser.save();
 
   // Send verification email
-  const verificationUrl = `https://www.rmtoys.store/verify-email?token=${verificationToken}`;
+  const verificationUrl =
+    "https://www.rmtoys.stor/verify-email?token=${verificationToken}";
 
   try {
     await sendEmail(
