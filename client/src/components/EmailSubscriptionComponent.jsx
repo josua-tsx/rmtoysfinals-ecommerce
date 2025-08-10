@@ -3,7 +3,7 @@ import columnOnePic from "../assets/column1.png";
 import { IoMdSend } from "react-icons/io";
 import { IoIosNotifications } from "react-icons/io";
 import { useUserStore } from "../stores/useUserStore";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
