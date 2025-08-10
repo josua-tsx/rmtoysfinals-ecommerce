@@ -67,7 +67,7 @@ export const verifyUserEmail = async (req, res, next) => {
 
   // Send verification email
   const verificationUrl =
-    "https://www.rmtoys.stor/verify-email?token=${verificationToken}";
+    "https://www.rmtoys.store/verify-email?token=${verificationToken}";
 
   try {
     await sendEmail(
