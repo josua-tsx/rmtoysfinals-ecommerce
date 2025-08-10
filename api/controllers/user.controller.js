@@ -211,12 +211,12 @@ export const updateProfile = async (req, res, next) => {
 
     if (isEmailChanged) {
       updateData.isEmailVerified = false;
-      updateData.emailVerificationToken = undefined;
-      updateData.emailVerificationExpires = undefined;
+      updateData.resetToken = undefined;
+      updateData.resetTokenExpiry = undefined;
 
       if (user.isSubscribed) {
         try {
-          user.isSubscribed = false;
+          updateData.isSubscribed = false;
           await Subscribe.findOneAndDelete({ email: previousEmail });
         } catch (error) {
           next(error);
