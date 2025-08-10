@@ -207,6 +207,7 @@ export const updateProfile = async (req, res, next) => {
     };
 
     if (isEmailChanged) {
+      updateData.isSubscribed = false;
       updateData.isEmailVerified = false;
       updateData.emailVerificationToken = undefined;
       updateData.emailVerificationExpires = undefined;
