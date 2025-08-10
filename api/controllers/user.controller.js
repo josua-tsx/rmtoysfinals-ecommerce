@@ -158,7 +158,7 @@ export const updateProfile = async (req, res, next) => {
       return next(handleMakeError(400, "Email cannot be empty!"));
     }
 
-    if (!email == user.email) {
+    if (email !== user.email) {
       isEmailChanged = true;
     }
 
@@ -215,7 +215,7 @@ export const updateProfile = async (req, res, next) => {
     const currentUser = await User.findByIdAndUpdate(
       id,
       {
-        $set: { updateData },
+        $set: updateData,
       },
       { new: true }
     ).select("-password");
