@@ -217,7 +217,7 @@ export const updateProfile = async (req, res, next) => {
       if (user.isSubscribed) {
         try {
           updateData.isSubscribed = false;
-          await Subscribe.findOneAndDelete({ email: previousEmail });
+          await Subscribe.findOneAndDelete({ subscribedEmail: previousEmail });
         } catch (error) {
           next(error);
         }
