@@ -20,7 +20,7 @@ export default function VerifyEmailComponent() {
     },
     onSuccess: () => {
       toast.success("Successfully Verified Email");
-      // navigate("/")
+      navigate("/");
     },
     onError: (err) => {
       toast.error(err.response.data.message) || "Something went wrong";
@@ -42,12 +42,15 @@ export default function VerifyEmailComponent() {
         <div className="flex gap-4 mt-4">
           <button
             disabled={isPending}
-            onClick={handleVerifySubmit}
+            onClick={() => handleVerifySubmit()}
             className="border border-black p-2 px-3 rounded-[5px] bg-primary text-card  "
           >
             Confirm
           </button>
-          <button className="border border-black p-2 px-3 rounded-[5px] bg-red-500 text-white">
+          <button
+            onClick={() => navigate("/")}
+            className="border border-black p-2 px-3 rounded-[5px] bg-red-500 text-white"
+          >
             Cancel
           </button>
         </div>
