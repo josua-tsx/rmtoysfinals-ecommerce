@@ -19,7 +19,10 @@ export const addNewFaqs = async (req, res, next) => {
       return next(handleMakeError(400, "You can only put 5 max faqs."));
     }
 
-    const existingTitle = existingFaqs.find((t) => t.title === title);
+    const existingTitle = await Faqs.findOne({
+      title: newTitle,
+      _id: { $ne: faqSingleId },
+    });
 
     if (existingTitle) {
       return next(
