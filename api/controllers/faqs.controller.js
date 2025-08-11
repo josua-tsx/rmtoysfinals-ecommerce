@@ -77,7 +77,7 @@ export const getSingleFaq = async (req, res, next) => {
   const { faqSingleId } = req.params;
 
   try {
-    const getSingleFaq = await findById(faqSingleId);
+    const getSingleFaq = await Faqs.findById(faqSingleId);
 
     if (!getSingleFaq) return next(handleMakeError(400, "No Faq found"));
 

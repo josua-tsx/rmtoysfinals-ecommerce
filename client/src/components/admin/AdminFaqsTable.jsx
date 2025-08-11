@@ -7,9 +7,11 @@ import { IoSearch } from "react-icons/io5";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminFaqsTable() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -39,6 +41,10 @@ export default function AdminFaqsTable() {
       toast.error(err.response.data.message);
     },
   });
+
+  const navigateToEdit = (id) => {
+    navigate(`/admin/editFaq/${id}`);
+  };
 
   const openDeleteModal = (id) => {
     console.log(id);
@@ -118,7 +124,11 @@ export default function AdminFaqsTable() {
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button className="text-green-600 hover:text-indigo-300 mr-2">
+                      <button
+                        type="button"
+                        onClick={() => navigateToEdit(faq._id)}
+                        className="text-green-600 hover:text-indigo-300 mr-2"
+                      >
                         <CiEdit size={25} />
                       </button>
                       <button

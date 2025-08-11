@@ -72,6 +72,7 @@ import GuestCartPage from "./components/Guestt/GuestCartPage.jsx";
 import GuestSummaryModal from "./components/Guestt/GuestSummaryModal.jsx";
 import VerifyEmailComponent from "./components/VerifyEmailComponent.jsx";
 import AdminFaqs from "./components/admin/AdminFaqs.jsx";
+import AdminEditFaq from "./components/admin/AdminEditFaq.jsx";
 
 const queryClient = new QueryClient();
 
@@ -178,8 +179,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/verify-email",
-        element: <VerifyEmailComponent/>
-      }
+        element: <VerifyEmailComponent />,
+      },
     ],
   },
 
@@ -320,8 +321,12 @@ const router = createBrowserRouter([
       // FAQS
       {
         path: "/admin/faqs",
-        element: <AdminFaqs/>
-      }
+        element: <AdminFaqs />,
+      },
+      {
+        path: `/admin/editFaq/:faqSingleId`,
+        element: <AdminEditFaq />,
+      },
     ],
   },
 
