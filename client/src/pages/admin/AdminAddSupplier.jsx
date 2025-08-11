@@ -91,7 +91,7 @@ export default function AdminAddSupplier() {
             id="supplierName"
             value={supplierName}
             onChange={handleInputChange(setSupplierName)}
-            className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+            className="border border-black w-full rounded-[5px] p-1  outline-none"
           />
           <p className="text-sm pt-1 lowercase text-green-700">
             (Supplier name do not allow double spaces, and number. it should be

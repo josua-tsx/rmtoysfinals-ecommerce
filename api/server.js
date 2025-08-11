@@ -22,6 +22,7 @@ import vatRoute from "../api/routes/vat.route.js";
 import sendEmailRoute from "../api/routes/sendEmail.route.js";
 import orderStockHistory from "../api/routes/orderStockHistory.route.js";
 import subscribeRoute from "../api/routes/subscribe.route.js";
+import faqsRoute from "../api/routes/faqs.route.js";
 
 // Load environment variables from .env file
 config();
@@ -69,6 +70,7 @@ app.use(`/api/vat`, vatRoute);
 app.use(`/api/send`, sendEmailRoute);
 app.use(`/api/history`, orderStockHistory);
 app.use(`/api/subscribe`, subscribeRoute);
+app.use(`/api/faqs`, faqsRoute);
 
 // Error handling middleware
 app.use(handleError);

@@ -71,6 +71,7 @@ import ResetPassword from "./routes/ResetPassword.jsx";
 import GuestCartPage from "./components/Guestt/GuestCartPage.jsx";
 import GuestSummaryModal from "./components/Guestt/GuestSummaryModal.jsx";
 import VerifyEmailComponent from "./components/VerifyEmailComponent.jsx";
+import AdminFaqs from "./components/admin/AdminFaqs.jsx";
 
 const queryClient = new QueryClient();
 
@@ -315,6 +316,12 @@ const router = createBrowserRouter([
         path: `/admin/orderTransactions`,
         element: <AdminOrderTransact />,
       },
+
+      // FAQS
+      {
+        path: "/admin/faqs",
+        element: <AdminFaqs/>
+      }
     ],
   },
 

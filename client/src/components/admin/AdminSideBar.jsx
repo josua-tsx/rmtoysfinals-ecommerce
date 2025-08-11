@@ -68,7 +68,6 @@ export default function AdminSideBar() {
           name: "Supplier Table",
           path: "/admin/supplier",
         },
-   
       ],
     },
     {
@@ -84,7 +83,6 @@ export default function AdminSideBar() {
           name: "Worker Table",
           path: "/admin/worker",
         },
-    
       ],
     },
 
@@ -130,6 +128,19 @@ export default function AdminSideBar() {
       path: "/admin/orderTransactions",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
+    },
+
+    {
+      name: "Faqs Maintenance",
+      path: "/admin/audit",
+      icon: <MdCategory size={20} />,
+      allowedRoles: ["admin"],
+      inner: [
+        {
+          name: "Faqs Table",
+          path: "/admin/faqs"
+        }
+      ]
     },
 
     {
