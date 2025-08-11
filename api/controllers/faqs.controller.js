@@ -72,3 +72,58 @@ export const deleteFaq = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getSingleFaq = async (req, res, next) => {
+  const { faqSingleId } = req.params;
+
+  try {
+    const getSingleFaq = await findById(faqSingleId);
+
+    if (!getSingleFaq) return next(handleMakeError(400, "No Faq found"));
+
+    res.status(200).json({
+      message: "Success!",
+      singleFaq: getSingleFaq,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateFaq = async (req, res, next) => {
+  const { faqSingleId } = req.params;
+  const { title: newTitle, answer: newAnswer } = req.body;
+
+  if (!newTitle.trim()) {
+    return next(handleMakeError(400, "Title is required"));
+  }
+
+  if (!newAnswer.trim()) {
+    return next(handleMakeError(400, "Answer is required"));
+  }
+
+  try {
+    const existingFaq = await Faqs.find();
+
+    const existingtitle = existingFaq.find((t) => t.title === newTitle);
+
+    if (existingtitle)
+      return next(
+        handleMakeError(
+          400,
+          "This title is already exist in the database. Try new one."
+        )
+      );
+
+    const updateFaq = await Faqs.findByIdAndUpdate(faqSingleId, {
+      newTitle,
+      newAnswer,
+    });
+
+    if (!updateFaq) return next(handleMakeError(400, "Faq not found!"));
+
+    res.status(200).json({ message: "Faq updated!" });
+  } catch (error) {
+    next(error);
+  }
+};
