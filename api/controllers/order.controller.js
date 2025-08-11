@@ -1172,10 +1172,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
       switch (updatedOrder.status) {
         case "Delivered":
           await Promise.all([
-            // sendSMS(
-            //   orderUserPhoneNumber,
-            //   `Your Order ${updatedOrder._id} has been Delivered!`
-            // ),
+            sendSMS(
+              orderUserPhoneNumber,
+              `Your Order ${updatedOrder._id} has been Delivered!`
+            ),
             ...updatedOrder.orderItems.map((item) =>
               Product.findByIdAndUpdate(
                 item.productId,
@@ -1210,10 +1210,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
 
         case "Processing":
-          // await sendSMS(
-          //   orderUserPhoneNumber,
-          //   `Your order ${updatedOrder._id} is now Processing`
-          // );
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} is now Processing`
+          );
           await logAuditTrail({
             action: `set_OrderStatus_Processing`,
             userId,
@@ -1228,10 +1228,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
 
         case "Shipped":
-          // await sendSMS(
-          //   orderUserPhoneNumber,
-          //   `Your order ${updatedOrder._id} has Shipped!`
-          // );
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} has Shipped!`
+          );
           await logAuditTrail({
             action: `set_OrderStatus_Shipped`,
             userId,
@@ -1246,10 +1246,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
 
         case "Out for Delivery":
-          // await sendSMS(
-          //   orderUserPhoneNumber,
-          //   `Your order ${updatedOrder._id} is Out for Delivery!`
-          // );
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} is Out for Delivery!`
+          );
           await logAuditTrail({
             action: `set_OrderStatus_OutforDelivery`,
             userId,
@@ -1264,10 +1264,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
 
         case "Cancelled":
-          // await sendSMS(
-          //   orderUserPhoneNumber,
-          //   `Your order ${updatedOrder._id} has been Cancelled`
-          // );
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} has been Cancelled`
+          );
           await logAuditTrail({
             action: `set_OrderStatus_Cancelled`,
             userId,
@@ -1292,7 +1292,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
       };
 
       if (smsMessages[status]) {
-        // await sendSMS(orderUserPhoneNumber, smsMessages[status]);
+        await sendSMS(orderUserPhoneNumber, smsMessages[status]);
       }
     }
 

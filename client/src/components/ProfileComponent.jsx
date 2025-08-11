@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 import { ConfirmModal } from "../reusable/ConfirmModal";
 import { useState } from "react";
+import { RiVerifiedBadgeFill } from "react-icons/ri";
+import { IoMdCloseCircle } from "react-icons/io";
 
 export default function ProfileComponent({ setActiveComponent }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -73,24 +75,44 @@ export default function ProfileComponent({ setActiveComponent }) {
           </div>
           <div className="flex justify-between flex-col gap-4 border border-black p-2 rounded-[5px] bg-card">
             <div className="flex flex-col  justify-between gap-4">
-              <div className="flex-1 flex gap-2">
-                <label htmlFor="email">Email:</label>
-                <p>{currentUser?.email}</p>
+              <div className="flex-1 items-center flex gap-4">
+                <div className="flex gap-2">
+                  <label htmlFor="email">Email:</label>
+                  <p>{currentUser?.email}</p>
+                </div>
+                {currentUser.isEmailVerified ? (
+                  <RiVerifiedBadgeFill className="text-blue-700" size={18} />
+                ) : (
+                  <IoMdCloseCircle className="text-red-500" size={18} />
+                )}
               </div>
+
               <div className="flex-1 flex gap-2">
-                <label htmlFor="username">Username: </label>
-                <p>{currentUser?.username}</p>
+                <label htmlFor="number">Phone number:</label>
+                <p
+                  className={`${
+                    !currentUser.phoneNumber ? "text-red-700" : ""
+                  }`}
+                >
+                  {currentUser?.phoneNumber
+                    ? currentUser?.phoneNumber
+                    : "You need to update it."}
+                </p>
               </div>
             </div>
 
             <div className="flex flex-col  justify-between gap-4">
               <div className="flex-1 flex gap-2">
-                <label htmlFor="number">Phone number:</label>
-                <p className={`${!currentUser.phoneNumber ? "text-red-700" : ""}`}>{currentUser?.phoneNumber ? currentUser?.phoneNumber : "You need to update it."}</p>
+                <label htmlFor="username">Username: </label>
+                <p>{currentUser?.username}</p>
               </div>
               <div className="flex-1 flex gap-2">
                 <label htmlFor="username">Full name: </label>
-                <p className={`${!currentUser.fullName ? "text-red-700" : ""}`}>{currentUser?.fullName ? currentUser?.fullName : "You need to update it."}</p>
+                <p className={`${!currentUser.fullName ? "text-red-700" : ""}`}>
+                  {currentUser?.fullName
+                    ? currentUser?.fullName
+                    : "You need to update it."}
+                </p>
               </div>
             </div>
           </div>
@@ -134,7 +156,9 @@ export default function ProfileComponent({ setActiveComponent }) {
                   </div>
                 ))
               ) : (
-                <p className="text-red-700">(You have no saved address. You need to update it.)</p>
+                <p className="text-red-700">
+                  (You have no saved address. You need to update it.)
+                </p>
               )}
             </div>
           </div>

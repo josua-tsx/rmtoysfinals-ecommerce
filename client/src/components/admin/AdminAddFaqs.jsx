@@ -17,6 +17,8 @@ export default function AdminAddFaqs() {
     onSuccess: () => {
       toast.success("Added Succesfully!");
       queryClient.invalidateQueries({ queryKey: ["faqs"] });
+      setTitle("");
+      setAnswer("");
     },
     onError: (err) => {
       toast.error(err.response.data.message);
@@ -28,8 +30,6 @@ export default function AdminAddFaqs() {
 
     try {
       addFaqsMutation({ title, answer });
-
-      e.target.reset();
     } catch (error) {
       console.log(error);
     }

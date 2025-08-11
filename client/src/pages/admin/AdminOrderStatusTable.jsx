@@ -6,14 +6,19 @@ import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminOrderStatusTable() {
+  const queryClient = useQueryClient();
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
-  const queryClient = useQueryClient();
+  const [selectedId, setSelectedId] = useState(null);
+  const [newStatus, setNewStatus] = useState("");
+
+  console.log(newStatus);
 
   const {
     data: allOrders = [],
@@ -27,7 +32,7 @@ export default function AdminOrderStatusTable() {
     },
   });
 
-  console.log(allOrders);
+  console.log(selectedId);
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
@@ -65,10 +70,27 @@ export default function AdminOrderStatusTable() {
     },
   });
 
-  const handleChangeStatus = (id, e) => {
-    const newStatus = e.target.value;
+  // const handleChangeStatus = (id, e) => {
+  //   const newStatus = e.target.value;
 
-    updateStatusMutation({ id, status: newStatus });
+  //   updateStatusMutation({ id, status: newStatus });
+  // };
+
+  const confirmOrderStatus = () => {
+    updateStatusMutation({ id: selectedId, status: newStatus });
+    cancelConfirmModal();
+  };
+
+  const handleOpenConfirmModal = (id, e) => {
+    setOpenConfirmModal(true);
+    setSelectedId(id);
+    setNewStatus(e.target.value);
+  };
+
+  const cancelConfirmModal = () => {
+    setSelectedId(null);
+    setOpenConfirmModal(false);
+    setNewStatus("");
   };
 
   const handleOpenSingleOrder = (orderId) => {
@@ -86,6 +108,14 @@ export default function AdminOrderStatusTable() {
           onClose={() => setOpenModal(false)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={openConfirmModal}
+        onCancel={cancelConfirmModal}
+        onConfirm={confirmOrderStatus}
+        title={"Update Order Status"}
+        message={"Are you sure you want to update the status?"}
+      />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>ORDER TABLE</h1>
@@ -195,7 +225,8 @@ export default function AdminOrderStatusTable() {
                         <select
                           name="status"
                           id="status"
-                          onChange={(e) => handleChangeStatus(data._id, e)}
+                          // onChange={(e) => handleChangeStatus(data._id, e)}
+                          onChange={(e) => handleOpenConfirmModal(data._id, e)}
                           value={data.status}
                           className="outline-none border border-black text-center uppercase py-1 rounded-[5px]"
                         >

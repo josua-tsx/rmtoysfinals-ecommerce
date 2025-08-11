@@ -41,7 +41,7 @@ export default function GuestCartPage() {
 
       <div className="max-w-[1280px] bg-yellow h-screen mx-auto">
         <div className="flex  w-full flex-col  mb-5 ">
-          <h1 className="text-3xl md:text-4xl">Cart</h1>
+          <h1 className="text-3xl md:text-4xl">Guest Cart</h1>
           <p className="text-gray-600 mt-2">
             {cart?.items?.length > 1
               ? cart?.items?.length + " items in your cart"

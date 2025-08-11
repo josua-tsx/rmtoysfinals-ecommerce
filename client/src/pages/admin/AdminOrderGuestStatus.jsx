@@ -6,14 +6,16 @@ import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminOrderGuestStatus() {
+  const queryClient = useQueryClient();
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
-
-  const queryClient = useQueryClient();
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [newStatus, setNewStatus] = useState("");
 
   const {
     data: allOrders = [],
@@ -65,10 +67,27 @@ export default function AdminOrderGuestStatus() {
     },
   });
 
-  const handleChangeStatus = (id, e) => {
-    const newStatus = e.target.value;
+  // const handleChangeStatus = (id, e) => {
+  //   const newStatus = e.target.value;
 
-    updateStatusMutation({ id, status: newStatus });
+  //   updateStatusMutation({ id, status: newStatus });
+  // };
+
+  const confirmOrderStatus = () => {
+    updateStatusMutation({ id: selectedId, status: newStatus });
+    cancelConfirmModal();
+  };
+
+  const handleOpenConfirmModal = (id, e) => {
+    setOpenConfirmModal(true);
+    setSelectedId(id);
+    setNewStatus(e.target.value);
+  };
+
+  const cancelConfirmModal = () => {
+    setSelectedId(null);
+    setOpenConfirmModal(false);
+    setNewStatus("");
   };
 
   const handleOpenSingleOrder = (orderId) => {
@@ -86,6 +105,14 @@ export default function AdminOrderGuestStatus() {
           onClose={() => setOpenModal(false)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={openConfirmModal}
+        onCancel={cancelConfirmModal}
+        onConfirm={confirmOrderStatus}
+        title={"Update Order Status"}
+        message={"Are you sure you want to update the status?"}
+      />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>GUEST ORDER TABLE</h1>
@@ -192,7 +219,8 @@ export default function AdminOrderGuestStatus() {
                         <select
                           name="status"
                           id="status"
-                          onChange={(e) => handleChangeStatus(data._id, e)}
+                          // onChange={(e) => handleChangeStatus(data._id, e)}
+                          onChange={(e) => handleOpenConfirmModal(data._id, e)}
                           value={data.status}
                           className="outline-none border border-black text-center uppercase py-1 rounded-[5px]"
                         >
