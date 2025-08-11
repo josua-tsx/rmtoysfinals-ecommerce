@@ -4,9 +4,25 @@ import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import { IoSearch } from "react-icons/io5";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../../lib/axios";
 
 export default function AdminFaqsTable() {
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    data: faqsTable = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["faqs"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/faqs/get-faqs`);
+      return res.data;
+    },
+  });
+
+  console.log(faqsTable);
+
+  if (isError) return <p>Error</p>;
 
   return (
     <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
@@ -43,7 +59,6 @@ export default function AdminFaqsTable() {
           <table className="w-full divide-y divide-gray-700">
             <thead>
               <tr className="flex justify-between">
-                <th className="font-normal p-2 pb-5">ID</th>
                 <th className="font-normal p-2 pb-5">Title</th>
                 <th className="font-normal p-2 pb-5">Answer</th>
                 <th className="font-normal p-2 pb-5">Date Added</th>
@@ -51,21 +66,36 @@ export default function AdminFaqsTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
-              <tr className="flex items-center justify-between">
-                <td className="px-4 "></td>
-                <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	"></td>
-                <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	"></td>
-                <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	"></td>
+              {faqsTable.length > 0 ? (
+                faqsTable.map((faq) => (
+                  <tr
+                    key={faq._id}
+                    className="flex items-center justify-between"
+                  >
+                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
+                      {faq?.title}
+                    </td>
+                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
+                      {faq?.answer}
+                    </td>
+                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
+                      {" "}
+                      {new Date(faq.createdAt).toLocaleString()}
+                    </td>
 
-                <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                  <button className="text-green-600 hover:text-indigo-300 mr-2">
-                    <CiEdit size={25} />
-                  </button>
-                  <button className="text-red-600 hover:text-red-300">
-                    <MdDelete size={25} />
-                  </button>
-                </td>
-              </tr>
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
+                      <button className="text-green-600 hover:text-indigo-300 mr-2">
+                        <CiEdit size={25} />
+                      </button>
+                      <button className="text-red-600 hover:text-red-300">
+                        <MdDelete size={25} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <p>No faqs.</p>
+              )}
             </tbody>
           </table>
         )}

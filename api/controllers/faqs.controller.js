@@ -13,6 +13,23 @@ export const addNewFaqs = async (req, res, next) => {
   }
 
   try {
+    const existingFaqs = await Faqs.find();
+
+    if (existingFaqs.length >= 5) {
+      return next(handleMakeError(400, "You can only put 5 max faqs."));
+    }
+
+    const existingTitle = existingFaqs.find((t) => t.title === title);
+
+    if (existingTitle) {
+      return next(
+        handleMakeError(
+          400,
+          "This title is already exist in the database. Try new one."
+        )
+      );
+    }
+
     const newFaqs = new Faqs({
       title,
       answer,
