@@ -8,13 +8,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-export default function AdminFaqsTable() {
+export default function AdminFaqsTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const {
     data: faqsTable = [],
@@ -27,6 +29,24 @@ export default function AdminFaqsTable() {
       return res.data;
     },
   });
+
+  useEffect(() => {
+    if (!enableMultiDel) {
+      setSelectedIds([]);
+    }
+  }, [enableMultiDel]);
+
+  const pushMultiFaqs = (faqId) => {
+    setSelectedId((prev) =>
+      prev.includes(faqId)
+        ? prev.filter((id) => id !== faqId)
+        : [...prev, faqId]
+    );
+  };
+
+  const cancelMultiDelete = () => {
+    setSelectedIds([]);
+  };
 
   const { mutate: deleteFaqMutation, isPending } = useMutation({
     mutationFn: async (id) => {
@@ -41,6 +61,38 @@ export default function AdminFaqsTable() {
       toast.error(err.response.data.message);
     },
   });
+
+  const { mutate: deleteAllFaqs } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/faqs/delete-multi-faqs`, {
+        faqIds: data,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["faqs"] });
+      toast.success("Faqs are deleted successfully!");
+      setSelectedIds([]);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
+  const handleDeletMulti = () => {
+    if (selectedIds.length === 0) {
+      toast.error("Please select at least one faq");
+      return;
+    }
+
+    if (
+      window.confirm(
+        `Are you sure wou want to dlete ${selectedIds.length} faqs?`
+      )
+    ) {
+      deleteAllFaqs(selectedIds);
+    }
+  };
 
   const navigateToEdit = (id) => {
     navigate(`/admin/editFaq/${id}`);
@@ -80,15 +132,7 @@ export default function AdminFaqsTable() {
       />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>VAT TABLE</h1>
-        <div className="flex items-center relative">
-          <input
-            type="text"
-            placeholder="search vat.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-          />
-          <IoSearch className="absolute right-0" size={25} />
-        </div>
+        <h1>FAQS TABLE</h1>
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
         {isLoading ? (
@@ -138,6 +182,17 @@ export default function AdminFaqsTable() {
                       >
                         <MdDelete size={25} />
                       </button>
+
+                      {enableMultiDel ? (
+                        <input
+                          type="checkbox"
+                          id="wdwadwk"
+                          checked={selectedIds.includes(faq._id)}
+                          onChange={() => pushMultiFaqs(faq._id)}
+                        />
+                      ) : (
+                        ""
+                      )}
                     </td>
                   </tr>
                 ))
@@ -148,6 +203,22 @@ export default function AdminFaqsTable() {
           </table>
         )}
       </div>
+      {selectedIds && selectedIds.length > 0 && (
+        <div className=" w-full flex gap-2 justify-end p-3">
+          <button
+            onClick={cancelMultiDelete}
+            className="border bg-green-700 text-white rounded-[5px] border-black p-2"
+          >
+            Cancel Detete
+          </button>
+          <button
+            onClick={() => handleDeletMulti()}
+            className="border bg-red-700 text-white rounded-[5px] border-black p-2"
+          >
+            Confirm Detete
+          </button>
+        </div>
+      )}
     </div>
   );
 }

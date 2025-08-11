@@ -2,9 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 export default function AdminAddFaqs() {
   const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
+  const [answer, setAnswer] = useState("");
 
   const { mutate: addFaqsMutation } = useMutation({
     mutationFn: async (data) => {
@@ -23,11 +26,6 @@ export default function AdminAddFaqs() {
   const handdleSubmit = (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const inputs = Object.fromEntries(formData);
-
-    const { title, answer } = inputs;
-
     try {
       addFaqsMutation({ title, answer });
 
@@ -35,6 +33,11 @@ export default function AdminAddFaqs() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const clearButton = () => {
+    setTitle("");
+    setAnswer("");
   };
 
   return (
@@ -50,6 +53,8 @@ export default function AdminAddFaqs() {
             name="title"
             id="title"
             type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="border border-black w-full rounded-[5px] p-1 outline-none"
           />
         </div>
@@ -59,6 +64,8 @@ export default function AdminAddFaqs() {
             name="answer"
             id="answer"
             type="text"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
             className="border border-black w-full rounded-[5px] p-1 outline-none"
           />
         </div>
@@ -68,8 +75,12 @@ export default function AdminAddFaqs() {
         <button className="border flex-1 border-black p-2 rounded-[5px] bg-primary text-white">
           Add Faqs
         </button>
-        <button className="border w-full  border-black p-2 rounded-[5px] md:w-[20%] bg-red-600 text-white">
-          Add Faqs
+        <button
+          type="button"
+          onClick={() => clearButton()}
+          className="border w-full  border-black p-2 rounded-[5px] md:w-[20%] bg-red-600 text-white"
+        >
+          Clear
         </button>
       </div>
     </form>

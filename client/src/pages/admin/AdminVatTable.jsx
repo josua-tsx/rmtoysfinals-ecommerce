@@ -80,14 +80,7 @@ export default function AdminVatTable() {
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>VAT TABLE</h1>
-        <div className="flex items-center relative">
-          <input
-            type="text"
-            placeholder="search vat.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-          />
-          <IoSearch className="absolute right-0" size={25} />
-        </div>
+      
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
         {

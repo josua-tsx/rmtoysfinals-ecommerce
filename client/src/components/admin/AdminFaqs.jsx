@@ -4,6 +4,7 @@ import { MdDelete } from "react-icons/md";
 import AdminFaqsTable from "./AdminFaqsTable";
 import { useState } from "react";
 import AdminAddFaqs from "./AdminAddFaqs";
+import { IoMdAdd } from "react-icons/io";
 
 export default function AdminFaqs() {
   const [showAdd, setShowAdd] = useState(false);
@@ -24,16 +25,15 @@ export default function AdminFaqs() {
 
         <div className="w-full  flex gap-2">
           <button
-            // onClick={toggleAddCategory}
+            onClick={() => setShowAdd((e) => !e)}
             className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px]"
           >
-            {/* {showAdd ? "Cancel" : "Add Supplier"}
-                <IoMdAdd /> */}
-            Add Faqs
+            {showAdd ? "Cancel" : "Add Faq"}
+            <IoMdAdd />
           </button>
 
           <button
-            // onClick={() => setEnableMultiDel(!enableMultiDel)}
+            onClick={() => setEnableMultiDel(!enableMultiDel)}
             className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px]"
           >
             Multiple delete
@@ -41,10 +41,12 @@ export default function AdminFaqs() {
           </button>
         </div>
 
-        <AdminAddFaqs />
+        {showAdd && <AdminAddFaqs />}
 
-        <AdminFaqsTable />
+        <AdminFaqsTable enableMultiDel={enableMultiDel} />
       </div>
+
+      
     </section>
   );
 }

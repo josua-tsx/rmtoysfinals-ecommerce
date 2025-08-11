@@ -75,6 +75,60 @@ export const deleteFaq = async (req, res, next) => {
   }
 };
 
+export const deleteMultiFaq = async (req, res, next) => {
+  const { faqIds } = req.body;
+  const userId = req.user.id;
+
+  if (!Array.isArray(faqIds))
+    return next(handleMakeError(400, "FaqIds should be an array!"));
+
+  try {
+    const faqs = await Faqs.find({
+      _id: {
+        $in: faqIds,
+      },
+    });
+
+    if (faqs.length !== faqIds.length) {
+      const foundIds = faqs.map((c) => c._id.toString());
+      const missingIds = faqIds.filter((id) => !foundIds.include(id));
+      return next(
+        handleMakeError(400, `Faqs not found: ${missingIds.join(", ")}`)
+      );
+    }
+
+    const faqsTitle = faqs.reduce((acc, faq) => {
+      acc[faq._id] = faq.title;
+      return acc;
+    }, {});
+
+    await Faqs.deleteMany({ _id: { $in: faqIds } });
+
+    // Create audit trail entries for each deleted category
+    await Promise.all(
+      faqIds.map((id) =>
+        logAuditTrail({
+          action: "delete_faqs",
+          userId,
+          targetId: id,
+          targetType: "Faqs",
+          details: {
+            FaqTitle: faqsTitle[id],
+          },
+          role: "admin",
+        })
+      )
+    );
+
+    res.status(200).json({
+      message: `${faqIds.length} categories deleted successfully`,
+      deletedCount: faqIds.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getSingleFaq = async (req, res, next) => {
   const { faqSingleId } = req.params;
 

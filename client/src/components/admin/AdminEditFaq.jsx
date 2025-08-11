@@ -46,6 +46,7 @@ export default function AdminEditFaq() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["singleFaq", "faqs"] });
       toast.success("Updated Succesfully!");
+      navigate("/admin/faqs");
     },
     onError: (err) => {
       toast.error(err.response.data.message);
