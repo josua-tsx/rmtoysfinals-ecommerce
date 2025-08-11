@@ -114,7 +114,7 @@ export default function AdminOrderStatusTable() {
         onCancel={cancelConfirmModal}
         onConfirm={confirmOrderStatus}
         title={"Update Order Status"}
-        message={"Are you sure you want to update the status?"}
+        message={"Are you sure you want to update the order status?"}
       />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
