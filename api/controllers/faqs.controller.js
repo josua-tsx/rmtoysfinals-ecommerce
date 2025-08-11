@@ -55,3 +55,20 @@ export const getAllFaqs = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteFaq = async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const singleFaq = await Faqs.findById(id);
+
+    if (!singleFaq) return next(handleMakeError(400, "Faq not found!"));
+
+    await Faqs.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Faq Deleted" });
+  } catch (error) {
+    next(error);
+  }
+};
