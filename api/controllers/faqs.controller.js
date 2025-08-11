@@ -21,7 +21,6 @@ export const addNewFaqs = async (req, res, next) => {
 
     const existingTitle = await Faqs.findOne({
       title,
-      _id: { $ne: faqSingleId },
     });
 
     if (existingTitle) {
