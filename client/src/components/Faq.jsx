@@ -59,31 +59,57 @@ export default function Faq() {
         <div className="flex flex-col justify-center items-center h-full ">
           <div className="text-3xl mb-5">FAQs</div>
           <div className="flex flex-col  md:w-[750px] gap-5">
-            {faqsComponent.map((faq) => (
-              <li
-                className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
-                key={faq._id}
-              >
-                {faq.title}
+            {faqsComponent && faqsComponent.length > 0
+              ? faqsComponent.map((faq) => (
+                  <li
+                    className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
+                    key={faq._id}
+                  >
+                    {faq.title}
 
-                {openAnswer && openAnswer === faq._id && (
-                  <p className="text-gray-600">{faq.answer}</p>
-                )}
+                    {openAnswer && openAnswer === faq._id && (
+                      <p className="text-gray-600">{faq.answer}</p>
+                    )}
 
-                <button
-                  onClick={() => handleToggleList(faq._id)}
-                  className="absolute justify-end flex top-2 right-2 inset-0 "
-                >
-                  <IoMdAdd
-                    className={`${
-                      openAnswer && openAnswer === faq._id
-                        ? "rotate-90"
-                        : "rotate-0"
-                    } transition-transform duration-300`}
-                  />
-                </button>
-              </li>
-            ))}
+                    <button
+                      onClick={() => handleToggleList(faq._id)}
+                      className="absolute justify-end flex top-2 right-2 inset-0 "
+                    >
+                      <IoMdAdd
+                        className={`${
+                          openAnswer && openAnswer === faq._id
+                            ? "rotate-90"
+                            : "rotate-0"
+                        } transition-transform duration-300`}
+                      />
+                    </button>
+                  </li>
+                ))
+              : List.map((faq) => (
+                  <li
+                    className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
+                    key={faq._id}
+                  >
+                    {faq.title}
+
+                    {openAnswer && openAnswer === faq._id && (
+                      <p className="text-gray-600">{faq.answer}</p>
+                    )}
+
+                    <button
+                      onClick={() => handleToggleList(faq._id)}
+                      className="absolute justify-end flex top-2 right-2 inset-0 "
+                    >
+                      <IoMdAdd
+                        className={`${
+                          openAnswer && openAnswer === faq._id
+                            ? "rotate-90"
+                            : "rotate-0"
+                        } transition-transform duration-300`}
+                      />
+                    </button>
+                  </li>
+                ))}
           </div>
         </div>
       </div>

@@ -4,10 +4,16 @@ import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import { IoSearch } from "react-icons/io5";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
+import toast from "react-hot-toast";
 
 export default function AdminFaqsTable() {
+  const queryClient = useQueryClient();
+
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
   const {
     data: faqsTable = [],
     isLoading,
@@ -20,7 +26,35 @@ export default function AdminFaqsTable() {
     },
   });
 
-  console.log(faqsTable);
+  const { mutate: deleteFaqMutation, isPending } = useMutation({
+    mutationFn: async (id) => {
+      const res = await axiosInstance.delete(`/faqs/delete-faq/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["faqs"] });
+      toast.success("Faq succesfully deleted!");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
+  const openDeleteModal = (id) => {
+    console.log(id);
+    setOpenModal(true);
+    setSelectedId(id);
+  };
+
+  const confirmDeleteModal = () => {
+    deleteFaqMutation(selectedId);
+    cancelDeleteModal();
+  };
+
+  const cancelDeleteModal = () => {
+    setSelectedId(null);
+    setOpenModal(false);
+  };
 
   if (isError) return <p>Error</p>;
 
@@ -30,13 +64,13 @@ export default function AdminFaqsTable() {
       {/* CARD */}
 
       <ConfirmModal
-        // isOpen={isOpenModal}
+        isOpen={openModal}
         title={"Confirm delete"}
         message={
-          "This data might in used in different module, are you sure you want to delete this VAT? This action cannot be undone."
+          "Are you sure you want to delete this FAQ? This action cannot be undone."
         }
-        // onConfirm={handleConfirmDelete}
-        // onCancel={handleCancelDelete}
+        onConfirm={confirmDeleteModal}
+        onCancel={cancelDeleteModal}
       />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
@@ -87,7 +121,11 @@ export default function AdminFaqsTable() {
                       <button className="text-green-600 hover:text-indigo-300 mr-2">
                         <CiEdit size={25} />
                       </button>
-                      <button className="text-red-600 hover:text-red-300">
+                      <button
+                        type="button"
+                        onClick={() => openDeleteModal(faq._id)}
+                        className="text-red-600 hover:text-red-300"
+                      >
                         <MdDelete size={25} />
                       </button>
                     </td>
