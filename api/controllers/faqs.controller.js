@@ -20,7 +20,7 @@ export const addNewFaqs = async (req, res, next) => {
     }
 
     const existingTitle = await Faqs.findOne({
-      title: newTitle,
+      title,
       _id: { $ne: faqSingleId },
     });
 
