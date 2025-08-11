@@ -93,21 +93,22 @@ export const getSingleFaq = async (req, res, next) => {
 export const updateFaq = async (req, res, next) => {
   const { faqSingleId } = req.params;
   const { title: newTitle, answer: newAnswer } = req.body;
-
-  if (!newTitle.trim()) {
+  // Validate inputs
+  if (!newTitle || !newTitle.trim()) {
     return next(handleMakeError(400, "Title is required"));
   }
 
-  if (!newAnswer.trim()) {
+  if (!newAnswer || !newAnswer.trim()) {
     return next(handleMakeError(400, "Answer is required"));
   }
 
   try {
-    const existingFaq = await Faqs.find();
+    const existingTitle = await Faqs.findOne({
+      title: newTitle,
+      _id: { $ne: faqSingleId },
+    });
 
-    const existingtitle = existingFaq.find((t) => t.title === newTitle);
-
-    if (existingtitle)
+    if (existingTitle)
       return next(
         handleMakeError(
           400,
@@ -115,14 +116,18 @@ export const updateFaq = async (req, res, next) => {
         )
       );
 
-    const updateFaq = await Faqs.findByIdAndUpdate(faqSingleId, {
-      newTitle,
-      newAnswer,
-    });
+    const updateFaq = await Faqs.findByIdAndUpdate(
+      faqSingleId,
+      {
+        newTitle,
+        newAnswer,
+      },
+      { new: true }
+    );
 
     if (!updateFaq) return next(handleMakeError(400, "Faq not found!"));
 
-    res.status(200).json({ message: "Faq updated!" });
+    res.status(200).json({ message: "Faq updated!", data: updateFaq });
   } catch (error) {
     next(error);
   }
