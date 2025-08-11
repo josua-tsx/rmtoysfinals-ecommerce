@@ -10,12 +10,12 @@ import toast from "react-hot-toast";
 export default function AdminEditFaq() {
   const queryClient = useQueryClient();
   const params = useParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [newTitle, setNewTitle] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
 
   const {
-    data: singleFaq,
+    data: singleFaq = {},
     isLoading,
     isError,
   } = useQuery({
@@ -29,16 +29,16 @@ export default function AdminEditFaq() {
   });
 
   useEffect(() => {
-    if (singleFaq.singleFaq) {
-      setNewTitle(singleFaq.singleFaq.title);
-      setNewAnswer(singleFaq.singleFaq.answer);
+    if (singleFaq?.singleFaq) {
+      setNewTitle(singleFaq?.singleFaq.title);
+      setNewAnswer(singleFaq?.singleFaq.answer);
     }
   }, [singleFaq.singleFaq]);
 
   const { mutate: updateFaqMutation, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.put(
-        `/faqs/update-faq/${singleFaq.singleFaq._id}`,
+        `/faqs/update-faq/${singleFaq?.singleFaq._id}`,
         data
       );
       return res.data;
@@ -51,12 +51,11 @@ export default function AdminEditFaq() {
       toast.error(err.response.data.message);
     },
   });
-  console.log(singleFaq.singleFaq);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    updateFaqMutation({ newTitle, newAnswer });
+    updateFaqMutation({ title: newTitle, answer: newAnswer });
   };
 
   return (
@@ -98,16 +97,15 @@ export default function AdminEditFaq() {
               disabled={isPending}
               className="border flex-1 border-black p-2 rounded-[5px] bg-primary text-white"
             >
-              {
-                isPending ? "Updatingg..." : "Update Faq"
-              }
+              {isPending ? "Updatingg..." : "Update Faq"}
             </button>
-            <button 
-            type="button"
-            onClick={() => navigate("/admin/faqs")}
-            className="border w-full  border-black p-2 rounded-[5px] md:w-[20%] bg-red-600 text-white">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/faqs")}
+              className="border w-full  border-black p-2 rounded-[5px] md:w-[20%] bg-red-600 text-white"
+            >
               Cancel
-            </button>   
+            </button>
           </div>
         </form>
       </div>

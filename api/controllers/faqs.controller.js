@@ -122,8 +122,8 @@ export const updateFaq = async (req, res, next) => {
     const updateFaq = await Faqs.findByIdAndUpdate(
       faqSingleId,
       {
-        newTitle,
-        newAnswer,
+        title: newTitle,
+        answer: newAnswer,
       },
       { new: true }
     );
