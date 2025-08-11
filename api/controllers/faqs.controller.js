@@ -1,5 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Faqs from "../models/faqs.model.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const addNewFaqs = async (req, res, next) => {
   const { title, answer } = req.body;

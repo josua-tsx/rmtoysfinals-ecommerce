@@ -37,7 +37,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
   }, [enableMultiDel]);
 
   const pushMultiFaqs = (faqId) => {
-    setSelectedId((prev) =>
+    setSelectedIds((prev) =>
       prev.includes(faqId)
         ? prev.filter((id) => id !== faqId)
         : [...prev, faqId]
