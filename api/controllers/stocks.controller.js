@@ -11,7 +11,6 @@ import { orderStockLogs } from "./orderStockHistory.contoller.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
-
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
 
@@ -107,17 +106,33 @@ export const OrderStocks = async (req, res, next) => {
       vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * quantity,
     });
 
-    if (notifySusbscribedUser === true) {
-      for (const userSubscribed of subscribedUser) {
-        await sendEmail(
-          ADMIN_EMAIL,
-          userSubscribed.email,
-          `New stock just arrived! ${newDelivery.shopPrice}`
-        );
-      }
-    }
-
     await newDelivery.save();
+
+    if (notifySusbscribedUser === true && subscribedUser.length > 0) {
+      const emailPromises = subscribedUser.map((userSubscribed) => {
+        const emailSubject = `New Stock Arrival Notification`;
+        const emailBody = `
+              <h1>New Stock Just Arrived!</h1>
+              <p>Product: ${product.name}</p>
+              <p>Price: ${newDelivery.shopPrice}</p>
+              <p>Available Quantity: ${quantity}</p>
+        `;
+
+        return sendEmail(userSubscribed.email, emailSubject, emailBody).catch(
+          (err) =>
+            next(
+              handleMakeError(
+                400,
+                `failed to send email to ${subscribedUser.emaik}`,
+                err
+              )
+            )
+        );
+      });
+
+      // Send all emails concurrently
+      await Promise.all(emailPromises);
+    }
 
     await orderStockLogs({
       action: "admin_ordered_stock",
