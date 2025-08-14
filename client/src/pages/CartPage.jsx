@@ -11,6 +11,29 @@ import { FaShoppingCart } from "react-icons/fa";
 import useOrderStore from "../stores/useOrderStore";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 
+const Users = [
+  {
+    name: "juswa",
+    isSubscribed: true,
+  },
+  {
+    name: "juswa2",
+    isSubscribed: false,
+  },
+  {
+    name: "juswa3",
+    isSubscribed: true,
+  },
+  {
+    name: "juswa4",
+    isSubscribed: false,
+  },
+  {
+    name: "juswa5",
+    isSubscribed: true,
+  },
+];
+
 export default function CartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
 
@@ -37,10 +60,7 @@ export default function CartPage() {
     },
   });
 
-  console.log(cart)
-
-
-
+  
   const totalPrice = cart?.items?.reduce((total, item) => {
     return total + item.productId.price * item.quantity;
   }, 0);
@@ -49,7 +69,7 @@ export default function CartPage() {
     return total + item.productId.points * item.quantity;
   }, 0);
 
-  if (isPending) return <LoadingSpinner fullScreen/>;
+  if (isPending) return <LoadingSpinner fullScreen />;
   if (isError) return <div>Error loading cart.</div>;
 
   return (
@@ -121,8 +141,7 @@ export default function CartPage() {
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
                       <strong>Note:</strong>
-                     You can only order 5 items per product at a time.
-                     
+                      You can only order 5 items per product at a time.
                     </p>
                   </div>
                 </div>

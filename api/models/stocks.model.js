@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const StocksModelSchema = new mongoose.Schema(
-{
+  {
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
@@ -21,7 +21,7 @@ const StocksModelSchema = new mongoose.Schema(
     },
     shopPrice: {
       type: Number,
-      required: true
+      required: true,
     },
     quantity: {
       type: Number,
@@ -33,33 +33,38 @@ const StocksModelSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    vatShopPrice : {
-      type: Number, 
+    vatShopPrice: {
+      type: Number,
     },
     vatToRemit: {
-      type: Number
+      type: Number,
     },
     deliveryStatus: {
       type: String,
       enum: ["delivered", "cancelled"],
-      default: "delivered"
+      default: "delivered",
     },
     deliveryId: {
       type: String,
-      required: true
+      required: true,
     },
     dateDelivery: {
       type: String,
-      required: true
+      required: true,
     },
     vat: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Vat"
+      ref: "Vat",
     },
+
+    notifySubscribedUser: {
+      type: Boolean,
+      default: false,
+    },
+
     lastLowStockNotification: Date,
     lastOutOfStockNotification: Date,
   },
-  
 
   {
     timestamps: true,

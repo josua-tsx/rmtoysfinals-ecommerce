@@ -83,7 +83,9 @@ export default function EmailSubscriptionComponent() {
             >
               <input
                 type="text"
-                className={`border  outline-none border-black w-full rounded-[5px] p-2`}
+                className={`border ${
+                  isSubscribe ? "opacity-0 hidden md:flex" : "opacity-1"
+                } outline-none border-black w-full rounded-[5px] p-2`}
                 placeholder="Input your email to subscribe!"
                 value={userEmail}
                 disabled

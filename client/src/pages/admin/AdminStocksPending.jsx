@@ -7,8 +7,7 @@ import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useUserStore } from "../../stores/useUserStore";
 
 export default function AdminStocksPending() {
-
-  const currentUser = useUserStore((state) => state.currentUser)
+  const currentUser = useUserStore((state) => state.currentUser);
 
   const [orderSingleStock, setOrderSingleStock] = useState();
   const [openModal, setOpenModal] = useState(false);
@@ -45,7 +44,6 @@ export default function AdminStocksPending() {
     setSelectedId(null);
   };
 
- 
   if (isProductsError) {
     return <p>loading...</p>;
   }
@@ -63,58 +61,58 @@ export default function AdminStocksPending() {
         )}
 
         <div className="relative border border-black flex flex-col rounded-[5px] w-full md:w-[70%] h-full mx-auto bg-card">
-          <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
+          <div className="absolute bg-card -top-9 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
 
           <div className="p-4 flex flex-col overflow-x-auto gap-4">
-            {
-              isProductsPending ? (
-                <div className="flex justify-center">
-                  <LoadingSpinner/>
-                </div>
-              ) : (
-                products.length > 0 ? (
-                  products.map((product) => (
-                    <div key={product._id} className="flex items-center gap-4">
-                      <img
-                        src={product?.productImages[0]}
-                        alt=""
-                        className="h-[50px] w-[50px] object-cover rounded-[5px]"
-                      />
-                      <div className="flex justify-between gap-4 w-full items-center">
-                        <div className="flex gap-4">
-                          <div className="flex gap-2 items-center">
-                            <p className="text-blue-700">Product Name: </p>
-                            <p>{product?.productName}</p>
-                          </div>
-                          <div className="hidden md:flex md:gap-4">
-                            <div className="flex gap-2 items-center">
-                              <p className="text-blue-700">Description: </p>
-                              <p>{product?.productDescription}</p>
-                            </div>
-    
-                            <div className="flex gap-2 items-center">
-                              <p className="text-blue-700">Category: </p>
-                              <p>{product?.category?.categoryName}</p>
-                            </div>
-                          </div>
+            {isProductsPending ? (
+              <div className="flex justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : products.length > 0 ? (
+              products.map((product) => (
+                <div key={product._id} className="flex items-center gap-4">
+                  <img
+                    src={product?.productImages[0]}
+                    alt=""
+                    className="h-[50px] w-[50px] object-cover rounded-[5px]"
+                  />
+                  <div className="flex justify-between gap-4 w-full items-center">
+                    <div className="flex gap-4">
+                      <div className="flex gap-2 items-center">
+                        <p className="text-blue-700">Product Name: </p>
+                        <p>{product?.productName}</p>
+                      </div>
+                      <div className="hidden md:flex md:gap-4">
+                        <div className="flex gap-2 items-center">
+                          <p className="text-blue-700">Description: </p>
+                          <p>{product?.productDescription}</p>
                         </div>
-                        <div>
-                          <button
-                          disabled={currentUser.role === "validatorStaff"}
-                            onClick={() => handleOpenSingleOrder(product)}
-                            className={` ${currentUser.role === "validatorStaff" ? "hidden" : "block"} border bg-primary rounded-[5px] text-white p-1 border-black`}
-                          >
-                            Order Stock
-                          </button>
+
+                        <div className="flex gap-2 items-center">
+                          <p className="text-blue-700">Category: </p>
+                          <p>{product?.category?.categoryName}</p>
                         </div>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <p>No Pendings</p>
-                )
-              )
-            }
+                    <div className="flex  gap-2">
+                      <button
+                        disabled={currentUser.role === "validatorStaff"}
+                        onClick={() => handleOpenSingleOrder(product)}
+                        className={` ${
+                          currentUser.role === "validatorStaff"
+                            ? "hidden"
+                            : "block"
+                        } border bg-primary rounded-[5px] text-white p-1 border-black`}
+                      >
+                        Order Stock
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No Pendings</p>
+            )}
           </div>
         </div>
       </div>

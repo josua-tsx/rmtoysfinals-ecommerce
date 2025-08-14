@@ -4,6 +4,7 @@ import axiosInstance from "../../lib/axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import formatPrice from "../../reusable/formatPrice";
+import { MdToggleOff, MdToggleOn } from "react-icons/md";
 
 export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [product, setProduct] = useState("");
@@ -17,9 +18,9 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [selectedDate, setSelectedDate] = useState("");
   const [discount, setDiscount] = useState(0);
 
+  const [toggleNotify, setToggleNotify] = useState(false);
+
   const [selectedVatValue, setSelectedVatValue] = useState(null);
-
-
 
   // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
   const calculateTotalExpenses =
@@ -96,6 +97,16 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       toast.error(err.response.data.message || "Something went wrong!");
     },
   });
+
+  const toggleNotifcation = () => {
+    setToggleNotify((prev) => !prev);
+
+    if (toggleNotify) {
+      toast.error("Notification Updated false");
+    } else {
+      toast.success("Notification Updated to true");
+    }
+  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -287,6 +298,18 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               <p className="text-sm text-red-700">
                 (SUPPLIER PRCE + SHIPPING PRICE) * QUANTITY
               </p>
+            </div>
+
+            <div className="flex items-center flex-wrap gap-4">
+              <label htmlFor="">Notify subcribed users for this order?</label>
+
+              <button type="button" className={`${!toggleNotify ? "text-red-700" : "text-blue-700"}`} onClick={toggleNotifcation}>
+                {toggleNotify ? (
+                  <MdToggleOn size={45} />
+                ) : (
+                  <MdToggleOff size={45} />
+                )}
+              </button>
             </div>
           </div>
 

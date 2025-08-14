@@ -2,10 +2,15 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 import Supplier from "../models/supplier.model.js";
+import User from "../models/user.models.js";
 import Vat from "../models/vat.models.js";
+import { sendEmail } from "../nodemailer/nodemailer.js";
 // import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+
 
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
@@ -23,6 +28,7 @@ export const OrderStocks = async (req, res, next) => {
     discount,
     vat,
     vatShopPrice,
+    notifySusbscribedUser = false,
   } = req.body;
 
   try {
@@ -77,6 +83,13 @@ export const OrderStocks = async (req, res, next) => {
       );
     }
 
+    const subscribedUser = await User.find({
+      isSubscribed: true,
+    });
+
+    if (!subscribedUser)
+      return next(handleMakeError(400, "No subscribed user found."));
+
     const newDelivery = new Stocks({
       product,
       supplier,
@@ -93,6 +106,16 @@ export const OrderStocks = async (req, res, next) => {
       vatShopPrice,
       vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * quantity,
     });
+
+    if (notifySusbscribedUser === true) {
+      for (const userSubscribed of subscribedUser) {
+        await sendEmail(
+          ADMIN_EMAIL,
+          userSubscribed.email,
+          `New stock just arrived! ${newDelivery.shopPrice}`
+        );
+      }
+    }
 
     await newDelivery.save();
 
