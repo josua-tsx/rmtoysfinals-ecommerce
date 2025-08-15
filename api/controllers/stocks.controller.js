@@ -27,7 +27,7 @@ export const OrderStocks = async (req, res, next) => {
     discount,
     vat,
     vatShopPrice,
-    notifySusbscribedUser = false,
+    notifySubscribedUser = false,
   } = req.body;
 
   try {
@@ -108,29 +108,27 @@ export const OrderStocks = async (req, res, next) => {
 
     await newDelivery.save();
 
-    if (notifySusbscribedUser === true && subscribedUser.length > 0) {
-      const emailPromises = subscribedUser.map((userSubscribed) => {
+    console.log(subscribedUser);
+
+    // Change this part of your code:
+    if (notifySubscribedUser === true && subscribedUser.length > 0) {
+      const emailPromises = subscribedUser.map((user) => {
         const emailSubject = `New Stock Arrival Notification`;
         const emailBody = `
-              <h1>New Stock Just Arrived!</h1>
-              <p>Product: ${product.name}</p>
-              <p>Price: ${newDelivery.shopPrice}</p>
-              <p>Available Quantity: ${quantity}</p>
-        `;
+          <h1>New Stock Just Arrived!</h1>
+          <p>Product: ${product.name}</p>
+          <p>Price: ${newDelivery.shopPrice}</p>
+          <p>Available Quantity: ${quantity}</p>
+    `;
 
-        return sendEmail(userSubscribed.email, emailSubject, emailBody).catch(
-          (err) =>
-            next(
-              handleMakeError(
-                400,
-                `failed to send email to ${subscribedUser.emaik}`,
-                err
-              )
-            )
-        );
+        return sendEmail(user.email, emailSubject, emailBody).catch((err) => {
+          console.error(`Failed to send email to ${user.email}`, err);
+          // Continue even if one email fails
+          return null;
+        });
       });
 
-      // Send all emails concurrently
+      // Wait for all emails to complete (success or failure)
       await Promise.all(emailPromises);
     }
 

@@ -124,6 +124,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       discount,
       vat: selectedVatValue?._id,
       vatShopPrice: roundedPrice,
+      notifySubscribedUser: toggleNotify,
     });
   };
 
@@ -303,7 +304,13 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
             <div className="flex items-center flex-wrap gap-4">
               <label htmlFor="">Notify subcribed users for this order?</label>
 
-              <button type="button" className={`${!toggleNotify ? "text-red-700" : "text-blue-700"}`} onClick={toggleNotifcation}>
+              <button
+                type="button"
+                className={`${
+                  !toggleNotify ? "text-red-700" : "text-blue-700"
+                }`}
+                onClick={toggleNotifcation}
+              >
                 {toggleNotify ? (
                   <MdToggleOn size={45} />
                 ) : (
