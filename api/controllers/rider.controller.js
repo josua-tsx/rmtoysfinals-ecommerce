@@ -166,6 +166,8 @@ export const deleteMultiRider = async (req, res, next) => {
         })
       )
     );
+
+    res.status(200).json({ message: "Succesfully Deleted" });
   } catch (error) {
     next(error);
   }
