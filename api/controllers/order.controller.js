@@ -1230,7 +1230,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
             }),
             Rider.findByIdAndUpdate(
               riderId,
-              { $addToSet: { orders: orderId } }, // Add order to rider's orders array
+              { $addToSet: { order: orderId } }, // Add order to rider's orders array
               { new: true }
             ),
           ]);
