@@ -5,7 +5,6 @@ const RiderModelSchema = new mongoose.Schema(
     order: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
-      unique: true,
     },
 
     riderName: {
@@ -19,12 +18,14 @@ const RiderModelSchema = new mongoose.Schema(
     },
 
     riderStatus: {
+      type: String,
       enum: ["available", "unavailable"],
       default: "available",
     },
 
     successDelivered: {
       type: Number,
+      default: 0,
     },
 
     // rating: {
