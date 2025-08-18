@@ -8,6 +8,7 @@ import User from "../models/user.models.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 import Stripe from "stripe";
+import Rider from "../models/rider.models.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -1105,7 +1106,7 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest } = req.body;
+  const { status, isGuest, riderId } = req.body;
   const userId = req?.user?.id;
 
   try {
@@ -1151,17 +1152,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
       paymentStatus: status === "Delivered" ? "Paid" : order.paymentStatus,
     };
 
-    if (status === "Shipped" && !order.rider) {
-      const availableRider = await Rider.findOne({ riderStatus: "available" });
-
-      if (availableRider) {
-        await Rider.findByIdAndUpdate(availableRider._id, {
-          $push: { order: orderId },
-          $set: { riderStatus: "unavailable" },
-        });
-
-        orderUpdate.rider = availableRider._id;
-      }
+    if (status === "Shipped" && !order.rider && riderId) {
+      await Rider.findByIdAndUpdate(riderId, {
+        $push: { order: orderId },
+        $set: { riderStatus: "unavailable" },
+      });
+      orderUpdate.rider = riderId; // make sure Order links rider
     }
 
     const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
