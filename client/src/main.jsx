@@ -73,6 +73,7 @@ import GuestSummaryModal from "./components/Guestt/GuestSummaryModal.jsx";
 import VerifyEmailComponent from "./components/VerifyEmailComponent.jsx";
 import AdminFaqs from "./components/admin/AdminFaqs.jsx";
 import AdminEditFaq from "./components/admin/AdminEditFaq.jsx";
+import AdminRider from "./components/admin/AdminRider.jsx";
 
 const queryClient = new QueryClient();
 
@@ -289,6 +290,15 @@ const router = createBrowserRouter([
       {
         path: "/admin/worker",
         element: <AdminWorker />,
+      },
+
+
+      // RIDER
+
+
+      {
+        path: "/admin/rider",
+        element: <AdminRider/>
       },
 
       // VAT

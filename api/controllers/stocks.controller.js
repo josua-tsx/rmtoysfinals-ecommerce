@@ -27,7 +27,7 @@ export const OrderStocks = async (req, res, next) => {
     discount,
     vat,
     vatShopPrice,
-    notifySubscribedUser = false,
+    notifySubscribedUser,
   } = req.body;
 
   try {
@@ -86,9 +86,6 @@ export const OrderStocks = async (req, res, next) => {
       isSubscribed: true,
     });
 
-    if (!subscribedUser)
-      return next(handleMakeError(400, "No subscribed user found."));
-
     const newDelivery = new Stocks({
       product,
       supplier,
@@ -115,10 +112,10 @@ export const OrderStocks = async (req, res, next) => {
       const emailPromises = subscribedUser.map((user) => {
         const emailSubject = `New Stock Arrival Notification`;
         const emailBody = `
-          <h1>New Stock Just Arrived!</h1>
-          <p>Product: ${product.name}</p>
-          <p>Price: ${newDelivery.shopPrice}</p>
-          <p>Available Quantity: ${quantity}</p>
+         New Stock Just Arrived!
+          Product: ${product.productName}
+          Price: ${newDelivery.shopPrice}
+          Available Quantity: ${quantity}
     `;
 
         return sendEmail(user.email, emailSubject, emailBody).catch((err) => {

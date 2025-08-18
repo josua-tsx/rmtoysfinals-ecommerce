@@ -302,21 +302,25 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
             </div>
 
             <div className="flex items-center flex-wrap gap-4">
-              <label htmlFor="">Notify subcribed users for this order?</label>
-
-              <button
-                type="button"
-                className={`${
-                  !toggleNotify ? "text-red-700" : "text-blue-700"
-                }`}
-                onClick={toggleNotifcation}
-              >
-                {toggleNotify ? (
-                  <MdToggleOn size={45} />
-                ) : (
-                  <MdToggleOff size={45} />
-                )}
-              </button>
+              <label htmlFor="">Notify subscribed users for this order?</label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className={`${
+                    !toggleNotify ? "text-red-700" : "text-blue-700"
+                  }`}
+                  onClick={toggleNotifcation}
+                >
+                  {toggleNotify ? (
+                    <MdToggleOn size={45} />
+                  ) : (
+                    <MdToggleOff size={45} />
+                  )}
+                </button>
+                <span className="text-sm">
+                  {toggleNotify ? "Notifications ON" : "Notifications OFF"}
+                </span>
+              </div>
             </div>
           </div>
 

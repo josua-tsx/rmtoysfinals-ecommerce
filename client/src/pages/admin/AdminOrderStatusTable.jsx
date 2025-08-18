@@ -7,6 +7,7 @@ import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
+import ToShipModal from "../../modals/ToShipModal";
 
 export default function AdminOrderStatusTable() {
   const queryClient = useQueryClient();
@@ -116,6 +117,8 @@ export default function AdminOrderStatusTable() {
         title={"Update Order Status"}
         message={"Are you sure you want to update the order status?"}
       />
+
+      {/* <ToShipModal/> */}
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>ORDER TABLE</h1>

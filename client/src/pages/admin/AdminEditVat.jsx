@@ -20,7 +20,7 @@ export default function AdminEditVat() {
     setVatValue(input / 100)
   }
 
-  const {
+const {
     data: singleVat,
     isPending: singleVatPending,
     isError: singleVatError,

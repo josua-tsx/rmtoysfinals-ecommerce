@@ -60,13 +60,12 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Categories are deleted succesfully!");
-      setSelectedIds([])
+      setSelectedIds([]);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong");
     },
   });
-
 
   useEffect(() => {
     if (!enableMultiDel) {
@@ -110,11 +109,10 @@ export default function AdminCategoryTable({ enableMultiDel }) {
       )
     ) {
       deleteAllCategories(selectedIds);
-      
     }
   };
 
-    const handleCancel = () => {
+  const handleCancel = () => {
     setSelectedId(null);
     setIsOpenModal(false);
   };

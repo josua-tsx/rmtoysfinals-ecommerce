@@ -87,6 +87,31 @@ export default function AdminSideBar() {
     },
 
     {
+      name: "Rider Maintenance",
+      icon: <MdCategory size={20} />,
+      allowedRoles: ["admin"],
+      inner: [
+        {
+          name: "Rider Table",
+          path: "/admin/rider",
+        },
+      ],
+    },
+
+    {
+      name: "Faqs Maintenance",
+      path: "/admin/audit",
+      icon: <MdCategory size={20} />,
+      allowedRoles: ["admin"],
+      inner: [
+        {
+          name: "Faqs Table",
+          path: "/admin/faqs",
+        },
+      ],
+    },
+
+    {
       name: "Stocks",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
@@ -128,19 +153,6 @@ export default function AdminSideBar() {
       path: "/admin/orderTransactions",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
-    },
-
-    {
-      name: "Faqs Maintenance",
-      path: "/admin/audit",
-      icon: <MdCategory size={20} />,
-      allowedRoles: ["admin"],
-      inner: [
-        {
-          name: "Faqs Table",
-          path: "/admin/faqs"
-        }
-      ]
     },
 
     {
