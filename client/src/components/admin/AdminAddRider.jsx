@@ -9,13 +9,15 @@ export default function AdminAddRider() {
   const [riderName, setRiderName] = useState("");
   const [riderPhoneNum, setRiderPhoneNum] = useState(0);
 
-  const { data: riderAddMutation, isPending } = useMutation({
+  const { mutate: riderAddMutation, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/rider/add-rider`, data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["riders"] });
+      setRiderName("");
+      setRiderPhoneNum("");
       toast.success("Succesfully Added new rider");
     },
     onError: (err) => {
@@ -26,7 +28,7 @@ export default function AdminAddRider() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    riderAddMutation({ riderName: riderName, riderPhoneNumber: riderPhoneNum });
+    riderAddMutation({ riderName, riderPhoneNumber: riderPhoneNum });
   };
 
   return (

@@ -3,6 +3,8 @@ import { CiEdit } from "react-icons/ci";
 import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../../lib/axios";
 
 const TEST_DATA = [
   {
@@ -38,7 +40,19 @@ const TEST_DATA = [
 ];
 
 export default function AdminRiderTable() {
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    data: getRiders = [],
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["riders"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/rider/get-riders`);
+      return res.data;
+    },
+  });
+
+  if (isError) return <p>Error...</p>;
 
   return (
     <div className="font-main border rounded-[5px] text-sm md:text-normal border-black bg-card relative ">
@@ -67,7 +81,7 @@ export default function AdminRiderTable() {
            </div>
          </div> */}
       <div className="overflow-y-auto  h-[600px] py-3">
-        {isLoading ? (
+        {isPending ? (
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
@@ -84,24 +98,24 @@ export default function AdminRiderTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
-              {TEST_DATA?.length > 0 ? (
-                TEST_DATA?.map((rider) => (
+              {getRiders?.length > 0 ? (
+                getRiders?.map((rider) => (
                   <tr key={rider._id}>
-                    <td className="px-4 ">{rider.id}</td>
+                    <td className="px-4 ">{rider._id}</td>
 
                     <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
-                      {rider.RiderName}
+                      {rider.riderName}
                     </td>
 
                     <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                      {rider.RiderPhoneNum}
+                      {rider.riderPhoneNumber}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {rider.RiderStatus}
+                      {rider.riderStatus}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {rider.RiderStatus}
+                      {rider.successDelivered}
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">

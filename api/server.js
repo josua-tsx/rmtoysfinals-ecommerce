@@ -77,42 +77,45 @@ app.use("/api/rider", riderRoute);
 // Error handling middleware
 app.use(handleError);
 
-// async function safeDropProductIndex() {
-//   try {
-//     // Get all indexes from the vats collection
-//     const indexes = await Vat.collection.indexes();
+async function safeDropOrderIndex() {
+  try {
+    // Get all indexes from the riders collection
+    const indexes = await Rider.collection.indexes();
 
-//     // Find the problematic product_1 index
-//     const productIndex = indexes.find(index => index.name === "product_1");
+    // Find the problematic order_1 index
+    const orderIndex = indexes.find((index) => index.name === "order_1");
 
-//     if (productIndex) {
-//       // Drop the index
-//       await Vat.collection.dropIndex("product_1");
-//       console.log("✅ Dropped product_1 index successfully.");
-//     } else {
-//       console.log("ℹ️ No product_1 index found, nothing to drop.");
-//     }
-//   } catch (error) {
-//     console.error("❌ Error while dropping product_1 index:", error);
+    if (orderIndex) {
+      // Drop the index
+      await Rider.collection.dropIndex("order_1");
+      console.log("✅ Dropped order_1 index successfully.");
+    } else {
+      console.log("ℹ️ No order_1 index found, nothing to drop.");
+    }
+  } catch (error) {
+    console.error("❌ Error while dropping order_1 index:", error);
 
-//     // Special handling for MongoDB 4.2+ where you might need to drop the index differently
-//     if (error.code === 27 || error.message.includes("not found")) {
-//       console.log("⚠️ Trying alternative drop method...");
-//       try {
-//         await mongoose.connection.db.command({
-//           dropIndexes: 'vats',
-//           index: 'product_1'
-//         });
-//         console.log("✅ Successfully dropped index using alternative method");
-//       } catch (altError) {
-//         console.error("❌ Failed to drop index with alternative method:", altError);
-//       }
-//     }
-//   }
-// }
+    // Alternative drop method
+    if (error.code === 27 || error.message.includes("not found")) {
+      console.log("⚠️ Trying alternative drop method...");
+      try {
+        await mongoose.connection.db.command({
+          dropIndexes: "riders", // collection name
+          index: "order_1",
+        });
+        console.log("✅ Successfully dropped index using alternative method");
+      } catch (altError) {
+        console.error(
+          "❌ Failed to drop index with alternative method:",
+          altError
+        );
+      }
+    }
+  }
+}
 
-// // // Call it once somewhere after mongoose.connect()
-// safeDropProductIndex();
+// // Call it once somewhere after mongoose.connect()
+safeDropOrderIndex();
 
 // Server startup
 app.listen(PORT, () => {
