@@ -8,6 +8,7 @@ import User from "../models/user.models.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 import Stripe from "stripe";
+import Rider from "../models/rider.models.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -1105,7 +1106,7 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest } = req.body;
+  const { status, isGuest, riderId } = req.body;
   const userId = req?.user?.id;
 
   try {
@@ -1228,6 +1229,22 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
 
         case "Shipped":
+          await Order.findByIdAndUpdate(
+            orderId,
+            {
+              $push: {
+                rider: riderId,
+              },
+            },
+            {
+              new: true,
+            }
+          );
+
+          await Rider.findByIdAndUpdate(riderId, {
+            $push: { order: orderId },
+          });
+
           await sendSMS(
             orderUserPhoneNumber,
             `Your order ${updatedOrder._id} has Shipped!`

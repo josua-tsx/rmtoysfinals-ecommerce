@@ -8,6 +8,7 @@ import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import ToShipModal from "../../modals/ToShipModal";
+import { useEffect } from "react";
 
 export default function AdminOrderStatusTable() {
   const queryClient = useQueryClient();
@@ -19,7 +20,9 @@ export default function AdminOrderStatusTable() {
   const [selectedId, setSelectedId] = useState(null);
   const [newStatus, setNewStatus] = useState("");
 
-  console.log(newStatus);
+  const [openToShipModal, setOpenToShipModal] = useState(false);
+
+  const [selectedRiderId, setSelectedRiderId] = useState(null);
 
   const {
     data: allOrders = [],
@@ -55,8 +58,11 @@ export default function AdminOrderStatusTable() {
   });
 
   const { mutate: updateStatusMutation } = useMutation({
-    mutationFn: async ({ id, status }) => {
-      const res = await axiosInstance.put(`/order/${id}/status`, { status });
+    mutationFn: async ({ id, status, rider }) => {
+      const res = await axiosInstance.put(`/order/${id}/status`, {
+        status,
+        rider,
+      });
       return res.data;
     },
     onSuccess: () => {
@@ -71,14 +77,21 @@ export default function AdminOrderStatusTable() {
     },
   });
 
-  // const handleChangeStatus = (id, e) => {
-  //   const newStatus = e.target.value;
-
-  //   updateStatusMutation({ id, status: newStatus });
-  // };
+  useEffect(() => {
+    if (newStatus === "Shipped") {
+      setOpenToShipModal(true);
+    } else {
+      setOpenToShipModal(false);
+    }
+  }, [newStatus]);
 
   const confirmOrderStatus = () => {
-    updateStatusMutation({ id: selectedId, status: newStatus });
+    updateStatusMutation({
+      id: selectedId,
+      status: newStatus,
+      rider: selectedRiderId,
+    });
+
     cancelConfirmModal();
   };
 
@@ -97,6 +110,15 @@ export default function AdminOrderStatusTable() {
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
     setOpenModal(true);
+  };
+
+  const handleCancelOpenShipModal = () => {
+    setOpenToShipModal(false);
+    setOpenConfirmModal(false);
+  };
+
+  const handleConfirmToShipModal = () => {
+    setOpenToShipModal(false);
   };
 
   if (isOrdersError) return <p>error.</p>;
@@ -118,7 +140,13 @@ export default function AdminOrderStatusTable() {
         message={"Are you sure you want to update the order status?"}
       />
 
-      {/* <ToShipModal/> */}
+      <ToShipModal
+        selectedRiderId={selectedRiderId}
+        setSelectedRiderId={setSelectedRiderId}
+        isOpen={openToShipModal}
+        onConfirm={handleConfirmToShipModal}
+        onCancel={handleCancelOpenShipModal}
+      />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>ORDER TABLE</h1>

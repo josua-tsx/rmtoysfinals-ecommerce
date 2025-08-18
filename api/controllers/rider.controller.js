@@ -230,3 +230,4 @@ export const editRider = async (req, res, next) => {
     }
   }
 };
+

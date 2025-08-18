@@ -12,6 +12,11 @@ const OrderModelSchema = new mongoose.Schema(
       default: false,
     },
 
+    rider: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Rider",
+    },
+
     guestUser: {
       name: { type: String },
       phone: { type: String },
