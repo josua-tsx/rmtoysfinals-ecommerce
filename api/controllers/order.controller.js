@@ -1215,7 +1215,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Shipped":
-      case "Shipped":
         if (riderId) {
           // update order with status + rider in one go
           const updatedOrderWithRider = await Order.findByIdAndUpdate(
