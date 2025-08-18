@@ -36,7 +36,7 @@ export default function AdminOrderStatusTable() {
     },
   });
 
-  console.log(selectedId);
+  console.log(allOrders)
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 

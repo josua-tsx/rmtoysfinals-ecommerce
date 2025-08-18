@@ -1217,10 +1217,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
       case "Shipped":
         if (riderId) {
           await Order.findByIdAndUpdate(orderId, {
-            $addToSet: { rider: riderId }, // no duplicates
+            rider: riderId, // no duplicates
           });
           await Rider.findByIdAndUpdate(riderId, {
-            $addToSet: { order: orderId }, // no duplicates
+            order: orderId, // no duplicates
           });
         }
         await notifyUser(
