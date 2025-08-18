@@ -3,43 +3,13 @@ import { CiEdit } from "react-icons/ci";
 import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
-
-const TEST_DATA = [
-  {
-    id: 1,
-    RiderName: "juswa",
-    RiderStatus: "Unavailable",
-    RiderPhoneNum: "09128321412314",
-  },
-  {
-    id: 2,
-    RiderName: "juswa2",
-    RiderStatus: "Available",
-    RiderPhoneNum: "09128321412314",
-  },
-  {
-    id: 3,
-    RiderName: "juswa3",
-    RiderStatus: "Available",
-    RiderPhoneNum: "09128321412314",
-  },
-  {
-    id: 4,
-    RiderName: "juswa4",
-    RiderStatus: "Available",
-    RiderPhoneNum: "09128321412314",
-  },
-  {
-    id: 5,
-    RiderName: "juswa5",
-    RiderStatus: "Unavailable",
-    RiderPhoneNum: "09128321412314",
-  },
-];
+import toast from "react-hot-toast";
 
 export default function AdminRiderTable() {
+  const queryClient = useQueryClient();
+
   const {
     data: getRiders = [],
     isPending,
@@ -49,6 +19,20 @@ export default function AdminRiderTable() {
     queryFn: async () => {
       const res = await axiosInstance.get(`/rider/get-riders`);
       return res.data;
+    },
+  });
+
+  const { mutate: deleteRiderMutation } = useMutation({
+    mutationFn: async (riderId) => {
+      const res = await axiosInstance.delete(`/rider/delete-rider/${riderId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["riders"] });
+      toast.success("Rider succesfully deleted");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
     },
   });
 
@@ -129,6 +113,7 @@ export default function AdminRiderTable() {
                         <CiEdit size={25} />
                       </button>
                       <button
+                        onClick={() => deleteRiderMutation(rider._id)}
                         type="button"
                         className="text-red-600 hover:text-red-300"
                       >
