@@ -1127,6 +1127,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const order = await Order.findById(orderId).populate("userId");
     if (!order) return next(handleMakeError(404, "Order not found!"));
 
+    const riderExists = await Rider.exists({ _id: riderId });
+    if (!riderExists) {
+      return next(handleMakeError(404, "Rider not found"));
+    }
+
     // Guest check
     const isGuestOrder = isGuest || !order.userId;
     const orderUserPhoneNumber = isGuestOrder
@@ -1151,7 +1156,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     // 🔹 Update order
-    const updatedOrder = await Order.findByIdAndUpdate(
+    let updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
         status,
@@ -1213,26 +1218,35 @@ export const updateDeliveryStatus = async (req, res, next) => {
           "set_OrderStatus_Processing"
         );
         break;
-
       case "Shipped":
         if (riderId) {
-          // update order with status + rider in one go
-          const updatedOrderWithRider = await Order.findByIdAndUpdate(
-            updatedOrder._id,
-            {
-              status: "Shipped",
-              paymentStatus: updatedOrder.paymentStatus,
-              rider: riderId,
-            },
-            { new: true, runValidators: true }
-          );
+          // Update order with status and rider in one operation
+          const orderUpdate = {
+            status: "Shipped",
+            paymentStatus: order.paymentStatus,
+            rider: riderId,
+          };
 
-          // update rider to include this order
-          await Rider.findByIdAndUpdate(riderId, {
-            order: updatedOrder._id, // make sure Rider schema has "orders" array
-          });
+          // Perform a single update operation
+          const [updatedOrderWithRider, updatedRider] = await Promise.all([
+            Order.findByIdAndUpdate(orderId, orderUpdate, {
+              new: true,
+              runValidators: true,
+            }),
+            Rider.findByIdAndUpdate(
+              riderId,
+              { $addToSet: { orders: orderId } }, // Add order to rider's orders array
+              { new: true }
+            ),
+          ]);
 
-          // replace updatedOrder so response includes rider
+          if (!updatedOrderWithRider || !updatedRider) {
+            return next(
+              handleMakeError(400, "Failed to assign rider to order")
+            );
+          }
+
+          // Use let instead of const at the top if you need to reassign
           updatedOrder = updatedOrderWithRider;
         }
 
