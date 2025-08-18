@@ -28,6 +28,14 @@ export default function AdminAddRider() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
+    if (!riderName) {
+      return toast.error("Rider name is required");
+    }
+
+    if (!riderPhoneNum) {
+      return toast.error("Rider phone number is required");
+    }
+
     riderAddMutation({ riderName, riderPhoneNumber: riderPhoneNum });
   };
 
