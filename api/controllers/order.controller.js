@@ -1215,14 +1215,28 @@ export const updateDeliveryStatus = async (req, res, next) => {
         break;
 
       case "Shipped":
+      case "Shipped":
         if (riderId) {
-          await Order.findByIdAndUpdate(orderId, {
-            rider: riderId, // no duplicates
-          });
+          // update order with status + rider in one go
+          const updatedOrderWithRider = await Order.findByIdAndUpdate(
+            orderId,
+            {
+              status: "Shipped",
+              paymentStatus: updatedOrder.paymentStatus,
+              rider: riderId,
+            },
+            { new: true, runValidators: true }
+          );
+
+          // update rider to include this order
           await Rider.findByIdAndUpdate(riderId, {
-            order: orderId, // no duplicates
+            $addToSet: { orders: orderId }, // make sure Rider schema has "orders" array
           });
+
+          // replace updatedOrder so response includes rider
+          updatedOrder = updatedOrderWithRider;
         }
+
         await notifyUser(
           `Your order ${updatedOrder._id} has been Shipped!`,
           "set_OrderStatus_Shipped"
