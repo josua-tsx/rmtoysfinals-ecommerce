@@ -175,7 +175,6 @@ export const editRider = async (req, res, next) => {
   const { riderId } = req.params;
   const { riderName: newName, riderPhoneNumber: newNumber } = req.body;
 
-  
   if (!newName) {
     return next(handleMakeError(400, "Rider name is required."));
   }
@@ -197,34 +196,35 @@ export const editRider = async (req, res, next) => {
       return next(handleMakeError(400, riderPhoneNumberCheck.message));
     }
 
-  try {
-    const existingPhoneNumber = await Rider.findOne({
-      riderPhoneNumber: newNumber,
-      _id: { $ne: riderId },
-    });
-
-    if (existingPhoneNumber) {
-      return next(
-        handleMakeError(
-          400,
-          "This Phone number is already exist in the table. Try new one"
-        )
-      );
-    }
-
-    const updateRider = await Rider.findByIdAndUpdate(
-      riderId,
-      {
-        riderName: newName,
+    try {
+      const existingPhoneNumber = await Rider.findOne({
         riderPhoneNumber: newNumber,
-      },
-      { new: true }
-    );
+        _id: { $ne: riderId },
+      });
 
-    if (!updateRider) return next(handleMakeError(400, "Update error"));
+      if (existingPhoneNumber) {
+        return next(
+          handleMakeError(
+            400,
+            "This Phone number is already exist in the table. Try new one"
+          )
+        );
+      }
 
-    res.status(200).json({ message: "Rider updated", data: updateRider });
-  } catch (error) {
-    next(error);
+      const updateRider = await Rider.findByIdAndUpdate(
+        riderId,
+        {
+          riderName: newName,
+          riderPhoneNumber: newNumber,
+        },
+        { new: true }
+      );
+
+      if (!updateRider) return next(handleMakeError(400, "Update error"));
+
+      res.status(200).json({ message: "Rider updated", data: updateRider });
+    } catch (error) {
+      next(error);
+    }
   }
 };
