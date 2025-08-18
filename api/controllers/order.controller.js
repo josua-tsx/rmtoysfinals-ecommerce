@@ -1127,11 +1127,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const order = await Order.findById(orderId).populate("userId");
     if (!order) return next(handleMakeError(404, "Order not found!"));
 
-    const riderExists = await Rider.exists({ _id: riderId });
-    if (!riderExists) {
-      return next(handleMakeError(404, "Rider not found"));
-    }
-
     // Guest check
     const isGuestOrder = isGuest || !order.userId;
     const orderUserPhoneNumber = isGuestOrder
