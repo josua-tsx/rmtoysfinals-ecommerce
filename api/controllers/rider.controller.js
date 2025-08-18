@@ -7,6 +7,14 @@ export const addRider = async (req, res, next) => {
   const userId = req.user.id;
   const { riderName, riderPhoneNumber } = req.body;
 
+  if (!riderName) {
+    return next(handleMakeError(400, "Rider name is required."));
+  }
+
+  if (!riderPhoneNumber) {
+    return next(handleMakeError(400, "Rider phone number is required."));
+  }
+
   if (riderName !== undefined && riderName) {
     const riderNameCheck = validateFullName(riderName);
     if (!riderNameCheck.valid) {
