@@ -8,7 +8,6 @@ import User from "../models/user.models.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 import Stripe from "stripe";
-import Rider from "../models/rider.models.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -1106,7 +1105,7 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest, riderId } = req.body;
+  const { status, isGuest } = req.body;
   const userId = req?.user?.id;
 
   try {
@@ -1126,12 +1125,15 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const order = await Order.findById(orderId).populate("userId");
     if (!order) return next(handleMakeError(400, "No order found!"));
 
+    // Determine if this is a guest order
     const isGuestOrder = isGuest || !order.userId;
     const orderUserPhoneNumber = isGuestOrder
       ? order?.guestUser?.phone
       : order?.userId?.phoneNumber;
 
+    // Handle cancellation for both guest and regular orders
     if (status === "Cancelled" && order.status !== "Cancelled") {
+      // Restore stock quantities
       for (const item of order.orderItems) {
         await Stocks.findOneAndUpdate(
           { product: item.productId },
@@ -1140,6 +1142,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
         );
       }
 
+      // Only return credits for registered users
       if (!isGuestOrder && order.usedCredits) {
         await User.findByIdAndUpdate(order.userId, {
           $inc: { credits: order.usedCredits },
@@ -1147,27 +1150,22 @@ export const updateDeliveryStatus = async (req, res, next) => {
       }
     }
 
+    // Prepare order update
     const orderUpdate = {
       status,
       paymentStatus: status === "Delivered" ? "Paid" : order.paymentStatus,
     };
 
-    if (status === "Shipped" && !order.rider && riderId) {
-      await Rider.findByIdAndUpdate(riderId, {
-        $push: { order: orderId },
-        $set: { riderStatus: "unavailable" },
-      });
-      orderUpdate.rider = riderId; // make sure Order links rider
-    }
-
+    // Update the order
     const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
       new: true,
       runValidators: true,
-    }).populate("rider");
-
+    });
     if (!updatedOrder) return next(handleMakeError(400, "Order not found!"));
 
+    // Handle status-specific actions
     if (!isGuestOrder && userId) {
+      // For registered users only
       const isUserAdminOrValida = await User.findById(userId);
       const userEmail = order?.userId?.email;
 
@@ -1232,19 +1230,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
         case "Shipped":
           await sendSMS(
             orderUserPhoneNumber,
-            `Your order ${updatedOrder._id} has Shipped! Rider: ${
-              updatedOrder.rider?.riderName || "No rider assigned yet"
-            }, Contact: ${updatedOrder.rider?.riderPhoneNumber || "N/A"}`
+            `Your order ${updatedOrder._id} has Shipped!`
           );
           await logAuditTrail({
             action: `set_OrderStatus_Shipped`,
             userId,
             targetId: updatedOrder._id,
             targetType: "OrderStatus",
-            details: {
-              email: userEmail,
-              rider: updatedOrder.rider?._id || null,
-            },
+            details: { email: userEmail },
             role:
               isUserAdminOrValida?.role === "admin"
                 ? "admin"
@@ -1289,12 +1282,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
       }
     } else {
+      // Minimal handling for guest orders
       const smsMessages = {
         Delivered: `Your guest order ${updatedOrder._id} has been delivered`,
         Processing: `Your guest order is being processed`,
-        Shipped: `Your guest order ${updatedOrder._id} has shipped! Rider: ${
-          updatedOrder.rider?.riderName || "No rider assigned yet"
-        }, Contact: ${updatedOrder.rider?.riderPhoneNumber || "N/A"}`,
+        Shipped: `Your guest order has shipped`,
         "Out for Delivery": `Your guest order is out for delivery`,
         Cancelled: `Your guest order has been cancelled`,
       };
