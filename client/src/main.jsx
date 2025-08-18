@@ -74,6 +74,7 @@ import VerifyEmailComponent from "./components/VerifyEmailComponent.jsx";
 import AdminFaqs from "./components/admin/AdminFaqs.jsx";
 import AdminEditFaq from "./components/admin/AdminEditFaq.jsx";
 import AdminRider from "./components/admin/AdminRider.jsx";
+import AdminEditRider from "./pages/admin/AdminEditRider.jsx";
 
 const queryClient = new QueryClient();
 
@@ -299,6 +300,11 @@ const router = createBrowserRouter([
       {
         path: "/admin/rider",
         element: <AdminRider/>
+      },
+
+      {
+        path: "/admin/rider/:riderId",
+        element: <AdminEditRider/>
       },
 
       // VAT

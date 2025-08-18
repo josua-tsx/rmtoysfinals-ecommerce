@@ -4,9 +4,12 @@ import AdminRiderTable from "../../pages/admin/AdminRiderTable";
 import { IoMdAdd } from "react-icons/io";
 import AdminAddWorker from "../../pages/admin/AdminAddWorker";
 import AdminAddRider from "./AdminAddRider";
+import { MdDelete } from "react-icons/md";
 
 export default function AdminRider() {
   const [showAdd, setShowAdd] = useState(false);
+
+  const [enableMultiDel, setEnableMultiDel] = useState(false);
 
   return (
     <section className="bg-yellow h-screen">
@@ -20,7 +23,7 @@ export default function AdminRider() {
               <AdminStatCard title={"SUPPLIERS"} value={5}/> */}
         </div>
 
-        <div className="w-full  flex justify-end">
+        <div className="w-full gap-2  flex ">
           <button
             onClick={() => setShowAdd((prev) => !prev)}
             className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px]"
@@ -28,11 +31,18 @@ export default function AdminRider() {
             {showAdd ? "Cancel" : "Add Rider"}
             <IoMdAdd />
           </button>
+          <button
+            onClick={() => setEnableMultiDel(!enableMultiDel)}
+            className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px]"
+          >
+            Multiple delete
+            <MdDelete />
+          </button>
         </div>
 
         {showAdd && <AdminAddRider />}
 
-        <AdminRiderTable />
+        <AdminRiderTable enableMultiDel={enableMultiDel} />
       </div>
     </section>
   );

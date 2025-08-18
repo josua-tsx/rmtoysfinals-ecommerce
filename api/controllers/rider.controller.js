@@ -137,7 +137,7 @@ export const deleteMultiRider = async (req, res, next) => {
       },
     });
 
-    if (rider.length !== riderIds) {
+    if (rider.length !== riderIds.length) {
       const foundIds = rider.map((r) => r._id.toString());
       const missingIds = riderIds.filter((id) => !foundIds.includes(id));
       return next(
@@ -174,6 +174,28 @@ export const deleteMultiRider = async (req, res, next) => {
 export const editRider = async (req, res, next) => {
   const { riderId } = req.params;
   const { riderName: newName, riderPhoneNumber: newNumber } = req.body;
+
+  
+  if (!newName) {
+    return next(handleMakeError(400, "Rider name is required."));
+  }
+
+  if (!newNumber) {
+    return next(handleMakeError(400, "Rider phone number is required."));
+  }
+
+  if (newName !== undefined && newName) {
+    const riderNameCheck = validateFullName(newName);
+    if (!riderNameCheck.valid) {
+      return next(handleMakeError(400, riderNameCheck.message));
+    }
+  }
+
+  if (newNumber !== undefined && newNumber) {
+    const riderPhoneNumberCheck = validatePHMobile(newNumber);
+    if (!riderPhoneNumberCheck.valid) {
+      return next(handleMakeError(400, riderPhoneNumberCheck.message));
+    }
 
   try {
     const existingPhoneNumber = await Rider.findOne({
