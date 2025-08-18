@@ -1218,7 +1218,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
         if (riderId) {
           // update order with status + rider in one go
           const updatedOrderWithRider = await Order.findByIdAndUpdate(
-            orderId,
+            updatedOrder._id,
             {
               status: "Shipped",
               paymentStatus: updatedOrder.paymentStatus,
@@ -1229,7 +1229,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
           // update rider to include this order
           await Rider.findByIdAndUpdate(riderId, {
-            $addToSet: { orders: orderId }, // make sure Rider schema has "orders" array
+            order: updatedOrder._id, // make sure Rider schema has "orders" array
           });
 
           // replace updatedOrder so response includes rider
