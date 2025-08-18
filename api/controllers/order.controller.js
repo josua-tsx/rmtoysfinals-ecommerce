@@ -8,7 +8,6 @@ import User from "../models/user.models.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 import Stripe from "stripe";
-import Rider from "../models/rider.models.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -1106,7 +1105,7 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest, riderId } = req.body;
+  const { status, isGuest } = req.body;
   const userId = req?.user?.id;
 
   try {
@@ -1123,17 +1122,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid delivery status." });
     }
 
-    // Load order
     const order = await Order.findById(orderId).populate("userId");
-    if (!order) return next(handleMakeError(404, "Order not found!"));
+    if (!order) return next(handleMakeError(400, "No order found!"));
 
-    // Guest check
     const isGuestOrder = isGuest || !order.userId;
     const orderUserPhoneNumber = isGuestOrder
       ? order?.guestUser?.phone
       : order?.userId?.phoneNumber;
 
-    // 🔹 Handle Cancelled orders: restock + refund credits
     if (status === "Cancelled" && order.status !== "Cancelled") {
       for (const item of order.orderItems) {
         await Stocks.findOneAndUpdate(
@@ -1150,120 +1146,166 @@ export const updateDeliveryStatus = async (req, res, next) => {
       }
     }
 
-    // 🔹 Update order
-    let updatedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      {
-        status,
-        paymentStatus: status === "Delivered" ? "Paid" : order.paymentStatus,
-      },
-      { new: true, runValidators: true }
-    );
-    if (!updatedOrder)
-      return next(handleMakeError(400, "Failed to update order."));
-
-    // 🔹 Unified SMS + Audit helper
-    const notifyUser = async (message, action) => {
-      if (orderUserPhoneNumber) {
-        await sendSMS(orderUserPhoneNumber, message);
-      }
-      if (!isGuestOrder && userId) {
-        const actor = await User.findById(userId);
-        await logAuditTrail({
-          action,
-          userId,
-          targetId: updatedOrder._id,
-          targetType: "OrderStatus",
-          details: { email: order?.userId?.email },
-          role: actor?.role === "admin" ? "admin" : "validatorStaff",
-        });
-      }
+    const orderUpdate = {
+      status,
+      paymentStatus: status === "Delivered" ? "Paid" : order.paymentStatus,
     };
 
-    // 🔹 Status-specific actions
-    switch (status) {
-      case "Delivered":
-        await Promise.all([
-          ...updatedOrder.orderItems.map((item) =>
-            Product.findByIdAndUpdate(
-              item.productId,
-              {
-                $inc: { sold: item.quantity },
-                $addToSet: { userId: updatedOrder.userId }, // avoid duplicates
-              },
-              { new: true, runValidators: true }
-            )
-          ),
-          User.findByIdAndUpdate(updatedOrder.userId, {
-            $inc: { credits: updatedOrder.totalPoints },
-            ...(updatedOrder.usedCredits > 0 && {
-              $set: { creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000) },
-            }),
-          }),
-        ]);
-        await notifyUser(
-          `Your order ${updatedOrder._id} has been Delivered!`,
-          "set_OrderStatus_Delivered"
-        );
-        break;
+    if (status === "Shipped" && !order.rider) {
+      const availableRider = await Rider.findOne({ riderStatus: "available" });
 
-      case "Processing":
-        await notifyUser(
-          `Your order ${updatedOrder._id} is now Processing.`,
-          "set_OrderStatus_Processing"
-        );
-        break;
-      case "Shipped":
-        if (riderId) {
-          // Update order with status and rider in one operation
-          const orderUpdate = {
-            status: "Shipped",
-            paymentStatus: order.paymentStatus,
-            rider: riderId,
-          };
+      if (availableRider) {
+        await Rider.findByIdAndUpdate(availableRider._id, {
+          $push: { order: orderId },
+          $set: { riderStatus: "unavailable" },
+        });
 
-          // Perform a single update operation
-          const [updatedOrderWithRider, updatedRider] = await Promise.all([
-            Order.findByIdAndUpdate(orderId, orderUpdate, {
-              new: true,
-              runValidators: true,
-            }),
-            Rider.findByIdAndUpdate(
-              riderId,
-              { $addToSet: { order: orderId } }, // Add order to rider's orders array
-              { new: true }
+        orderUpdate.rider = availableRider._id;
+      }
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
+      new: true,
+      runValidators: true,
+    }).populate("rider");
+
+    if (!updatedOrder) return next(handleMakeError(400, "Order not found!"));
+
+    if (!isGuestOrder && userId) {
+      const isUserAdminOrValida = await User.findById(userId);
+      const userEmail = order?.userId?.email;
+
+      switch (updatedOrder.status) {
+        case "Delivered":
+          await Promise.all([
+            sendSMS(
+              orderUserPhoneNumber,
+              `Your Order ${updatedOrder._id} has been Delivered!`
             ),
+            ...updatedOrder.orderItems.map((item) =>
+              Product.findByIdAndUpdate(
+                item.productId,
+                {
+                  $inc: { sold: item.quantity },
+                  $addToSet: { userId: updatedOrder.userId },
+                },
+                { new: true, runValidators: true }
+              )
+            ),
+            User.findByIdAndUpdate(updatedOrder.userId, {
+              $inc: { credits: updatedOrder.totalPoints },
+              ...(updatedOrder.usedCredits > 0 && {
+                $set: {
+                  creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                },
+              }),
+            }),
           ]);
 
-          if (!updatedOrderWithRider || !updatedRider) {
-            return next(
-              handleMakeError(400, "Failed to assign rider to order")
-            );
-          }
+          await logAuditTrail({
+            action: `set_OrderStatus_delivered`,
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
+          });
+          break;
 
-          // Use let instead of const at the top if you need to reassign
-          updatedOrder = updatedOrderWithRider;
-        }
+        case "Processing":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} is now Processing`
+          );
+          await logAuditTrail({
+            action: `set_OrderStatus_Processing`,
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
+          });
+          break;
 
-        await notifyUser(
-          `Your order ${updatedOrder._id} has been Shipped!`,
-          "set_OrderStatus_Shipped"
-        );
-        break;
+        case "Shipped":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} has Shipped! Rider: ${
+              updatedOrder.rider?.riderName || "No rider assigned yet"
+            }, Contact: ${updatedOrder.rider?.riderPhoneNumber || "N/A"}`
+          );
+          await logAuditTrail({
+            action: `set_OrderStatus_Shipped`,
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: {
+              email: userEmail,
+              rider: updatedOrder.rider?._id || null,
+            },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
+          });
+          break;
 
-      case "Out for Delivery":
-        await notifyUser(
-          `Your order ${updatedOrder._id} is Out for Delivery!`,
-          "set_OrderStatus_OutForDelivery"
-        );
-        break;
+        case "Out for Delivery":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} is Out for Delivery!`
+          );
+          await logAuditTrail({
+            action: `set_OrderStatus_OutforDelivery`,
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
+          });
+          break;
 
-      case "Cancelled":
-        await notifyUser(
-          `Your order ${updatedOrder._id} has been Cancelled.`,
-          "set_OrderStatus_Cancelled"
-        );
-        break;
+        case "Cancelled":
+          await sendSMS(
+            orderUserPhoneNumber,
+            `Your order ${updatedOrder._id} has been Cancelled`
+          );
+          await logAuditTrail({
+            action: `set_OrderStatus_Cancelled`,
+            userId,
+            targetId: updatedOrder._id,
+            targetType: "OrderStatus",
+            details: { email: userEmail },
+            role:
+              isUserAdminOrValida?.role === "admin"
+                ? "admin"
+                : "validatorStaff",
+          });
+          break;
+      }
+    } else {
+      const smsMessages = {
+        Delivered: `Your guest order ${updatedOrder._id} has been delivered`,
+        Processing: `Your guest order is being processed`,
+        Shipped: `Your guest order ${updatedOrder._id} has shipped! Rider: ${
+          updatedOrder.rider?.riderName || "No rider assigned yet"
+        }, Contact: ${updatedOrder.rider?.riderPhoneNumber || "N/A"}`,
+        "Out for Delivery": `Your guest order is out for delivery`,
+        Cancelled: `Your guest order has been cancelled`,
+      };
+
+      if (smsMessages[status]) {
+        await sendSMS(orderUserPhoneNumber, smsMessages[status]);
+      }
     }
 
     return res.status(200).json({
