@@ -1,7 +1,7 @@
-import { handleMakeError } from "../middleware/handleError";
+import { handleMakeError } from "../middleware/handleError.js";
 import Rider from "../models/rider.models";
-import { validateFullName, validatePHMobile } from "../utils/validations";
-import { logAuditTrail } from "./audit.controller";
+import { validateFullName, validatePHMobile } from "../utils/validations.js";
+import { logAuditTrail } from "./audit.controller.js";
 
 export const addRider = async (req, res, next) => {
   const userId = req.user.id;
