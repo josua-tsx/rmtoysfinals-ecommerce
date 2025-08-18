@@ -1,5 +1,5 @@
 import { handleMakeError } from "../middleware/handleError.js";
-import Rider from "../models/rider.models";
+import Rider from "../models/rider.models.js";
 import { validateFullName, validatePHMobile } from "../utils/validations.js";
 import { logAuditTrail } from "./audit.controller.js";
 
