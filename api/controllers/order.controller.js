@@ -1105,7 +1105,7 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest } = req.body;
+  const { status, isGuest, riderId } = req.body; // ✅ include riderId
   const userId = req?.user?.id;
 
   try {
@@ -1122,7 +1122,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid delivery status." });
     }
 
-    const order = await Order.findById(orderId).populate("userId");
+    let order = await Order.findById(orderId).populate("userId");
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     // Determine if this is a guest order
@@ -1131,18 +1131,30 @@ export const updateDeliveryStatus = async (req, res, next) => {
       ? order?.guestUser?.phone
       : order?.userId?.phoneNumber;
 
-    // Handle cancellation for both guest and regular orders
+    // ====== HANDLE STATUS: SHIPPED (Assign Rider) ======
+    if (status === "Shipped" && riderId) {
+      // 1. Assign rider to this order
+      order.rider = riderId;
+
+      // 2. Add this orderId to rider.orders array
+      await Rider.findByIdAndUpdate(
+        riderId,
+        { $addToSet: { order: order._id } }, // avoids duplicates
+        { new: true, runValidators: true }
+      );
+    }
+
+    // ====== HANDLE STATUS: CANCELLED ======
     if (status === "Cancelled" && order.status !== "Cancelled") {
       // Restore stock quantities
       for (const item of order.orderItems) {
         await Stocks.findOneAndUpdate(
           { product: item.productId },
-          { $inc: { quantity: item.quantity } },
-          { new: true, runValidators: true }
+          { $inc: { quantity: item.quantity } }
         );
       }
 
-      // Only return credits for registered users
+      // Return credits for registered users
       if (!isGuestOrder && order.usedCredits) {
         await User.findByIdAndUpdate(order.userId, {
           $inc: { credits: order.usedCredits },
@@ -1150,22 +1162,16 @@ export const updateDeliveryStatus = async (req, res, next) => {
       }
     }
 
-    // Prepare order update
-    const orderUpdate = {
-      status,
-      paymentStatus: status === "Delivered" ? "Paid" : order.paymentStatus,
-    };
+    // ====== UPDATE ORDER ======
+    order.status = status;
+    if (status === "Delivered") {
+      order.paymentStatus = "Paid";
+    }
 
-    // Update the order
-    const updatedOrder = await Order.findByIdAndUpdate(orderId, orderUpdate, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updatedOrder) return next(handleMakeError(400, "Order not found!"));
+    const updatedOrder = await order.save();
 
-    // Handle status-specific actions
+    // ====== STATUS-SPECIFIC ACTIONS ======
     if (!isGuestOrder && userId) {
-      // For registered users only
       const isUserAdminOrValida = await User.findById(userId);
       const userEmail = order?.userId?.email;
 
@@ -1282,7 +1288,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
       }
     } else {
-      // Minimal handling for guest orders
+      // ====== Guest Order SMS ======
       const smsMessages = {
         Delivered: `Your guest order ${updatedOrder._id} has been delivered`,
         Processing: `Your guest order is being processed`,

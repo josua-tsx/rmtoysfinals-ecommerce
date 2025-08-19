@@ -12,7 +12,7 @@ const OrderModelSchema = new mongoose.Schema(
       default: false,
     },
 
-    rider: {
+    riderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Rider",
     },
