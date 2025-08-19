@@ -36,7 +36,7 @@ export default function AdminOrderStatusTable() {
     },
   });
 
-  console.log(allOrders)
+  console.log(allOrders);
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
@@ -86,10 +86,10 @@ export default function AdminOrderStatusTable() {
   }, [newStatus]);
 
   const confirmOrderStatus = () => {
-    updateStatusMutation({
+  updateStatusMutation({
       id: selectedId,
       status: newStatus,
-      rider: selectedRiderId,
+      riderId: selectedRiderId,
     });
 
     cancelConfirmModal();

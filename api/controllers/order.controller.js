@@ -8,6 +8,7 @@ import User from "../models/user.models.js";
 import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 import Stripe from "stripe";
+import Rider from "../models/rider.models.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -1134,7 +1135,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
     // ====== HANDLE STATUS: SHIPPED (Assign Rider) ======
     if (status === "Shipped" && riderId) {
       // 1. Assign rider to this order
-      order.rider = riderId;
+      order.riderId = riderId;
 
       // 2. Add this orderId to rider.orders array
       await Rider.findByIdAndUpdate(
