@@ -2,12 +2,10 @@ import mongoose from "mongoose";
 
 const RiderModelSchema = new mongoose.Schema(
   {
-    order: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Order",
-      },
-    ],
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+    },
 
     riderName: {
       type: String,

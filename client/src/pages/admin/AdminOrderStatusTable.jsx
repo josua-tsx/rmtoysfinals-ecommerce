@@ -58,12 +58,12 @@ export default function AdminOrderStatusTable() {
   });
 
   const { mutate: updateStatusMutation } = useMutation({
-    mutationFn: async ({ id, status, rider }) => {
+    mutationFn: async ({ id, status, riderId }) => {
       const res = await axiosInstance.put(`/order/${id}/status`, {
         status,
-        rider,
+        riderId,
       });
-      return res.data;
+      return res.data;w
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order"] });

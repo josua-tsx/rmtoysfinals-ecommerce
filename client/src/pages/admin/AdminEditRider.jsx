@@ -107,12 +107,11 @@ export default function AdminEditRider() {
               {isPending ? "Loading..." : "Update Rider"}
             </button>
             <button
-              //   onClick={handleClear}
-
+              onClick={() => navigate("/admin/rider")}
               type="button"
               className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
             >
-              Clear
+              Cancel
             </button>
           </div>
         </form>

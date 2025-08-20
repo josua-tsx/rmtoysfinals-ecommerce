@@ -1137,10 +1137,18 @@ export const updateDeliveryStatus = async (req, res, next) => {
       // 1. Assign rider to this order
       order.riderId = riderId;
 
+      const riderStatus = await Rider.findById(riderId);
+
+      if (riderStatus.riderStatus === "available") {
+        return next(
+          handleMakeError(400, "This rider is unavailable for this deliver.")
+        );
+      }
+
       // 2. Add this orderId to rider.orders array
       await Rider.findByIdAndUpdate(
         riderId,
-        { $addToSet: { order: order._id } }, // avoids duplicates
+        { order: order._id, riderStatus: "unavailable" }, // avoids duplicates
         { new: true, runValidators: true }
       );
     }
