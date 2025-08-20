@@ -1139,7 +1139,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
       const riderStatus = await Rider.findById(riderId);
 
-      if (riderStatus.riderStatus === "available") {
+      if (riderStatus.riderStatus === "unavailable") {
         return next(
           handleMakeError(400, "This rider is unavailable for this deliver.")
         );
