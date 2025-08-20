@@ -9,6 +9,12 @@ import { sendSMS } from "../utils/smsService.js";
 import { logAuditTrail } from "./audit.controller.js";
 import Stripe from "stripe";
 import Rider from "../models/rider.models.js";
+import {
+  assignRider,
+  handleCancelled,
+  handleDelivered,
+  sendOrderNotification,
+} from "../services/orderService.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -1106,211 +1112,42 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest, riderId } = req.body; // ✅ include riderId
+  const { status, isGuest, riderId } = req.body;
   const userId = req?.user?.id;
 
   try {
-    const validStatuses = [
-      "Pending",
-      "Processing",
-      "Shipped",
-      "Out for Delivery",
-      "Delivered",
-      "Cancelled",
-    ];
-
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: "Invalid delivery status." });
+    // ✅ 1. Validate status
+    if (!validateStatus(status)) {
+      return next(handleMakeError(400, "Invalid delivery status."));
     }
 
+    // ✅ 2. Fetch order + rider
     let order = await Order.findById(orderId).populate("userId");
-    if (!order) return next(handleMakeError(400, "No order found!"));
+    if (!order) return next(handleMakeError(404, "No order found!"));
 
-    // Determine if this is a guest order
+    const rider = riderId ? await Rider.findById(riderId) : null;
     const isGuestOrder = isGuest || !order.userId;
-    const orderUserPhoneNumber = isGuestOrder
-      ? order?.guestUser?.phone
-      : order?.userId?.phoneNumber;
 
-    // ====== HANDLE STATUS: SHIPPED (Assign Rider) ======
+    // ✅ 3. Status-specific logic
     if (status === "Shipped" && riderId) {
-      // 1. Assign rider to this order
-      order.riderId = riderId;
-
-      const riderStatus = await Rider.findById(riderId);
-
-      if (riderStatus.riderStatus === "unavailable") {
-        return next(
-          handleMakeError(400, "This rider is unavailable for this deliver.")
-        );
-      }
-
-      // 2. Add this orderId to rider.orders array
-      await Rider.findByIdAndUpdate(
-        riderId,
-        { order: order._id, riderStatus: "unavailable" }, // avoids duplicates
-        { new: true, runValidators: true }
-      );
+      await assignRider(order, rider);
     }
-
-    // ====== HANDLE STATUS: CANCELLED ======
-    if (status === "Cancelled" && order.status !== "Cancelled") {
-      // Restore stock quantities
-      for (const item of order.orderItems) {
-        await Stocks.findOneAndUpdate(
-          { product: item.productId },
-          { $inc: { quantity: item.quantity } }
-        );
-      }
-
-      // Return credits for registered users
-      if (!isGuestOrder && order.usedCredits) {
-        await User.findByIdAndUpdate(order.userId, {
-          $inc: { credits: order.usedCredits },
-        });
-      }
-    }
-
-    // ====== UPDATE ORDER ======
-    order.status = status;
     if (status === "Delivered") {
-      order.paymentStatus = "Paid";
+      await handleDelivered(order, rider);
+    }
+    if (status === "Cancelled") {
+      await handleCancelled(order, isGuestOrder);
     }
 
+    // ✅ 4. Update order status
+    order.status = status;
+    if (status === "Delivered") order.paymentStatus = "Paid";
     const updatedOrder = await order.save();
 
-    // ====== STATUS-SPECIFIC ACTIONS ======
-    if (!isGuestOrder && userId) {
-      const isUserAdminOrValida = await User.findById(userId);
-      const userEmail = order?.userId?.email;
+    // ✅ 5. Notifications + logs
+    await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
 
-      switch (updatedOrder.status) {
-        case "Delivered":
-          await Promise.all([
-            sendSMS(
-              orderUserPhoneNumber,
-              `Your Order ${updatedOrder._id} has been Delivered!`
-            ),
-            ...updatedOrder.orderItems.map((item) =>
-              Product.findByIdAndUpdate(
-                item.productId,
-                {
-                  $inc: { sold: item.quantity },
-                  $addToSet: { userId: updatedOrder.userId },
-                },
-                { new: true, runValidators: true }
-              )
-            ),
-            User.findByIdAndUpdate(updatedOrder.userId, {
-              $inc: { credits: updatedOrder.totalPoints },
-              ...(updatedOrder.usedCredits > 0 && {
-                $set: {
-                  creditLock: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                },
-              }),
-            }),
-          ]);
-
-          await logAuditTrail({
-            action: `set_OrderStatus_delivered`,
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail },
-            role:
-              isUserAdminOrValida?.role === "admin"
-                ? "admin"
-                : "validatorStaff",
-          });
-          break;
-
-        case "Processing":
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your order ${updatedOrder._id} is now Processing`
-          );
-          await logAuditTrail({
-            action: `set_OrderStatus_Processing`,
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail },
-            role:
-              isUserAdminOrValida?.role === "admin"
-                ? "admin"
-                : "validatorStaff",
-          });
-          break;
-
-        case "Shipped":
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your order ${updatedOrder._id} has Shipped!`
-          );
-          await logAuditTrail({
-            action: `set_OrderStatus_Shipped`,
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail },
-            role:
-              isUserAdminOrValida?.role === "admin"
-                ? "admin"
-                : "validatorStaff",
-          });
-          break;
-
-        case "Out for Delivery":
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your order ${updatedOrder._id} is Out for Delivery!`
-          );
-          await logAuditTrail({
-            action: `set_OrderStatus_OutforDelivery`,
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail },
-            role:
-              isUserAdminOrValida?.role === "admin"
-                ? "admin"
-                : "validatorStaff",
-          });
-          break;
-
-        case "Cancelled":
-          await sendSMS(
-            orderUserPhoneNumber,
-            `Your order ${updatedOrder._id} has been Cancelled`
-          );
-          await logAuditTrail({
-            action: `set_OrderStatus_Cancelled`,
-            userId,
-            targetId: updatedOrder._id,
-            targetType: "OrderStatus",
-            details: { email: userEmail },
-            role:
-              isUserAdminOrValida?.role === "admin"
-                ? "admin"
-                : "validatorStaff",
-          });
-          break;
-      }
-    } else {
-      // ====== Guest Order SMS ======
-      const smsMessages = {
-        Delivered: `Your guest order ${updatedOrder._id} has been delivered`,
-        Processing: `Your guest order is being processed`,
-        Shipped: `Your guest order has shipped`,
-        "Out for Delivery": `Your guest order is out for delivery`,
-        Cancelled: `Your guest order has been cancelled`,
-      };
-
-      if (smsMessages[status]) {
-        await sendSMS(orderUserPhoneNumber, smsMessages[status]);
-      }
-    }
-
+    // ✅ 6. Response
     return res.status(200).json({
       success: true,
       message: "Order status updated successfully",

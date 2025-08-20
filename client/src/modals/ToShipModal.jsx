@@ -25,7 +25,6 @@ export default function ToShipModal({
     setSelectedRiderId(id);
   };
 
-
   if (isPending) return <p>Loading...</p>;
 
   if (isError) return <p>Error.</p>;
@@ -48,7 +47,9 @@ export default function ToShipModal({
                 key={rider._id}
                 className={`flex justify-between border ${
                   selectedRiderId === rider._id ? "bg-blue-200" : ""
-                } border-black p-2 rounded-[5px] items-center`}
+                } border-black p-2 rounded-[5px] items-center ${
+                  rider.riderStatus === "unavailable" ? "bg-red-500 text-white" : "text-black"
+                }`}
               >
                 <div className="flex gap-2">
                   <p>Rider Name: </p>
@@ -65,10 +66,13 @@ export default function ToShipModal({
                 </div>
                 <div>
                   <button
+                    disabled={rider.riderStatus === "unavailable"}
                     onClick={() => handleSelectRider(rider._id)}
                     className="border border-black rounded-[5px] p-2 bg-primary text-white"
                   >
-                    Select This Rider
+                    {rider.riderStatus === "unavailable"
+                      ? "Unavailable"
+                      : "Select This Rider"}
                   </button>
                 </div>
               </div>
