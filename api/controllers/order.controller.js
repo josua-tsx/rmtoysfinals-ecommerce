@@ -1122,7 +1122,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     let order = await Order.findById(orderId).populate("userId");
-    let rider = await Rider.findById(riderId);
 
     if (!order) return next(handleMakeError(400, "No order found!"));
 
@@ -1142,6 +1141,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const updatedOrder = await order.save();
 
     if (riderId) {
+      let rider = await Rider.findById(riderId);
       switch (status) {
         case "Cancelled":
         case "Pending":
@@ -1164,6 +1164,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
             );
           }
           await assignRider(order, riderId);
+          break;
         default:
           break;
       }
