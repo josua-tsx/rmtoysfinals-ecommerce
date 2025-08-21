@@ -24,12 +24,6 @@ export const assignRider = async (order, riderId) => {
 
   order.riderId = riderId;
 
-  if (riderStatus.riderStatus === "unavailable") {
-    return next(
-      handleMakeError(400, "This rider is unavailable for this deliver.")
-    );
-  }
-
   // 2. Add this orderId to rider.orders array
   await Rider.findByIdAndUpdate(
     riderId,

@@ -14,6 +14,7 @@ import {
   handleCancelled,
   handleDelivered,
   sendOrderNotification,
+  validateStatus,
 } from "../services/orderService.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
@@ -1116,29 +1117,26 @@ export const updateDeliveryStatus = async (req, res, next) => {
   const userId = req?.user?.id;
 
   try {
-    const validStatuses = [
-      "Pending",
-      "Processing",
-      "Shipped",
-      "Out for Delivery",
-      "Delivered",
-      "Cancelled",
-    ];
-
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: "Invalid delivery status." });
+    if (!validateStatus(status)) {
+      return next(handleMakeError(400, "Invalid delivery status."));
     }
 
     let order = await Order.findById(orderId).populate("userId");
+    const rider = await Rider.findById(riderId);
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     // Determine if this is a guest order
     const isGuestOrder = isGuest || !order.userId;
-    const rider = riderId ? await Rider.findById(riderId) : null;
 
     // ====== HANDLE STATUS: SHIPPED (Assign Rider) ======
     if (status === "Shipped" && riderId) {
-      await assignRider(order, rider);
+      if (rider.riderStatus === "unavailable") {
+        return next(
+          handleMakeError(400, "This rider is unavailable for this deliver.")
+        );
+      }
+
+      await assignRider(order, riderId);
     }
 
     // ====== HANDLE STATUS: CANCELLED ======
@@ -1166,7 +1164,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
       order: updatedOrder,
     });
   } catch (error) {
-    console.error("Order status update error:", error);
+    console.error("Order status update error:", error.message, error.stack);
     return next(handleMakeError(500, "Failed to update order status"));
   }
 };
