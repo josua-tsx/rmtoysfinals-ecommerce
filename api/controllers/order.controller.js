@@ -1138,44 +1138,31 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE STATUS: CANCELLED ======
     if (status === "Cancelled" && order.status !== "Cancelled") {
-      await Rider.findByIdAndUpdate(
-        riderId,
-        {
-          riderStatus: "available",
-        },
-        { new: true, runValidators: true }
-      );
       await handleCancelled(order, isGuestOrder);
     }
 
-    if (rider) {
+    if (riderId) {
+      let riderUpdate = {};
       switch (status) {
         case "Delivered":
-          if (riderId) {
-            await Rider.findByIdAndUpdate(
-              riderId,
-              {
-                riderStatus: "available",
-                $inc: { successDelivered: 1 }, // ✅ increment properly
-              },
-              { new: true, runValidators: true }
-            );
-          }
+          riderUpdate = {
+            $set: { riderStatus: "available" },
+            $inc: { successDelivered: 1 },
+          };
           break;
-
-        case "Processing":
+        case "Cancelled":
+          riderUpdate = { $set: { riderStatus: "available" } }; // no increment here
+          break;
         case "Pending":
-          if (riderId) {
-            await Rider.findByIdAndUpdate(
-              riderId,
-              { riderStatus: "available" },
-              { new: true, runValidators: true }
-            );
-          }
+        case "Processing":
+          riderUpdate = { $set: { riderStatus: "available" } };
           break;
-
-        default:
-          break;
+      }
+      if (Object.keys(riderUpdate).length > 0) {
+        await Rider.findByIdAndUpdate(riderId, riderUpdate, {
+          new: true,
+          runValidators: true,
+        });
       }
     }
 
