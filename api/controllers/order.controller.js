@@ -1122,10 +1122,19 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     let order = await Order.findById(orderId).populate("userId");
-
+    let rider = await Rider.findById(riderId);
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     const isGuestOrder = isGuest || !order.userId;
+
+    if (status === "Shipped" && riderId) {
+      if (rider.riderStatus === "unavailable") {
+        return next(
+          handleMakeError(400, "This rider is unavailable for this deliver.")
+        );
+      }
+      await assignRider(order, riderId);
+    }
 
     // ====== HANDLE STATUS: CANCELLED ======
     if (status === "Cancelled" && order.status !== "Cancelled") {
@@ -1141,7 +1150,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const updatedOrder = await order.save();
 
     if (riderId) {
-      let rider = await Rider.findById(riderId);
       switch (status) {
         case "Cancelled":
         case "Pending":
@@ -1153,17 +1161,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
           rider.riderStatus = "available";
           rider.successDelivered += 1;
           await rider.save();
-          break;
-        case "Shipped":
-          if (rider.riderStatus === "unavailable") {
-            return next(
-              handleMakeError(
-                400,
-                "This rider is unavailable for this deliver."
-              )
-            );
-          }
-          await assignRider(order, riderId);
           break;
         default:
           break;
