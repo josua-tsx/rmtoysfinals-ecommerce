@@ -1112,42 +1112,54 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest, riderId } = req.body;
+  const { status, isGuest, riderId } = req.body; // ✅ include riderId
   const userId = req?.user?.id;
 
   try {
-    // ✅ 1. Validate status
-    if (!validateStatus(status)) {
-      return next(handleMakeError(400, "Invalid delivery status."));
+    const validStatuses = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Out for Delivery",
+      "Delivered",
+      "Cancelled",
+    ];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid delivery status." });
     }
 
-    // ✅ 2. Fetch order + rider
     let order = await Order.findById(orderId).populate("userId");
-    if (!order) return next(handleMakeError(404, "No order found!"));
+    if (!order) return next(handleMakeError(400, "No order found!"));
 
-    const rider = riderId ? await Rider.findById(riderId) : null;
+    // Determine if this is a guest order
     const isGuestOrder = isGuest || !order.userId;
+    const rider = riderId ? await Rider.findById(riderId) : null;
 
-    // ✅ 3. Status-specific logic
+    // ====== HANDLE STATUS: SHIPPED (Assign Rider) ======
     if (status === "Shipped" && riderId) {
       await assignRider(order, rider);
     }
-    if (status === "Delivered") {
-      await handleDelivered(order, rider);
-    }
-    if (status === "Cancelled") {
+
+    // ====== HANDLE STATUS: CANCELLED ======
+    if (status === "Cancelled" && order.status !== "Cancelled") {
       await handleCancelled(order, isGuestOrder);
     }
 
-    // ✅ 4. Update order status
+    // ====== UPDATE ORDER ======
     order.status = status;
-    if (status === "Delivered") order.paymentStatus = "Paid";
+    if (status === "Delivered") {
+      order.paymentStatus = "Paid";
+    }
+
     const updatedOrder = await order.save();
 
-    // ✅ 5. Notifications + logs
+    if (status === "Delivered") {
+      await handleDelivered(updatedOrder, rider);
+    }
+
     await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
 
-    // ✅ 6. Response
     return res.status(200).json({
       success: true,
       message: "Order status updated successfully",

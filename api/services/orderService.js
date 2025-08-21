@@ -19,18 +19,21 @@ export const validateStatus = (status) => {
 };
 
 // ✅ Assign Rider
-export const assignRider = async (order, rider) => {
-  if (!rider) throw new Error("Rider not found.");
+export const assignRider = async (order, riderId) => {
+  if (!riderId) throw new Error("Rider not found.");
 
-  if (rider.riderStatus === "unavailable") {
-    throw new Error("This rider is unavailable for delivery.");
+  order.riderId = riderId;
+
+  if (riderStatus.riderStatus === "unavailable") {
+    return next(
+      handleMakeError(400, "This rider is unavailable for this deliver.")
+    );
   }
 
-  order.riderId = rider._id;
-
+  // 2. Add this orderId to rider.orders array
   await Rider.findByIdAndUpdate(
-    rider._id,
-    { $addToSet: { order: order._id }, riderStatus: "unavailable" },
+    riderId,
+    { order: order._id, riderStatus: "unavailable" }, // avoids duplicates
     { new: true, runValidators: true }
   );
 };
