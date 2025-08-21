@@ -1128,33 +1128,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     // Determine if this is a guest order
     const isGuestOrder = isGuest || !order.userId;
 
-    // ====== HANDLE STATUS: SHIPPED (Assign Rider) ======
-    if (status === "Shipped" && riderId) {
-      if (rider.riderStatus === "unavailable") {
-        return next(
-          handleMakeError(400, "This rider is unavailable for this deliver.")
-        );
-      }
-
-      await assignRider(order, riderId);
-    }
-
-    // ====== HANDLE STATUS: CANCELLED ======
-    if (status === "Cancelled" && order.status !== "Cancelled") {
-      rider.riderStatus = "available";
-      rider.riderStatus -= 1;
-      await handleCancelled(order, isGuestOrder);
-    }
-
-    if (status === "Delivered") {
-      rider.successDelivered += 1;
-      rider.riderStatus = "available";
-    }
-
-    if (status === "Processing" || status === "Pending") {
-      rider.riderStatus = "available";
-    }
-
     // ====== UPDATE ORDER ======
     order.status = status;
     if (status === "Delivered") {
@@ -1163,8 +1136,36 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     const updatedOrder = await order.save();
 
-    if (status === "Delivered") {
-      await handleDelivered(updatedOrder);
+    if (rider) {
+      switch (status) {
+        case "Delivered":
+          rider.riderStatus = "available";
+          rider.successDelivered += 1;
+          await handleDelivered(updatedOrder);
+          await rider.save();
+          break;
+        case "Shipped" && riderId:
+          if (rider.riderStatus === "unavailable") {
+            return next(
+              handleMakeError(
+                400,
+                "This rider is unavailable for this delivery."
+              )
+            );
+          }
+          await assignRider(order, riderId);
+          break;
+        case "Processing":
+        case "Pending":
+          rider.riderStatus = "available";
+          await rider.save();
+          break;
+        case "Cancelled" && order.status !== "Cancelled":
+          rider.riderStatus = "available";
+          await handleCancelled(order, isGuestOrder);
+        default:
+          break;
+      }
     }
 
     await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
