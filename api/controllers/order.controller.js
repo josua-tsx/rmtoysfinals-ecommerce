@@ -1122,7 +1122,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     let order = await Order.findById(orderId).populate("userId");
-    const rider = await Rider.findById(riderId);
+    let rider = await Rider.findById(riderId);
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     // Determine if this is a guest order
@@ -1153,12 +1153,9 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const updatedOrder = await order.save();
 
     if (status === "Delivered") {
-      if (rider) {
-        rider.successDelivered += 1;
-        rider.riderStatus = "available";
-        await rider.save();
-      }
-      await handleDelivered(updatedOrder);
+      rider.successDelivered += 1;
+      rider.riderStatus = "available";
+      await await handleDelivered(updatedOrder);
     }
 
     await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
