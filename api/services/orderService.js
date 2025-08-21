@@ -18,6 +18,22 @@ export const validateStatus = (status) => {
   return validStatuses.includes(status);
 };
 
+export const pendingRider = async (riderId) => {};
+
+export const processingRider = async (riderId) => {};
+
+export const updateRiderStatus = async (riderId) => {
+  if (!riderId) throw new Error("Rider not found.");
+
+  await Rider.findByIdAndUpdate(
+    riderId,
+    {
+      $set: { riderStatus: "available" },
+    },
+    { new: true, runValidators: true }
+  );
+};
+
 // ✅ Assign Rider
 export const assignRider = async (order, riderId) => {
   if (!riderId) throw new Error("Rider not found.");
@@ -33,8 +49,18 @@ export const assignRider = async (order, riderId) => {
 };
 
 // ✅ Handle Delivered
-export const handleDelivered = async (order) => {
+export const handleDelivered = async (order, riderId) => {
   // update product sold count + add userId to product buyers
+
+  await Rider.findByIdAndUpdate(
+    riderId,
+    {
+      $set: { riderStatus: "available" },
+      $inc: { successDelivered: 1 },
+    },
+    { new: true, runValidators: true }
+  );
+
   await Promise.all(
     order.orderItems.map((item) =>
       Product.findByIdAndUpdate(

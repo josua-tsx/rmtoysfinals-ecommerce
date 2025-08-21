@@ -13,7 +13,10 @@ import {
   assignRider,
   handleCancelled,
   handleDelivered,
+  pendingRider,
+  processingRider,
   sendOrderNotification,
+  updateRiderStatus,
   validateStatus,
 } from "../services/orderService.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
@@ -1136,6 +1139,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
       await assignRider(order, riderId);
     }
 
+    if (status === "Pending") {
+      await updateRiderStatus(riderId);
+    }
+
+    if (status === "Processing") {
+      await updateRiderStatus(riderId);
+    }
+
     // ====== HANDLE STATUS: CANCELLED ======
     if (status === "Cancelled" && order.status !== "Cancelled") {
       await handleCancelled(order, isGuestOrder);
@@ -1149,37 +1160,8 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     const updatedOrder = await order.save();
 
-    if (riderId) {
-      switch (status) {
-        case "Cancelled":
-        case "Pending":
-        case "Processing":
-          await Rider.findByIdAndUpdate(
-            riderId,
-            {
-              $set: { riderStatus: "available" },
-            },
-            { new: true, runValidators: true }
-          );
-
-          break;
-        case "Delivered":
-          await Rider.findByIdAndUpdate(
-            riderId,
-            {
-              $set: { riderStatus: "available" },
-              $inc: { successDelivered: 1 },
-            },
-            { new: true, runValidators: true }
-          );
-          break;
-        default:
-          break;
-      }
-    }
-
     if (status === "Delivered") {
-      await handleDelivered(updatedOrder);
+      await handleDelivered(updatedOrder, riderId);
     }
 
     await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
