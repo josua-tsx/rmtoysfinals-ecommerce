@@ -1142,20 +1142,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
         riderId,
         {
           riderStatus: "available",
-          $inc: { successDelivered: 1 },
         },
         { new: true, runValidators: true }
       );
       await handleCancelled(order, isGuestOrder);
     }
-
-    // ====== UPDATE ORDER ======
-    order.status = status;
-    if (status === "Delivered") {
-      order.paymentStatus = "Paid";
-    }
-
-    const updatedOrder = await order.save();
 
     if (rider) {
       switch (status) {
@@ -1187,6 +1178,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
           break;
       }
     }
+
+    // ====== UPDATE ORDER ======
+    order.status = status;
+    if (status === "Delivered") {
+      order.paymentStatus = "Paid";
+    }
+
+    const updatedOrder = await order.save();
 
     if (status === "Delivered") {
       await handleDelivered(updatedOrder);
