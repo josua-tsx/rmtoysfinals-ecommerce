@@ -1142,7 +1142,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
         riderId,
         {
           riderStatus: "available",
-          successDelivered: +1,
+          $inc: { successDelivered: 1 },
         },
         { new: true, runValidators: true }
       );
@@ -1160,26 +1160,29 @@ export const updateDeliveryStatus = async (req, res, next) => {
     if (rider) {
       switch (status) {
         case "Delivered":
-          await Rider.findByIdAndUpdate(
-            riderId,
-            {
-              riderStatus: "available",
-              successDelivered: +1,
-            },
-            { new: true, runValidators: true }
-          );
+          if (riderId) {
+            await Rider.findByIdAndUpdate(
+              riderId,
+              {
+                riderStatus: "available",
+                $inc: { successDelivered: 1 }, // ✅ increment properly
+              },
+              { new: true, runValidators: true }
+            );
+          }
           break;
+
         case "Processing":
         case "Pending":
-          await Rider.findByIdAndUpdate(
-            riderId,
-            {
-              riderStatus: "available",
-            },
-            { new: true, runValidators: true }
-          );
-          await rider.save();
+          if (riderId) {
+            await Rider.findByIdAndUpdate(
+              riderId,
+              { riderStatus: "available" },
+              { new: true, runValidators: true }
+            );
+          }
           break;
+
         default:
           break;
       }
