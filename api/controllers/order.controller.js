@@ -1139,6 +1139,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE STATUS: CANCELLED ======
     if (status === "Cancelled" && order.status !== "Cancelled") {
+      await Rider.findByIdAndUpdate(
+        riderId,
+        {
+          riderStatus: "available",
+          successDelivered: +1,
+        },
+        { new: true, runValidators: true }
+      );
       await handleCancelled(order, isGuestOrder);
     }
 
@@ -1153,13 +1161,24 @@ export const updateDeliveryStatus = async (req, res, next) => {
     if (rider) {
       switch (status) {
         case "Delivered":
-          rider.riderStatus = "available";
-          rider.successDelivered += 1;
-          await rider.save();
+          await Rider.findByIdAndUpdate(
+            riderId,
+            {
+              riderStatus: "available",
+              successDelivered: +1,
+            },
+            { new: true, runValidators: true }
+          );
           break;
         case "Processing":
         case "Pending":
-          rider.riderStatus = "available";
+          await Rider.findByIdAndUpdate(
+            riderId,
+            {
+              riderStatus: "available",
+            },
+            { new: true, runValidators: true }
+          );
           await rider.save();
           break;
         default:
