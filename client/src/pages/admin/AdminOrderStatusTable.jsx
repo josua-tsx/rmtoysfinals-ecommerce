@@ -20,6 +20,7 @@ export default function AdminOrderStatusTable() {
   const [newStatus, setNewStatus] = useState("");
   const [openToShipModal, setOpenToShipModal] = useState(false);
   const [selectedRiderId, setSelectedRiderId] = useState(null);
+  const [selectedRiderTwo, setSelectedRiderTwo] = useState(null);
 
   const {
     data: allOrders = [],
@@ -32,6 +33,8 @@ export default function AdminOrderStatusTable() {
       return res.data;
     },
   });
+
+  console.log(selectedRiderId);
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
@@ -74,11 +77,9 @@ export default function AdminOrderStatusTable() {
   const selectOrderRiderId = (riderId) => {
     const orderWithRider = allOrders.find((order) => order.riderId === riderId);
     const riderIdValue = orderWithRider ? orderWithRider.riderId : null;
-    setSelectedRiderId(riderIdValue);
+    setSelectedRiderTwo(riderIdValue);
     return riderIdValue;
   };
-
- 
 
   useEffect(() => {
     if (newStatus === "Shipped") {
@@ -92,11 +93,13 @@ export default function AdminOrderStatusTable() {
     updateStatusMutation({
       id: selectedId,
       status: newStatus,
-      riderId: selectedRiderId,
+      riderId: selectedRiderId || selectedRiderTwo,
     });
 
     cancelConfirmModal();
   };
+
+  console.log(selectedRiderTwo, selectedRiderId);
 
   const handleOpenConfirmModal = (id, e, riderId) => {
     setOpenConfirmModal(true);

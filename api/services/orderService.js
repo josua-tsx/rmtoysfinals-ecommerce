@@ -22,16 +22,47 @@ export const pendingRider = async (riderId) => {};
 
 export const processingRider = async (riderId) => {};
 
-export const updateRiderStatus = async (riderId) => {
+export const updateRiderStatus = async (riderId, status) => {
   if (!riderId) throw new Error("Rider not found.");
 
-  await Rider.findByIdAndUpdate(
-    riderId,
-    {
-      $set: { riderStatus: "available" },
-    },
-    { new: true, runValidators: true }
-  );
+  let riderUpdate = {};
+
+  switch (status) {
+    case "Delivered":
+      riderUpdate = {
+        $set: { riderStatus: "available" },
+        $inc: { successDelivered: 1 },
+      };
+      break;
+
+    case "Cancelled":
+      riderUpdate = {
+        $set: { riderStatus: "available" },
+      };
+      break;
+
+    case "Pending":
+    case "Processing":
+      riderUpdate = {
+        $set: { riderStatus: "available" },
+      };
+      break;
+
+    case "Shipped":
+    case "Out for Delivery":
+      riderUpdate = {
+        $set: { riderStatus: "unavailable" },
+      };
+      break;
+
+    default:
+      return; // do nothing if status is not handled
+  }
+
+  await Rider.findByIdAndUpdate(riderId, riderUpdate, {
+    new: true,
+    runValidators: true,
+  });
 };
 
 // ✅ Assign Rider

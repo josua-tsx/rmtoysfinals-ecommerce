@@ -1116,7 +1116,7 @@ export const getAllCancelled = async (req, res, next) => {
 
 export const updateDeliveryStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { status, isGuest, riderId } = req.body; // ✅ include riderId
+  const { status, isGuest, riderId } = req.body;
   const userId = req?.user?.id;
 
   try {
@@ -1125,26 +1125,19 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     let order = await Order.findById(orderId).populate("userId");
-    let rider = await Rider.findById(riderId);
+    let rider = riderId ? await Rider.findById(riderId) : null;
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     const isGuestOrder = isGuest || !order.userId;
 
+    // ====== HANDLE STATUS: SHIPPED ======
     if (status === "Shipped" && riderId) {
-      if (rider.riderStatus === "unavailable") {
+      if (rider?.riderStatus === "unavailable") {
         return next(
-          handleMakeError(400, "This rider is unavailable for this deliver.")
+          handleMakeError(400, "This rider is unavailable for this delivery.")
         );
       }
       await assignRider(order, riderId);
-    }
-
-    if (status === "Pending") {
-      await updateRiderStatus(riderId);
-    }
-
-    if (status === "Processing") {
-      await updateRiderStatus(riderId);
     }
 
     // ====== HANDLE STATUS: CANCELLED ======
@@ -1160,10 +1153,17 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     const updatedOrder = await order.save();
 
+    // ====== HANDLE RIDER STATUS UPDATE ======
+    if (riderId) {
+      await updateRiderStatus(riderId, status);
+    }
+
+    // ====== HANDLE DELIVERED ======
     if (status === "Delivered") {
       await handleDelivered(updatedOrder, riderId);
     }
 
+    // ====== NOTIFICATIONS ======
     await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
 
     return res.status(200).json({
