@@ -1155,7 +1155,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
     if (status === "Delivered") {
       rider.successDelivered += 1;
       rider.riderStatus = "available";
-      await await handleDelivered(updatedOrder);
+      await handleDelivered(updatedOrder);
     }
 
     await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
