@@ -1123,48 +1123,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     let order = await Order.findById(orderId).populate("userId");
     let rider = await Rider.findById(riderId);
+
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     const isGuestOrder = isGuest || !order.userId;
 
-    if (status === "Shipped" && riderId) {
-      if (rider.riderStatus === "unavailable") {
-        return next(
-          handleMakeError(400, "This rider is unavailable for this deliver.")
-        );
-      }
-      await assignRider(order, riderId);
-    }
-
     // ====== HANDLE STATUS: CANCELLED ======
     if (status === "Cancelled" && order.status !== "Cancelled") {
       await handleCancelled(order, isGuestOrder);
-    }
-
-    if (riderId) {
-      let riderUpdate = {};
-      switch (status) {
-        case "Delivered":
-          riderUpdate = {
-            $set: { riderStatus: "available" },
-            $inc: { successDelivered: 1 },
-          };
-          break;
-        case "Cancelled":
-          riderUpdate = { $set: { riderStatus: "available" } }; // no increment here
-          break;
-        case "Pending":
-        case "Processing":
-          riderUpdate = { $set: { riderStatus: "available" } };
-          break;
-      }
-      const orderWithRider = await Order.findById(orderId).select("riderId");
-      if (Object.keys(riderUpdate).length > 0) {
-        await Rider.findByIdAndUpdate(orderWithRider, riderUpdate, {
-          new: true,
-          runValidators: true,
-        });
-      }
     }
 
     // ====== UPDATE ORDER ======
@@ -1174,6 +1140,34 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     const updatedOrder = await order.save();
+
+    if (riderId) {
+      switch (status) {
+        case "Cancelled":
+        case "Pending":
+        case "Processing":
+          rider.riderStatus = "available";
+          await rider.save();
+          break;
+        case "Delivered":
+          rider.riderStatus = "available";
+          rider.successDelivered += 1;
+          await rider.save();
+          break;
+        case "Shipped":
+          if (rider.riderStatus === "unavailable") {
+            return next(
+              handleMakeError(
+                400,
+                "This rider is unavailable for this deliver."
+              )
+            );
+          }
+          await assignRider(order, riderId);
+        default:
+          break;
+      }
+    }
 
     if (status === "Delivered") {
       await handleDelivered(updatedOrder);

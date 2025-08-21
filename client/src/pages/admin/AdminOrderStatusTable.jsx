@@ -16,12 +16,9 @@ export default function AdminOrderStatusTable() {
   const [openModal, setOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
-
   const [selectedId, setSelectedId] = useState(null);
   const [newStatus, setNewStatus] = useState("");
-
   const [openToShipModal, setOpenToShipModal] = useState(false);
-
   const [selectedRiderId, setSelectedRiderId] = useState(null);
 
   const {
@@ -35,8 +32,6 @@ export default function AdminOrderStatusTable() {
       return res.data;
     },
   });
-
-  console.log(allOrders);
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
@@ -63,7 +58,7 @@ export default function AdminOrderStatusTable() {
         status,
         riderId,
       });
-      return res.data;w
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
@@ -76,6 +71,12 @@ export default function AdminOrderStatusTable() {
       toast.error(err.response.data.message || "something went wrong");
     },
   });
+  const selectOrderRiderId = (riderId) => {
+    const orderWithRider = allOrders.find((order) => order.riderId === riderId);
+    const riderIdValue = orderWithRider ? orderWithRider.riderId : null;
+    setSelectedRiderId(riderIdValue);
+    return riderIdValue;
+  };
 
   useEffect(() => {
     if (newStatus === "Shipped") {
@@ -86,7 +87,7 @@ export default function AdminOrderStatusTable() {
   }, [newStatus]);
 
   const confirmOrderStatus = () => {
-  updateStatusMutation({
+    updateStatusMutation({
       id: selectedId,
       status: newStatus,
       riderId: selectedRiderId,
@@ -95,9 +96,10 @@ export default function AdminOrderStatusTable() {
     cancelConfirmModal();
   };
 
-  const handleOpenConfirmModal = (id, e) => {
+  const handleOpenConfirmModal = (id, e, riderId) => {
     setOpenConfirmModal(true);
     setSelectedId(id);
+    selectOrderRiderId(riderId);
     setNewStatus(e.target.value);
   };
 
@@ -251,13 +253,21 @@ export default function AdminOrderStatusTable() {
                       >
                         VIEW
                       </button>
+                      <button
+                        onClick={() => selectOrderRiderId(data.riderId)}
+                        type="button"
+                      >
+                        CICK
+                      </button>
 
                       <div>
                         <select
                           name="status"
                           id="status"
                           // onChange={(e) => handleChangeStatus(data._id, e)}
-                          onChange={(e) => handleOpenConfirmModal(data._id, e)}
+                          onChange={(e) =>
+                            handleOpenConfirmModal(data._id, e, data.riderId)
+                          }
                           value={data.status}
                           className="outline-none border border-black text-center uppercase py-1 rounded-[5px]"
                         >
