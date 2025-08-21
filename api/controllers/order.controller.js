@@ -1158,8 +1158,9 @@ export const updateDeliveryStatus = async (req, res, next) => {
           riderUpdate = { $set: { riderStatus: "available" } };
           break;
       }
+      const orderWithRider = await Order.findById(orderId).select("riderId");
       if (Object.keys(riderUpdate).length > 0) {
-        await Rider.findByIdAndUpdate(riderId, riderUpdate, {
+        await Rider.findByIdAndUpdate(orderWithRider, riderUpdate, {
           new: true,
           runValidators: true,
         });
