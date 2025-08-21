@@ -33,13 +33,7 @@ export const assignRider = async (order, riderId) => {
 };
 
 // ✅ Handle Delivered
-export const handleDelivered = async (order, rider) => {
-  if (rider) {
-    rider.successDelivered += 1;
-    rider.riderStatus = "available";
-    await rider.save();
-  }
-
+export const handleDelivered = async (order) => {
   // update product sold count + add userId to product buyers
   await Promise.all(
     order.orderItems.map((item) =>

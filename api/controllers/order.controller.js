@@ -1153,7 +1153,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const updatedOrder = await order.save();
 
     if (status === "Delivered") {
-      await handleDelivered(updatedOrder, rider);
+      if (rider) {
+        rider.successDelivered += 1;
+        rider.riderStatus = "available";
+        await rider.save();
+      }
+      await handleDelivered(updatedOrder);
     }
 
     await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
