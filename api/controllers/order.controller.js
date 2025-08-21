@@ -1141,7 +1141,18 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE STATUS: CANCELLED ======
     if (status === "Cancelled" && order.status !== "Cancelled") {
+      rider.riderStatus = "available";
+      rider.riderStatus -= 1;
       await handleCancelled(order, isGuestOrder);
+    }
+
+    if (status === "Delivered") {
+      rider.successDelivered += 1;
+      rider.riderStatus = "available";
+    }
+
+    if (status === "Processing" || status === "Pending") {
+      rider.riderStatus = "available";
     }
 
     // ====== UPDATE ORDER ======
@@ -1153,8 +1164,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const updatedOrder = await order.save();
 
     if (status === "Delivered") {
-      rider.successDelivered += 1;
-      rider.riderStatus = "available";
       await handleDelivered(updatedOrder);
     }
 
