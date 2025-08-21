@@ -31,6 +31,8 @@ export default function AdminRiderTable({ enableMultiDel }) {
     },
   });
 
+  console.log(getRiders)
+
   const { mutate: deleteRiderMutation } = useMutation({
     mutationFn: async (riderId) => {
       const res = await axiosInstance.delete(`/rider/delete-rider/${riderId}`);

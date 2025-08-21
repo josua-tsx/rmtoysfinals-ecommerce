@@ -83,15 +83,6 @@ export const assignRider = async (order, riderId) => {
 export const handleDelivered = async (order, riderId) => {
   // update product sold count + add userId to product buyers
 
-  await Rider.findByIdAndUpdate(
-    riderId,
-    {
-      $set: { riderStatus: "available" },
-      $inc: { successDelivered: 1 },
-    },
-    { new: true, runValidators: true }
-  );
-
   await Promise.all(
     order.orderItems.map((item) =>
       Product.findByIdAndUpdate(
