@@ -1125,7 +1125,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     let rider = await Rider.findById(riderId);
     if (!order) return next(handleMakeError(400, "No order found!"));
 
-    // Determine if this is a guest order
     const isGuestOrder = isGuest || !order.userId;
 
     if (status === "Shipped" && riderId) {
