@@ -36,6 +36,7 @@ export const assignRider = async (order, riderId) => {
 export const handleDelivered = async (order, rider) => {
   if (rider) {
     rider.successDelivered += 1;
+    rider.riderStatus = "available";
     await rider.save();
   }
 
