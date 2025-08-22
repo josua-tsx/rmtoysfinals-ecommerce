@@ -1,7 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Stocks from "../models/stocks.model.js";
-import Wishlist from "../models/wishlist.models.js";
 
 export const addToCart = async (req, res, next) => {
   const { productId } = req.body;
