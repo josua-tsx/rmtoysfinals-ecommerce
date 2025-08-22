@@ -1,5 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { Component, useEffect, useState } from "react";
 import { FaHandRock } from "react-icons/fa";
 import { FaHandPaper } from "react-icons/fa";
 import { FaHandScissors } from "react-icons/fa6";
@@ -26,24 +26,58 @@ const choices = [
 ];
 
 export default function FreeCredits() {
+  const queryClient = useQueryClient();
+
   const [openModal, setOpenModal] = useState(false);
   const [userChoice, setUserChoice] = useState(null);
+  const [computerChoice, setComputerChoice] = useState(null);
+  const [renderResult, setRenderResult] = useState(null);
+  const [renderWinCount, setRenderWinCount] = useState(0);
 
   const { mutate: playGameMutation, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/random/play`, data);
       return res.data;
     },
-    onSuccess: () => {
-      toast.success("success");
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["users", "user"] });
+      console.log(data);
+      setComputerChoice(data.computerChoice);
+      setRenderResult(data.result);
+      setRenderWinCount(data.winCount);
     },
     onError: (err) => {
       toast.error(err.response.data.message);
+      handleResetGame();
     },
   });
 
+  const returnComponent = () => {
+    if (!userChoice) return null;
+
+    const findComponent = choices.find(
+      (data) => data.name === userChoice
+    ).icon2;
+    return findComponent;
+  };
+
+  const returnComputerComponent = () => {
+    if (!computerChoice) return null;
+
+    const findComponent = choices.find(
+      (data) => data.name === computerChoice
+    ).icon2;
+    return findComponent;
+  };
+
   const handlePlayGame = () => {
     playGameMutation({ userChoice });
+  };
+
+  const handleResetGame = () => {
+    setComputerChoice(null);
+    setRenderResult(null);
+    setUserChoice(null);
   };
 
   console.log(userChoice);
@@ -52,7 +86,10 @@ export default function FreeCredits() {
     <div className="fixed font-main -left-10 top-[55%]  z-50">
       <div className="relative">
         <button
-          onClick={() => setOpenModal(true)}
+          onClick={() => {
+            setOpenModal(true);
+            handleResetGame();
+          }}
           className="border border-black p-2 bg-card rotate-90 "
         >
           Claim Free Credits
@@ -76,16 +113,16 @@ export default function FreeCredits() {
                   Voluptatibus, eum aliquid! Modi vero earum quis, sit, numquam.
                 </p>
                 <p className="my-10 text-2xl">
-                  {/* {result ? result : "Fight for Credits! Good luck."} */}
+                  {renderResult
+                    ? renderResult
+                    : "Fight for Credits! Good luck."}
                 </p>
               </div>
               <div className="flex gap-4">
                 <div className="flex flex-col  flex-1 gap-4">
-                  <p className="">Win Count: 12</p>
+                  <p className="">Win Count: {renderWinCount}</p>
                   <div className="flex flex-col justify-center  items-center h-[200px]  rounded-[5px] p-2  w-full">
-                    <div>
-                      {userChoice ? userChoice.icon2 : "Choose your choice"}
-                    </div>
+                    <div>{returnComponent()}</div>
                   </div>
                 </div>
 
@@ -95,15 +132,7 @@ export default function FreeCredits() {
 
                 <div className="flex flex-col items-center justify-center flex-1 gap-4">
                   <div className=" flex flex-col justify-center items-center h-[200px]  rounded-[5px] p-2  w-full">
-                    {/* {isPending ? (
-                      <p className="animate-pulse text-3xl text-gray-500">
-                        🤔 Thinking...
-                      </p>
-                    ) : computerChoice ? (
-                      computerChoice.icon2
-                    ) : (
-                      <p>Waiting...</p>
-                    )} */}
+                    {returnComputerComponent()}
                   </div>
                 </div>
               </div>

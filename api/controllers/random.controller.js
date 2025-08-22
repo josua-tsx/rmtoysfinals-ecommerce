@@ -13,8 +13,10 @@ export const playRps = async (req, res, next) => {
     const randomReward = rewards[Math.floor(Math.random() * rewards.length)];
     const computerChoice = choices[Math.floor(Math.random() * choices.length)];
 
-    let result;
+    // ADDED A CUSTOM DELAY FOR UI
+    await new Promise((resolve) => setTimeout(resolve, 1200));
 
+    let result;
     if (userChoice === computerChoice) {
       result = "draw";
     } else if (
