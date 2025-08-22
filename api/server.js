@@ -23,6 +23,7 @@ import orderStockHistory from "../api/routes/orderStockHistory.route.js";
 import subscribeRoute from "../api/routes/subscribe.route.js";
 import faqsRoute from "../api/routes/faqs.route.js";
 import riderRoute from "../api/routes/rider.route.js";
+import playRoute from "../api/routes/random.route.js";
 
 // Load environment variables from .env file
 config();
@@ -71,6 +72,7 @@ app.use(`/api/history`, orderStockHistory);
 app.use(`/api/subscribe`, subscribeRoute);
 app.use(`/api/faqs`, faqsRoute);
 app.use("/api/rider", riderRoute);
+app.use(`/api/random`, playRoute);
 
 // Error handling middleware
 app.use(handleError);

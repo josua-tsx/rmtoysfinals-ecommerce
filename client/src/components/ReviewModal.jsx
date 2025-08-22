@@ -52,7 +52,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
           {/* close button */}
           <button
             onClick={closeModal}
-            className="absolute border  border-black  text-card bg-primary rounded-[5px] px-5 right-0 -top-8"
+            className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8"
           >
             <IoIosClose size={25} />
           </button>
