@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ProfileComponent from "../components/ProfileComponent";
-import CustomerOrder from "../components/CustomerOrder";
+
 // import SettingComponent from "../components/SettingComponent";
 import ChangeInfoComponent from "../components/ChangeInfoComponent";
 import ShippingAddressComponent from "../components/ShippingAddressComponent";
@@ -10,7 +10,7 @@ import FooterSection from "../components/FooterSection";
 
 const MENU_ITEMS = [
   { name: "profile", label: "Profile", component: ProfileComponent },
-  { name: "order", label: "Order Status", component: CustomerOrder },
+
   { name: "orderhistory", label: "Order History", component: OrderHistory },
   // { name: "mywishlist", label: "My Wishlist", component: WishListComponent },
   { name: "shippingaddress", label: "Shipping Address", component: ShippingAddressComponent },
@@ -28,7 +28,7 @@ export default function ProfilePage() {
       <div className="max-w-[1280px]  mx-auto">
         <h1 className="text-4xl mb-5">MY PROFILE</h1>
         <div className="flex flex-col md:flex-row gap-2">
-          <div className="border h-[210px] md:w-[300px] border-black p-2 bg-card rounded-[5px]">
+          <div className="border h-full md:w-[300px] border-black p-2 bg-card rounded-[5px]">
             <ul className="flex flex-col gap-2 ">
               {MENU_ITEMS.map(({ name, label }) => (
                 <li

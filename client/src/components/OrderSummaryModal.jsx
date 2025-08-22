@@ -108,9 +108,6 @@ export default function OrderSummaryModal({ onClose }) {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`Order placed!`);
-      toast.success(
-        `Track your order status in your order status page in your profile!`
-      );
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -241,7 +238,12 @@ export default function OrderSummaryModal({ onClose }) {
     }
   };
 
-  if (isActivePending || isCartPending) return <div className="absolute inset-0 backdrop-blur-sm  z-10"><LoadingSpinner fullScreen/></div>;
+  if (isActivePending || isCartPending)
+    return (
+      <div className="absolute inset-0 backdrop-blur-sm  z-10">
+        <LoadingSpinner fullScreen />
+      </div>
+    );
   if (isActiveError || isCartError) return <p>error...</p>;
 
   return (

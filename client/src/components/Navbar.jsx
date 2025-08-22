@@ -16,9 +16,29 @@ import RMTOYSLOGO from "../assets/RMTOYSLOGOFINAL.png";
 import CreditsPoints from "./CreditsPoints";
 import GuestCart from "./Guestt/GuestCart";
 
+import CustomerOrder from "./CustomerOrder";
+
 export default function Navbar() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [customerOrderOpen, setCustomerOrderOpen] = useState(false);
+  const [openSetting, setOpenSetting] = useState(false);
   const currentUser = useUserStore((state) => state.currentUser);
+
+  const handleOpenCustomerOrder = () => {
+    if (openSetting === true) {
+      setOpenSetting(false);
+    }
+
+    setCustomerOrderOpen((prev) => !prev);
+  };
+
+  const handleOpenSetting = () => {
+    if (customerOrderOpen === true) {
+      setCustomerOrderOpen(false);
+    }
+
+    setOpenSetting((prev) => !prev);
+  };
 
   return (
     <header className=" bg-yellow fixed p-4 py-4 top-0 left-0 right-0 z-40">
@@ -33,17 +53,15 @@ export default function Navbar() {
         >
           <div>
             {!currentUser ? (
-
               <>
-             
-              <Link to={`/sign-in`}>
-                <button
-                  onClick={() => setIsExpanded(false)}
-                  className="font-main text-2xl pl-[10px] py-[20px]"
-                >
-                  Sign In
-                </button>
-              </Link>
+                <Link to={`/sign-in`}>
+                  <button
+                    onClick={() => setIsExpanded(false)}
+                    className="font-main text-2xl pl-[10px] py-[20px]"
+                  >
+                    Sign In
+                  </button>
+                </Link>
               </>
             ) : (
               ""
@@ -53,7 +71,7 @@ export default function Navbar() {
           {currentUser ? (
             <div className="flex-1 flex border-t-gray-400 border justify-between items-center py-2 mb-[20px] px-1 bg-card">
               <Profile />
-              <Settings />
+              <Settings toggle={handleOpenSetting} openSetting={openSetting} />
             </div>
           ) : (
             ""
@@ -90,12 +108,18 @@ export default function Navbar() {
             </Link>
 
             {currentUser ? (
-              <div className="flex gap-3 relative">
+              <div className="flex gap-2 relative">
                 <div className="absolute -left-10  lg:hidden">
                   <Cart />
                 </div>
                 <div className="lg:hidden">
                   <WishList />
+                </div>
+                <div className="lg:hidden">
+                  <CustomerOrder
+                    toggle={handleOpenCustomerOrder}
+                    openCustomer={customerOrderOpen}
+                  />
                 </div>
               </div>
             ) : isExpanded ? (
@@ -103,7 +127,7 @@ export default function Navbar() {
             ) : (
               <div className="flex gap-4">
                 <div className="md:hidden">
-                  <GuestCart/>
+                  <GuestCart />
                 </div>
                 <Link className=" md:hidden text-lg" to={`/sign-in`}>
                   Sign In
@@ -127,16 +151,23 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-3">
             {currentUser ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-5">
+                <div className="flex items-center w-full gap-4">
                   <CreditsPoints />
                   <Cart />
                   <WishList />
+                  <CustomerOrder
+                    toggle={handleOpenCustomerOrder}
+                    openCustomer={customerOrderOpen}
+                  />
                 </div>
-                <Settings />
+                <Settings
+                  toggle={handleOpenSetting}
+                  openSetting={openSetting}
+                />
               </div>
             ) : (
               <div className="flex gap-8 items-center">
-                <GuestCart/>
+                <GuestCart />
                 <Link to={`/sign-in`}>
                   <button className="font-main text-xl">Sign in</button>
                 </Link>

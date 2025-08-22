@@ -5,8 +5,9 @@ import SingleOrderList from "./SingleOrderList";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 import { ConfirmModal } from "../reusable/ConfirmModal";
+import { MdLocalShipping } from "react-icons/md";
 
-export default function CustomerOrder() {
+export default function CustomerOrder({ toggle, openCustomer }) {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -76,119 +77,120 @@ export default function CustomerOrder() {
   if (isError) return <p>error</p>;
 
   return (
-    <div>
-      <div>
-      {openModal && singleUserOrder && (
-        <SingleOrderList
-          order={singleUserOrder}
-          onClose={() => setOpenModal(false)}
-        />
-      )}
+    <div className="relative  flex">
+      <button onClick={toggle}>
+        <MdLocalShipping size={28} />
+      </button>
 
-      <ConfirmModal
-        isOpen={isCancelModalOpen}
-        title={"Confirm Cancel Order"}
-        message={
-          "Are you sure you want to cancel this order? This action cannot be undone. "
-        }
-        onCancel={handleCloseCancelOrder}
-        onConfirm={handleConfirmCancelOrder}
-      />
+      {openCustomer && (
+        <div className="border border-black text-sm md:w-[550px] w-[90%] fixed top-20 right-0 left-0 mx-auto  bg-card rounded-[5px] p-4 md:absolute md:right-0 md:left-auto  md:top-10 ">
+          {openModal && singleUserOrder && (
+            <SingleOrderList
+              order={singleUserOrder}
+              onClose={() => setOpenModal(false)}
+            />
+          )}
 
-      <h1 className="text-xl">Your Order</h1>
+          <ConfirmModal
+            isOpen={isCancelModalOpen}
+            title={"Confirm Cancel Order"}
+            message={
+              "Are you sure you want to cancel this order? This action cannot be undone. "
+            }
+            onCancel={handleCloseCancelOrder}
+            onConfirm={handleConfirmCancelOrder}
+          />
 
-      <div className="bg-yellow-50 border-l-4 border-red-700 text-red-700 p-4 mb-2">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-yellow-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3 flex flex-col gap-2">
-              <p className="text-md ">
-                <strong>Important:</strong> Once your order status changes to Shipped, or Out for Delivery, it can no longer be cancelled. Only orders with a Pending and Processing status are eligible for cancellation. Thank you for understanding!
-              </p>
-            </div>
+          <div className="flex items-center mb-2 justify-center gap-2">
+            <h1 className="text-lg">Your Order Status</h1>
+            <MdLocalShipping size={28} />
           </div>
-        </div>
 
-      <div className=" my-5 p-2 flex h-full flex-col gap-2">
-        {/* CARD GOES HERE */}
-
-        {isPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
-          </div>
-        ) : userOrder && userOrder.length > 0 ? (
-          userOrder.map((order) => (
-            <div
-              key={order._id}
-              className="border flex p-2 gap-5 items-center border-black rounded-[5px]"
-            >
-              {/* Display the image */}
-              <img
-                src={order.imageUrl} // Handle missing image
-                alt="box image"
-                className="w-16"
-              />
-              <div className="flex w-full gap-10 md:gap-0 overflow-x-auto justify-between text-sm">
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-2">
-                    <p>Order Id: </p>
-                    <span className="text-blue-600">{order._id}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <p>Status: </p>
-                    <span className="text-blue-600">{order.status}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <p>Total Items: </p>
-                    <span className="text-blue-600">
-                      {order.orderItems?.length}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-2">
-                    <p>Date Ordered:</p>
-                    <span className="text-blue-600">{order.createdAt}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <p>Estimated Delivery Date:</p>
-                    <span className="text-blue-600">2 - 6 days</span>
-                  </div>
-                </div>
-
-                {/* ACTIONS */}
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => handleCancelOrder(order._id)}
-                    type="button"
-                  >
-                    Cancel
-                  </button>
-                  <button onClick={() => handleOpenSingleOrder(order)}>
-                    View Details
-                  </button>
-                </div>
+          <div className="bg-yellow-50 border-l-4 border-red-700 text-red-700 p-4 mb-2">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-yellow-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3 flex flex-col gap-2">
+                <p className="text-sm ">
+                  <strong>Important:</strong> Once your order status changes to
+                  Shipped, or Out for Delivery, it can no longer be cancelled.
+                  Only orders with a Pending and Processing status are eligible
+                  for cancellation. Thank you for understanding!
+                </p>
               </div>
             </div>
-          ))
-        ) : (
-          <span>no order</span>
-        )}
-      </div>
-    </div>
+          </div>
+
+          {/* CARD GOES HERE */}
+
+          <div className="flex flex-col  h-[320px] overflow-y-auto gap-2">
+            {isPending ? (
+              <div className="flex justify-center items-center h-full">
+                <LoadingSpinner />
+              </div>
+            ) : userOrder && userOrder.length > 0 ? (
+              userOrder.map((order) => (
+                <div
+                  key={order._id}
+                  className="flex flex-col md:flex-row gap-2 w-full"
+                >
+                  <div className="flex flex-1  gap-2 items-center border w-full p-1 rounded-[5px] border-black">
+                    {/* Display the image */}
+                    <img
+                      src={order.imageUrl} // Handle missing image
+                      alt="box image"
+                      className="w-10"
+                    />
+                    <div className="flex w-full  gap-2  justify-between text-sm">
+                      <div className="flex flex-col ">
+                        <div className="flex gap-2">
+                          <p>ID: </p>
+                          <span className="text-blue-600">{order._id}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <p>Status: </p>
+                          <span className="text-blue-600">{order.status}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* ACTIONS */}
+
+                  <div className="flex justify-center gap-2">
+                    <button
+                      onClick={() => handleCancelOrder(order._id)}
+                      type="button"
+                      className="px-2 py-1 flex-1 text-sm rounded-lg border border-black bg-red-500 text-white "
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-primary "
+                      onClick={() => handleOpenSingleOrder(order)}
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <span>no order</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

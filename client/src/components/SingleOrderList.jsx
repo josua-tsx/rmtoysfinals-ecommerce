@@ -42,7 +42,7 @@ export default function SingleOrderList({ order, onClose }) {
   };
 
   return (
-    <section className="inset-0 z-40 font-main fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
+    <section className="inset-0 z-40 font-main  fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
       {reasonModal && (
         <AdminAddReasonModal
           singleOrderData={order}
@@ -64,6 +64,14 @@ export default function SingleOrderList({ order, onClose }) {
 
           <div className="flex justify-between">
             <div className="flex flex-col text-sm">
+
+               <div className="flex gap-2">
+                <p>Order ID: </p>
+                <span className="text-indigo-700">
+                  {order._id} 
+                </span>
+              </div>
+
               <div className="flex gap-2">
                 <p>Total Items: </p>
                 <span className="text-indigo-700">
@@ -71,7 +79,9 @@ export default function SingleOrderList({ order, onClose }) {
                 </span>
               </div>
 
-            {!order.guestUser && (
+             
+
+              {!order.guestUser && (
                 <>
                   <div className="flex gap-2">
                     <p>Total Points: </p>
@@ -98,6 +108,16 @@ export default function SingleOrderList({ order, onClose }) {
                 </span>
               </div>
               <div className="flex gap-2">
+                <p>Date Ordered: </p>
+                <span className="text-indigo-700">
+                  {new Date(order.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <p>Estimated Delivery Date: </p>
+                <span className="text-indigo-700">1 - 6 days</span>
+              </div>
+              <div className="flex gap-2">
                 <p>Discount: </p>
                 <span className="text-indigo-700">
                   {formatPrice(order.discount)} PHP
@@ -113,7 +133,11 @@ export default function SingleOrderList({ order, onClose }) {
               </div>
               <div className="flex gap-2">
                 <p>Notes: </p>
-                <span className="text-indigo-700">
+                <span
+                  className={`${
+                    order.notes ? "text-indigo-700" : "text-red-700"
+                  } `}
+                >
                   {!order.notes ? "No notes provided" : order.notes}
                 </span>
               </div>

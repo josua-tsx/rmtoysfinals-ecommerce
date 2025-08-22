@@ -81,14 +81,6 @@ export default function AdminOrderStatusTable() {
     return riderIdValue;
   };
 
-  useEffect(() => {
-    if (newStatus === "Shipped") {
-      setOpenToShipModal(true);
-    } else {
-      setOpenToShipModal(false);
-    }
-  }, [newStatus]);
-
   const confirmOrderStatus = () => {
     updateStatusMutation({
       id: selectedId,
@@ -106,6 +98,12 @@ export default function AdminOrderStatusTable() {
     setSelectedId(id);
     selectOrderRiderId(riderId);
     setNewStatus(e.target.value);
+
+    if (e.target.value === "Shipped") {
+      setOpenToShipModal(true);
+    } else {
+      setOpenToShipModal(false);
+    }
   };
 
   const cancelConfirmModal = () => {
@@ -257,12 +255,6 @@ export default function AdminOrderStatusTable() {
                         type="button"
                       >
                         VIEW
-                      </button>
-                      <button
-                        onClick={() => selectOrderRiderId(data.riderId)}
-                        type="button"
-                      >
-                        CICK
                       </button>
 
                       <div>
