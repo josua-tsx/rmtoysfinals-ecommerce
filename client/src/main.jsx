@@ -18,7 +18,6 @@ import Reviews from "./pages/Reviews.jsx";
 import PopularPage from "./pages/PopularPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import CartPage from "./pages/CartPage.jsx";
-import WishListPage from "./pages/WishListPage.jsx";
 
 // react query
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -167,10 +166,7 @@ const router = createBrowserRouter([
         path: `/cart`,
         element: <CartPage />,
       },
-      {
-        path: `/wishlist`,
-        element: <WishListPage />,
-      },
+
       {
         path: `/order`,
         element: <OrderSummaryModal />,
@@ -293,18 +289,16 @@ const router = createBrowserRouter([
         element: <AdminWorker />,
       },
 
-
       // RIDER
-
 
       {
         path: "/admin/rider",
-        element: <AdminRider/>
+        element: <AdminRider />,
       },
 
       {
         path: "/admin/rider/:riderId",
-        element: <AdminEditRider/>
+        element: <AdminEditRider />,
       },
 
       // VAT

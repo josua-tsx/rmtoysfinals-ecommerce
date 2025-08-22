@@ -6,7 +6,7 @@ import { logAuditTrail } from "./audit.controller.js";
 import Review from "../models/review.model.js";
 import Category from "../models/category.model.js";
 import Order from "../models/order.model.js";
-import Wishlist from "../models/wishlist.models.js";
+
 import {
   validateProductDescription,
   validateProductName,
@@ -364,8 +364,6 @@ export const deleteProduct = async (req, res, next) => {
 
     await Cart.deleteMany({ "items.productId": productId });
 
-    await Wishlist.deleteMany({ "items.productId": productId });
-
     await Review.deleteMany({ productId: productId });
 
     await Order.deleteMany({ "orderItems.productId": productId });
@@ -429,12 +427,13 @@ export const deleteMultiProduct = async (req, res, next) => {
 
       // Delete from related collections
       await Cart.deleteMany({ "items.productId": _id });
-      await Wishlist.deleteMany({ "items.productId": _id });
       await Review.deleteMany({ productId: _id });
       await Order.deleteMany({ "orderItems.productId": _id });
 
       // Delete from supplier and vat based on existing stock info
-      const stockForProduct = stocks.find((s) => s.product.toString() === _id.toString());
+      const stockForProduct = stocks.find(
+        (s) => s.product.toString() === _id.toString()
+      );
 
       if (stockForProduct) {
         await Supplier.findByIdAndUpdate(stockForProduct.supplier, {
@@ -451,23 +450,24 @@ export const deleteMultiProduct = async (req, res, next) => {
     await Product.deleteMany({ _id: { $in: productIds } });
 
     await Promise.all(
-        products.map(product => 
-          logAuditTrail({
-            action: "delete_product",
-            userId,
-            targetId: product._id,
-            targetType: "Product",
-            details: {
-              productName: product.name,
-              deletedAt: new Date().toISOString()
-            },
-            role: req.user.role
-          })
-        )
-      );
+      products.map((product) =>
+        logAuditTrail({
+          action: "delete_product",
+          userId,
+          targetId: product._id,
+          targetType: "Product",
+          details: {
+            productName: product.name,
+            deletedAt: new Date().toISOString(),
+          },
+          role: req.user.role,
+        })
+      )
+    );
 
-
-    res.status(200).json({ message: "Products and related data deleted successfully." });
+    res
+      .status(200)
+      .json({ message: "Products and related data deleted successfully." });
   } catch (error) {
     console.error(error);
     next(error);
