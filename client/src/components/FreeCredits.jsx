@@ -1,8 +1,11 @@
+import { useMutation } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { FaHandRock } from "react-icons/fa";
 import { FaHandPaper } from "react-icons/fa";
 import { FaHandScissors } from "react-icons/fa6";
 import { IoIosClose } from "react-icons/io";
+import axiosInstance from "../lib/axios";
+import toast from "react-hot-toast";
 
 const choices = [
   {
@@ -25,38 +28,25 @@ const choices = [
 export default function FreeCredits() {
   const [openModal, setOpenModal] = useState(false);
   const [userChoice, setUserChoice] = useState(null);
-  const [computerChoice, setComputerChoice] = useState(null);
-  const [result, setResult] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  const { mutate: playGameMutation, isPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post(`/random/play`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("success");
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
+  const handlePlayGame = () => {
+    playGameMutation({ userChoice });
+  };
 
   console.log(userChoice);
-  console.log(result);
-
-  useEffect(() => {}, []);
-
-  const playGame = () => {
-    setLoading(true);
-
-    setTimeout(() => {
-      const random = choices[Math.floor(Math.random() * choices.length)];
-      setComputerChoice(random);
-      setLoading(false);
-
-      // determine winner
-      if (userChoice.name === random.name) {
-        setResult("It's a draw!");
-      } else if (
-        (userChoice.name === "rock" && random.name === "scissors") ||
-        (userChoice.name === "scissors" && random.name === "paper") ||
-        (userChoice.name === "paper" && random.name === "rock")
-      ) {
-        setResult("You win! 🎉");
-      } else {
-        setResult("You lose 😢");
-      }
-    }, 1500); // ⏳ 1.5s delay
-  };
 
   return (
     <div className="fixed font-main -left-10 top-[55%]  z-50">
@@ -86,7 +76,7 @@ export default function FreeCredits() {
                   Voluptatibus, eum aliquid! Modi vero earum quis, sit, numquam.
                 </p>
                 <p className="my-10 text-2xl">
-                  {result ? result : "Fight for Credits! Good luck."}
+                  {/* {result ? result : "Fight for Credits! Good luck."} */}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -105,7 +95,7 @@ export default function FreeCredits() {
 
                 <div className="flex flex-col items-center justify-center flex-1 gap-4">
                   <div className=" flex flex-col justify-center items-center h-[200px]  rounded-[5px] p-2  w-full">
-                    {loading ? (
+                    {/* {isPending ? (
                       <p className="animate-pulse text-3xl text-gray-500">
                         🤔 Thinking...
                       </p>
@@ -113,7 +103,7 @@ export default function FreeCredits() {
                       computerChoice.icon2
                     ) : (
                       <p>Waiting...</p>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
@@ -122,7 +112,7 @@ export default function FreeCredits() {
                 {choices.map((choice) => (
                   <button
                     key={choice.name}
-                    onClick={() => setUserChoice(choice)}
+                    onClick={() => setUserChoice(choice.name)}
                     className="border border-black p-1 hover:bg-gray-200 rounded-[5px]"
                   >
                     {choice.icon}
@@ -131,11 +121,11 @@ export default function FreeCredits() {
               </div>
 
               <button
-                onClick={() => playGame()}
-                disabled={loading}
+                onClick={() => handlePlayGame()}
+                disabled={isPending}
                 className="border bg-blue-500 text-white rounded-[5px]  border-black w-full p-1"
               >
-                {loading ? "Fighting..." : "Fight"}
+                {isPending ? "Fighting..." : "Fight"}
               </button>
             </div>
           </div>

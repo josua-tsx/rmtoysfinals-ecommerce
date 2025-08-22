@@ -80,6 +80,11 @@ const UserModelSchema = new mongoose.Schema(
       default: 0,
     },
 
+    winCount: {
+      type: Number,
+      default: 0,
+    },
+
     creditLock: {
       type: Date,
       default: null,
@@ -97,7 +102,6 @@ const UserModelSchema = new mongoose.Schema(
     resetTokenExpiry: {
       type: Date,
     },
-
 
     isSubscribed: {
       type: Boolean,
