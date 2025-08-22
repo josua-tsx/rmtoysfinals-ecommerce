@@ -48,32 +48,12 @@ export default function ProductDetails() {
     },
   });
 
-  const { mutate: addToWishListMutation } = useMutation({
-    mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/wish`, productId);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      toast.success("Succesfully Added to Wishlist");
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!");
-    },
-  });
-
-
-
   const handleAddToCart = (productId) => {
     if (currentUser) {
       addToCartMutation({ productId });
     } else {
-      console.log("etits")
+      console.log("etits");
     }
-  };
-
-  const handleAddToWishList = (productId) => {
-    addToWishListMutation({ productId });
   };
 
   const sumOfRating = singleProduct?.reviews.reduce(
@@ -258,9 +238,6 @@ export default function ProductDetails() {
                 className=""
               >
                 <Buttons buttonName={"Add to cart"} />
-              </div>
-              <div onClick={() => handleAddToWishList(singleProduct._id)}>
-                <Buttons buttonName={"Add to wishlist"} />
               </div>
             </div>
           </div>

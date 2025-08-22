@@ -8,22 +8,6 @@ export const addToCart = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
-    const wishlist = await Wishlist.findOne({ userId });
-    if (wishlist) {
-      const existingInWish = wishlist.items.find(
-        (item) => item.productId.toString() === productId
-      );
-
-      if (existingInWish) {
-        return next(
-          handleMakeError(
-            400,
-            "Product is already in the wishlist. Transfer it in Wishlist page"
-          )
-        );
-      }
-    }
-
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
@@ -50,8 +34,6 @@ export const addToCart = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 export const getCarts = async (req, res, next) => {
   const userId = req.user.id;
@@ -96,60 +78,6 @@ export const deleteCart = async (req, res, next) => {
     await cart.save();
 
     res.status(200).json({ message: "successfully removed", existingCart });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const addCartToWish = async (req, res, next) => {
-  const userId = req.user.id;
-  const { productId } = req.body;
-
-  try {
-    const [wishlist, cart] = await Promise.all([
-      Wishlist.findOne({ userId }),
-      Cart.findOne({ userId }),
-    ]);
-
-    // Validate wishlist and product existence
-    if (
-      !cart ||
-      !cart.items.some((item) => item.productId.toString() === productId)
-    ) {
-      return next(handleMakeError(404, "Product not found in wishlist"));
-    }
-
-    // Create cart if doesn't exist
-    const userWish = wishlist || new Wishlist({ userId, items: [] });
-
-    // Check if product exists in cart
-    const existingWishItem = userWish.items.find(
-      (item) => item.productId.toString() === productId
-    );
-
-    if (existingWishItem) {
-      return next(handleMakeError(400, "Product is already in cart"));
-    } else {
-      userWish.items.push({
-        productId,
-      });
-    }
-
-    // Remove from cart using MongoDB's $pull operator
-    await Cart.updateOne(
-      { userId },
-      { $pull: { items: { productId: productId } } }
-    );
-
-    // Save cart
-    await userWish.save();
-
-    // Just send the updated cart we already have
-    res.status(200).json({
-      success: true,
-      message: "Product moved from wishlist to cart",
-      cart: userWish, // We already have all the data we need
-    });
   } catch (error) {
     next(error);
   }

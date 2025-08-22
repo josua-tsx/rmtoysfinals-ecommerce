@@ -135,7 +135,7 @@ export default function CustomerOrder({ toggle, openCustomer }) {
 
           {/* CARD GOES HERE */}
 
-          <div className="flex flex-col  h-[320px] overflow-y-auto gap-2">
+          <div className="flex flex-col h-full max-h-[320px]  overflow-y-auto gap-2">
             {isPending ? (
               <div className="flex justify-center items-center h-full">
                 <LoadingSpinner />

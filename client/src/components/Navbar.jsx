@@ -112,9 +112,7 @@ export default function Navbar() {
                 <div className="absolute -left-10  lg:hidden">
                   <Cart />
                 </div>
-                <div className="lg:hidden">
-                  <WishList />
-                </div>
+
                 <div className="lg:hidden">
                   <CustomerOrder
                     toggle={handleOpenCustomerOrder}
@@ -154,7 +152,7 @@ export default function Navbar() {
                 <div className="flex items-center w-full gap-4">
                   <CreditsPoints />
                   <Cart />
-                  <WishList />
+
                   <CustomerOrder
                     toggle={handleOpenCustomerOrder}
                     openCustomer={customerOrderOpen}

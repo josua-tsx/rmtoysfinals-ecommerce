@@ -34,20 +34,6 @@ export default function ShopProductCards({ product }) {
     },
   });
 
-  const { mutate: addToWishListMutation } = useMutation({
-    mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/wish`, productId);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      toast.success("Succesfully Added to Wishlist");
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!");
-    },
-  });
-
   const sumOfRating = product?.reviews?.reduce(
     (sum, review) => sum + review.rating,
     0
@@ -72,10 +58,6 @@ export default function ShopProductCards({ product }) {
         toast.error(error.message);
       }
     }
-  };
-
-  const handleAddToWishList = (productId) => {
-    addToWishListMutation({ productId });
   };
 
   if (!product || Object.keys(product).length === 0) {
@@ -120,15 +102,7 @@ export default function ShopProductCards({ product }) {
               </button>
               <FaCartPlus size={20} />
             </li>
-            <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
-              <button
-                className="w-full text-start"
-                onClick={() => handleAddToWishList(product._id)}
-              >
-                Add To Wishlist
-              </button>
-              <IoHeart size={20} />
-            </li>
+      
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
               <button
                 className="w-full text-start"

@@ -11,29 +11,6 @@ import { FaShoppingCart } from "react-icons/fa";
 import useOrderStore from "../stores/useOrderStore";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 
-const Users = [
-  {
-    name: "juswa",
-    isSubscribed: true,
-  },
-  {
-    name: "juswa2",
-    isSubscribed: false,
-  },
-  {
-    name: "juswa3",
-    isSubscribed: true,
-  },
-  {
-    name: "juswa4",
-    isSubscribed: false,
-  },
-  {
-    name: "juswa5",
-    isSubscribed: true,
-  },
-];
-
 export default function CartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
 

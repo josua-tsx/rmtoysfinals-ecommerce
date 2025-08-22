@@ -34,21 +34,6 @@ export default function CartCard({ productCart }) {
     },
   });
 
-  const { mutate: transferToWishMutation } = useMutation({
-    mutationFn: async (productId) => {
-      const res = await axiosInstance.post(`/cart/addCartToWish`, productId);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      toast.success(`Successfully transferred to wishlist`);
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong");
-    },
-  });
-
   const { mutate: updateQuantity } = useMutation({
     mutationFn: async ({ productId, quantity }) => {
       const res = await axiosInstance.post(`/cart/updateQuantity`, {
@@ -98,10 +83,6 @@ export default function CartCard({ productCart }) {
     }
   };
 
-  const handleTransferToWish = (productId) => {
-    transferToWishMutation({ productId });
-  };
-
   if (!productCart || Object.keys(productCart).length === 0) {
     return <p>No product found.</p>;
   }
@@ -118,20 +99,20 @@ export default function CartCard({ productCart }) {
         onConfirm={handleConfirmDelete}
       />
 
-    <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:w-[200px]">
-    <img
-        src={productCart.productId.productImages[0]}
-        alt="product images"
-        className="size-[50px] border-none rounded-[5px]"
-      />
-      <div className="flex gap-10 justify-between items-center">
-        <p>
-          <span className="text-indigo-500">
-            {formatPrice(productCart?.productId?.price)} PHP
-          </span>
-        </p>
+      <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:w-[200px]">
+        <img
+          src={productCart.productId.productImages[0]}
+          alt="product images"
+          className="size-[50px] border-none rounded-[5px]"
+        />
+        <div className="flex gap-10 justify-between items-center">
+          <p>
+            <span className="text-indigo-500">
+              {formatPrice(productCart?.productId?.price)} PHP
+            </span>
+          </p>
+        </div>
       </div>
-    </div>
       <div className="flex-col gap-1 lg:flex-row justify-around lg:items-center flex  w-full">
         <h1>{productCart.productId.productName}</h1>
         <div className="my-1 flex flex-col md:flex-row md:gap-5">
@@ -160,13 +141,6 @@ export default function CartCard({ productCart }) {
         </div>
       </div>
       <div className="flex absolute bottom-1 right-0 md:relative items-center gap-3">
-        <button
-          onClick={() => handleTransferToWish(productCart?.productId._id)}
-          type="button"
-          className=" flex items-center bottom-0 right-9 md:right-2 gap-1 text-green-600 lg:relative"
-        >
-          <PiShareFatFill size={25} /> WISH
-        </button>
         <button
           // onClick={() => handleRemoveCart(productCart.productId._id)}
           onClick={() => handleDeleteClick(productCart?.productId._id)}
