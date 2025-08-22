@@ -34,8 +34,6 @@ export default function AdminOrderStatusTable() {
     },
   });
 
-  console.log(selectedRiderId);
-
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
   const filteredArrayAllOrders = arrayAllOrders.filter(
@@ -66,6 +64,7 @@ export default function AdminOrderStatusTable() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["notificationLogs"] });
+      queryClient.invalidateQueries({ queryKey: ["riders"] });
       queryClient.invalidateQueries({ queryKey: ["deliveredCancelled"] });
       queryClient.invalidateQueries({ queryKey: ["stocks"] });
       toast.success("Sucessfully Updated Status!");
