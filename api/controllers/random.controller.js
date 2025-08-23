@@ -155,9 +155,9 @@ export const playRps = async (req, res, next) => {
       userChoice,
       winCount: updatedUser.winCount,
       credits: updatedUser.credits,
+      lockedUntil: updatedUser.playLock, // Frontend can show countdown
     });
   } catch (error) {
     next(error);
   }
 };
-
