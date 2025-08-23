@@ -90,6 +90,12 @@ const UserModelSchema = new mongoose.Schema(
       default: null,
     },
 
+    // FOR PLAYING RPS
+    playLock: {
+      type: Date,
+      default: null,
+    },
+
     isLoggedIn: {
       type: Boolean,
       default: false,
@@ -102,7 +108,6 @@ const UserModelSchema = new mongoose.Schema(
     resetTokenExpiry: {
       type: Date,
     },
-
 
     isSubscribed: {
       type: Boolean,
