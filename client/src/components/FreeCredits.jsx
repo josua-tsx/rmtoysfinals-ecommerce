@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PlayGameModal from "./PlayGameModal";
 import { useUserStore } from "../stores/useUserStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 export default function FreeCredits() {
   const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
+  const [lockExpiry, setLockExpiry] = useState(null);
+  const [timeLeft, setTimeLeft] = useState("");
 
   const currentUser = useUserStore((state) => state.currentUser);
 
@@ -19,9 +21,7 @@ export default function FreeCredits() {
     },
   });
 
-  console.log(singleUser.playLock);
-
-  const { mutate: resetPlayLockMutation, isPending } = useMutation({
+  const { mutate: resetPlayLockMutation } = useMutation({
     mutationFn: async () => {
       const res = await axiosInstance.post(`/random/reset`);
       return res.data;
@@ -29,9 +29,10 @@ export default function FreeCredits() {
     onSuccess: (data) => {
       if (data.unlocked) {
         toast.success("Play lock reset! You can play now.");
-        // Optionally refetch user data
         queryClient.invalidateQueries({ queryKey: ["user"] });
+        setLockExpiry(null); // no lock anymore
       } else {
+        setLockExpiry(new Date(data.lockedUntil)); // save lock expiry
         toast.info(`Come back at ${data.lockedUntil} to play again`);
       }
     },
@@ -39,6 +40,31 @@ export default function FreeCredits() {
       toast.error(err.response.data.message);
     },
   });
+
+  useEffect(() => {
+    if (!lockExpiry) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const diff = lockExpiry - now;
+
+      if (diff <= 0) {
+        setTimeLeft("Unlocked! You can play now 🎉");
+        clearInterval(interval);
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lockExpiry]);
+
+  const handleReset = () => {
+    resetPlayLockMutation();
+  };
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -115,10 +141,11 @@ export default function FreeCredits() {
             </div>
 
             <button
-              onClick={() => resetPlayLockMutation()}
+              onClick={() => handleReset()}
+              disabled={timeLeft}
               className="absolute bottom-0 flex justify-center w-full p-2 bg-primary text-white"
             >
-              Play
+              Comeback at: {timeLeft} to play again
             </button>
           </div>
         </div>

@@ -135,7 +135,7 @@ export const playRps = async (req, res, next) => {
       const updateData = {
         $inc: { winCount: 1, credits: rewardEarned },
         ...(rewardEarned > 0 && {
-          $set: { playLock: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+          $set: { playLock: new Date(Date.now() + 30 * 1000) },
         }),
       };
 
