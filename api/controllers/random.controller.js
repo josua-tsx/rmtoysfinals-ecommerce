@@ -139,7 +139,7 @@ export const playRps = async (req, res, next) => {
 
       // Set playLock only when reward is given
       const updateData = {
-        $inc: { winCount: 1, credits: rewardEarned },
+        $inc: { winCount: 0, credits: rewardEarned },
         ...(rewardEarned > 0 && {
           $set: { playLock: new Date(Date.now() + 30 * 1000) },
         }),
