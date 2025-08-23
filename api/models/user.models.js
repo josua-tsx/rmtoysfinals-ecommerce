@@ -103,6 +103,7 @@ const UserModelSchema = new mongoose.Schema(
       type: Date,
     },
 
+
     isSubscribed: {
       type: Boolean,
       default: false,

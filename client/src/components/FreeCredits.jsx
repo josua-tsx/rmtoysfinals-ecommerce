@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaHandRock } from "react-icons/fa";
 import { FaHandPaper } from "react-icons/fa";
 import { FaHandScissors } from "react-icons/fa6";
@@ -12,17 +12,23 @@ import gameLoading from "../assets/gameLoading.gif";
 const choices = [
   {
     name: "rock",
-    icon: <FaHandRock size={40} className="text-secondary" />,
+    icon: (
+      <FaHandRock size={50} className="text-secondary hover:text-primary" />
+    ),
     icon2: <FaHandRock size={200} className="text-secondary" />,
   },
   {
     name: "paper",
-    icon: <FaHandPaper size={40} className="text-blue-500" />,
+    icon: (
+      <FaHandPaper size={50} className="text-blue-500 hover:text-primary" />
+    ),
     icon2: <FaHandPaper size={200} className="text-blue-500" />,
   },
   {
     name: "scissors",
-    icon: <FaHandScissors size={40} className="text-red-500" />,
+    icon: (
+      <FaHandScissors size={50} className="text-red-500 hover:text-primary" />
+    ),
     icon2: <FaHandScissors size={200} className="text-red-500" />,
   },
 ];
@@ -99,7 +105,7 @@ export default function FreeCredits() {
 
         {openModal && (
           <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-sm px-5 z-50">
-            <div className="bg-card relative w-[800px] border flex flex-col gap-5 border-black    rounded-[5px]">
+            <div className="bg-card relative w-[800px] border flex flex-col gap-5 pb-14 border-black    rounded-[5px]">
               <button
                 onClick={() => setOpenModal((prev) => !prev)}
                 className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8"
@@ -107,18 +113,36 @@ export default function FreeCredits() {
                 <IoIosClose size={25} />
               </button>
 
-              <div>
-                <h1 className="text-2xl text-center p-4 bg-blue-500 text-white">
-                  Free Credits Arena 🏆
-                </h1>
-                <h1 className="text-center text-xl p-4">
-                  {renderResult
-                    ? renderResult
-                    : "Fight for free credits! Good luck."}
-                </h1>
+              <div className="">
+                <div className="bg-primary rounded-t-[5px] text-white">
+                  <h1 className="text-2xl text-center p-4  ">
+                    Free Credits Arena 🏆
+                  </h1>
+                </div>
+                <div className=" flex justify-center">
+                  <h1 className="text-center   text-xl p-4">
+                    {renderResult
+                      ? renderResult
+                      : "Fight for free credits! Good luck. 🍀"}
+                  </h1>
+                </div>
+                <div className="flex justify-center">
+                  <div>
+                    <div className="border flex p-1 rounded-[5px] justify-between border-black w-[200px] h-[40px]">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className={`h-full w-[32%] ${
+                            index < renderWinCount ? "bg-primary" : "bg-gray-500"
+                          }`}
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex  p-4">
+              <div className="flex  p-4 py-16">
                 <div className="flex flex-col  flex-1 gap-4">
                   {/* <p className="">Win Count: {renderWinCount}</p> */}
                   <div className="flex flex-col justify-center  items-center h-[200px]  rounded-[5px] p-2  w-full">
@@ -132,9 +156,7 @@ export default function FreeCredits() {
                         />
                       ) : (
                         returnComponent() || (
-                          <p className="text-xl text-gray-500">
-                            Wating for your move.
-                          </p>
+                          <FaHandRock size={200} className="text-secondary" />
                         )
                       )}
                     </div>
@@ -155,34 +177,42 @@ export default function FreeCredits() {
                       />
                     ) : (
                       returnComputerComponent() || (
-                        <p className="text-xl text-gray-500">
-                          Wating for your move.
-                        </p>
+                        <FaHandRock size={200} className="text-secondary" />
                       )
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col p-4 items-center border border-black justify-center gap-2">
-                <h1>Choose Your Move: </h1>
-                <div className="flex gap-2">
-                  {choices.map((choice) => (
-                    <button
-                      key={choice.name}
-                      onClick={() => setUserChoice(choice.name)}
-                      className=" p-1rounded-[5px]"
-                    >
-                      {choice.icon}
-                    </button>
-                  ))}
+              <div className="flex flex-col justify-between p-4 items-center gap-10">
+                <div className=" w-full   flex items-center justify-between">
+                  <div className="flex-1">
+                    <p>Win Count: {renderWinCount}</p>
+                    <p>Your Credits: 100</p>
+                  </div>
+
+                  <div className="flex flex-1 flex-col gap-4 items-center">
+                    <h1 className="text-black text-xl">Choose Your Move:</h1>
+                    <div className="flex gap-2">
+                      {choices.map((choice) => (
+                        <button
+                          key={choice.name}
+                          onClick={() => setUserChoice(choice.name)}
+                          className="  "
+                        >
+                          {choice.icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex-1"></div>
                 </div>
               </div>
-
               <button
                 onClick={() => handlePlayGame()}
                 disabled={isPending}
-                className="border bg-blue-500 text-white rounded-[5px]  border-black w-full p-1"
+                className="  p-2 absolute bottom-0 w-full bg-primary rounded-b-[5px] text-white  "
               >
                 {isPending ? "Fighting..." : "Fight"}
               </button>

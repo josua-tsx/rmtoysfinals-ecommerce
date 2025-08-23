@@ -9,12 +9,14 @@ export const playRps = async (req, res, next) => {
 
   try {
     const choices = ["rock", "paper", "scissors"];
-    const rewards = [5, 0, 25, 1, 50, 2, 100];
+    const rewards = [5, 0, 10, 1, 20, 2];
     const randomReward = rewards[Math.floor(Math.random() * rewards.length)];
     const computerChoice = choices[Math.floor(Math.random() * choices.length)];
 
     // ADDED A CUSTOM DELAY FOR UI
     await new Promise((resolve) => setTimeout(resolve, 1200));
+
+    const currentUser = await User.findById(userId).select("winCount");
 
     let result;
     if (userChoice === computerChoice) {
@@ -24,18 +26,27 @@ export const playRps = async (req, res, next) => {
       (userChoice === "scissors" && computerChoice === "paper") ||
       (userChoice === "paper" && computerChoice === "rock")
     ) {
+      if (currentUser.winCount === 3) {
+        await User.findByIdAndUpdate(
+          userId,
+          {
+            $inc: { credits: randomReward },
+            winCount: 0,
+          },
+          { new: true }
+        );
+      }
+      
       result = "Congrats! you win.";
       await User.findByIdAndUpdate(
         userId,
         {
-          $inc: { credits: randomReward, winCount: 1 },
+          $inc: { winCount: 1 },
         },
         { new: true }
       );
     } else {
       result = "Too bad, you lose.";
-
-      const currentUser = await User.findById(userId).select("winCount");
 
       if (currentUser.winCount > 0) {
         await User.findByIdAndUpdate(
