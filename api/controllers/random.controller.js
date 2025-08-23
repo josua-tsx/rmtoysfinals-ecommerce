@@ -126,7 +126,13 @@ export const playRps = async (req, res, next) => {
         // Changed to >= 3 to handle edge cases
         rewardEarned = randomReward;
         result = `Congratulations! You won ${randomReward} credits!`;
-        newWinCount = 0;
+        await User.findByIdAndUpdate(
+          userId,
+          {
+            $set: { winCount: 0 },
+          },
+          { new: true }
+        );
       } else {
         result = "Congrats! you win.";
       }
