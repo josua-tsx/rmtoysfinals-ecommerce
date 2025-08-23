@@ -146,7 +146,9 @@ export const playRps = async (req, res, next) => {
       await User.findByIdAndUpdate(userId, { $set: { winCount: newWinCount } });
     }
 
-    const updatedUser = await User.findById(userId).select("credits winCount playLock");
+    const updatedUser = await User.findById(userId).select(
+      "credits winCount playLock"
+    );
 
     res.status(200).json({
       result,
@@ -157,6 +159,42 @@ export const playRps = async (req, res, next) => {
       credits: updatedUser.credits,
       lockedUntil: updatedUser.playLock, // Frontend can show countdown
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetLock = async (req, res, next) => {
+  const userId = req.user.id;
+
+  try {
+    const currentUser = await User.findById(userId).select("playLock");
+
+    const now = new Date();
+    const lockExpiry = new Date(currentUser.playLock);
+
+    if (lockExpiry <= now) {
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $set: { playLock: null },
+        },
+        { new: true }
+      );
+      res
+        .status(200)
+        .json({ message: "Lock reset successfully", unlocked: true });
+    } else {
+      const expiryDate = lockExpiry.toLocaleString("en-US", {
+        timeZone: "Asia/Manila",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      res.status(200).json({ lockedUntil: expiryDate });
+    }
   } catch (error) {
     next(error);
   }
