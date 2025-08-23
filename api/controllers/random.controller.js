@@ -170,6 +170,8 @@ export const resetLock = async (req, res, next) => {
   try {
     const currentUser = await User.findById(userId).select("playLock");
 
+    if (!currentUser) return next(handleMakeError(400, "User not found!"))
+
     const now = new Date();
     const lockExpiry = new Date(currentUser.playLock);
 

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import PlayGameModal from "./PlayGameModal";
 import { useUserStore } from "../stores/useUserStore";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
+import toast from "react-hot-toast";
 
 export default function FreeCredits() {
+  const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
 
   const currentUser = useUserStore((state) => state.currentUser);
@@ -18,6 +20,25 @@ export default function FreeCredits() {
   });
 
   console.log(singleUser.playLock);
+
+  const { mutate: resetPlayLockMutation, isPending } = useMutation({
+    mutationFn: async () => {
+      const res = await axiosInstance.post(`/random/reset`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.unlocked) {
+        toast.success("Play lock reset! You can play now.");
+        // Optionally refetch user data
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      } else {
+        toast.info(`Come back at ${data.lockedUntil} to play again`);
+      }
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -93,7 +114,10 @@ export default function FreeCredits() {
               </div>
             </div>
 
-            <button className="absolute bottom-0 flex justify-center w-full p-2 bg-primary text-white">
+            <button
+              onClick={() => resetPlayLockMutation()}
+              className="absolute bottom-0 flex justify-center w-full p-2 bg-primary text-white"
+            >
               Play
             </button>
           </div>
