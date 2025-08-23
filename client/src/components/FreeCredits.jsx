@@ -53,6 +53,7 @@ export default function FreeCredits() {
       setComputerChoice(data.computerChoice);
       setRenderResult(data.result);
       setRenderWinCount(data.winCount);
+      console.log(data.lockedUntil);
     },
     onError: (err) => {
       toast.error(err.response.data.message);
@@ -133,7 +134,9 @@ export default function FreeCredits() {
                         <div
                           key={index}
                           className={`h-full w-[32%] ${
-                            index < renderWinCount ? "bg-primary" : "bg-gray-500"
+                            index < renderWinCount
+                              ? "bg-primary"
+                              : "bg-gray-500"
                           }`}
                         ></div>
                       ))}

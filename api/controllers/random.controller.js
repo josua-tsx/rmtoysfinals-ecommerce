@@ -146,7 +146,7 @@ export const playRps = async (req, res, next) => {
       await User.findByIdAndUpdate(userId, { $set: { winCount: newWinCount } });
     }
 
-    const updatedUser = await User.findById(userId).select("credits winCount");
+    const updatedUser = await User.findById(userId).select("credits winCount playLock");
 
     res.status(200).json({
       result,
