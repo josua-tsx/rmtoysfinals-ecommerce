@@ -1,11 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { Component, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaHandRock } from "react-icons/fa";
 import { FaHandPaper } from "react-icons/fa";
 import { FaHandScissors } from "react-icons/fa6";
 import { IoIosClose } from "react-icons/io";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+
+import gameLoading from "../assets/gameLoading.gif";
 
 const choices = [
   {
@@ -97,32 +99,45 @@ export default function FreeCredits() {
 
         {openModal && (
           <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-sm px-5 z-50">
-            <div className="bg-card relative w-[800px] border flex flex-col gap-4 border-black  p-4 rounded-[5px]">
+            <div className="bg-card relative w-[800px] border flex flex-col gap-5 border-black    rounded-[5px]">
               <button
                 onClick={() => setOpenModal((prev) => !prev)}
                 className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8"
               >
                 <IoIosClose size={25} />
               </button>
-              <div className="text-center  mb-5 flex flex-col gap-2 justify-center items-center">
-                <h1 className="text-xl">
-                  You want free credits? Sure! but you have to fight for it.
+
+              <div>
+                <h1 className="text-2xl text-center p-4 bg-blue-500 text-white">
+                  Free Credits Arena 🏆
                 </h1>
-                <p className="text-sm w-[400px]">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Voluptatibus, eum aliquid! Modi vero earum quis, sit, numquam.
-                </p>
-                <p className="my-10 text-2xl">
+                <h1 className="text-center text-xl p-4">
                   {renderResult
                     ? renderResult
-                    : "Fight for Credits! Good luck."}
-                </p>
+                    : "Fight for free credits! Good luck."}
+                </h1>
               </div>
-              <div className="flex gap-4">
+
+              <div className="flex  p-4">
                 <div className="flex flex-col  flex-1 gap-4">
-                  <p className="">Win Count: {renderWinCount}</p>
+                  {/* <p className="">Win Count: {renderWinCount}</p> */}
                   <div className="flex flex-col justify-center  items-center h-[200px]  rounded-[5px] p-2  w-full">
-                    <div>{returnComponent()}</div>
+                    <div>
+                      {" "}
+                      {isPending ? (
+                        <img
+                          src={gameLoading}
+                          alt="Loading animation"
+                          className="h-auto w-[5  00px]"
+                        />
+                      ) : (
+                        returnComponent() || (
+                          <p className="text-xl text-gray-500">
+                            Wating for your move.
+                          </p>
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -132,21 +147,36 @@ export default function FreeCredits() {
 
                 <div className="flex flex-col items-center justify-center flex-1 gap-4">
                   <div className=" flex flex-col justify-center items-center h-[200px]  rounded-[5px] p-2  w-full">
-                    {returnComputerComponent()}
+                    {isPending ? (
+                      <img
+                        src={gameLoading}
+                        alt="Loading animation"
+                        className="h-auto w-[5  00px]"
+                      />
+                    ) : (
+                      returnComputerComponent() || (
+                        <p className="text-xl text-gray-500">
+                          Wating for your move.
+                        </p>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-center gap-2">
-                {choices.map((choice) => (
-                  <button
-                    key={choice.name}
-                    onClick={() => setUserChoice(choice.name)}
-                    className="border border-black p-1 hover:bg-gray-200 rounded-[5px]"
-                  >
-                    {choice.icon}
-                  </button>
-                ))}
+              <div className="flex flex-col p-4 items-center border border-black justify-center gap-2">
+                <h1>Choose Your Move: </h1>
+                <div className="flex gap-2">
+                  {choices.map((choice) => (
+                    <button
+                      key={choice.name}
+                      onClick={() => setUserChoice(choice.name)}
+                      className=" p-1rounded-[5px]"
+                    >
+                      {choice.icon}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <button

@@ -18,13 +18,13 @@ export const playRps = async (req, res, next) => {
 
     let result;
     if (userChoice === computerChoice) {
-      result = "draw";
+      result = "Boring... it's a draw.";
     } else if (
       (userChoice === "rock" && computerChoice === "scissors") ||
       (userChoice === "scissors" && computerChoice === "paper") ||
       (userChoice === "paper" && computerChoice === "rock")
     ) {
-      result = "win";
+      result = "Congrats! you win.";
       await User.findByIdAndUpdate(
         userId,
         {
@@ -33,7 +33,7 @@ export const playRps = async (req, res, next) => {
         { new: true }
       );
     } else {
-      result = "lose";
+      result = "Too bad, you lose.";
 
       const currentUser = await User.findById(userId).select("winCount");
 
@@ -53,7 +53,7 @@ export const playRps = async (req, res, next) => {
     res.status(200).json({
       result,
       computerChoice,
-      randomReward: result === "win" ? randomReward : 0, // reward only on win
+      randomReward: result === "Congrats! you win." ? randomReward : 0, // reward only on win
       userChoice,
       winCount: updatedUser.winCount,
       credits: updatedUser.credits,
