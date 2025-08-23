@@ -33,7 +33,7 @@ export default function FreeCredits() {
         setLockExpiry(null); // no lock anymore
       } else {
         setLockExpiry(new Date(data.lockedUntil)); // save lock expiry
-        toast.info(`Come back at ${data.lockedUntil} to play again`);
+        toast.success(`Come back at ${data.lockedUntil} to play again`);
       }
     },
     onError: (err) => {
@@ -41,26 +41,26 @@ export default function FreeCredits() {
     },
   });
 
-  useEffect(() => {
-    if (!lockExpiry) return;
+  //   useEffect(() => {
+  //     if (!lockExpiry) return;
 
-    const interval = setInterval(() => {
-      const now = new Date();
-      const diff = lockExpiry - now;
+  //     const interval = setInterval(() => {
+  //       const now = new Date();
+  //       const diff = lockExpiry - now;
 
-      if (diff <= 0) {
-        setTimeLeft("Unlocked! You can play now 🎉");
-        clearInterval(interval);
-      } else {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-      }
-    }, 1000);
+  //       if (diff <= 0) {
+  //         setTimeLeft("Unlocked! You can play now 🎉");
+  //         clearInterval(interval);
+  //       } else {
+  //         const hours = Math.floor(diff / (1000 * 60 * 60));
+  //         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  //         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  //         setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+  //       }
+  //     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [lockExpiry]);
+  //     return () => clearInterval(interval);
+  //   }, [lockExpiry]);
 
   const handleReset = () => {
     resetPlayLockMutation();
@@ -142,10 +142,9 @@ export default function FreeCredits() {
 
             <button
               onClick={() => handleReset()}
-              disabled={timeLeft}
               className="absolute bottom-0 flex justify-center w-full p-2 bg-primary text-white"
             >
-              Comeback at: {timeLeft} to play again
+              Play
             </button>
           </div>
         </div>
