@@ -93,11 +93,11 @@ export const playRps = async (req, res, next) => {
   if (!userId) return next(handleMakeError(400, "User not found!"));
 
   try {
-    // Check if user is locked out first
     const currentUser = await User.findById(userId).select(
       "winCount playLock credits"
     );
 
+    // Check lock
     if (currentUser.playLock && currentUser.playLock > new Date()) {
       return next(handleMakeError(429, "Please wait before playing again"));
     }
@@ -110,8 +110,7 @@ export const playRps = async (req, res, next) => {
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
     let result;
-    let rewardEarned = 0;
-    let newWinCount = currentUser.winCount;
+    let rewardEarned = 0; // default to 0
 
     if (userChoice === computerChoice) {
       result = "Boring... it's a draw.";
@@ -120,35 +119,32 @@ export const playRps = async (req, res, next) => {
       (userChoice === "scissors" && computerChoice === "paper") ||
       (userChoice === "paper" && computerChoice === "rock")
     ) {
-      newWinCount += 1;
+      // Calculate new win count in memory
+      const newWinCount = currentUser.winCount + 1;
 
       if (newWinCount >= 3) {
-        // Changed to >= 3 to handle edge cases
         rewardEarned = randomReward;
-        result = `Congratulations! You won ${randomReward} credits!`;
+        result = `Congratulations! You won ${rewardEarned} credits!`;
+
         await User.findByIdAndUpdate(
           userId,
           {
-            $set: { winCount: 0 },
+            $inc: { credits: rewardEarned },
+            $set: { winCount: 0, playLock: new Date(Date.now() + 30 * 1000) },
           },
           { new: true }
         );
       } else {
         result = "Congrats! you win.";
+        await User.findByIdAndUpdate(
+          userId,
+          { $set: { winCount: newWinCount } },
+          { new: true }
+        );
       }
-
-      // Set playLock only when reward is given
-      const updateData = {
-        $inc: { winCount: 0, credits: rewardEarned },
-        ...(rewardEarned > 0 && {
-          $set: { playLock: new Date(Date.now() + 30 * 1000) },
-        }),
-      };
-
-      await User.findByIdAndUpdate(userId, updateData);
     } else {
       result = "Too bad, you lose.";
-      newWinCount = Math.max(0, currentUser.winCount - 1);
+      const newWinCount = Math.max(0, currentUser.winCount - 1);
       await User.findByIdAndUpdate(userId, { $set: { winCount: newWinCount } });
     }
 
@@ -163,7 +159,7 @@ export const playRps = async (req, res, next) => {
       userChoice,
       winCount: updatedUser.winCount,
       credits: updatedUser.credits,
-      lockedUntil: updatedUser.playLock, // Frontend can show countdown
+      lockedUntil: updatedUser.playLock,
     });
   } catch (error) {
     next(error);
