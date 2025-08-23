@@ -170,12 +170,12 @@ export const resetLock = async (req, res, next) => {
   try {
     const currentUser = await User.findById(userId).select("playLock");
 
-    if (!currentUser) return next(handleMakeError(400, "User not found!"))
+    if (!currentUser) return next(handleMakeError(400, "User not found!"));
 
     const now = new Date();
-    const lockExpiry = new Date(currentUser.playLock);
 
-    if (lockExpiry <= now) {
+    // Check if playLock exists and is a valid date
+    if (!currentUser.playLock || new Date(currentUser.playLock) <= now) {
       await User.findByIdAndUpdate(
         userId,
         {
@@ -183,10 +183,11 @@ export const resetLock = async (req, res, next) => {
         },
         { new: true }
       );
-      res
+      return res
         .status(200)
         .json({ message: "Lock reset successfully", unlocked: true });
     } else {
+      const lockExpiry = new Date(currentUser.playLock);
       const expiryDate = lockExpiry.toLocaleString("en-US", {
         timeZone: "Asia/Manila",
         month: "short",
@@ -195,7 +196,7 @@ export const resetLock = async (req, res, next) => {
         hour: "2-digit",
         minute: "2-digit",
       });
-      res.status(200).json({ lockedUntil: expiryDate });
+      return res.status(200).json({ lockedUntil: expiryDate });
     }
   } catch (error) {
     next(error);
