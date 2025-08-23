@@ -174,37 +174,30 @@ export const resetLock = async (req, res, next) => {
 
     const now = new Date();
 
-    // // Check if playLock exists and is a valid date
-    // if (!currentUser.playLock || new Date(currentUser.playLock) <= now) {
-    //   await User.findByIdAndUpdate(
-    //     userId,
-    //     {
-    //       $set: { playLock: null },
-    //     },
-    //     { new: true }
-    //   );
-    //   return res
-    //     .status(200)
-    //     .json({ message: "Lock reset successfully", unlocked: true });
-    // } else {
-    //   const lockExpiry = new Date(currentUser.playLock);
-    //   const expiryDate = lockExpiry.toLocaleString("en-US", {
-    //     timeZone: "Asia/Manila",
-    //     month: "short",
-    //     day: "numeric",
-    //     year: "numeric",
-    //     hour: "2-digit",
-    //     minute: "2-digit",
-    //   });
-    //   return res.status(200).json({ lockedUntil: expiryDate });
-    // }
-    await User.findByIdAndUpdate(
-      userId,
-      {
-        $set: { playLock: null },
-      },
-      { new: true }
-    );
+    // Check if playLock exists and is a valid date
+    if (!currentUser.playLock || new Date(currentUser.playLock) <= now) {
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $set: { playLock: null },
+        },
+        { new: true }
+      );
+      return res
+        .status(200)
+        .json({ message: "Lock reset successfully", unlocked: true });
+    } else {
+      const lockExpiry = new Date(currentUser.playLock);
+      const expiryDate = lockExpiry.toLocaleString("en-US", {
+        timeZone: "Asia/Manila",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return res.status(200).json({ lockedUntil: expiryDate });
+    }
   } catch (error) {
     next(error);
   }
