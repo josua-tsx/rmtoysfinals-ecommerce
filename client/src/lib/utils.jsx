@@ -63,3 +63,18 @@ export const clearGuestOrder = () => {
   localStorage.removeItem("guestCart");
   return { items: [] };
 };
+
+// FORMAT LOCKED UNTIL
+
+export const formatLockedUntil = (dateString) => {
+  if (!dateString) return null;
+
+  return new Date(dateString).toLocaleString("en-US", {
+    timeZone: "Asia/Manila",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};

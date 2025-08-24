@@ -131,6 +131,7 @@ export const playRps = async (req, res, next) => {
           {
             $inc: { credits: rewardEarned },
             $set: { winCount: 0, playLock: new Date(Date.now() + 30 * 1000) },
+            // playLock: new Date(Date.now() + 24 * 60 * 60 * 1000)
           },
           { new: true }
         );

@@ -5,23 +5,26 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { IoIosClose } from "react-icons/io";
+import { formatLockedUntil } from "../lib/utils";
 
 export default function FreeCredits() {
   const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
   const [lockExpiry, setLockExpiry] = useState(null);
-  const [timeLeft, setTimeLeft] = useState("");
+  // const [timeLeft, setTimeLeft] = useState("");
   const [openPlayModal, setOpenPlayModal] = useState(false);
 
   const currentUser = useUserStore((state) => state.currentUser);
 
-  const { data: singleUser = {} } = useQuery({
+  const { data: singleUser } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/user/get-user/${currentUser._id}`);
       return res.data;
     },
   });
+
+  console.log(currentUser);
 
   const { mutate: resetPlayLockMutation } = useMutation({
     mutationFn: async () => {
@@ -30,13 +33,13 @@ export default function FreeCredits() {
     },
     onSuccess: (data) => {
       if (data.unlocked) {
+        queryClient.invalidateQueries({ queryKey: ["user"] });
         setOpenPlayModal(true);
         setOpenModal(false);
         toast.success("Play lock reset! You can play now.");
-        queryClient.invalidateQueries({ queryKey: ["user"] });
         setLockExpiry(null); // no lock anymore
       } else {
-        setLockExpiry(new Date(data.lockedUntil)); // save lock expiry
+        setLockExpiry(formatLockedUntil(data.lockedUntil)); // save lock expiry
         toast.success(`Come back at ${data.lockedUntil} to play again`);
       }
     },
@@ -44,27 +47,6 @@ export default function FreeCredits() {
       toast.error(err.response.data.message);
     },
   });
-
-  useEffect(() => {
-    if (!lockExpiry) return;
-
-    const interval = setInterval(() => {
-      const now = new Date();
-      const diff = lockExpiry - now;
-
-      if (diff <= 0) {
-        setTimeLeft("Unlocked! You can play now 🎉");
-        clearInterval(interval);
-      } else {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [lockExpiry]);
 
   const handleReset = () => {
     resetPlayLockMutation();
@@ -75,20 +57,29 @@ export default function FreeCredits() {
   };
 
   return (
-    <div className="fixed font-main -left-10 top-[55%]  z-50">
+    <div className="fixed font-main  bottom-2 left-2  z-50">
       <div className="relative">
         <button
           onClick={() => {
+            if (
+              currentUser.isSubscribed === false &&
+              currentUser.isEmailVerified === false
+            ) {
+              return toast.error(
+                "You need to subscribe your email first to play."
+              );
+            }
+
             setOpenModal(true);
           }}
-          className="border border-black p-2 bg-card rotate-90 "
+          className="border border-black p-2 bg-card  rounded-[5px] "
         >
-          Claim Free Credits
+          Play to Claim Free Credits 🎮
         </button>
 
         {openModal && (
           <div className="fixed text-md md:text-lg font-main inset-0 backdrop-blur-sm flex flex-col justify-center items-center">
-            <div className="border flex flex-col relative border-black w-[90%] mx-auto md:w-[600px] pb-12 bg-card rounded-[5px]">
+            <div className="border flex flex-col relative border-black w-[90%]  mx-auto md:w-[600px]  text-sm md:text-lg bg-card rounded-[5px]">
               <button
                 onClick={() => {
                   setOpenModal(false);
@@ -111,7 +102,7 @@ export default function FreeCredits() {
                 </div>
               </div>
 
-              <div className="flex flex-col p-4 gap-4">
+              <div className="flex flex-col h-[500px] overflow-y-auto p-4 gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="">⚔️ How to Play</label>
                   <ul className="flex flex-col">
@@ -155,13 +146,14 @@ export default function FreeCredits() {
                   </ul>
                 </div>
               </div>
-
-              <button
-                onClick={() => handleReset()}
-                className="absolute bottom-0 flex justify-center w-full p-2 bg-primary text-white"
-              >
-                {lockExpiry ? timeLeft : "Play"}
-              </button>
+              <div className="p-2">
+                <button
+                  onClick={() => handleReset()}
+                  className=" flex justify-center rounded-[5px] border border-black w-full p-2 bg-primary text-white"
+                >
+                  {lockExpiry ? lockExpiry : "Play"}
+                </button>
+              </div>
             </div>
           </div>
         )}
