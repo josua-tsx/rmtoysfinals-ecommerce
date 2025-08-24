@@ -4,7 +4,7 @@ import ArrowLine from "../reusable/ArrowLine";
 import { HiShoppingBag } from "react-icons/hi2";
 import { Link } from "react-router-dom";
 import CreditPointsAuto from "./CreditPointsAuto";
-
+import RMTOYSLOGO from "../assets/RMTOYSLOGOFINAL.png";
 export default function Hero() {
   return (
     <section className="font-main  relative overflow-hidden ">
@@ -12,14 +12,12 @@ export default function Hero() {
         <div className="flex items-center relative flex-col pt-28 gap-20 md:pb-32 lg:pt-52 lg:gap-4  lg:flex-row justify-between">
           <div className="flex flex-col gap-3">
             <CreditPointsAuto />
-            <div className="flex md:pl-10 lg:pl-0">
-              <h2 className="bg-[#08bb69] py-1 px-3 border border-black rounded-[5px]  tracking-wider text-card font-main uppercase">
-                RM TOYS
-              </h2>
+            <div className="flex justify-center lg:justify-start">
+               <img src={RMTOYSLOGO} className="w-[90px] md:w-[100px] " alt="" />
             </div>
 
             <div className="relative z-10  md:w-[700px] lg:w-[690px]">
-              <h1 className="font-main text-3xl mx-auto leading-tight md:leading-tight lg:leading-tight  md:text-5xl  md:text-center lg:text-start ">
+              <h1 className="font-main text-3xl mx-auto leading-tight md:leading-tight lg:leading-tight  md:text-5xl  text-center lg:text-start ">
                 <span className="text-green-600">Discover</span> a{" "}
                 <span className="text-red-600">toy</span> that{" "}
                 <span className="text-orange-600">empowers</span> your child to{" "}

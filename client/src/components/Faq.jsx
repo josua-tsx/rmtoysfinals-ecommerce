@@ -58,11 +58,11 @@ export default function Faq() {
       <div className="">
         <div className="flex flex-col justify-center items-center h-full ">
           <div className="text-3xl mb-5">FAQs</div>
-          <div className="flex flex-col  md:w-[750px] gap-5">
+          <div className="flex flex-col w-full md:w-[750px] gap-5">
             {faqsComponent && faqsComponent.length > 0
               ? faqsComponent.map((faq) => (
                   <li
-                    className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
+                    className="border flex flex-col gap-4 w-full list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
                     key={faq._id}
                   >
                     {faq.title}

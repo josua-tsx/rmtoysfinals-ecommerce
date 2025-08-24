@@ -124,7 +124,7 @@ export default function PlayGameModal({ user, closeModal }) {
             </h1>
           </div>
 
-          <div className="my-10 flex justify-center text-center">
+          <div className="my-5 flex justify-center p-2 text-center">
             <div className="flex flex-col gap-2 justify-center items-center">
               <h2 className="text-xl md:text-3xl">{renderResult}</h2>
               <p className="text-lg">

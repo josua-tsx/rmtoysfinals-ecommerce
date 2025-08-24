@@ -5,7 +5,7 @@ import ArrowLine from "../reusable/ArrowLine";
 import Cart from "./Cart";
 import Profile from "./Profile";
 import Settings from "./Settings/Settings";
-import WishList from "./WishList";
+
 
 import { navItems } from "../const/const";
 import { useUserStore } from "../stores/useUserStore";
@@ -104,7 +104,7 @@ export default function Navbar() {
             </div>
 
             <Link>
-              <img src={RMTOYSLOGO} className="w-[75px] md:w-[90px] " alt="" />
+              <img src={RMTOYSLOGO} className="w-[75px] md:w-[80px] " alt="" />
             </Link>
 
             {currentUser ? (
