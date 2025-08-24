@@ -107,7 +107,7 @@ export default function PlayGameModal({ user, closeModal }) {
   return (
     <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-sm px-5 z-50">
       {lockedUntil ? (
-        <div className="bg-card relative justify-between w-[800px] border flex flex-col gap-5 border-black    rounded-[5px]">
+        <div className="bg-card relative justify-between w-[500px] border flex flex-col gap-5 border-black    rounded-[5px]">
           <button
             onClick={() => {
               closeModal();
@@ -119,7 +119,7 @@ export default function PlayGameModal({ user, closeModal }) {
           </button>
 
           <div>
-            <h1 className="text-center bg-primary text-white p-4 text-2xl">
+            <h1 className="text-center bg-primary rounded-t-[5px] text-white p-4 text-2xl">
               Congratulations! 🎉
             </h1>
           </div>
