@@ -102,7 +102,7 @@ export default function FreeCredits() {
                 </div>
               </div>
 
-              <div className="flex flex-col h-[500px] overflow-y-auto p-4 gap-4">
+              <div className="flex flex-col h-[350px] md:h-[500px] overflow-y-auto p-4 gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="">⚔️ How to Play</label>
                   <ul className="flex flex-col">

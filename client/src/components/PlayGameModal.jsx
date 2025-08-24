@@ -14,7 +14,7 @@ const choices = [
       <FaHandRock className="text-secondary size-[40px] hover:text-primary" />
     ),
     icon2: (
-      <FaHandRock className="text-secondary size-[70px] md:size-[200px]" />
+      <FaHandRock className="text-secondary size-[90px] md:size-[200px]" />
     ),
   },
   {
@@ -23,7 +23,7 @@ const choices = [
       <FaHandPaper className="text-blue-500 size-[40px] hover:text-primary" />
     ),
     icon2: (
-      <FaHandPaper className="text-blue-500 size-[70px] md:size-[200px]" />
+      <FaHandPaper className="text-blue-500 size-[90px] md:size-[200px]" />
     ),
   },
   {
@@ -32,7 +32,7 @@ const choices = [
       <FaHandScissors className="text-red-500 size-[40px] hover:text-primary" />
     ),
     icon2: (
-      <FaHandScissors className="text-red-500 size-[70px] md:size-[200px]" />
+      <FaHandScissors className="text-red-500 size-[90px] md:size-[200px]" />
     ),
   },
 ];
@@ -164,7 +164,7 @@ export default function PlayGameModal({ user, closeModal }) {
               </h1>
             </div>
             <div className=" flex justify-center">
-              <h1 className="text-center   text-xl p-4">
+              <h1 className="text-center   md:text-xl p-4">
                 {renderResult
                   ? renderResult
                   : "Fight for free credits! Good luck. 🍀"}
@@ -172,7 +172,7 @@ export default function PlayGameModal({ user, closeModal }) {
             </div>
             <div className="flex justify-center">
               <div>
-                <div className="border flex p-1 rounded-[5px] justify-between border-black w-[200px] h-[40px]">
+                <div className="border flex p-1 rounded-[5px] justify-between border-black w-[200px] h-[30px] md:h-[40px]">
                   {Array.from({ length: 3 }).map((_, index) => (
                     <div
                       key={index}
@@ -186,21 +186,21 @@ export default function PlayGameModal({ user, closeModal }) {
             </div>
           </div>
 
-          <div className="flex  p-4 py-16">
+          <div className="flex  p-4 md:py-10">
             <div className="flex flex-col  flex-1 gap-4">
               {/* <p className="">Win Count: {renderWinCount}</p> */}
-              <div className="flex flex-col justify-center  items-center h-[200px]  rounded-[5px] p-2  w-full">
+              <div className="flex flex-col justify-center  items-center   rounded-[5px] p-2  w-full">
                 <div>
                   {" "}
                   {isPending ? (
                     <img
                       src={gameLoading}
                       alt="Loading animation"
-                      className="h-auto w-[500px]"
+                      className="h-auto w-[400px]"
                     />
                   ) : (
                     returnComponent() || (
-                      <FaHandRock className="text-secondary size-[70px] md:size-[200px]" />
+                      <FaHandRock className="text-secondary size-[90px] md:size-[200px]" />
                     )
                   )}
                 </div>
@@ -212,16 +212,16 @@ export default function PlayGameModal({ user, closeModal }) {
             </div>
 
             <div className="flex flex-col items-center justify-center flex-1 gap-4">
-              <div className=" flex flex-col justify-center items-center h-[200px]  rounded-[5px] p-2  w-full">
+              <div className=" flex flex-col justify-center items-center   rounded-[5px] p-2  w-full">
                 {isPending ? (
                   <img
                     src={gameLoading}
                     alt="Loading animation"
-                    className="h-auto w-[500px]"
+                    className="h-auto w-[400px]"
                   />
                 ) : (
                   returnComputerComponent() || (
-                    <FaHandRock className="text-secondary size-[70px] md:size-[200px]" />
+                    <FaHandRock className="text-secondary size-[90px] md:size-[200px]" />
                   )
                 )}
               </div>
@@ -229,14 +229,18 @@ export default function PlayGameModal({ user, closeModal }) {
           </div>
 
           <div className="flex flex-col justify-between p-4 items-center gap-10">
-            <div className=" w-full   flex flex-col md:flex-row text-center md:text-start gap-4 items-center justify-between">
+            <div className=" w-full   flex flex-col md:flex-row text-center md:text-start gap-2 items-center justify-between">
               <div className="flex-1">
-                <p>Win Count: {renderWinCount}</p>
-                <p>Your Credits: {renderCredits}</p>
+                <p className="flex items-center gap-2">
+                  Win Count: <p className="text-blue-500">{renderWinCount}</p>
+                </p>
+                <p className="flex items-center gap-2">
+                  Your Credits: <span className="text-blue-500">{renderCredits}</span>
+                </p>
               </div>
 
               <div className="flex flex-1 flex-col gap-4 items-center">
-                <h1 className="text-black text-center text-xl">
+                <h1 className="text-black text-center md:text-xl">
                   Choose Your Move:
                 </h1>
                 <div className="flex gap-2">
