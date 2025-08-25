@@ -63,3 +63,35 @@ export const getSubscribedEmails = async (req, res, next) => {
     next(error);
   }
 };
+
+export const unsubscribeEmail = async (req, res, next) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return next(handleMakeError(400, "No user found."));
+
+    if (user.isSubscribed === false) {
+      return next(
+        handleMakeError(
+          400,
+          "You can't unsubscribe because you are not subscribed yet"
+        )
+      );
+    }
+
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { isSubscribed: false },
+      },
+      { new: true }
+    );
+
+    ress
+      .status(200)
+      .json({ message: "Unsubscribe sucessfull!", unsubscribe: true });
+  } catch (error) {
+    next(error);
+  }
+};

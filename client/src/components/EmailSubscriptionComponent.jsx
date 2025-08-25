@@ -40,6 +40,21 @@ export default function EmailSubscriptionComponent() {
     },
   });
 
+  const { mutate: unsubscribeMutation, isPending } = useMutation({
+    mutationFn: async () => {
+      const res = await axiosInstance.patch(`/subscribe/unsubscribe`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.unsubscribe) {
+        toast.success(data.message);
+      }
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -90,26 +105,35 @@ export default function EmailSubscriptionComponent() {
                 value={userEmail}
                 disabled
               />
-              <button
-                disabled={isSubscribe === true}
-                className={`md:absolute flex justify-center ${
-                  isSubscribe
-                    ? "w-full rounded-l-[5px]"
-                    : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
-                } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%]`}
-              >
-                {!isSubscribe ? (
-                  <IoMdSend
-                    size={30}
-                    className="text-white   group-hover:text-black"
-                  />
-                ) : (
-                  <FaCheck
-                    size={30}
-                    className="text-white   group-hover:text-black"
-                  />
-                )}
-              </button>
+              {isSubscribe ? (
+                <button
+                  type="button"
+                  className="border bg-red-500 text-white rounded-[5px] border-black p-2"
+                >
+                  Unsubscribe
+                </button>
+              ) : (
+                <button
+                  disabled={isSubscribe === true}
+                  className={`md:absolute flex justify-center ${
+                    isSubscribe
+                      ? "w-full rounded-l-[5px]"
+                      : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
+                  } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%]`}
+                >
+                  {!isSubscribe ? (
+                    <IoMdSend
+                      size={30}
+                      className="text-white   group-hover:text-black"
+                    />
+                  ) : (
+                    <FaCheck
+                      size={30}
+                      className="text-white   group-hover:text-black"
+                    />
+                  )}
+                </button>
+              )}
             </form>
           </div>
         </div>
