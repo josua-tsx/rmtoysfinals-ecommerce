@@ -68,19 +68,17 @@ export const unsubscribeEmail = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
-    const user = await User.findById(userId);
-    if (!user) return next(handleMakeError(400, "No user found."));
+    let subscribedUser = await Subscribe.findOne({
+      userId,
+    });
+    if (!subscribedUser)
+      return next(handleMakeError(400, "no subscribed user found!"));
 
-    if (user.isSubscribed === false) {
-      return next(
-        handleMakeError(
-          400,
-          "You can't unsubscribe because you are not subscribed yet"
-        )
-      );
-    }
+    const deleteSubsribeId = await Subscribe.findByIdAndDelete(
+      subscribedUser._id
+    );
 
-    await User.findByIdAndUpdate(
+    const updateToFalse = await User.findByIdAndUpdate(
       userId,
       {
         $set: { isSubscribed: false },
@@ -88,9 +86,11 @@ export const unsubscribeEmail = async (req, res, next) => {
       { new: true }
     );
 
-    res
-      .status(200)
-      .json({ message: "Unsubscribe sucessfull!", unsubscribe: true });
+    res.status(200).json({
+      message: "Unsubscribed succesfull!",
+      subscribedId: deleteSubsribeId,
+      user: updateToFalse,
+    });
   } catch (error) {
     next(error);
   }

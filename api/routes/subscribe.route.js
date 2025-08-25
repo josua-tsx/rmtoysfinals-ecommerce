@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post(`/subscribe-email`, requireAuth, subscribeEmail);
 router.get(`/get-subscribedEmails`, getSubscribedEmails);
-router.patch(`/unsubscribe`, requireAuth, unsubscribeEmail);
+router.delete(`/unsubscribe`, requireAuth, unsubscribeEmail);
 
 export default router;
