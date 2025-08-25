@@ -35,20 +35,23 @@ export default function EmailSubscriptionComponent() {
       console.log(data);
     },
     onError: (err) => {
-      toast.error(err.response.data.message);
+      console.log(err);
       setIsSubscribe(false);
     },
   });
 
   const { mutate: unsubscribeMutation, isPending } = useMutation({
     mutationFn: async () => {
-      const res = await axiosInstance.patch(`/subscribe/unsubscribe`);
+      const res = await axiosInstance.delete(`/subscribe/unsubscribe`);
       return res.data;
     },
+    onMutate: async () => {
+      setIsSubscribe(false);
+    },
     onSuccess: (data) => {
-      if (data.unsubscribe) {
-        toast.success(data.message);
-      }
+      console.log(data);
+
+      toast.success(data.message);
     },
     onError: (err) => {
       toast.error(err.response.data.message);
@@ -115,7 +118,6 @@ export default function EmailSubscriptionComponent() {
                 </button>
               ) : (
                 <button
-                  disabled={isSubscribe === true}
                   className={`md:absolute flex justify-center ${
                     isSubscribe
                       ? "w-full rounded-l-[5px]"
