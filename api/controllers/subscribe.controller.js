@@ -88,7 +88,7 @@ export const unsubscribeEmail = async (req, res, next) => {
       { new: true }
     );
 
-    ress
+    res
       .status(200)
       .json({ message: "Unsubscribe sucessfull!", unsubscribe: true });
   } catch (error) {

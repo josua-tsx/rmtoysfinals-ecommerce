@@ -107,6 +107,7 @@ export default function EmailSubscriptionComponent() {
               />
               {isSubscribe ? (
                 <button
+                  onClick={() => unsubscribeMutation()}
                   type="button"
                   className="border bg-red-500 text-white rounded-[5px] border-black p-2"
                 >
