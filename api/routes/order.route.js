@@ -14,6 +14,7 @@ import {
   getAllOrder,
   getAllRefunded,
   getAllSuccess,
+  getFiveUserDelivered,
   getGuestOrder,
   getLatestCancelledOrder,
   getLatestFailedOrder,
@@ -52,7 +53,7 @@ router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
 router.get(`/get-all-orders`, getAllOrder);
 
-router.get(`/get-orders`, getUsersOrder); 
+router.get(`/get-orders`, getUsersOrder);
 
 router.get(`/get-guest-orders`, getGuestOrder);
 
@@ -93,6 +94,8 @@ router.put(`/refund-order`, adminOrderRefund);
 router.put(`/user/cancel-order`, requireAuth, userCancelOrder);
 
 router.get(`/get-userDelivered`, requireAuth, getUserDelivered);
+
+router.get(`/get-userFiveDelivered`, requireAuth, getFiveUserDelivered);
 
 router.get(`/get-userCancelled`, requireAuth, getUserCancelled);
 

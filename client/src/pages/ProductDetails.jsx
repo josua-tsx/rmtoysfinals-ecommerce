@@ -11,6 +11,8 @@ import toast from "react-hot-toast";
 import formatPrice from "../reusable/formatPrice.js";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
 import { useUserStore } from "../stores/useUserStore.js";
+import { FaCartPlus } from "react-icons/fa";
+import { MdRateReview } from "react-icons/md";
 
 export default function ProductDetails() {
   const params = useParams();
@@ -215,29 +217,30 @@ export default function ProductDetails() {
                 {/* ADD ADITIONAL INFORMATIONS */}
               </div>
               {/* SEE ALL REVIEWS AND ADD REVIEWS */}
-              <div className="flex justify-between">
+              <div className="flex justify-between py-2">
                 <button
                   onClick={() => ShowModal()}
-                  className=" underline text-indigo-500"
+                  className=" underline "
                 >
                   See All Reviews ({singleProduct?.reviews?.length})
-                </button>
-                <button
-                  onClick={() => ShowModal()}
-                  className=" underline text-indigo-500"
-                >
-                  Add Review
                 </button>
               </div>
             </div>
 
             {/* BUY AND ADD BUTTON*/}
             <div className="border w-[327px] md:w-full lg:w-[210px] mx-auto flex flex-col gap-2 h-full border-black bg-card rounded-[5px] p-4">
-              <div
-                onClick={() => handleAddToCart(singleProduct._id)}
-                className=""
-              >
-                <Buttons buttonName={"Add to cart"} />
+              <div className="flex flex-col gap-2">
+                <Buttons
+                  onClick={() => handleAddToCart(singleProduct._id)}
+                  buttonName={"Add to cart"}
+                  icon={<FaCartPlus size={20} />}
+                />
+                <Buttons
+                  // onClick={() => handleAddToCart(singleProduct._id)}
+                  buttonName={"Add Review"}
+                  icon={<MdRateReview size={20} />}
+                  onClick={() => ShowModal()}
+                />
               </div>
             </div>
           </div>

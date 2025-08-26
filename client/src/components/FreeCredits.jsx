@@ -62,7 +62,7 @@ export default function FreeCredits() {
         <button
           onClick={() => {
             if (
-              currentUser.isSubscribed === false &&
+              currentUser.isSubscribed === false ||
               currentUser.isEmailVerified === false
             ) {
               return toast.error(

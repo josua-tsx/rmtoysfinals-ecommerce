@@ -3,17 +3,20 @@ import columnOnePic from "../assets/column1.png";
 import { IoMdSend } from "react-icons/io";
 import { IoIosNotifications } from "react-icons/io";
 import { useUserStore } from "../stores/useUserStore";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
 import { FaCheck } from "react-icons/fa6";
+import { ConfirmModal } from "../reusable/ConfirmModal";
 
 export default function EmailSubscriptionComponent() {
+  const queryClient = useQueryClient();
   const currentUser = useUserStore((state) => state.currentUser);
   const [userEmail, setUserEmail] = useState("");
   const [isSubscribe, setIsSubscribe] = useState(false);
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -31,12 +34,14 @@ export default function EmailSubscriptionComponent() {
       setIsSubscribe(true);
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["user", "users"] });
       toast.success("Subscribed Succesfully!");
       console.log(data);
     },
     onError: (err) => {
       console.log(err);
       setIsSubscribe(false);
+      toast.error(err.response.data.message);
     },
   });
 
@@ -49,14 +54,27 @@ export default function EmailSubscriptionComponent() {
       setIsSubscribe(false);
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["user", "users"] });
       console.log(data);
-
       toast.success(data.message);
     },
     onError: (err) => {
       toast.error(err.response.data.message);
     },
   });
+
+  const openModal = () => {
+    setOpenConfirmModal(true);
+  };
+
+  const confirmModal = () => {
+    unsubscribeMutation();
+    cancelModal();
+  };
+
+  const cancelModal = () => {
+    setOpenConfirmModal(false);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,6 +84,14 @@ export default function EmailSubscriptionComponent() {
 
   return (
     <section className="bg-yellow p-3 font-main pt-28 md:pt-36">
+      <ConfirmModal
+        isOpen={openConfirmModal}
+        title={"Confirm Unsubscribe"}
+        message={"Are you sure you want to unsubscribe?"}
+        onCancel={cancelModal}
+        onConfirm={confirmModal}
+      />
+
       <div className="max-w-[1280px] mx-auto p-4">
         <h1 className="text-center text-3xl mb-5">Subscribe</h1>
         <div className="flex flex-col gap-8 md:flex-row border border-black bg-card p-4 rounded-[5px] ">
@@ -110,7 +136,7 @@ export default function EmailSubscriptionComponent() {
               />
               {isSubscribe ? (
                 <button
-                  onClick={() => unsubscribeMutation()}
+                  onClick={() => openModal()}
                   type="button"
                   className="border bg-red-500 text-white rounded-[5px] border-black p-2"
                 >

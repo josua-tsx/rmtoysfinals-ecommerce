@@ -1197,6 +1197,25 @@ export const getUserDelivered = async (req, res, next) => {
   }
 };
 
+export const getFiveUserDelivered = async (req, res, next) => {
+  const userId = req.user.id;
+
+  try {
+    const orders = await Order.find({
+      userId,
+      status: "Delivered",
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    if (!orders) return res.status(200).json([]);
+
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getUserCancelled = async (req, res, next) => {
   const userId = req.user.id;
 
