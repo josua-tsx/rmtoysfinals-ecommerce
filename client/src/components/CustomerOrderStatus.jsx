@@ -72,11 +72,11 @@ export default function CustomerOrderStatus() {
 
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
-      setOpenModal(true);
-    };
+    setOpenModal(true);
+  };
 
-    return (
-      <>
+  return (
+    <>
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -138,7 +138,7 @@ export default function CustomerOrderStatus() {
                   Cancel
                 </button>
                 <button
-                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-primary "
+                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-blue-500 "
                   onClick={() => handleOpenSingleOrder(order)}
                 >
                   View

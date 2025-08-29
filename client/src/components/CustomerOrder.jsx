@@ -1,7 +1,16 @@
 import { MdLocalShipping } from "react-icons/md";
 import CustomerOrderStatus from "./CustomerOrderStatus";
+import { useState } from "react";
+import CustomerDeliveredStatus from "./CustomerDeliveredStatus";
 
 export default function CustomerOrder({ toggle, openCustomer }) {
+  const [orderStatus, setOrderStatus] = useState("pending");
+
+  const handleOrderChange = (e) => {
+    const newStatus = e.target.value;
+    setOrderStatus(newStatus);
+  };
+
   return (
     <div className="relative  flex">
       <button onClick={toggle}>
@@ -42,12 +51,22 @@ export default function CustomerOrder({ toggle, openCustomer }) {
             </div>
           </div>
 
-          <select name="" id="" className="border border-black p-1 px-4 rounded-[5px]  my-2">
-            <option value="">Pending</option>
-            <option value="">Delivered</option>
+          <select
+            name=""
+            id=""
+            value={orderStatus}
+            onChange={(e) => handleOrderChange(e)}
+            className="border border-black outline-none p-1 px-4 rounded-[5px]  my-2"
+          >
+            <option value="pending">Pending</option>
+            <option value="delivered">Delivered</option>
           </select>
 
-          <CustomerOrderStatus />
+          {orderStatus === "pending" ? (
+            <CustomerOrderStatus />
+          ) : (
+            <CustomerDeliveredStatus />
+          )}
         </div>
       )}
     </div>

@@ -43,7 +43,7 @@ export default function FreeCredits() {
         toast.success(`Come back at ${data.lockedUntil} to play again`);
       }
     },
-    onError: (err) => {
+    onError: (err) => { 
       toast.error(err.response.data.message);
     },
   });

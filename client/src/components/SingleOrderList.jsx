@@ -7,13 +7,17 @@ import AdminAddReasonModal from "./admin/AdminAddReasonModal";
 import { useState } from "react";
 import formatPrice from "../reusable/formatPrice";
 import { useNavigate } from "react-router-dom";
+import ReviewModal from "./ReviewModal";
+import { useEffect } from "react";
 
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
 
-  console.log(order);
+  // console.log(order);
 
   const [reasonModal, setReasonModal] = useState(false);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [singleProduct, setSingleProduct] = useState({});
 
   const queryClient = useQueryClient();
 
@@ -35,6 +39,16 @@ export default function SingleOrderList({ order, onClose }) {
     },
   });
 
+  const handleSetProductId = (singleProduct) => {
+    setSingleProduct(singleProduct);
+    setOpenReviewModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setSingleProduct({});
+    setOpenReviewModal(false);
+  };
+
   const handleChangePaymentStatus = (id, e) => {
     const newPaymentStatus = e.target.value;
 
@@ -42,11 +56,18 @@ export default function SingleOrderList({ order, onClose }) {
   };
 
   return (
-    <section className="inset-0 z-40 font-main  fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
+    <section className="inset-0 z-50   font-main  fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
       {reasonModal && (
         <AdminAddReasonModal
           singleOrderData={order}
           onClose={() => setReasonModal(false)}
+        />
+      )}
+
+      {openReviewModal && (
+        <ReviewModal
+          singleProduct={singleProduct}
+          closeModal={handleCloseModal}
         />
       )}
 
@@ -64,12 +85,9 @@ export default function SingleOrderList({ order, onClose }) {
 
           <div className="flex justify-between">
             <div className="flex flex-col text-sm">
-
-               <div className="flex gap-2">
+              <div className="flex gap-2">
                 <p>Order ID: </p>
-                <span className="text-indigo-700">
-                  {order._id} 
-                </span>
+                <span className="text-indigo-700">{order._id}</span>
               </div>
 
               <div className="flex gap-2">
@@ -78,8 +96,6 @@ export default function SingleOrderList({ order, onClose }) {
                   {order?.orderItems?.length}
                 </span>
               </div>
-
-             
 
               {!order.guestUser && (
                 <>
@@ -218,14 +234,23 @@ export default function SingleOrderList({ order, onClose }) {
                         <span>{item?.quantity}</span>
                       </div>
                       {order?.status === "Delivered" ? (
-                        <button
-                          onClick={() =>
-                            navigate(`/product/${item?.productId._id}`)
-                          }
-                          className="text-indigo-700 underline"
-                        >
-                          Click to write a review
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              navigate(`/product/${item?.productId._id}`);
+                              onClose()
+                            }}
+                            className="text-indigo-700 underline"
+                          >
+                            View Product
+                          </button>
+                          <button
+                            onClick={() => handleSetProductId(item?.productId)}
+                            className="text-primary underline"
+                          >
+                            Add a Review
+                          </button>
+                        </div>
                       ) : (
                         ""
                       )}

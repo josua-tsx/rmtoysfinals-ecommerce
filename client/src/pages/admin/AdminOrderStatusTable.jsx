@@ -20,7 +20,6 @@ export default function AdminOrderStatusTable() {
   const [newStatus, setNewStatus] = useState("");
   const [openToShipModal, setOpenToShipModal] = useState(false);
   const [selectedRiderId, setSelectedRiderId] = useState(null);
-  const [selectedRiderTwo, setSelectedRiderTwo] = useState(null);
 
   const {
     data: allOrders = [],
@@ -55,7 +54,7 @@ export default function AdminOrderStatusTable() {
 
   const { mutate: updateStatusMutation } = useMutation({
     mutationFn: async ({ id, status, riderId }) => {
-      const res = await axiosInstance.put(`/order/${id}/status`, {
+      const res = await axiosInstance.pubt(`/order/${id}/status`, {
         status,
         riderId,
       });
@@ -73,10 +72,11 @@ export default function AdminOrderStatusTable() {
       toast.error(err.response.data.message || "something went wrong");
     },
   });
+
   const selectOrderRiderId = (riderId) => {
     const orderWithRider = allOrders.find((order) => order.riderId === riderId);
     const riderIdValue = orderWithRider ? orderWithRider.riderId : null;
-    setSelectedRiderTwo(riderIdValue);
+
     return riderIdValue;
   };
 
@@ -84,13 +84,13 @@ export default function AdminOrderStatusTable() {
     updateStatusMutation({
       id: selectedId,
       status: newStatus,
-      riderId: selectedRiderId || selectedRiderTwo,
+      riderId: selectedRiderId,
     });
 
     cancelConfirmModal();
   };
 
-  console.log(selectedRiderTwo, selectedRiderId);
+  console.log(selectedRiderId);
 
   const handleOpenConfirmModal = (id, e, riderId) => {
     setOpenConfirmModal(true);

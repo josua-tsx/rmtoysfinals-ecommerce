@@ -11,6 +11,8 @@ export default function ReviewModal({ singleProduct, closeModal }) {
   const [commentReview, setCommentReview] = useState("");
   const [rating, setRating] = useState(1);
 
+  console.log(singleProduct);
+
   const queryClient = useQueryClient();
 
   const { mutate: addReviewMutation, isPending: isSubmitting } = useMutation({
@@ -49,15 +51,18 @@ export default function ReviewModal({ singleProduct, closeModal }) {
     <section className=" pt-[50px] md:pt-[130px] text-sm md:text-normal inset-0 fixed z-40 backdrop-blur-sm p-3">
       <div className="md:w-[80%]  h-screen  mx-auto">
         <div className="flex flex-col md:flex-row-reverse gap-2 relative">
-          {/* close button */}
-          <button
-            onClick={closeModal}
-            className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8"
+          <div
+            className={` ${
+              singleProduct?.reviews ? "md:w-[35%]" : "w-[100%] md:w-[50%] mx-auto"
+            } flex flex-col gap-2 relative`}
           >
-            <IoIosClose size={25} />
-          </button>
-
-          <div className="md:w-[35%] flex flex-col gap-2">
+            {/* close button */}
+            <button
+              onClick={closeModal}
+              className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8"
+            >
+              <IoIosClose size={25} />
+            </button>
             <div className="flex bg-card border rounded-[5px] p-3 border-black flex-col text-center gap-2">
               <div className="bg-yellow-50 border-l-4 my-1  rounded border-red-700 p-3  text-red-700">
                 <div className="flex">
@@ -171,19 +176,22 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               </div>
             </form>
           </div>
-          <div className="bg-card h-full md:h-[650px] w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
-            {/* REVIEW CARD GOES HERE */}
 
-            {singleProduct?.reviews?.length > 0 ? (
-              [...singleProduct?.reviews]
-                ?.reverse()
-                .map((review, index) => (
-                  <ReviewCard key={index} review={review} />
-                ))
-            ) : (
-              <p className="text-center">no review yet.</p>
-            )}
-          </div>
+          {singleProduct?.reviews && (
+            <div className="bg-card h-full md:h-[650px] w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
+              {/* REVIEW CARD GOES HERE */}
+
+              {singleProduct?.reviews?.length > 0 ? (
+                [...singleProduct?.reviews]
+                  ?.reverse()
+                  .map((review, index) => (
+                    <ReviewCard key={index} review={review} />
+                  ))
+              ) : (
+                <p className="text-center">no review yet.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>

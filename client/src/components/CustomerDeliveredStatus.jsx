@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 import SingleOrderList from "./SingleOrderList";
+import { Link } from "react-router-dom";
+import ReviewModal from "./ReviewModal";
 
 export default function CustomerDeliveredStatus() {
   const [orderId, setOrderId] = useState(null);
@@ -17,11 +19,10 @@ export default function CustomerDeliveredStatus() {
   } = useQuery({
     queryKey: ["userDelivered"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-userDelivered`);
+      const res = await axiosInstance.get(`/order/get-userFiveDelivered`);
       return res.data;
     },
   });
-
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -30,6 +31,8 @@ export default function CustomerDeliveredStatus() {
     },
     enabled: !!orderId,
   });
+
+  console.log(singleUserOrder);
 
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
@@ -41,6 +44,8 @@ export default function CustomerDeliveredStatus() {
     setOpenRefundModal(true);
     setOpenModal(false);
   };
+
+  if (isError) return <p>Error</p>;
 
   return (
     <>
@@ -58,8 +63,8 @@ export default function CustomerDeliveredStatus() {
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
-        ) : userOrder && userOrder.length > 0 ? (
-          userOrder.map((order) => (
+        ) : userDelivered && userDelivered.length > 0 ? (
+          userDelivered.map((order) => (
             <div
               key={order._id}
               className="flex flex-col md:flex-row gap-2 w-full"
@@ -88,16 +93,29 @@ export default function CustomerDeliveredStatus() {
 
               <div className="flex justify-center gap-2">
                 <button
-                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-primary "
+                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-blue-500 "
                   onClick={() => handleOpenSingleOrder(order)}
                 >
                   View
+                </button>
+
+                <button
+                  onClick={() => handleOpenSingleOrder(order)}
+                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-primary "
+                >
+                  Add Review
                 </button>
               </div>
             </div>
           ))
         ) : (
           <span>no order</span>
+        )}
+
+        {userDelivered && userDelivered.length > 0 && (
+          <Link to={"/profile"} className="underline  p-1 text-center mt-2">
+            View all delivered orders in Order History
+          </Link>
         )}
       </div>
     </>
