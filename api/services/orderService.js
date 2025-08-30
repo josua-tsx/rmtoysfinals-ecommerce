@@ -81,11 +81,11 @@ export const assignRider = async (order, riderId) => {
 
 // ✅ Handle Delivered
 export const handleDelivered = async (order, riderId, res) => {
-  // if (!riderId) {
-  //   return next(
-  //     handleMakeError(400, "You must pick a rider first in Shipped Status")
-  //   );
-  // }
+  if (!riderId) {
+    return next(
+      handleMakeError(400, "You must pick a rider first in Shipped Status")
+    );
+  }
   // update product sold count + add userId to product buyers
 
   await Promise.all(
