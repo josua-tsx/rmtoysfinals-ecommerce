@@ -81,9 +81,9 @@ export default function AdminOrderStatusTable() {
   };
 
   const confirmOrderStatus = () => {
-    if (newStatus === "Shipped" && selectedRiderId === null) {"You must pick a rider to update status to shipped."
-      return toast.error("You must pick a rider to update status to shipped.");
-    }
+    // if (newStatus === "Shipped" && selectedRiderId === null) {"You must pick a rider to update status to shipped."
+    //   return toast.error("You must pick a rider to update status to shipped.");
+    // }
 
     updateStatusMutation({
       id: selectedId,

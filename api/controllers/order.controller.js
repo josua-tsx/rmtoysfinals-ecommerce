@@ -1125,7 +1125,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     let order = await Order.findById(orderId).populate("userId");
-
     let rider = await Rider.findById(riderId);
 
     if (!order) return next(handleMakeError(400, "No order found!"));
@@ -1134,14 +1133,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE STATUS: SHIPPED ======
     if (status === "Shipped" && riderId) {
-      if (!rider) {
-        return next(
-          handleMakeError(
-            400,
-            "You must pick a rider to update status to shipped."
-          )
-        );
-      }
+      console.log(riderId);
 
       if (rider?.riderStatus === "unavailable") {
         return next(
