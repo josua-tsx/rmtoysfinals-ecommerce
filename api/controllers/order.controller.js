@@ -1125,14 +1125,16 @@ export const updateDeliveryStatus = async (req, res, next) => {
     }
 
     let order = await Order.findById(orderId).populate("userId");
-    let rider = riderId ? await Rider.findById(riderId) : null;
+
+    let rider = await Rider.findById(riderId);
+
     if (!order) return next(handleMakeError(400, "No order found!"));
 
     const isGuestOrder = isGuest || !order.userId;
 
     // ====== HANDLE STATUS: SHIPPED ======
     if (status === "Shipped" && riderId) {
-      if (riderId === null) {
+      if (!rider) {
         return next(
           handleMakeError(
             400,
