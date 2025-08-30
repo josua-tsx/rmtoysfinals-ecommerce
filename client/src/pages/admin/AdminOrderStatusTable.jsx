@@ -86,7 +86,6 @@ export default function AdminOrderStatusTable() {
       status: newStatus,
       riderId: selectedRiderId,
     });
-
     cancelConfirmModal();
   };
 
@@ -119,6 +118,7 @@ export default function AdminOrderStatusTable() {
   const handleCancelOpenShipModal = () => {
     setOpenToShipModal(false);
     setOpenConfirmModal(false);
+    setSelectedRiderId(null);
   };
 
   const handleConfirmToShipModal = () => {

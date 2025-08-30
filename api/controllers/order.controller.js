@@ -1132,6 +1132,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE STATUS: SHIPPED ======
     if (status === "Shipped" && riderId) {
+      if (riderId)
+        return next(
+          handleMakeError(400, "Please pick a rider before continuing")
+        );
+
       if (rider?.riderStatus === "unavailable") {
         return next(
           handleMakeError(400, "This rider is unavailable for this delivery.")
@@ -1168,7 +1173,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE DELIVERED ======
     if (status === "Delivered") {
-      await handleDelivered(updatedOrder, riderId);
+      if (!order.riderId) {
+        return next(
+          handleMakeError(400, "You must pick a rider first in Shipped Status")
+        );
+      }
+
+      await handleDelivered(updatedOrder);
     }
 
     // ====== NOTIFICATIONS ======

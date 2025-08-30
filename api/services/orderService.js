@@ -67,8 +67,6 @@ export const updateRiderStatus = async (riderId, status) => {
 
 // ✅ Assign Rider
 export const assignRider = async (order, riderId) => {
-  if (!riderId) throw new Error("Rider not found.");
-
   order.riderId = riderId;
 
   // 2. Add this orderId to rider.orders array
@@ -80,14 +78,7 @@ export const assignRider = async (order, riderId) => {
 };
 
 // ✅ Handle Delivered
-export const handleDelivered = async (order, riderId, res) => {
-  if (!riderId) {
-    return next(
-      handleMakeError(400, "You must pick a rider first in Shipped Status")
-    );
-  }
-  // update product sold count + add userId to product buyers
-
+export const handleDelivered = async (order) => {
   await Promise.all(
     order.orderItems.map((item) =>
       Product.findByIdAndUpdate(
