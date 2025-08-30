@@ -1135,7 +1135,15 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const previousRiderId = order.riderId;
 
     // ====== HANDLE STATUS: SHIPPED ======
-    if (status === "Shipped" && riderId) {
+    if (status === "Shipped") {
+      if (!riderId)
+        return next(
+          handleMakeError(
+            400,
+            "You must pick a rider to update status to shipped."
+          )
+        );
+
       if (rider?.riderStatus === "unavailable") {
         return next(
           handleMakeError(400, "This rider is unavailable for this delivery.")
