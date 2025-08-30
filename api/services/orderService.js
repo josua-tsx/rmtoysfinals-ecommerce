@@ -67,6 +67,8 @@ export const updateRiderStatus = async (riderId, status) => {
 
 // ✅ Assign Rider
 export const assignRider = async (order, riderId) => {
+  if (!riderId) throw new Error("Rider not found.");
+
   order.riderId = riderId;
 
   // 2. Add this orderId to rider.orders array

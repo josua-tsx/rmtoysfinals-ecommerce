@@ -1131,10 +1131,11 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     const isGuestOrder = isGuest || !order.userId;
 
+    // Store previous rider for status updates
+    const previousRiderId = order.riderId;
+
     // ====== HANDLE STATUS: SHIPPED ======
     if (status === "Shipped" && riderId) {
-      console.log(riderId);
-
       if (rider?.riderStatus === "unavailable") {
         return next(
           handleMakeError(400, "This rider is unavailable for this delivery.")
@@ -1165,7 +1166,17 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const updatedOrder = await order.save();
 
     // ====== HANDLE RIDER STATUS UPDATE ======
-    if (riderId) {
+    // If changing to Pending or Processing, make rider available
+    if (status === "Pending" || status === "Processing") {
+      if (previousRiderId) {
+        await updateRiderStatus(previousRiderId, status);
+      }
+      // Also update new rider if provided (though unlikely for Pending/Processing)
+      if (riderId && riderId !== previousRiderId) {
+        await updateRiderStatus(riderId, status);
+      }
+    } else if (riderId) {
+      // For other statuses, update the rider normally
       await updateRiderStatus(riderId, status);
     }
 
@@ -1176,7 +1187,6 @@ export const updateDeliveryStatus = async (req, res, next) => {
           handleMakeError(400, "You must pick a rider first in Shipped Status")
         );
       }
-
       await handleDelivered(updatedOrder);
     }
 
