@@ -1145,6 +1145,14 @@ export const updateDeliveryStatus = async (req, res, next) => {
       await handleCancelled(order, isGuestOrder);
     }
 
+    if (status === "Out for Delivery") {
+      if (!order.riderId) {
+        return next(
+          handleMakeError(400, "You must pick a rider first in Shipped Status")
+        );
+      }
+    }
+
     // ====== UPDATE ORDER ======
     order.status = status;
     if (status === "Delivered") {

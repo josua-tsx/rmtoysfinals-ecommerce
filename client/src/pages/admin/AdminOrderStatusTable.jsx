@@ -54,7 +54,7 @@ export default function AdminOrderStatusTable() {
 
   const { mutate: updateStatusMutation } = useMutation({
     mutationFn: async ({ id, status, riderId }) => {
-      const res = await axiosInstance.pubt(`/order/${id}/status`, {
+      const res = await axiosInstance.put(`/order/${id}/status`, {
         status,
         riderId,
       });
