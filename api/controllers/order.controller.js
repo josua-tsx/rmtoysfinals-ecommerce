@@ -1132,7 +1132,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE STATUS: SHIPPED ======
     if (status === "Shipped" && riderId) {
-      if (riderId)
+      if (!riderId)
         return next(
           handleMakeError(400, "Please pick a rider before continuing")
         );
