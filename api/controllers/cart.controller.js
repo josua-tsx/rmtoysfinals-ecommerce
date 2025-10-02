@@ -115,7 +115,7 @@ export const getSelectedCart = async (req, res, next) => {
 
     const selectedItems = carts.items.filter((item) => item.isSelected);
 
-    res.status(200).json({ success: true, data: selectedItems });
+    res.status(200).json(selectedItems);
   } catch (error) {
     next(error);
   }
