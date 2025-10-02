@@ -93,6 +93,34 @@ export const getCarts = async (req, res, next) => {
   }
 };
 
+export const getSelectedCart = async (req, res, next) => {
+  const userId = req.user.id;
+
+  try {
+    const carts = await Cart.findOne({
+      userId,
+    }).populate({
+      path: "items.productId",
+      select:
+        "productName price points productDescription productImages discount isSelected",
+      populate: {
+        path: "stocks",
+        select: "quantity",
+      },
+    });
+
+    if (!carts || !carts.items) {
+      return res.status(200).json([]);
+    }
+
+    const selectedItems = carts.items.filter((item) => item.isSelected);
+
+    res.status(200).json({ success: true, data: selectedItems });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteCart = async (req, res, next) => {
   const userId = req.user.id;
   const { productId } = req.body;
