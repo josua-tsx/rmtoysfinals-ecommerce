@@ -1,5 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
+import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
 
 export const addToCart = async (req, res, next) => {
@@ -34,9 +35,35 @@ export const addToCart = async (req, res, next) => {
   }
 };
 
-export const selectCart = async (req, res, next) => {
+export const updateSelect = async (req, res, next) => {
+  const userId = req.user.id;
+  const { productId } = req.params;
+  const { isSelected } = req.body;
+
   try {
-    
+    const cart = await Cart.findOne({ userId });
+    if (!cart || !cart.items) return res.status(200).json([]);
+
+    const cartItem = cart.items.find(
+      (product) => product.productId.toString() === productId
+    );
+
+    if (!cartItem) {
+      return next(handleMakeError(404, "Product not found in cart"));
+    }
+
+    cartItem.isSelected = isSelected;
+
+    await cart.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully updated cart selection",
+      data: {
+        productId,
+        isSelected,
+      },
+    });
   } catch (error) {
     next(error);
   }
