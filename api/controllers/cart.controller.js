@@ -34,6 +34,14 @@ export const addToCart = async (req, res, next) => {
   }
 };
 
+export const selectCart = async (req, res, next) => {
+  try {
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getCarts = async (req, res, next) => {
   const userId = req.user.id;
 

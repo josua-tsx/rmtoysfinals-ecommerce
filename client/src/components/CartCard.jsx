@@ -140,15 +140,18 @@ export default function CartCard({ productCart }) {
           </div>
         </div>
       </div>
-      <div className="flex absolute bottom-1 right-0 md:relative items-center gap-3">
+      <div className="flex absolute bottom-1 right-0 md:relative  gap-3">
         <button
           // onClick={() => handleRemoveCart(productCart.productId._id)}
           onClick={() => handleDeleteClick(productCart?.productId._id)}
           type="button"
-          className=" flex items-center bottom-0 gap-1 right-2 lg:relative text-red-600"
+          className=" flex items-center bottom-0 gap-1  relative right-2 text-red-600"
         >
           <MdDelete size={25} />
         </button>
+      </div>
+      <div>
+        <input type="checkbox" className=" h-4 w-4" />
       </div>
     </div>
   );

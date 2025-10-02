@@ -32,10 +32,10 @@ const app = express();
 const PORT = process.env.PORT;
 
 const allowedOrigins = [
-  "https://rmtoysfinals-8jgr.vercel.app", // Your Vercel frontend
+  // "https://rmtoysfinals-8jgr.vercel.app", // Your Vercel frontend
   "http://localhost:5173", // For local testing (optional)
-  "https://www.rmtoys.store",
-  "http://localhost:8081", // react native
+  // "https://www.rmtoys.store",
+  // "http://localhost:8081", // react native
 ];
 
 // CORS configuration

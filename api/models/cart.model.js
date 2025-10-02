@@ -23,6 +23,11 @@ const CartScehmaModel = new mongoose.Schema(
         },
       },
     ],
+
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
