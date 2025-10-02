@@ -99,7 +99,6 @@ export const getSelectedCart = async (req, res, next) => {
   try {
     const carts = await Cart.findOne({
       userId,
-      "items.isSelected": true,
     }).populate({
       path: "items.productId",
       select:
