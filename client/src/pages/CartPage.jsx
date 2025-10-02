@@ -35,9 +35,13 @@ export default function CartPage() {
       const res = await axiosInstance.get(`/cart/get`);
       return res.data;
     },
-  });
+  }); 
 
-  console.log(cart);
+  console.log(cart)
+
+
+
+
 
   const totalPrice = cart?.items?.reduce((total, item) => {
     return total + item.productId.price * item.quantity;

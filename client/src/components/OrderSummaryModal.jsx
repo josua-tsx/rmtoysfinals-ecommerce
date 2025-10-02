@@ -43,10 +43,12 @@ export default function OrderSummaryModal({ onClose }) {
   } = useQuery({
     queryKey: ["cart"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/cart/get`);
+      const res = await axiosInstance.get(`/cart/get-selecteds`);
       return res.data;
     },
   });
+
+  console.log(cart)
 
   // Calculate all cart values
   const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {

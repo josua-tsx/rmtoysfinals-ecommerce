@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
-import { PiShareFatFill } from "react-icons/pi";
 import formatPrice from "../reusable/formatPrice";
 import { useState, useEffect } from "react";
 import { debounce } from "lodash"; // or your preferred debounce utility
@@ -13,6 +12,9 @@ export default function CartCard({ productCart }) {
   const [quantity, setQuantity] = useState(productCart?.quantity || 0);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [deleteCartId, setDeleteCartId] = useState(null);
+  const [selected, setSelected] = useState(productCart.isSelected);
+
+  console.log(productCart);
 
   useEffect(() => {
     setQuantity(productCart?.quantity || 0);
@@ -51,6 +53,30 @@ export default function CartCard({ productCart }) {
       setQuantity(productCart?.quantity || 0);
     },
   });
+
+  const { mutate: updateSelectMutation } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.put(
+        `/cart/update-select/${productCart.productId._id}`,
+        data
+      );
+      return res.data;
+    },
+    onSuccess: (data) => {
+      console.log(data.message);
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
+
+  const handleCheckBoxChange = (e) => {
+    const newSelectionState = e.target.checked;
+    setSelected(newSelectionState);
+
+    updateSelectMutation({ isSelected: newSelectionState });
+  };
 
   const handleDeleteClick = (productId) => {
     setOpenDeleteModal(true);
@@ -151,7 +177,12 @@ export default function CartCard({ productCart }) {
         </button>
       </div>
       <div>
-        <input type="checkbox" className=" h-4 w-4" />
+        <input
+          type="checkbox"
+          className=" h-4 w-4"
+          checked={selected}
+          onChange={handleCheckBoxChange}
+        />
       </div>
     </div>
   );
