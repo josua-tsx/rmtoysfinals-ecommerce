@@ -60,7 +60,10 @@ export default function Settings({ toggle, openSetting }) {
           </li>
           <li className=" p-1 hover:bg-gray-300">
             <button
-              onClick={() => signOut()}
+              onClick={() => {
+                signOut()
+                console.log("sign out")
+              }}
               className="  flex justify-between w-full items-center"
             >
               Sign out

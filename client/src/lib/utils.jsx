@@ -1,7 +1,12 @@
-// lib/utils.js
 export const getGuestCart = () => {
   const cart = localStorage.getItem("guestCart");
-  return cart ? JSON.parse(cart) : { items: [] }; // Changed to 'items' to match usage
+  return cart ? JSON.parse(cart) : { items: [] };
+};
+
+export const guestSelectedCarts = () => {
+  const cart = JSON.parse(localStorage.getItem("guestCart"));
+  const filteredSelected = cart.items.filter((item) => item.isSelected);
+  return filteredSelected;
 };
 
 export const addToGuestCart = (product) => {
@@ -24,10 +29,8 @@ export const addToGuestCart = (product) => {
 };
 
 export const deleteGuestCart = (productId) => {
-  // Get current cart from localStorage
   const cart = getGuestCart();
 
-  // Filter out the item to be removed
   const updatedItems = cart.items.filter((item) => item._id !== productId);
 
   // Update the cart with filtered items
@@ -36,10 +39,8 @@ export const deleteGuestCart = (productId) => {
     items: updatedItems,
   };
 
-  // Save back to localStorage
   localStorage.setItem("guestCart", JSON.stringify(updatedCart));
 
-  // Return the updated cart
   return updatedCart;
 };
 
@@ -52,6 +53,24 @@ export const updateQuantity = (productId, newQuantity) => {
     ...cart,
     items: cart.items.map((item, index) =>
       index === updateQuantity ? { ...item, quantity: newQuantity } : item
+    ),
+  };
+
+  localStorage.setItem("guestCart", JSON.stringify(updatedCart));
+  return updatedCart;
+};
+
+export const updateSelected = (productId, isSelected) => {
+  const cart = getGuestCart();
+
+  const existingItem = cart.items.find((item) => item._id === productId);
+
+  if (!existingItem) throw new Error("Item does nt exist");
+
+  const updatedCart = {
+    ...cart,
+    items: cart.items.map((item) =>
+      item._id === productId ? { ...item, isSelected } : item
     ),
   };
 

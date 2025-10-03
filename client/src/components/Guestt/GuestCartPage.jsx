@@ -33,6 +33,8 @@ export default function GuestCartPage() {
     setCart(getGuestCart());
   };
 
+  console.log(cart);
+
   return (
     <section className="pt-[130px] bg-yellow  text-sm md:text-normal font-main p-3">
       {openOrderModal && (

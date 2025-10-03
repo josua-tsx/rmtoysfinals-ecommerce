@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getGuestCart } from "../../lib/utils";
+import { guestSelectedCarts } from "../../lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { IoIosClose } from "react-icons/io";
@@ -23,27 +23,25 @@ export default function GuestSummaryModal({ onClose }) {
   const [cartItems, setCartItems] = useState({});
   const [useCredits, setUseCredits] = useState("no");
 
-  const [cart, setCart] = useState(getGuestCart());
+  const [cart, setCart] = useState(guestSelectedCarts());
 
-  console.log(currentOrder);
-
-  //   console.log(cartItems)
+  console.log(cart);
 
   // Calculate all cart values
   const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {
     const totalDiscount =
-      cart?.items?.reduce((total, item) => {
+      cart?.reduce((total, item) => {
         const productDiscount = item.discount || 0;
         return total + productDiscount * item.quantity;
       }, 0) || 0;
 
     const subtotal =
-      cart?.items?.reduce((total, item) => {
+      cart?.reduce((total, item) => {
         return total + item.price * item.quantity;
       }, 0) || 0;
 
     const totalPoints =
-      cart?.items?.reduce((total, item) => {
+      cart?.reduce((total, item) => {
         return total + item.points * item.quantity;
       }, 0) || 0;
 
@@ -51,6 +49,8 @@ export default function GuestSummaryModal({ onClose }) {
 
     return { totalDiscount, subtotal, totalPoints, totalPrice };
   }, [cart]);
+
+  console.log(currentOrder);
 
   useEffect(() => {
     if (cart) {
@@ -363,8 +363,8 @@ export default function GuestSummaryModal({ onClose }) {
 
           {/* Products List */}
           <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto">
-            {cart?.items?.length > 0 ? (
-              cart.items.map((item) => (
+            {cart?.length > 0 ? (
+              cart.map((item) => (
                 <div
                   key={item._id}
                   className="flex items-start border-b border-gray-200 pb-4"

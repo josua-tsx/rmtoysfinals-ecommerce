@@ -1,4 +1,4 @@
-import { FaCartPlus } from "react-icons/fa";
+import { FaCartPlus, FaSleigh } from "react-icons/fa";
 import { IoHeart } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
@@ -52,6 +52,7 @@ export default function ShopProductCards({ product }) {
         addToGuestCart({
           ...product,
           quantity: 1,
+          isSelected: false,
         });
         toast.success("Added to guest cart");
       } catch (error) {
@@ -102,7 +103,7 @@ export default function ShopProductCards({ product }) {
               </button>
               <FaCartPlus size={20} />
             </li>
-      
+
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
               <button
                 className="w-full text-start"

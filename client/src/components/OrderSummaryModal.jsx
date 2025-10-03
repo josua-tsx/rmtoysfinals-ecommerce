@@ -22,8 +22,6 @@ export default function OrderSummaryModal({ onClose }) {
   const [cartItems, setCartItems] = useState({});
   const [useCredits, setUseCredits] = useState("no");
 
-  console.log(currentUser);
-
   const {
     data: activeAddress,
     isPending: isActivePending,
@@ -41,30 +39,31 @@ export default function OrderSummaryModal({ onClose }) {
     isPending: isCartPending,
     isError: isCartError,
   } = useQuery({
-    queryKey: ["cart"],
+    queryKey: ["selectedCarts"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/cart/get-selecteds`);
       return res.data;
     },
   });
 
-  console.log(cart)
+  // console.log(cart);
+  console.log(cartItems);
 
   // Calculate all cart values
   const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {
     const totalDiscount =
-      cart?.items?.reduce((total, item) => {
+      cart?.reduce((total, item) => {
         const productDiscount = item.productId.discount || 0;
         return total + productDiscount * item.quantity;
       }, 0) || 0;
 
     const subtotal =
-      cart?.items?.reduce((total, item) => {
+      cart?.reduce((total, item) => {
         return total + item.productId.price * item.quantity;
       }, 0) || 0;
 
     const totalPoints =
-      cart?.items?.reduce((total, item) => {
+      cart?.reduce((total, item) => {
         return total + item.productId.points * item.quantity;
       }, 0) || 0;
 
@@ -94,7 +93,7 @@ export default function OrderSummaryModal({ onClose }) {
 
   useEffect(() => {
     if (cart) {
-      setCartItems(cart.items);
+      setCartItems(cart);
     }
   }, [cart]);
 
@@ -490,8 +489,8 @@ export default function OrderSummaryModal({ onClose }) {
 
           {/* Products List */}
           <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto">
-            {cart?.items?.length > 0 ? (
-              cart.items.map((item) => (
+            {cart.length > 0 ? (
+              cart.map((item) => (
                 <div
                   key={item._id}
                   className="flex items-start border-b border-gray-200 pb-4"

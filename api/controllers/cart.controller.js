@@ -102,7 +102,7 @@ export const getSelectedCart = async (req, res, next) => {
     }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages discount isSelected",
+        "productName price points productDescription productImages discount ",
       populate: {
         path: "stocks",
         select: "quantity",

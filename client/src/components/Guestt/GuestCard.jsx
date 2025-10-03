@@ -3,13 +3,19 @@ import { ConfirmModal } from "../../reusable/ConfirmModal";
 import { MdDelete } from "react-icons/md";
 
 import formatPrice from "../../reusable/formatPrice";
-import { deleteGuestCart, updateQuantity } from "../../lib/utils";
+import {
+  deleteGuestCart,
+  updateQuantity,
+  updateSelected,
+  guestSelectedCarts,
+} from "../../lib/utils";
 import toast from "react-hot-toast";
 
 export default function GuestCard({ productCart, refreshCart }) {
   const [quantity, setQuantity] = useState(1);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [cart, setCart] = useState(null);
+  const [selected, setSelected] = useState(productCart.isSelected);
 
   useEffect(() => {
     if (productCart) {
@@ -38,6 +44,14 @@ export default function GuestCard({ productCart, refreshCart }) {
 
       setQuantity(cart.quantity || 1);
     }
+  };
+
+  const handleCheckBoxChange = (e) => {
+    const newSelection = e.target.checked;
+    setSelected(newSelection);
+
+    updateSelected(productCart._id, newSelection);
+    refreshCart();
   };
 
   if (!cart || Object.keys(cart).length === 0) {
@@ -119,6 +133,15 @@ export default function GuestCard({ productCart, refreshCart }) {
         >
           <MdDelete size={25} />
         </button>
+      </div>
+      <div>
+        <input
+          type="checkbox"
+          className=" h-4 w-4"
+          onClick={() => console.log(productCart)}
+          checked={selected}
+          onChange={handleCheckBoxChange}
+        />
       </div>
     </div>
   );
