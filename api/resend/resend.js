@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_TOKEN);
 export const resendEmail = async (to, subject, html) => {
   try {
     const mailOptions = {
-      from: "rmtoys@gmail.com",
+      from: "onboarding@resend.dev",
       to: to,
       subject: subject,
       html: html,
