@@ -13,6 +13,19 @@ import { orderStockLogs } from "./orderStockHistory.contoller.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
+// Then add this helper function:
+async function sendBulkEmails(subscribedUser, product, newDelivery) {
+  for (const user of subscribedUser) {
+    try {
+      const emailSubject = `New Stock Arrival Notification`;
+      const emailBody = `New Stock: ${product.productName} - Price: ${newDelivery.shopPrice}`;
+      await sendEmail(user.email, emailSubject, emailBody);
+    } catch (error) {
+      console.error(`Failed to send to ${user.email}:`, error);
+    }
+  }
+}
+
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
 
@@ -111,18 +124,7 @@ export const OrderStocks = async (req, res, next) => {
 
     // Instead of map + Promise.all, you can also use for...of for sequential processing
     if (notifySubscribedUser === true && subscribedUser.length > 0) {
-      for (const user of subscribedUser) {
-        try {
-          const emailSubject = `New Stock Arrival Notification`;
-          const emailBody = `New Stock Just Arrived! Product: ${product.productName}`;
-
-          await sendEmail(user.email, emailSubject, emailBody);
-          console.log(`✅ Email sent to ${user.email}`);
-        } catch (error) {
-          console.error(`❌ Failed to send to ${user.email}:`, error.message);
-          // Continue with next user even if one fails
-        }
-      }
+      sendBulkEmails(subscribedUser, product, newDelivery);
     }
 
     await orderStockLogs({
