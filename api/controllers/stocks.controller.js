@@ -110,7 +110,7 @@ export const OrderStocks = async (req, res, next) => {
 
     // Change this part of your code:
     if (notifySubscribedUser === true && subscribedUser.length > 0) {
-      const emailPromises = subscribedUser.map((user) => {
+      const emailPromises = subscribedUser.map(async (user) => {
         const emailSubject = `New Stock Arrival Notification`;
         const emailBody = `
          New Stock Just Arrived!
@@ -119,11 +119,12 @@ export const OrderStocks = async (req, res, next) => {
           Available Quantity: ${quantity}
     `;
 
-        return resendEmail(user.email, emailSubject, emailBody).catch((err) => {
+        try {
+          await resendEmail(user.email, emailSubject, emailBody);
+        } catch (err) {
           console.error(`Failed to send email to ${user.email}`, err);
-          // Continue even if one email fails
-          return null;
-        });
+          return null; // Continue even if one email fails
+        }
       });
 
       // Wait for all emails to complete (success or failure)

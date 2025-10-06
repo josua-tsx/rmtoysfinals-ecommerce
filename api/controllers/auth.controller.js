@@ -16,6 +16,7 @@ import { sendEmail } from "../nodemailer/nodemailer.js";
 import bcrypt from "bcryptjs/dist/bcrypt.js";
 
 import crypto from "crypto";
+import { resendEmail } from "../resend/resend.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -184,22 +185,22 @@ export const signin = async (req, res, next) => {
         { new: true }
       );
 
-      // await sendEmail(
-      //   ADMIN_EMAIL,
-      //   `${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
-      //     "en-US",
-      //     {
-      //       weekday: "long",
-      //       year: "numeric",
-      //       month: "long",
-      //       day: "numeric",
-      //       hour: "2-digit",
-      //       minute: "2-digit",
-      //       second: "2-digit",
-      //       timeZoneName: "short",
-      //     }
-      //   )}`
-      // );
+      await resendEmail(
+        ADMIN_EMAIL,
+        `${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
+          "en-US",
+          {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+          }
+        )}`
+      );
     }
   } catch (error) {
     next(error);
