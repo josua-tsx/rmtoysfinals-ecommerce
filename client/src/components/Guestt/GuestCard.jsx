@@ -7,7 +7,6 @@ import {
   deleteGuestCart,
   updateQuantity,
   updateSelected,
-  guestSelectedCarts,
 } from "../../lib/utils";
 import toast from "react-hot-toast";
 

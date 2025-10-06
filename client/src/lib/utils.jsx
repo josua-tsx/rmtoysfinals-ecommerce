@@ -12,12 +12,10 @@ export const guestSelectedCarts = () => {
 export const addToGuestCart = (product) => {
   const cart = getGuestCart();
 
-  // Ensure cart.items exists
   if (!cart.items) {
     cart.items = [];
   }
 
-  // Check if product already exists in cart
   const existingItem = cart.items.find((item) => item._id === product._id);
   if (existingItem) {
     throw new Error("Product already in cart");
@@ -33,7 +31,6 @@ export const deleteGuestCart = (productId) => {
 
   const updatedItems = cart.items.filter((item) => item._id !== productId);
 
-  // Update the cart with filtered items
   const updatedCart = {
     ...cart,
     items: updatedItems,

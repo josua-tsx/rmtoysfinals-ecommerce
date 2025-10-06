@@ -171,7 +171,13 @@ export const userPlaceOrder = async (req, res, next) => {
 
     // Clear cart
     const userCart = await Cart.findOne({ userId }).session(session);
-    userCart.items = [];
+    // update cart: Remove items that have isSelected === true
+    if (userCart && Array.isArray(userCart.items)) {
+      userCart.items = userCart.items.filter(
+        (item) => item.isSelected !== true
+      );
+    }
+
     await userCart.save({ session });
 
     // Audit trail
