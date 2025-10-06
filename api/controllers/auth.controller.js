@@ -18,7 +18,7 @@ import bcrypt from "bcryptjs/dist/bcrypt.js";
 import crypto from "crypto";
 import { resendEmail } from "../resend/resend.js";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 // REGISTER
 export const signup = async (req, res, next) => {
@@ -185,8 +185,9 @@ export const signin = async (req, res, next) => {
         { new: true }
       );
 
-      await resendEmail(
+      await sendEmail(
         ADMIN_EMAIL,
+        "attendance"
         `${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
           "en-US",
           {
