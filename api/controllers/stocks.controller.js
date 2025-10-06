@@ -4,8 +4,9 @@ import Stocks from "../models/stocks.model.js";
 import Supplier from "../models/supplier.model.js";
 import User from "../models/user.models.js";
 import Vat from "../models/vat.models.js";
-import { sendEmail } from "../nodemailer/nodemailer.js";
-// import { sendEmail } from "../nodemailer/nodemailer.js";
+
+import { resendEmail } from "../resend/resend.js";
+
 import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
 
@@ -118,7 +119,7 @@ export const OrderStocks = async (req, res, next) => {
           Available Quantity: ${quantity}
     `;
 
-        return sendEmail(user.email, emailSubject, emailBody).catch((err) => {
+        return resendEmail(user.email, emailSubject, emailBody).catch((err) => {
           console.error(`Failed to send email to ${user.email}`, err);
           // Continue even if one email fails
           return null;
