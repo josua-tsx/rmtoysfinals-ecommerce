@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { handleMakeError } from "../middleware/handleError.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
@@ -12,19 +13,6 @@ import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-
-// Then add this helper function:
-async function sendBulkEmails(subscribedUser, product, newDelivery) {
-  for (const user of subscribedUser) {
-    try {
-      const emailSubject = `New Stock Arrival Notification`;
-      const emailBody = `New Stock: ${product.productName} - Price: ${newDelivery.shopPrice}`;
-      await sendEmail(user.email, emailSubject, emailBody);
-    } catch (error) {
-      console.error(`Failed to send to ${user.email}:`, error);
-    }
-  }
-}
 
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
@@ -46,27 +34,7 @@ export const OrderStocks = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!dateDelivery) {
-      return next(handleMakeError(400, "Please input date delivery"));
-    }
-
-    if (!vat) {
-      return next(handleMakeError(400, "Please select VAT"));
-    }
-
-    if (!supplier) {
-      return next(handleMakeError(400, "Please select Supplier"));
-    }
-
-    if (!shopPrice) {
-      return next(handleMakeError(400, "Please input shop price"));
-    }
-
-    if (!shippingPrice) {
-      return next(handleMakeError(400, "Please input shipping Price"));
-    }
-
-    // Validate required fields
+    // ✅ Validate required fields first
     if (
       !product ||
       !supplier ||
@@ -77,6 +45,49 @@ export const OrderStocks = async (req, res, next) => {
       !shopPrice
     ) {
       return res.status(400).json({ message: "Please input required fields!" });
+    }
+
+    // ✅ Validate ObjectIds before using them
+    if (!mongoose.Types.ObjectId.isValid(product)) {
+      return next(handleMakeError(400, "Invalid product ID"));
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(supplier)) {
+      return next(handleMakeError(400, "Invalid supplier ID"));
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(vat)) {
+      return next(handleMakeError(400, "Invalid VAT ID"));
+    }
+
+    // ✅ Check if referenced documents exist
+    const [productExists, supplierExists, vatExists] = await Promise.all([
+      Product.findById(product),
+      Supplier.findById(supplier),
+      Vat.findById(vat),
+    ]);
+
+    if (!productExists) {
+      return next(handleMakeError(404, "Product not found"));
+    }
+    if (!supplierExists) {
+      return next(handleMakeError(404, "Supplier not found"));
+    }
+    if (!vatExists) {
+      return next(handleMakeError(404, "VAT not found"));
+    }
+
+    // ✅ Additional validations
+    if (!dateDelivery) {
+      return next(handleMakeError(400, "Please input date delivery"));
+    }
+
+    if (!shopPrice) {
+      return next(handleMakeError(400, "Please input shop price"));
+    }
+
+    if (!shippingPrice) {
+      return next(handleMakeError(400, "Please input shipping Price"));
     }
 
     if (Number(discount) > Number(vatShopPrice)) {
@@ -97,76 +108,163 @@ export const OrderStocks = async (req, res, next) => {
       );
     }
 
+    // ✅ Get subscribed users (only email field for efficiency)
     const subscribedUser = await User.find({
       isSubscribed: true,
-    });
+    }).select("email");
 
+    // ✅ Create and save new delivery
     const newDelivery = new Stocks({
       product,
       supplier,
-      supplierPrice,
-      shopPrice,
-      quantity,
-      shippingPrice,
-      totalCost,
+      supplierPrice: Number(supplierPrice) || 0,
+      shopPrice: Number(shopPrice),
+      quantity: Number(quantity),
+      shippingPrice: Number(shippingPrice),
+      totalCost: Number(totalCost),
       deliveryStatus: "delivered",
       deliveryId,
-      dateDelivery,
-      discount,
+      dateDelivery: new Date(dateDelivery),
+      discount: Number(discount) || 0,
       vat,
-      vatShopPrice,
-      vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * quantity,
+      vatShopPrice: Number(vatShopPrice),
+      vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * Number(quantity),
     });
 
     await newDelivery.save();
 
-    console.log(subscribedUser);
+    console.log("Subscribed users found:", subscribedUser.length);
 
-    // Instead of map + Promise.all, you can also use for...of for sequential processing
+    // ✅ Send response FIRST to prevent lag
+    res.status(201).json({
+      message: "Stock ordered successfully",
+      delivery: newDelivery,
+      emailNotification:
+        notifySubscribedUser && subscribedUser.length > 0
+          ? "Sending notifications in background"
+          : "No notifications sent",
+    });
+
+    // ✅ Process emails in BACKGROUND after response
     if (notifySubscribedUser === true && subscribedUser.length > 0) {
-      sendBulkEmails(subscribedUser, product, newDelivery);
+      processEmailsInBackground(
+        subscribedUser,
+        productExists,
+        newDelivery,
+        quantity
+      )
+        .then((result) => {
+          console.log(
+            `✅ Background emails completed: ${result.successful} sent, ${result.failed} failed`
+          );
+        })
+        .catch((error) => {
+          console.error("❌ Background email processing failed:", error);
+        });
     }
 
+    // ✅ Fixed orderStockLogs with proper data types
     await orderStockLogs({
       action: "admin_ordered_stock",
       userId,
       deliveryId,
       supplier,
-      category: "",
-      quantityOrdered: quantity,
-      supplierPrice,
-      shippingPrice,
-      vatPercentApplied: vat,
-      shopPrice,
-      receivedDate: dateDelivery,
-      receivedQuantity: quantity,
-      totalCost,
+      category: productExists.category || null, // Use actual category from product
+      quantityOrdered: Number(quantity),
+      supplierPrice: Number(supplierPrice) || 0,
+      shippingPrice: Number(shippingPrice),
+      vatPercentApplied: vatExists.vatPercent|| 0, // Use actual percentage from VAT document
+      shopPrice: Number(shopPrice),
+      receivedDate: new Date(dateDelivery),
+      receivedQuantity: Number(quantity),
+      totalCost: Number(totalCost),
     });
 
-    await Product.findByIdAndUpdate(
-      product,
-      {
-        status: "published",
-        price: vatShopPrice,
-        preVatPrice: shopPrice,
-        stocks: newDelivery._id,
-        discount,
-      },
-      { new: true, runValidators: true }
-    );
-
-    await Supplier.findByIdAndUpdate(supplier, {
-      $push: { product: newDelivery.product },
-    });
-
-    await Vat.findByIdAndUpdate(vat, {
-      $addToSet: { productId: newDelivery.product },
-    });
-
-    res.status(201).json(newDelivery);
+    // ✅ Update related documents
+    await Promise.all([
+      Product.findByIdAndUpdate(
+        product,
+        {
+          status: "published",
+          price: Number(vatShopPrice),
+          preVatPrice: Number(shopPrice),
+          stocks: newDelivery._id,
+          discount: Number(discount) || 0,
+        },
+        { new: true, runValidators: true }
+      ),
+      Supplier.findByIdAndUpdate(supplier, {
+        $push: { product: newDelivery.product },
+      }),
+      Vat.findByIdAndUpdate(vat, {
+        $addToSet: { productId: newDelivery.product },
+      }),
+    ]);
   } catch (error) {
+    console.error("OrderStocks error:", error);
     next(error);
   }
+};
+
+// ✅ Background email processing function
+const processEmailsInBackground = async (
+  subscribedUser,
+  product,
+  newDelivery,
+  quantity
+) => {
+  const results = {
+    successful: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  console.log(
+    `🔄 Starting background email sending to ${subscribedUser.length} users`
+  );
+
+  for (let i = 0; i < subscribedUser.length; i++) {
+    const user = subscribedUser[i];
+
+    try {
+      const emailSubject = `New Stock Arrival Notification - ${product.productName}`;
+      const emailBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">🚀 New Stock Just Arrived!</h2>
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+            <p><strong>Product:</strong> ${product.productName}</p>
+            <p><strong>Price:</strong> ₱${newDelivery.shopPrice}</p>
+            <p><strong>Available Quantity:</strong> ${quantity} units</p>
+            <p><strong>Arrival Date:</strong> ${new Date(
+              newDelivery.dateDelivery
+            ).toLocaleDateString()}</p>
+          </div>
+          <p style="margin-top: 20px;">Happy shopping!</p>
+          <p><em>RM Toys Team</em></p>
+        </div>
+      `;
+
+      await sendEmail(user.email, emailSubject, emailBody);
+      results.successful++;
+      console.log(
+        `✅ Email sent to ${user.email} (${i + 1}/${subscribedUser.length})`
+      );
+
+      // ✅ Add small delay to avoid rate limiting
+      if (i < subscribedUser.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+    } catch (error) {
+      results.failed++;
+      results.errors.push({ email: user.email, error: error.message });
+      console.error(`❌ Failed to send email to ${user.email}:`, error.message);
+    }
+  }
+
+  console.log(
+    `📧 Email summary: ${results.successful} sent, ${results.failed} failed`
+  );
+  return results;
 };
 
 export const reorderStock = async (req, res, next) => {

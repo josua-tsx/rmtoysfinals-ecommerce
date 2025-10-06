@@ -9,6 +9,11 @@ const transporter = nodemailer.createTransport({
     user: process.env.NODEMAILER_EMAIL_SECRET,
     pass: process.env.NODEMAILER_EMAIL_PASS,
   },
+
+  // Add timeout settings
+  connectionTimeout: 10000, // 10 seconds
+  socketTimeout: 15000, // 15 seconds
+  greetingTimeout: 5000, // 5 seconds
 });
 
 export const sendEmail = async (to, subject, text) => {
@@ -26,6 +31,3 @@ export const sendEmail = async (to, subject, text) => {
     console.error("Error sending email:", error);
   }
 };
-
-
-
