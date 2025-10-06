@@ -109,27 +109,20 @@ export const OrderStocks = async (req, res, next) => {
 
     console.log(subscribedUser);
 
-    // Change this part of your code:
+    // Instead of map + Promise.all, you can also use for...of for sequential processing
     if (notifySubscribedUser === true && subscribedUser.length > 0) {
-      const emailPromises = subscribedUser.map(async (user) => {
-        const emailSubject = `New Stock Arrival Notification`;
-        const emailBody = `
-         New Stock Just Arrived!
-          Product: ${product.productName}
-          Price: ${newDelivery.shopPrice}
-          Available Quantity: ${quantity}
-    `;
-
+      for (const user of subscribedUser) {
         try {
-          await sendEmail(user.email, emailSubject, emailBody);
-        } catch (err) {
-          console.error(`Failed to send email to ${user.email}`, err);
-          return null; // Continue even if one email fails
-        }
-      });
+          const emailSubject = `New Stock Arrival Notification`;
+          const emailBody = `New Stock Just Arrived! Product: ${product.productName}`;
 
-      // Wait for all emails to complete (success or failure)
-      await Promise.all(emailPromises);
+          await sendEmail(user.email, emailSubject, emailBody);
+          console.log(`✅ Email sent to ${user.email}`);
+        } catch (error) {
+          console.error(`❌ Failed to send to ${user.email}:`, error.message);
+          // Continue with next user even if one fails
+        }
+      }
     }
 
     await orderStockLogs({
