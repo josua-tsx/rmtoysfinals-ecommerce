@@ -11,6 +11,7 @@ import { resendEmail } from "../resend/resend.js";
 
 import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
+import { sendGrid } from "../sendGrid/sendGrid.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -244,7 +245,7 @@ const processEmailsInBackground = async (
         </div>
       `;
 
-      await sendEmail(user.email, emailSubject, emailBody);
+      await sendGrid(user.email, emailSubject, emailBody);
       results.successful++;
       console.log(
         `✅ Email sent to ${user.email} (${i + 1}/${subscribedUser.length})`

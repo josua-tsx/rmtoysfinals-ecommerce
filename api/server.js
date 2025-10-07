@@ -24,6 +24,7 @@ import subscribeRoute from "../api/routes/subscribe.route.js";
 import faqsRoute from "../api/routes/faqs.route.js";
 import riderRoute from "../api/routes/rider.route.js";
 import playRoute from "../api/routes/random.route.js";
+import { sendGrid } from "./sendGrid/sendGrid.js";
 
 // Load environment variables from .env file
 config();
@@ -76,6 +77,9 @@ app.use(`/api/random`, playRoute);
 
 // Error handling middleware
 app.use(handleError);
+
+// Test function
+
 
 // async function safeDropOrderIndex() {
 //   try {
