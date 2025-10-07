@@ -13,10 +13,10 @@ import {
   validatePHMobile,
   validateUsername,
 } from "../utils/validations.js";
-import { sendEmail } from "../nodemailer/nodemailer.js";
 
 import crypto from "crypto";
 import Subscribe from "../models/subscribe.model.js";
+import { sendGrid } from "../sendGrid/sendGrid.js";
 
 const emailVerificationAttempts = new Map();
 
@@ -69,7 +69,7 @@ export const verifyUserEmail = async (req, res, next) => {
   const verificationUrl = `https://www.rmtoys.store/verify-email?token=${verificationToken}`;
 
   try {
-    await sendEmail(
+    await sendGrid(
       validUser.email,
       "Verify Your Email Address",
       `

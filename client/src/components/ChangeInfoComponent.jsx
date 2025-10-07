@@ -24,8 +24,6 @@ export default function ChangeInfoComponent() {
 
   const [email, setEmail] = useState("");
 
-  const [isVerifying, setIsVerifying] = useState(false);
-
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
 
@@ -60,7 +58,7 @@ export default function ChangeInfoComponent() {
     },
   });
 
-  const { mutate: verifyEmailMutation } = useMutation({
+  const { mutate: verifyEmailMutation, isPending: isVerifying } = useMutation({
     mutationFn: async (email) => {
       const res = await axiosInstance.post(`/user/verify-email`, email);
       return res.data;
@@ -74,13 +72,7 @@ export default function ChangeInfoComponent() {
   });
 
   const handleVerifyEmail = (email) => {
-    setIsVerifying(true);
-    verifyEmailMutation(
-      { email },
-      {
-        onSettled: () => setIsVerifying(false),
-      }
-    );
+    verifyEmailMutation({ email });
   };
 
   const handleFormSubmit = (e) => {
@@ -258,7 +250,7 @@ export default function ChangeInfoComponent() {
                       onClick={() => handleVerifyEmail(currentUser.email)}
                       className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
                     >
-                      Verify
+                      {isVerifying ? "Verifying..." : "Verify"}
                     </button>
                   ) : (
                     <button
