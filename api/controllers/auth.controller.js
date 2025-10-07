@@ -17,7 +17,6 @@ import bcrypt from "bcryptjs/dist/bcrypt.js";
 
 import crypto from "crypto";
 
-
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 // REGISTER
@@ -187,8 +186,7 @@ export const signin = async (req, res, next) => {
 
       await sendEmail(
         ADMIN_EMAIL,
-        "attendance"
-        `${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
+        "attendance"`${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
           "en-US",
           {
             weekday: "long",
@@ -412,7 +410,7 @@ export const forgetPassword = async (req, res, next) => {
 
     const resetLink = `https://www.rmtoys.store/reset-password?token=${resetToken}`;
 
-    await sendEmail(
+    await sendGrid(
       validUser.email,
       `Password Reset Request`,
       `Hello ${validUser.username},\n\n` +
