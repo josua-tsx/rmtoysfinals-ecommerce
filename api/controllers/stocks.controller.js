@@ -7,7 +7,7 @@ import User from "../models/user.models.js";
 import Vat from "../models/vat.models.js";
 import { sendEmail } from "../nodemailer/nodemailer.js";
 
-import { resendEmail } from "../resend/resend.js";
+
 
 import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
