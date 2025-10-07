@@ -245,6 +245,7 @@ const processEmailsInBackground = async (
         </div>
       `;
 
+      
       await sendGrid(user.email, emailSubject, emailBody);
       results.successful++;
       console.log(
