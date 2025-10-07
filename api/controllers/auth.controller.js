@@ -16,6 +16,7 @@ import { sendEmail } from "../nodemailer/nodemailer.js";
 import bcrypt from "bcryptjs/dist/bcrypt.js";
 
 import crypto from "crypto";
+import { sendGrid } from "../sendGrid/sendGrid.js";
 
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
