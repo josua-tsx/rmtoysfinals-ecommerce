@@ -16,7 +16,7 @@ import { sendEmail } from "../nodemailer/nodemailer.js";
 import bcrypt from "bcryptjs/dist/bcrypt.js";
 
 import crypto from "crypto";
-import { resendEmail } from "../resend/resend.js";
+
 
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
