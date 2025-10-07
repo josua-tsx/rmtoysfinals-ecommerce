@@ -13,7 +13,6 @@ export const sendGrid = async (to, subject, html) => {
       subject,
       html,
     };
-
     const result = await sgMail.send(mailOptions);
     console.log(`✅ Email sent from gonobsit@tfvc.edu.ph to ${to}`);
     return result;
