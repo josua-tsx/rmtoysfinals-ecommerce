@@ -1,5 +1,5 @@
 import { handleMakeError } from "../middleware/handleError.js";
-import { sendEmail } from "../nodemailer/nodemailer.js";
+import { sendGrid } from "../sendGrid/sendGrid.js";
 
 export const sendContactEmail = async (req, res, next) => {
   const { senderEmail, message, website } = req.body;
@@ -8,7 +8,7 @@ export const sendContactEmail = async (req, res, next) => {
       return next(handleMakeError(400, "Please input your email"));
 
     if (!message.trim()) {
-      return next(handleMakeError(400, "Please input message"))
+      return next(handleMakeError(400, "Please input message"));
     }
 
     if (website) return res.status(400).json({ error: "Spam detected" });
@@ -16,17 +16,17 @@ export const sendContactEmail = async (req, res, next) => {
     // 2. Validate email
     const emailRegex = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(senderEmail.trim())) {
-      return next(handleMakeError(400, "Invalid email"))
+      return next(handleMakeError(400, "Invalid email"));
     }
 
     // 3. Validate message
     const cleanMessage = message.replace(/<[^>]*>?/gm, "");
     if (cleanMessage.length < 10 || cleanMessage.length > 1000) {
-      return next(handleMakeError(400, "Message must be 10-1000 characters"))
+      return next(handleMakeError(400, "Message must be 10-1000 characters"));
     }
 
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    await sendEmail(ADMIN_EMAIL, `Hello, this is ${senderEmail}, ${message}`);
+    await sendGrid(ADMIN_EMAIL, `Hello, this is ${senderEmail}, ${message}`);
 
     res.status(200).json({ senderEmail, message });
   } catch (error) {
