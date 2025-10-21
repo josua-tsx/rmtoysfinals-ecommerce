@@ -21,7 +21,6 @@ export const addProduct = async (req, res, next) => {
     productName,
     productDescription,
     productDetails,
-    discount,
     productImages,
     category,
     points,
@@ -97,7 +96,7 @@ export const addProduct = async (req, res, next) => {
       productName,
       productDescription,
       productDetails,
-      discount,
+
       productImages,
       category,
       status: "pending",
@@ -483,7 +482,7 @@ export const editProduct = async (req, res, next) => {
     price,
     productDescription,
     productDetails,
-    discount,
+
     productImages,
     category,
     points,
@@ -514,12 +513,6 @@ export const editProduct = async (req, res, next) => {
 
     if (price <= 0) {
       return next(handleMakeError(400, "Price cannot be 0 or negative!"));
-    }
-
-    if (discount > price) {
-      return next(
-        handleMakeError(400, "Discount should not be higher than price.")
-      );
     }
 
     const productNameCheck = validateProductName(productName);
@@ -563,7 +556,6 @@ export const editProduct = async (req, res, next) => {
         price,
         productDescription,
         productDetails,
-        discount,
         productImages,
         category,
         status: "published",
@@ -653,126 +645,126 @@ export const getSingleProduct = async (req, res, next) => {
 
 // DRAFTS
 
-export const addDraft = async (req, res, next) => {
-  const userId = req.user.id;
+// export const addDraft = async (req, res, next) => {
+//   const userId = req.user.id;
 
-  const {
-    productName,
-    price,
-    productDescription,
-    productDetails,
-    stocks,
-    productImages,
-    category,
-    points,
-  } = req.body;
+//   const {
+//     productName,
+//     price,
+//     productDescription,
+//     productDetails,
+//     stocks,
+//     productImages,
+//     category,
+//     points,
+//   } = req.body;
 
-  if (!productName) {
-    return next(handleMakeError(400, "Please input product name"));
-  }
+//   if (!productName) {
+//     return next(handleMakeError(400, "Please input product name"));
+//   }
 
-  if (!productDescription) {
-    return next(handleMakeError(400, "Please input product description"));
-  }
+//   if (!productDescription) {
+//     return next(handleMakeError(400, "Please input product description"));
+//   }
 
-  if (!category) {
-    return next(handleMakeError(400, "Category is required!"));
-  }
+//   if (!category) {
+//     return next(handleMakeError(400, "Category is required!"));
+//   }
 
-  if (
-    !productImages ||
-    !Array.isArray(productImages) ||
-    productImages.length === 0
-  ) {
-    return next(handleMakeError(400, "At least one product image is required"));
-  }
+//   if (
+//     !productImages ||
+//     !Array.isArray(productImages) ||
+//     productImages.length === 0
+//   ) {
+//     return next(handleMakeError(400, "At least one product image is required"));
+//   }
 
-  try {
-    const newDraft = new Product({
-      productName,
-      price,
-      productDescription,
-      productDetails,
-      stocks,
-      productImages,
-      status: "draft",
-      category,
-      points,
-    });
+//   try {
+//     const newDraft = new Product({
+//       productName,
+//       price,
+//       productDescription,
+//       productDetails,
+//       stocks,
+//       productImages,
+//       status: "draft",
+//       category,
+//       points,
+//     });
 
-    await newDraft.save();
+//     await newDraft.save();
 
-    await logAuditTrail({
-      action: "draft_product",
-      userId,
-      targetId: newDraft._id,
-      targetType: "Product",
-      details: {
-        productName: newDraft.productName,
-        price: newDraft.price,
-      },
-      role: "admin",
-    });
+//     await logAuditTrail({
+//       action: "draft_product",
+//       userId,
+//       targetId: newDraft._id,
+//       targetType: "Product",
+//       details: {
+//         productName: newDraft.productName,
+//         price: newDraft.price,
+//       },
+//       role: "admin",
+//     });
 
-    res.status(200).json(newDraft);
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json(newDraft);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-export const getDrafts = async (req, res, next) => {
-  try {
-    const products = await Product.find({ status: "draft" })
-      .populate({
-        path: "supplier",
-        select: "supplierName",
-      })
-      .populate({
-        path: "category",
-        select: "categoryName",
-      });
+// export const getDrafts = async (req, res, next) => {
+//   try {
+//     const products = await Product.find({ status: "draft" })
+//       .populate({
+//         path: "supplier",
+//         select: "supplierName",
+//       })
+//       .populate({
+//         path: "category",
+//         select: "categoryName",
+//       });
 
-    res.status(200).json(products);
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json(products);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-export const deleteDraft = async (req, res, next) => {
-  const { draftId } = req.params;
+// export const deleteDraft = async (req, res, next) => {
+//   const { draftId } = req.params;
 
-  try {
-    const singleDraft = await Product.findById(draftId);
+//   try {
+//     const singleDraft = await Product.findById(draftId);
 
-    if (!singleDraft) return next(handleMakeError(400, "Draft is not found!"));
+//     if (!singleDraft) return next(handleMakeError(400, "Draft is not found!"));
 
-    await Product.findByIdAndDelete(draftId);
+//     await Product.findByIdAndDelete(draftId);
 
-    res.status(200).json({ message: "draft is deleted!" });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json({ message: "draft is deleted!" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-export const publishDraft = async (req, res, next) => {
-  const { draftId } = req.params;
+// export const publishDraft = async (req, res, next) => {
+//   const { draftId } = req.params;
 
-  try {
-    const publishDraft = await Product.findByIdAndUpdate(
-      draftId,
-      {
-        status: "pending",
-      },
-      { new: true }
-    );
+//   try {
+//     const publishDraft = await Product.findByIdAndUpdate(
+//       draftId,
+//       {
+//         status: "pending",
+//       },
+//       { new: true }
+//     );
 
-    if (!publishDraft) return next(handleMakeError(400, "draft not found"));
+//     if (!publishDraft) return next(handleMakeError(400, "draft not found"));
 
-    res.status(200).json(publishDraft);
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json(publishDraft);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const toggleBestProduct = async (req, res, next) => {
   const { productId } = req.params;

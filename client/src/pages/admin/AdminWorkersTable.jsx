@@ -23,7 +23,7 @@ export default function AdminWorkersTable() {
     isPending: isWorkersPending,
     isError: isWorkersError,
   } = useQuery({
-    queryKey: ["worker"],
+    queryKey: ["validatorStaff"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/user/getAllWorkers`);
       return res.data;

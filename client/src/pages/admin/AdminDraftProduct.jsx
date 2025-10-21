@@ -1,5 +1,5 @@
 import AdminHeader from '../../reusable/Admin/AdminHeader'
-import AdminDraftProductsTable from '../../components/admin/AdminDraftProductsTable'
+// import AdminDraftProductsTable from '../../components/admin/AdminDraftProductsTable'
 
 export default function AdminDraftProduct() {
   return (
@@ -14,7 +14,7 @@ export default function AdminDraftProduct() {
         
         </div>
 
-        <AdminDraftProductsTable/>
+        {/* <AdminDraftProductsTable/> */}
        
       </div>
     </section>

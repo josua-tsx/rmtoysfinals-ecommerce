@@ -48,7 +48,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     setSelectedIds([]);
   };
 
-  const { mutate: deleteFaqMutation, isPending } = useMutation({
+  const { mutate: deleteFaqMutation, isPending: isDeleting } = useMutation({
     mutationFn: async (id) => {
       const res = await axiosInstance.delete(`/faqs/delete-faq/${id}`);
       return res.data;
@@ -94,6 +94,13 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     }
   };
 
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+
+    if (!isChecked) return setSelectedIds([]);
+    setSelectedIds(faqsTable.map((category) => category._id));
+  };
+
   const navigateToEdit = (id) => {
     navigate(`/admin/editFaq/${id}`);
   };
@@ -134,19 +141,27 @@ export default function AdminFaqsTable({ enableMultiDel }) {
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>FAQS TABLE</h1>
       </div>
-      <div className="overflow-y-auto h-[600px] py-3">
+      <div className="overflow-y-auto  py-3">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">
-            <thead>
+            <thead className="relative">
               <tr className="flex justify-between">
                 <th className="font-normal p-2 pb-5">Title</th>
                 <th className="font-normal p-2 pb-5">Answer</th>
                 <th className="font-normal p-2 pb-5">Date Added</th>
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
+                {faqsTable.length > 0 && enableMultiDel && (
+                  <input
+                    type="checkbox"
+                    // onChange={() => pushMultipleProd(product._id)}
+                    onChange={handleSelectAll}
+                    className="absolute right-4 top-7"
+                  />
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
@@ -167,8 +182,9 @@ export default function AdminFaqsTable({ enableMultiDel }) {
                       {new Date(faq.createdAt).toLocaleString()}
                     </td>
 
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
+                     <div className="flex items-center">
+                     <button
                         type="button"
                         onClick={() => navigateToEdit(faq._id)}
                         className="text-green-600 hover:text-indigo-300 mr-2"
@@ -177,11 +193,13 @@ export default function AdminFaqsTable({ enableMultiDel }) {
                       </button>
                       <button
                         type="button"
+                        disabled={isDeleting}
                         onClick={() => openDeleteModal(faq._id)}
                         className="text-red-600 hover:text-red-300"
                       >
                         <MdDelete size={25} />
                       </button>
+                     </div>
 
                       {enableMultiDel ? (
                         <input

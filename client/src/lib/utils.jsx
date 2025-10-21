@@ -29,6 +29,18 @@ export const addToGuestCart = (product) => {
 export const deleteGuestCart = (productId) => {
   const cart = getGuestCart();
 
+  const cartInItems = cart.items;
+
+  if (cartInItems) {
+    for (const c of cartInItems) {
+      if (c._id.toString() === productId && c.isSelected) {
+        throw new Error(
+          "You can not delete this cart since it is checked. try to uncheck it first"
+        );
+      }
+    }
+  }
+
   const updatedItems = cart.items.filter((item) => item._id !== productId);
 
   const updatedCart = {

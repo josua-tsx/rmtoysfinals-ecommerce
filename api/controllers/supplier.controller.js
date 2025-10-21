@@ -21,13 +21,15 @@ export const addSupplier = async (req, res, next) => {
   const { contactNumber, supplierName, contactPerson, supplierAddress } =
     req.body;
 
+  if (!supplierName) {
+      return next(handleMakeError(400, "Please input supplier name"));
+  }
+
   if (!contactNumber) {
     return next(handleMakeError(400, "Please input contact number"));
   }
 
-  if (!supplierName) {
-    return next(handleMakeError(400, "Please input supplier name"));
-  }
+ 
 
   if (!contactPerson) {
     return next(handleMakeError(400, "Please input contact person"));

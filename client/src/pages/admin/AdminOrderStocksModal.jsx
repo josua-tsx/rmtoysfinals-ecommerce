@@ -16,7 +16,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [totalCost, setTotalCost] = useState(0);
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [discount, setDiscount] = useState(0);
+
 
   const [toggleNotify, setToggleNotify] = useState(false);
 
@@ -121,7 +121,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-      discount,
+
       vat: selectedVatValue?._id,
       vatShopPrice: roundedPrice,
       notifySubscribedUser: toggleNotify,
@@ -267,18 +267,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
-            <div className="flex gap-4">
-              <label htmlFor="quantity">Shop Price Discount (OPTIONAL): </label>
-              <input
-                className="border border-black rounded-[5px] px-2"
-                type="number"
-                name="discount"
-                id="discount"
-                value={discount}
-                min={0}
-                onChange={(e) => setDiscount(e.target.value)}
-              />
-            </div>
+      
 
             <div className="flex gap-4">
               <label htmlFor="quantity">Quantity: </label>

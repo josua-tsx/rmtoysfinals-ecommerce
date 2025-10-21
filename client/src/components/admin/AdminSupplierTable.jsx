@@ -92,10 +92,17 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     setIsModalOpen(true);
   };
 
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+
+    if (!isChecked) return setSelectedIds([]);
+    setSelectedIds(arraySuppliers.map((category) => category._id));
+  };
+
   const cancelMultiDel = () => {
-    setSelectedIds([])
-    console.log("clicked")
-  }
+    setSelectedIds([]);
+    console.log("clicked");
+  };
 
   const pushMultipleSup = (supplierId) => {
     setSelectedIds((prev) =>
@@ -163,9 +170,9 @@ export default function AdminSupplierTable({ enableMultiDel }) {
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">
-            <thead>
+            <thead className="relative">
               <tr className="">
-                <th className="font-normal p-2 pb-5">ID</th>
+                {/* <th className="font-normal p-2 pb-5">ID</th> */}
                 <th className="font-normal p-2 pb-5">Supplier Name</th>
                 <th className="font-normal p-2 pb-5">
                   Contact Person Fullname
@@ -176,13 +183,21 @@ export default function AdminSupplierTable({ enableMultiDel }) {
                   Supplied Products Count
                 </th>
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
+                {arraySuppliers.length > 0 && enableMultiDel && (
+                  <input
+                    type="checkbox"
+                    // onChange={() => pushMultipleProd(product._id)}
+                    onChange={handleSelectAll}
+                    className="absolute right-4 top-2"
+                  />
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
               {filteredArraySuppliers.length > 0 &&
                 filteredArraySuppliers.map((supplier) => (
                   <tr key={supplier._id}>
-                    <td className="px-4 ">{supplier._id}</td>
+                    {/* <td className="px-4 ">{supplier._id}</td> */}
                     <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
                       {supplier.supplierName}
                     </td>
@@ -201,29 +216,29 @@ export default function AdminSupplierTable({ enableMultiDel }) {
                       {supplier?.product ? supplier?.product.length : 0}
                     </td>
 
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button
-                        onClick={() => navigateToEditSupplier(supplier._id)}
-                        className="text-green-600 hover:text-indigo-300 mr-2"
-                      >
-                        <CiEdit size={25} />
-                      </button>
-                      <button
-                        onClick={() => handleClickDelete(supplier._id)}
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        <MdDelete size={25} />
-                      </button>
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => navigateToEditSupplier(supplier._id)}
+                          className="text-green-600 hover:text-indigo-300 mr-2"
+                        >
+                          <CiEdit size={25} />
+                        </button>
+                        <button
+                          onClick={() => handleClickDelete(supplier._id)}
+                          className="text-red-600 hover:text-red-300"
+                        >
+                          <MdDelete size={25} />
+                        </button>
+                      </div>
 
-                      {enableMultiDel ? (
+                      {arraySuppliers.length > 0 && enableMultiDel && (
                         <input
                           type="checkbox"
                           id="wdwadwk"
                           checked={selectedIds.includes(supplier._id)}
                           onChange={() => pushMultipleSup(supplier._id)}
                         />
-                      ) : (
-                        ""
                       )}
                     </td>
                   </tr>

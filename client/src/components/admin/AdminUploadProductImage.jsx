@@ -124,7 +124,7 @@ export default function AdminUploadProductImage({ images, setImages }) {
               onChange={handleImageChange}
               className="border z-10 opacity-0 cursor-pointer inset-0 bg-black absolute"
             />
-            <img src={images[0]} className="w-[300px] mx-auto" />
+            <img src={images[0]} className="w-[300px] max-h-[500px] mx-auto" />
             {!images[0] && <AdminImagePlaceholder size={150} />}
           </div>
 

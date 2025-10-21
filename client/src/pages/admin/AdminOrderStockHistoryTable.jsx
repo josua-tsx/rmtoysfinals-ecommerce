@@ -20,13 +20,11 @@ export default function AdminOrderStockHistoryTable() {
     },
   });
 
-  console.log(stockHistory)
-  
   const arrayStocks = Array.isArray(stockHistory) ? stockHistory : [];
 
   const filteredArrayStocks = arrayStocks.filter(
     (stock) =>
-      stock.deliveryId.includes(searchTerm) ||
+      stock.deliveryId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock?.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock?.supplier?.supplierName
         .toLowerCase()

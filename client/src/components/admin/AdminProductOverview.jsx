@@ -84,8 +84,6 @@ export default function AdminProductOverview() {
   const averageRating =
     sumOfRating / topSingleBestRatingProduct?.reviews?.length;
 
-  console.log(topSingleBestRatingProduct);
-
   //   TOP 4 MOST REVIEWS PRODUCTS
 
   const {
@@ -113,8 +111,6 @@ export default function AdminProductOverview() {
       return res.data;
     },
   });
-
-  console.log(latestReview);
 
   //   GET ALL REVIEWS
 
@@ -327,7 +323,9 @@ export default function AdminProductOverview() {
 
               <div className="p-4 text-sm flex flex-col gap-3 items-center">
                 <p className="">LATEST REVIEW</p>
-                <p className="text-xs">{new Date(latestReview.createdAt).toLocaleString()}</p>
+                <p className="text-xs">
+                  {new Date(latestReview.createdAt).toLocaleString()}
+                </p>
                 <img
                   src={latestReview?.userId?.avatar}
                   alt="avatar"

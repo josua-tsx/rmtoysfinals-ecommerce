@@ -27,10 +27,7 @@ export default function AdminAddProducts() {
   const [category, setCategory] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
-
   const [points, setPoints] = useState(0);
-
-  console.log(points);
 
   const {
     data: categories = [],
@@ -82,20 +79,20 @@ export default function AdminAddProducts() {
     },
   });
 
-  const handleFormDraftSubmit = () => {
-    addDraftProductMutation({
-      productName,
+  // const handleFormDraftSubmit = () => {
+  //   addDraftProductMutation({
+  //     productName,
 
-      productDescription,
-      productDetails: productsDetailsArray,
+  //     productDescription,
+  //     productDetails: productsDetailsArray,
 
-      productImages: images,
-      // filters,
-      category: category,
-      points,
-      // supplier: supplier,
-    });
-  };
+  //     productImages: images,
+  //     // filters,
+  //     category: category,
+  //     points,
+  //     // supplier: supplier,
+  //   });
+  // };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -417,7 +414,7 @@ export default function AdminAddProducts() {
             </div>
 
             <div className="flex flex-col md:flex-row justify-end gap-2">
-              <div
+              {/* <div
                 onClick={() => handleFormDraftSubmit()}
                 className=" md:w-[200px]"
               >
@@ -426,7 +423,7 @@ export default function AdminAddProducts() {
                   buttonName={"Draft"}
                   icon={<IoArchive />}
                 />
-              </div>
+              </div> */}
 
               <button className="flex-1 p-2 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
                 Add This Product

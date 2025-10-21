@@ -38,10 +38,10 @@ export default function AdminSideBar() {
           name: "Add Product",
           path: "/admin/addProducts",
         },
-        {
-          name: "Products Draft",
-          path: "/admin/draftProducts",
-        },
+        // {
+        //   name: "Products Draft",
+        //   path: "/admin/draftProducts",
+        // },
         {
           name: "Products Reviews",
           path: "/admin/productReviews",

@@ -40,7 +40,7 @@ import AdminEditSupplier from "./pages/admin/AdminEditSupplier.jsx";
 import AdminStocks from "./pages/admin/AdminStocks.jsx";
 import AdminUser from "./pages/admin/AdminUser.jsx";
 
-import AdminDraftProduct from "./pages/admin/AdminDraftProduct.jsx";
+// import AdminDraftProduct from "./pages/admin/AdminDraftProduct.jsx";
 import AdminWorker from "./pages/admin/AdminWorker.jsx";
 
 import OrderSummaryModal from "./components/OrderSummaryModal.jsx";
@@ -230,10 +230,10 @@ const router = createBrowserRouter([
         path: "/admin/editProduct/:editProductId",
         element: <AdminEditProducts />,
       },
-      {
-        path: "/admin/draftProducts",
-        element: <AdminDraftProduct />,
-      },
+      // {
+      //   path: "/admin/draftProducts",
+      //   element: <AdminDraftProduct />,
+      // },
 
       {
         path: "/admin/productReviews",

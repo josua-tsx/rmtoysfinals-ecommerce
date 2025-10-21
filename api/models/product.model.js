@@ -27,10 +27,6 @@ const ProductModelSchema = new mongoose.Schema(
       required: true,
     },
 
-    discount: {
-      type: Number,
-      default: 0,
-    },
 
     productImages: {
       type: Array,

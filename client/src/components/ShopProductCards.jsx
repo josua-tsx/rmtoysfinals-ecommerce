@@ -10,15 +10,13 @@ import formatPrice from "../reusable/formatPrice";
 
 import { CgUnavailable } from "react-icons/cg";
 import { useUserStore } from "../stores/useUserStore";
-import { addToGuestCart, getGuestCart } from "../lib/utils";
+import { addToGuestCart } from "../lib/utils";
 
 export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const currentUser = useUserStore((state) => state.currentUser);
-
-  console.log(currentUser);
 
   const { mutate: addToCartMutation } = useMutation({
     mutationFn: async (productId) => {
@@ -70,14 +68,6 @@ export default function ShopProductCards({ product }) {
       <div className="border p-1 text-xs z-10 bg-primary uppercase text-card font-medium absolute top-[-10px] right-[-10px] border-black rounded-[5px]">
         {product?.category?.categoryName}
       </div>
-
-      {product?.discount && product?.discount ? (
-        <div className="absolute  text-xs border top-5 -right-[10px] z-10 bg-red-700 text-card p-1 rounded-[5px]  border-black">
-          DISCOUNTED
-        </div>
-      ) : (
-        ""
-      )}
 
       {product?.stocks?.quantity === 0 ? (
         <div className="absolute flex gap-1 items-center  text-sm border top-[-10px] -left-[10px] md:-left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">

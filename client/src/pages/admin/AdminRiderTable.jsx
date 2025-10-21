@@ -13,11 +13,10 @@ import { useEffect } from "react";
 export default function AdminRiderTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
   const [selectedId, setSelectedId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-
   const [selectedIds, setSelectedIds] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: getRiders = [],
@@ -31,7 +30,13 @@ export default function AdminRiderTable({ enableMultiDel }) {
     },
   });
 
-  console.log(getRiders)
+  const arrayRiders = Array.isArray(getRiders) ? getRiders : [];
+
+  const filteredArrayRiders = arrayRiders.filter(
+    (rider) =>
+      rider.riderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rider.riderStatus.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const { mutate: deleteRiderMutation } = useMutation({
     mutationFn: async (riderId) => {
@@ -97,6 +102,13 @@ export default function AdminRiderTable({ enableMultiDel }) {
     setOpenModal(true);
   };
 
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+
+    if (!isChecked) return setSelectedIds([]);
+    setSelectedIds(arrayRiders.map((category) => category._id));
+  };
+
   const handleCancelMultiDel = () => {
     setSelectedIds([]);
   };
@@ -126,19 +138,19 @@ export default function AdminRiderTable({ enableMultiDel }) {
       />
 
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-      {/* <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-           <h1>RIDER TABLE</h1>
-           <div className="flex items-center relative">
-             <input
-               type="text"
-               value={searchTerm}
-               onChange={(e) => setSearchTerm(e.target.value)}
-               placeholder="search worker.."
-               className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-             />
-             <IoSearch className="absolute right-0" size={25} />
-           </div>
-         </div> */}
+      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
+        <h1>RIDER TABLE</h1>
+        <div className="flex items-center relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="search rider.."
+            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+          />
+          <IoSearch className="absolute right-0" size={25} />
+        </div>
+      </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         {isPending ? (
           <div className="flex justify-center items-center h-full">
@@ -146,21 +158,29 @@ export default function AdminRiderTable({ enableMultiDel }) {
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">
-            <thead>
+            <thead className="relative">
               <tr className="">
-                <th className="font-normal p-2 pb-5">ID</th>
+                {/* <th className="font-normal p-2 pb-5">ID</th> */}
                 <th className="font-normal p-2 pb-5">Rider Name</th>
                 <th className="font-normal p-2 pb-5">Rider Phone Number</th>
                 <th className="font-normal p-2 pb-5">Rider Status</th>
                 <th className="font-normal p-2 pb-5">Sucessful Delivery</th>
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
+                {arrayRiders.length > 0 && enableMultiDel && (
+                  <input
+                    type="checkbox"
+                    // onChange={() => pushMultipleProd(product._id)}
+                    onChange={handleSelectAll}
+                    className="absolute right-4 top-2"
+                  />
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
-              {getRiders?.length > 0 ? (
-                getRiders?.map((rider) => (
+              {filteredArrayRiders?.length > 0 ? (
+                filteredArrayRiders?.map((rider) => (
                   <tr key={rider._id}>
-                    <td className="px-4 ">{rider._id}</td>
+                    {/* <td className="px-4 ">{rider._id}</td> */}
 
                     <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
                       {rider.riderName}
@@ -177,31 +197,31 @@ export default function AdminRiderTable({ enableMultiDel }) {
                       {rider.successDelivered}
                     </td>
 
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button
-                        onClick={() => navigate(`/admin/rider/${rider._id}`)}
-                        // onClick={() => navigateToeditPage(product._id)}
-                        className="text-green-600 hover:text-indigo-300 mr-2"
-                      >
-                        <CiEdit size={25} />
-                      </button>
-                      <button
-                        onClick={() => handleOpenDeleteModal(rider._id)}
-                        type="button"
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        <MdDelete size={25} />
-                      </button>
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => navigate(`/admin/rider/${rider._id}`)}
+                          // onClick={() => navigateToeditPage(product._id)}
+                          className="text-green-600 hover:text-indigo-300 mr-2"
+                        >
+                          <CiEdit size={25} />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDeleteModal(rider._id)}
+                          type="button"
+                          className="text-red-600 hover:text-red-300"
+                        >
+                          <MdDelete size={25} />
+                        </button>
+                      </div>
 
-                      {enableMultiDel ? (
+                      {arrayRiders.length > 0 && enableMultiDel && (
                         <input
                           type="checkbox"
                           id="wdwadwk"
                           checked={selectedIds.includes(rider._id)}
                           onChange={() => handlePushIds(rider._id)}
                         />
-                      ) : (
-                        ""
                       )}
                     </td>
                   </tr>

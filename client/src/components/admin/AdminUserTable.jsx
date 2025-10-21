@@ -84,7 +84,7 @@ export default function AdminUserTable() {
             <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="">
-              <th className="font-normal p-2 pb-5">ID</th>
+              {/* <th className="font-normal p-2 pb-5">ID</th> */}
               <th className="font-normal p-2 pb-5">Email</th>
               <th className="font-normal p-2 pb-5">Username</th>
               <th className="font-normal p-2 pb-5">Credits</th>
@@ -99,7 +99,7 @@ export default function AdminUserTable() {
             {filteredArrayCustomer.length > 0 &&
               filteredArrayCustomer.map((user) => (
                 <tr key={user._id}>
-                  <td className="px-4 ">{user._id}</td>
+                  {/* <td className="px-4 ">{user._id}</td> */}
                   <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2	">
                     {user.email}
                   </td>

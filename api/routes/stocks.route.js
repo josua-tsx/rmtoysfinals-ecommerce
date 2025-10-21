@@ -1,4 +1,4 @@
-import express from "express";
+ import express from "express";
 import {
   // confirmDelivery,
   getPendingDeliveries,
@@ -21,17 +21,17 @@ router.get(
   requireAdmin,
   getPendingDeliveries
 );
-
-router.put(`/reOrder-stock/:stockId`, requireAuth, requireAdmin, reorderStock)
-
 // router.put(`/set-as-delivered/:deliveryId`, requireAuth, requireAdmin, confirmDelivery);
 
 router.get("/get-stocks", getStocks);
 // router.delete("/delete-stock/:stockId", deleteStock)
+
+router.get(`/get-stocks-levels`, getStockLevels);
+
 router.get(`/get-stock/:stockId`, getSingleStock);
 
 router.put(`/update-quantity/:stockId`, updateStockQuantity)
 
-router.get(`/get-stocks-levels`, getStockLevels);
+router.put(`/reOrder-stock/:stockId`, requireAuth, requireAdmin, reorderStock)
 
 export default router;

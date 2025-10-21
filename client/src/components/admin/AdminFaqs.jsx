@@ -1,4 +1,3 @@
-import React from "react";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import { MdDelete } from "react-icons/md";
 import AdminFaqsTable from "./AdminFaqsTable";
@@ -36,7 +35,9 @@ export default function AdminFaqs() {
             onClick={() => setEnableMultiDel(!enableMultiDel)}
             className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px]"
           >
-            Multiple delete
+            {
+              enableMultiDel ? "Cancel Delete": "Multiple Delete"
+            }
             <MdDelete />
           </button>
         </div>

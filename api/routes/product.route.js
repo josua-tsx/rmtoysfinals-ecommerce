@@ -1,21 +1,21 @@
 import express from "express";
 import {
-  addDraft,
+  // addDraft,
   addProduct,
-  deleteDraft,
+  // deleteDraft,
   deleteMultiProduct,
   deleteProduct,
   editProduct,
   getBestProducts,
   getBestRatedProducts,
   getBestSoldProducts,
-  getDrafts,
+  // getDrafts,
   // getNoStocksProducts,
   getProducts,
   getSingleProduct,
   getStockStatusPendings,
   mostReviewsProducts,
-  publishDraft,
+  // publishDraft,
   toggleBestProduct,
 } from "../controllers/product.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
@@ -52,10 +52,10 @@ router.put(`/add-to-slider/:productId`, toggleBestProduct)
 router.get(`/get-bestProducts`, getBestProducts)
 
 
-// DRAFT
-router.post(`/add-draft`, requireAuth, requireAdmin, addDraft);
-router.get(`/get-drafts`, getDrafts);
-router.delete(`/delete-draft/:draftId`, deleteDraft);
-router.post(`/publish-draft/:draftId`, publishDraft);
+// // DRAFT
+// router.post(`/add-draft`, requireAuth, requireAdmin, addDraft);
+// router.get(`/get-drafts`, getDrafts);
+// router.delete(`/delete-draft/:draftId`, deleteDraft);
+// router.post(`/publish-draft/:draftId`, publishDraft);
 
 export default router;

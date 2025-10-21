@@ -12,12 +12,9 @@ import LoadingSpinner from "../../reusable/LoadingSpinner";
 export default function AdminCategoryTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
   const [searchTerm, setSearchTerm] = useState("");
-
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-
   const [selectedIds, setSelectedIds] = useState([]);
 
   const {
@@ -44,6 +41,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category Deleted Successfully!");
+      setSelectedIds([]);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong");
@@ -79,6 +77,13 @@ export default function AdminCategoryTable({ enableMultiDel }) {
         ? prev.filter((id) => id !== categoryId)
         : [...prev, categoryId]
     );
+  };
+
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+
+    if (!isChecked) return setSelectedIds([]);
+    setSelectedIds(arrayCategories.map((category) => category._id));
   };
 
   const cancelMultiDelete = () => {
@@ -166,24 +171,32 @@ export default function AdminCategoryTable({ enableMultiDel }) {
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">
-            <thead>
+            <thead className="relative">
               <tr className="">
-                <th className="font-normal p-2 pb-5">ID</th>
+                {/* <th className="font-normal p-2 pb-5">ID</th> */}
                 <th className="font-normal p-2 pb-5">Category Name</th>
                 <th className="font-normal p-2 pb-5">Category Description</th>
                 <th className="font-normal p-2 pb-5">
                   Category Products Count in use
                 </th>
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
+                {arrayCategories.length > 0 && enableMultiDel && (
+                  <input
+                    type="checkbox"
+                    // onChange={() => pushMultipleProd(product._id)}
+                    onChange={handleSelectAll}
+                    className="absolute right-4 top-2"
+                  />
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
               {filterdArrayCategories.length > 0 &&
                 filterdArrayCategories.map((category) => (
                   <tr key={category._id}>
-                    <td className="px-4 ">{category._id}</td>
+                    {/* <td className="px-4 ">{category._id}</td> */}
 
-                    <td className="	">{category?.categoryName}</td>
+                    <td className="	p-2">{category?.categoryName}</td>
 
                     <td className="">{category?.categoryDescription}</td>
                     <td className="">{category?.products?.length}</td>
@@ -191,29 +204,29 @@ export default function AdminCategoryTable({ enableMultiDel }) {
                     {category?.products.length}
                   </td> */}
 
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button
-                        onClick={() => navigateToEdit(category._id)}
-                        className="text-green-600 hover:text-indigo-300 mr-2"
-                      >
-                        <CiEdit size={25} />
-                      </button>
-                      <button
-                        onClick={() => handleClickDelete(category._id)}
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        <MdDelete size={25} />
-                      </button>
+                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between items-center">
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => navigateToEdit(category._id)}
+                          className="text-green-600 hover:text-indigo-300 mr-2"
+                        >
+                          <CiEdit size={25} />
+                        </button>
+                        <button
+                          onClick={() => handleClickDelete(category._id)}
+                          className="text-red-600 hover:text-red-300"
+                        >
+                          <MdDelete size={25} />
+                        </button>
+                      </div>
 
-                      {enableMultiDel ? (
+                      {enableMultiDel && (
                         <input
                           type="checkbox"
                           id="wdwadwk"
                           checked={selectedIds.includes(category._id)}
                           onChange={() => pushMultipleCate(category._id)}
                         />
-                      ) : (
-                        ""
                       )}
                     </td>
                   </tr>

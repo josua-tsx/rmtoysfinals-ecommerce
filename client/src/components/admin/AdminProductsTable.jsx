@@ -68,6 +68,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success("Successfully Deleted");
+      setSelectedIds([]);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong!");
@@ -104,6 +105,12 @@ export default function AdminProductsTable({ enableMultiDel }) {
     setDeleteProductId(productId);
     setIsConfirmModalOpen(true);
   };
+
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked
+    if (!isChecked) return setSelectedIds([])
+    setSelectedIds(productArray.map((product) => product._id))
+  }
 
   const confirmDelete = () => {
     if (deleteProductId) {
@@ -187,27 +194,36 @@ export default function AdminProductsTable({ enableMultiDel }) {
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">
-            <thead>
+            <thead className="relative">
               <tr className="">
-                <th className="font-normal p-2 pb-5">ID</th>
+                {/* <th className="font-normal p-2 pb-5">ID</th> */}
                 <th className="font-normal p-2 pb-5">NAME</th>
                 <th className="font-normal p-2 pb-5">CATEGORY</th>
                 <th className="font-normal p-2 pb-5">PRICE</th>
                 <th className="font-normal p-2 pb-5">STATUS</th>
                 <th className="font-normal p-2 pb-5">REVIEWS</th>
                 <th className="font-normal p-2 pb-5">SOLD</th>
-                <th className="font-normal p-2 pb-5">DISCOUNT</th>
                 <th className="font-normal p-2 pb-5">POINTS</th>
                 <th className="font-normal p-2 pb-5">DATE CREATED</th>
                 {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
+                {
+                    productArray.length > 0 && enableMultiDel && (
+                      <input
+                      type="checkbox"
+                      // onChange={() => pushMultipleProd(product._id)}
+                      onChange={handleSelectAll}
+                      className="absolute right-4 top-2"
+                    />
+                    )
+                  }
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr key={product._id}>
-                    <td className="px-4 ">{product._id}</td>
+                    {/* <td className="px-4 ">{product._id}</td> */}
                     <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
                       <img
                         src={product.productImages[0]}
@@ -237,12 +253,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
                       {product?.sold}
                     </td>
 
-                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                      {product?.discount
-                        ? formatPrice(product?.discount)
-                        : "no discount"}
-                    </td>
-
+             
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {product?.points}
                     </td>
@@ -253,8 +264,9 @@ export default function AdminProductsTable({ enableMultiDel }) {
                     {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
                     {product.stocks}
                   </td> */}
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button
+                    <td className="px-4 py-4 w-full whitespace-nowrap  text-sm flex justify-between">
+                    <div className="flex items-center gap-3">
+                    <button
                         onClick={() => navigateToeditPage(product._id)}
                         className="text-green-600 hover:text-indigo-300 mr-2"
                       >
@@ -274,16 +286,15 @@ export default function AdminProductsTable({ enableMultiDel }) {
                           ? "ADD TO SLIDER"
                           : "REMOVE FROM SLIDER"}
                       </button>
+                    </div>
 
-                      {enableMultiDel ? (
+                      {productArray.length > 0 && enableMultiDel && (
                         <input
                           type="checkbox"
                           id="wdwadwk"
                           checked={selectedIds.includes(product._id)}
                           onChange={() => pushMultipleProd(product._id)}
                         />
-                      ) : (
-                        ""
                       )}
                     </td>
                   </tr>

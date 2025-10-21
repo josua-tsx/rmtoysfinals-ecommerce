@@ -11,21 +11,21 @@ import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminOverview() {
   const {
-    data: stocksLevels = [],
+    data: stocksLevels,
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["stocks"],
+    queryKey: ["stockLevels"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/stocks/get-stocks-levels`);
       return res.data;
     },
   });
 
-  const highStockLevel = stocksLevels?.highStock;
-  const mediumStockLevel = stocksLevels?.mediumStock;
-  const lowStockLevel = stocksLevels?.lowStock;
-  const outOfStockLevel = stocksLevels?.outOfStock;
+  const highStockLevel = stocksLevels?.highStock || [];
+  const mediumStockLevel = stocksLevels?.mediumStock || [];
+  const lowStockLevel = stocksLevels?.lowStock || [];
+  const outOfStockLevel = stocksLevels?.outOfStock || [];
 
   if (isError) return <p>Error.</p>;
 

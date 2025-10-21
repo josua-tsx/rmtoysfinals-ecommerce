@@ -28,7 +28,6 @@ export const OrderStocks = async (req, res, next) => {
     totalCost,
     deliveryId,
     dateDelivery,
-    discount,
     vat,
     vatShopPrice,
     notifySubscribedUser,
@@ -91,11 +90,6 @@ export const OrderStocks = async (req, res, next) => {
       return next(handleMakeError(400, "Please input shipping Price"));
     }
 
-    if (Number(discount) > Number(vatShopPrice)) {
-      return next(
-        handleMakeError(400, "Discount should not be higher than shop price")
-      );
-    }
 
     // Quantity specific validation
     if (Number(quantity) <= 10) {
@@ -126,7 +120,6 @@ export const OrderStocks = async (req, res, next) => {
       deliveryStatus: "delivered",
       deliveryId,
       dateDelivery: new Date(dateDelivery),
-      discount: Number(discount) || 0,
       vat,
       vatShopPrice: Number(vatShopPrice),
       vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * Number(quantity),
@@ -190,7 +183,6 @@ export const OrderStocks = async (req, res, next) => {
           price: Number(vatShopPrice),
           preVatPrice: Number(shopPrice),
           stocks: newDelivery._id,
-          discount: Number(discount) || 0,
         },
         { new: true, runValidators: true }
       ),
@@ -281,7 +273,6 @@ export const reorderStock = async (req, res, next) => {
     totalCost: newTotalCost,
     deliveryId,
     dateDelivery,
-    discount,
     vatPercent: newVatPercent,
     vatShopPrice,
   } = req.body;
@@ -320,12 +311,6 @@ export const reorderStock = async (req, res, next) => {
       return res.status(400).json({ message: "Please input required fields!" });
     }
 
-    if (Number(discount) > Number(vatShopPrice)) {
-      return next(
-        handleMakeError(400, "Discount should not be higher than shop price")
-      );
-    }
-
     // Price validation
     if (Number(shopPrice) < Number(supplierPrice)) {
       return next(
@@ -356,7 +341,6 @@ export const reorderStock = async (req, res, next) => {
         deliveryStatus: "delivered",
         deliveryId,
         dateDelivery,
-        discount,
         vat: newVatPercent,
         vatShopPrice,
         vatToRemit:
@@ -459,7 +443,7 @@ export const getStocks = async (req, res, next) => {
     const getStocks = await Stocks.find({ deliveryStatus: "delivered" })
       .populate({
         path: "product", // Populate the product field
-        select: "productImages productName discount price", // Include fields to select from product
+        select: "productImages productName price", // Include fields to select from product
         populate: [
           // Use an array for nested populations
           {
@@ -642,7 +626,8 @@ export const getStockLevels = async (req, res, next) => {
       })
       .sort({ createdAt: -1 });
 
-    const lowStock = await Stocks.find({ quantity: { $gt: 1, $lt: 30 } })
+    // FIX IS HERE: Use $gte: 1 to include items with quantity of 1
+    const lowStock = await Stocks.find({ quantity: { $gte: 1, $lt: 30 } }) 
       .populate({
         path: "product",
         select: "productImages productName",
@@ -673,7 +658,7 @@ export const getSingleStock = async (req, res, next) => {
   try {
     const singleStock = await Stocks.findById(stockId).populate({
       path: "product",
-      select: "productName discount category supplier",
+      select: "productName category supplier",
       populate: [
         {
           path: "category",

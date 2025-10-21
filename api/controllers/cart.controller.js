@@ -130,11 +130,21 @@ export const deleteCart = async (req, res, next) => {
 
     if (!cart || !cart.items) return res.status(200).json([]);
 
+    const cartInItems = cart.items
+
+    if (cartInItems) {
+      for (const c of cartInItems) {
+        if (c.productId.toString() === productId && c.isSelected === true) {
+          return next(handleMakeError(400, "You can not delete this cart since it is checked. try to uncheck it first"))
+        }
+      }
+    }
+
     const existingCart = cart.items.filter(
       (item) => item.productId.toString() !== productId
     );
+    
 
-    // UPDATING THE CART.ITEMS = EXISTINGCART TO PERSIST THE CHANGES OR TO SAVE THE CHANGES BEFORE SAVING THE DOCUMENT
     cart.items = existingCart;
 
     await cart.save();
@@ -144,6 +154,35 @@ export const deleteCart = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteMultiCart = async (req, res, next) => {
+
+  try {
+    const {cartIds} = req.body 
+    const userId = req.user.id
+
+    if (!Array.isArray(cartIds)) {
+      return next(handleMakeError(400, "CartIds should be an array"))
+    }
+
+    const cart = await Cart.find({
+      _id: {
+        $in: cartIds
+      }
+    })
+
+    if (cart.length !== cartIds.length) {
+      const foundIds = cart.map((c) => c._id.toString());
+      const missingIds = cartIds.filter((id) => !foundIds.includes(id));
+      return next(
+        handleMakeError(400, `cart not found: ${missingIds.join(", ")}`)
+      );
+    }
+
+  } catch (error) {
+    next(error)
+  }
+}
 
 export const updateQuantity = async (req, res, next) => {
   try {

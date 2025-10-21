@@ -92,7 +92,7 @@ export default function AdminVatTable() {
             <table className="w-full divide-y divide-gray-700">
           <thead>
             <tr className="flex justify-between">
-              <th className="font-normal p-2 pb-5">ID</th>
+              {/* <th className="font-normal p-2 pb-5">ID</th> */}
               <th className="font-normal p-2 pb-5">VAT Percent</th>
               <th className="font-normal p-2 pb-5">VAT Value</th>
               <th className="font-normal p-2 pb-5">VAT Products in use</th>
@@ -105,7 +105,7 @@ export default function AdminVatTable() {
                     vatTable.map((vat) => (
                         <tr key={vat._id}
                          className="flex items-center justify-between">
-              <td className="px-4 ">{vat._id}</td>
+              {/* <td className="px-4 ">{vat._id}</td> */}
               <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
                 {vat?.vatPercent}%
               </td>

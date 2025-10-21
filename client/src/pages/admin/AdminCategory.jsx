@@ -42,7 +42,9 @@ export default function AdminCategory() {
             onClick={() => setEnableMultiDel(!enableMultiDel)}
             className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px]"
           >
-            Multiple delete
+            {
+               enableMultiDel ? "Cancel Delete" : "Multiple delete"
+            }
             <MdDelete />
           </button>
 

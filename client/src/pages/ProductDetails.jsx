@@ -99,7 +99,7 @@ export default function ProductDetails() {
                 <img
                   src={singleProduct?.productImages[0]}
                   alt="product-main-image"
-                  className="w-[240px] mx-auto md:w-full"
+                  className="w-[240px] max-h-[500px] mx-auto md:w-full"
                 />
               </div>
 
@@ -145,13 +145,6 @@ export default function ProductDetails() {
                     <p>Price:</p>
                     <div className="text-lg flex relative  text-indigo-500">
                       {formatPrice(singleProduct.price)} PHP
-                      {singleProduct?.discount ? (
-                        <p className="text-sm text-red-400 absolute -right-16">
-                          (-{formatPrice(singleProduct?.discount)}PHP)
-                        </p>
-                      ) : (
-                        ""
-                      )}
                     </div>
                   </div>
                   {singleProduct?.stocks ? (
@@ -218,10 +211,7 @@ export default function ProductDetails() {
               </div>
               {/* SEE ALL REVIEWS AND ADD REVIEWS */}
               <div className="flex justify-between py-2">
-                <button
-                  onClick={() => ShowModal()}
-                  className=" underline "
-                >
+                <button onClick={() => ShowModal()} className=" underline ">
                   See All Reviews ({singleProduct?.reviews?.length})
                 </button>
               </div>

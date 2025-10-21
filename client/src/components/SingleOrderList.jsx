@@ -8,7 +8,7 @@ import { useState } from "react";
 import formatPrice from "../reusable/formatPrice";
 import { useNavigate } from "react-router-dom";
 import ReviewModal from "./ReviewModal";
-import { useEffect } from "react";
+
 
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -132,12 +132,6 @@ export default function SingleOrderList({ order, onClose }) {
               <div className="flex gap-2">
                 <p>Estimated Delivery Date: </p>
                 <span className="text-indigo-700">1 - 6 days</span>
-              </div>
-              <div className="flex gap-2">
-                <p>Discount: </p>
-                <span className="text-indigo-700">
-                  {formatPrice(order.discount)} PHP
-                </span>
               </div>
               <div className="flex gap-2">
                 <p>To Ship: </p>
