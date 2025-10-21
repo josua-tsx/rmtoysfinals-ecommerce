@@ -23,6 +23,9 @@ importers:
       firebase:
         specifier: ^10.13.1
         version: 10.14.1
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21

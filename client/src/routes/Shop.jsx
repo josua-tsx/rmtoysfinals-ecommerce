@@ -7,9 +7,8 @@ import CreditPointsAuto from "../components/CreditPointsAuto.jsx";
 import { throttle } from "lodash";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
 
-
 export default function Shop() {
-  const queryClient = useQueryClient(); 
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
@@ -88,18 +87,18 @@ export default function Shop() {
     queryClient.resetQueries({ queryKey: ["products"] });
   }, [selectedCategory, sortBy, sortOrder, queryClient]);
 
-  
-  if (isError) return (
-    <div className="text-center py-10">
-      <p className="text-red-600">Error loading products: {error.message}</p>
-      <button 
-        onClick={() => queryClient.refetchQueries({ queryKey: ["products"] })}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Retry
-      </button>
-    </div>
-  );
+  if (isError)
+    return (
+      <div className="text-center py-10">
+        <p className="text-red-600">Error loading products: {error.message}</p>
+        <button
+          onClick={() => queryClient.refetchQueries({ queryKey: ["products"] })}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
 
   return (
     <section className="font-main p-3 h-full  bg-yellow py-[130px]">
@@ -114,55 +113,50 @@ export default function Shop() {
           <p className="text-sm">SHOP{">"}</p>
         </div>
 
-        {
-          isLoading ? (
-            <div className="w-full flex justify-center items-center  h-[400px] ">
-              <LoadingSpinner/>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4 md:flex-row">
-          {/* SIDEBAR FORM*/}
-          <ShopSide
-            setSearchTerm={setSearchTerm}
-            setSelectedCategory={setSelectedCategory}
-            setSortBy={setSortBy}
-            setSortOrder={setSortOrder}
-          />
-
-          {/* Products/Cards */}
-          <div className="w-full h-full">
-            {filteredArrayProducts.length === 0 && !isLoading ? (
-              <p className="text-center py-10">
-                No products found matching your criteria.
-              </p>
-            ) : (
-              <>
-              
-                
-              
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filteredArrayProducts.map((product) => (
-                    <ShopProductCards key={product._id} product={product} />
-                  ))}
-                </div>
-
-                {isFetchingNextPage && (
-                  <div className="flex justify-center py-5">
-                    <LoadingSpinner />
-                  </div>
-                )}
-
-                {!hasNextPage && filteredArrayProducts.length > 0 && (
-                  <p className="text-center pt-5 text-gray-500">
-                    You've reached the end of products.
-                  </p>
-                )}
-              </>
-            )}
+        {isLoading ? (
+          <div className="w-full flex justify-center items-center  h-[400px] ">
+            <LoadingSpinner />
           </div>
-        </div>
-          )
-        }
+        ) : (
+          <div className="flex flex-col gap-4 md:flex-row">
+            {/* SIDEBAR FORM*/}
+            <ShopSide
+              setSearchTerm={setSearchTerm}
+              setSelectedCategory={setSelectedCategory}
+              setSortBy={setSortBy}
+              setSortOrder={setSortOrder}
+            />
+
+            {/* Products/Cards */}
+            <div className="w-full h-full">
+              {filteredArrayProducts.length === 0 && !isLoading ? (
+                <p className="text-center py-10">
+                  No products found matching your criteria.
+                </p>
+              ) : (
+                <>
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filteredArrayProducts.map((product) => (
+                      <ShopProductCards key={product._id} product={product} />
+                    ))}
+                  </div>
+
+                  {isFetchingNextPage && (
+                    <div className="flex justify-center py-5">
+                      <LoadingSpinner />
+                    </div>
+                  )}
+
+                  {!hasNextPage && filteredArrayProducts.length > 0 && (
+                    <p className="text-center pt-5 text-gray-500">
+                      You've reached the end of products.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
