@@ -82,7 +82,7 @@ export default function AdminVatTable() {
         <h1>VAT TABLE</h1>
       
       </div>
-      <div className="overflow-y-auto h-[600px] py-3">
+      <div className="overflow-y-auto h-full py-3">
         {
           isLoading ? (
             <div className="flex justify-center items-center h-full">
