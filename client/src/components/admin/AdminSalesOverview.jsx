@@ -118,12 +118,6 @@ export default function AdminSalesOverview() {
     return sum + item.totalPrice;
   }, 0);
 
-  // Calculate the profit
-  const calculatedProfit = totalRevenue - totalExpenses;
-
-  // Ensure profit is never less than 0
-  const totalProfit = Math.max(0, calculatedProfit);
-
   function getDailySales(orders) {
     const dailySales = {};
 
@@ -208,7 +202,9 @@ export default function AdminSalesOverview() {
         ) : (
           <AdminStatCard
             title={"TOTAL PROFIT"}
-            value={`${formatPrice(Math.max(0, totalRevenue - totalExpenses))} PHP`}
+            value={`${formatPrice(
+              Math.max(0, totalRevenue - totalExpenses)
+            )} PHP`}
           />
         )}
 
