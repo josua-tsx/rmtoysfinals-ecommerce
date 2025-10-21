@@ -16,12 +16,8 @@ export default function AdminProductsTable({ enableMultiDel }) {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState(null);
-
   const [searchTerm, setSearchTerm] = useState("");
-
   const [selectedIds, setSelectedIds] = useState([]);
-
-  console.log(selectedIds);
 
   const {
     data: products = [],
@@ -38,6 +34,13 @@ export default function AdminProductsTable({ enableMultiDel }) {
   const productArray = Array.isArray(products.products)
     ? products.products
     : [];
+
+  // --- ADD THESE LINES ---
+  const numSelected = selectedIds.length;
+  const numProducts = productArray.length;
+
+  // Checkbox is ticked only if all products are selected
+  const allSelected = numProducts > 0 && numSelected === numProducts;
 
   const { mutate: addToSlider } = useMutation({
     mutationFn: async (productId) => {
@@ -106,11 +109,13 @@ export default function AdminProductsTable({ enableMultiDel }) {
     setIsConfirmModalOpen(true);
   };
 
-  const handleSelectAll = (e) => {
-    const isChecked = e.target.checked
-    if (!isChecked) return setSelectedIds([])
-    setSelectedIds(productArray.map((product) => product._id))
-  }
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(productArray.map((product) => product._id));
+    }
+  };
 
   const confirmDelete = () => {
     if (deleteProductId) {
@@ -207,16 +212,15 @@ export default function AdminProductsTable({ enableMultiDel }) {
                 <th className="font-normal p-2 pb-5">DATE CREATED</th>
                 {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
-                {
-                    productArray.length > 0 && enableMultiDel && (
-                      <input
-                      type="checkbox"
-                      // onChange={() => pushMultipleProd(product._id)}
-                      onChange={handleSelectAll}
-                      className="absolute right-4 top-2"
-                    />
-                    )
-                  }
+                {productArray.length > 0 && enableMultiDel && (
+                  <input
+                    type="checkbox"
+                    // onChange={() => pushMultipleProd(product._id)}
+                    checked={allSelected}
+                    onChange={handleSelectAll}
+                    className="absolute right-4 top-2"
+                  />
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 ">
@@ -253,7 +257,6 @@ export default function AdminProductsTable({ enableMultiDel }) {
                       {product?.sold}
                     </td>
 
-             
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                       {product?.points}
                     </td>
@@ -265,28 +268,28 @@ export default function AdminProductsTable({ enableMultiDel }) {
                     {product.stocks}
                   </td> */}
                     <td className="px-4 py-4 w-full whitespace-nowrap  text-sm flex justify-between">
-                    <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigateToeditPage(product._id)}
-                        className="text-green-600 hover:text-indigo-300 mr-2"
-                      >
-                        <CiEdit size={25} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(product._id)}
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        <MdDelete size={25} />
-                      </button>
-                      <button
-                        onClick={() => addToSlider(product._id)}
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        {!product?.isBestProduct
-                          ? "ADD TO SLIDER"
-                          : "REMOVE FROM SLIDER"}
-                      </button>
-                    </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => navigateToeditPage(product._id)}
+                          className="text-green-600 hover:text-indigo-300 mr-2"
+                        >
+                          <CiEdit size={25} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(product._id)}
+                          className="text-red-600 hover:text-red-300"
+                        >
+                          <MdDelete size={25} />
+                        </button>
+                        <button
+                          onClick={() => addToSlider(product._id)}
+                          className="text-red-600 hover:text-red-300"
+                        >
+                          {!product?.isBestProduct
+                            ? "ADD TO SLIDER"
+                            : "REMOVE FROM SLIDER"}
+                        </button>
+                      </div>
 
                       {productArray.length > 0 && enableMultiDel && (
                         <input

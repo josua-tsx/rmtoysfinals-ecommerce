@@ -31,6 +31,13 @@ export default function AdminCategoryTable({ enableMultiDel }) {
 
   const arrayCategories = Array.isArray(categories) ? categories : [];
 
+  // --- ADD THESE LINES ---
+  const numSelected = selectedIds.length;
+  const numProducts = arrayCategories.length;
+
+  // Checkbox is ticked only if all products are selected
+  const allSelected = numProducts > 0 && numSelected === numProducts;
+
   const { mutate: deleteCategoryMutation } = useMutation({
     mutationFn: async (categoryId) => {
       const res = await axiosInstance.delete(
@@ -80,10 +87,11 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   };
 
   const handleSelectAll = (e) => {
-    const isChecked = e.target.checked;
-
-    if (!isChecked) return setSelectedIds([]);
-    setSelectedIds(arrayCategories.map((category) => category._id));
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(arrayCategories.map((category) => category._id));
+    }
   };
 
   const cancelMultiDelete = () => {
@@ -184,6 +192,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
                   <input
                     type="checkbox"
                     // onChange={() => pushMultipleProd(product._id)}
+                    checked={allSelected}
                     onChange={handleSelectAll}
                     className="absolute right-4 top-2"
                   />

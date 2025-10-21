@@ -30,6 +30,11 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     },
   });
 
+  const numSelected = selectedIds.length;
+  const numProducts = faqsTable.length;
+
+  const allSelected = numProducts > 0 && numSelected === numProducts;
+
   useEffect(() => {
     if (!enableMultiDel) {
       setSelectedIds([]);
@@ -95,10 +100,11 @@ export default function AdminFaqsTable({ enableMultiDel }) {
   };
 
   const handleSelectAll = (e) => {
-    const isChecked = e.target.checked;
-
-    if (!isChecked) return setSelectedIds([]);
-    setSelectedIds(faqsTable.map((category) => category._id));
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(faqsTable.map((category) => category._id));
+    }
   };
 
   const navigateToEdit = (id) => {
@@ -158,6 +164,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
                   <input
                     type="checkbox"
                     // onChange={() => pushMultipleProd(product._id)}
+                    checked={allSelected}
                     onChange={handleSelectAll}
                     className="absolute right-4 top-7"
                   />
@@ -183,23 +190,23 @@ export default function AdminFaqsTable({ enableMultiDel }) {
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
-                     <div className="flex items-center">
-                     <button
-                        type="button"
-                        onClick={() => navigateToEdit(faq._id)}
-                        className="text-green-600 hover:text-indigo-300 mr-2"
-                      >
-                        <CiEdit size={25} />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isDeleting}
-                        onClick={() => openDeleteModal(faq._id)}
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        <MdDelete size={25} />
-                      </button>
-                     </div>
+                      <div className="flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => navigateToEdit(faq._id)}
+                          className="text-green-600 hover:text-indigo-300 mr-2"
+                        >
+                          <CiEdit size={25} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isDeleting}
+                          onClick={() => openDeleteModal(faq._id)}
+                          className="text-red-600 hover:text-red-300"
+                        >
+                          <MdDelete size={25} />
+                        </button>
+                      </div>
 
                       {enableMultiDel ? (
                         <input

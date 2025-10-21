@@ -32,10 +32,17 @@ export default function AdminRiderTable({ enableMultiDel }) {
 
   const arrayRiders = Array.isArray(getRiders) ? getRiders : [];
 
+  // --- ADD THESE LINES ---
+  const numSelected = selectedIds?.length;
+  const numProducts = arrayRiders?.length;
+
+  // Checkbox is ticked only if all products are selected
+  const allSelected = numProducts > 0 && numSelected === numProducts;
+
   const filteredArrayRiders = arrayRiders.filter(
     (rider) =>
-      rider.riderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rider.riderStatus.toLowerCase().includes(searchTerm.toLowerCase())
+      rider?.riderName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rider?.riderStatus?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const { mutate: deleteRiderMutation } = useMutation({
@@ -84,7 +91,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
   };
 
   const handleDeleteMulti = () => {
-    if (selectedIds.length === 0) {
+    if (selectedIds?.length === 0) {
       return toast.error("Please select at least one rider.");
     }
 
@@ -102,11 +109,12 @@ export default function AdminRiderTable({ enableMultiDel }) {
     setOpenModal(true);
   };
 
-  const handleSelectAll = (e) => {
-    const isChecked = e.target.checked;
-
-    if (!isChecked) return setSelectedIds([]);
-    setSelectedIds(arrayRiders.map((category) => category._id));
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(arrayRiders.map((category) => category._id));
+    }
   };
 
   const handleCancelMultiDel = () => {
@@ -166,10 +174,11 @@ export default function AdminRiderTable({ enableMultiDel }) {
                 <th className="font-normal p-2 pb-5">Rider Status</th>
                 <th className="font-normal p-2 pb-5">Sucessful Delivery</th>
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
-                {arrayRiders.length > 0 && enableMultiDel && (
+                {arrayRiders?.length > 0 && enableMultiDel && (
                   <input
                     type="checkbox"
                     // onChange={() => pushMultipleProd(product._id)}
+                    checked={allSelected}
                     onChange={handleSelectAll}
                     className="absolute right-4 top-2"
                   />
@@ -215,7 +224,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
                         </button>
                       </div>
 
-                      {arrayRiders.length > 0 && enableMultiDel && (
+                      {arrayRiders?.length > 0 && enableMultiDel && (
                         <input
                           type="checkbox"
                           id="wdwadwk"

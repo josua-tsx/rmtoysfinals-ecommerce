@@ -33,6 +33,13 @@ export default function AdminSupplierTable({ enableMultiDel }) {
 
   const arraySuppliers = Array.isArray(suppliers) ? suppliers : [];
 
+  // --- ADD THESE LINES ---
+  const numSelected = selectedIds.length;
+  const numProducts = arraySuppliers.length;
+
+  // Checkbox is ticked only if all products are selected
+  const allSelected = numProducts > 0 && numSelected === numProducts;
+
   const { mutate: deleteSupplierMutation } = useMutation({
     mutationFn: async (supplierId) => {
       const res = await axiosInstance.delete(
@@ -93,10 +100,11 @@ export default function AdminSupplierTable({ enableMultiDel }) {
   };
 
   const handleSelectAll = (e) => {
-    const isChecked = e.target.checked;
-
-    if (!isChecked) return setSelectedIds([]);
-    setSelectedIds(arraySuppliers.map((category) => category._id));
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(arraySuppliers.map((category) => category._id));
+    }
   };
 
   const cancelMultiDel = () => {
@@ -187,6 +195,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
                   <input
                     type="checkbox"
                     // onChange={() => pushMultipleProd(product._id)}
+                    checked={allSelected}
                     onChange={handleSelectAll}
                     className="absolute right-4 top-2"
                   />
