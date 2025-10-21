@@ -24,8 +24,6 @@ export default function FreeCredits() {
     },
   });
 
-  console.log(currentUser);
-
   const { mutate: resetPlayLockMutation } = useMutation({
     mutationFn: async () => {
       const res = await axiosInstance.post(`/random/reset`);
@@ -43,7 +41,7 @@ export default function FreeCredits() {
         toast.success(`Come back at ${data.lockedUntil} to play again`);
       }
     },
-    onError: (err) => { 
+    onError: (err) => {
       toast.error(err.response.data.message);
     },
   });

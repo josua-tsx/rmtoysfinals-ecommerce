@@ -47,8 +47,6 @@ export default function Faq() {
     },
   });
 
-  console.log(faqsComponent);
-
   const handleToggleList = (id) => {
     setOpenAnswer(openAnswer === id ? null : id);
   };

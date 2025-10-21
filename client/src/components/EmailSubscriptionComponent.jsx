@@ -9,14 +9,14 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
 import { FaCheck } from "react-icons/fa6";
-import { ConfirmModal } from "../reusable/ConfirmModal";
+// import { ConfirmModal } from "../reusable/ConfirmModal";
 
 export default function EmailSubscriptionComponent() {
   const queryClient = useQueryClient();
   const currentUser = useUserStore((state) => state.currentUser);
   const [userEmail, setUserEmail] = useState("");
   const [isSubscribe, setIsSubscribe] = useState(false);
-  const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  // const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -26,8 +26,8 @@ export default function EmailSubscriptionComponent() {
   }, [currentUser]);
 
   const { mutate: subscribeMutation } = useMutation({
-    mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/subscribe/subscribe-email`, data);
+    mutationFn: async () => {
+      const res = await axiosInstance.post(`/subscribe/subscribe-email`);
       return res.data;
     },
     onMutate: async () => {
@@ -63,34 +63,23 @@ export default function EmailSubscriptionComponent() {
     },
   });
 
-  const openModal = () => {
-    setOpenConfirmModal(true);
-  };
+  // const openModal = () => {
+  //   setOpenConfirmModal(true);
+  // };
 
-  const confirmModal = () => {
-    unsubscribeMutation();
-    cancelModal();
-  };
-
-  const cancelModal = () => {
-    setOpenConfirmModal(false);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    subscribeMutation({ subscribedEmail: userEmail });
-  };
+  // const cancelModal = () => {
+  //   setOpenConfirmModal(false);
+  // };
 
   return (
     <section className="bg-yellow p-3 font-main pt-28 md:pt-36">
-      <ConfirmModal
+      {/* <ConfirmModal
         isOpen={openConfirmModal}
         title={"Confirm Unsubscribe"}
         message={"Are you sure you want to unsubscribe?"}
         onCancel={cancelModal}
         onConfirm={confirmModal}
-      />
+      /> */}
 
       <div className="max-w-[1280px] mx-auto p-4">
         <h1 className="text-center text-3xl mb-5">Subscribe</h1>
@@ -122,7 +111,7 @@ export default function EmailSubscriptionComponent() {
             </p>
 
             <form
-              onSubmit={handleSubmit}
+              onSubmit={subscribeMutation}
               className="w-full flex flex-col gap-2 relative"
             >
               <input
@@ -136,8 +125,9 @@ export default function EmailSubscriptionComponent() {
               />
               {isSubscribe ? (
                 <button
-                  onClick={() => openModal()}
-                  type="button"
+                  // onClick={() => openModal()}
+                  // type="button"
+                  onClick={unsubscribeMutation}
                   className="border bg-red-500 text-white rounded-[5px] border-black p-2"
                 >
                   Unsubscribe

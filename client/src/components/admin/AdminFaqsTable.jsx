@@ -3,7 +3,6 @@ import { MdDelete } from "react-icons/md";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import { IoSearch } from "react-icons/io5";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
