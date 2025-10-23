@@ -6,17 +6,14 @@ export const addVat = async (req, res, next) => {
   const { vatPercent, vatValue } = req.body;
 
   try {
-    if (!vatPercent) {
-      return next(handleMakeError(400, "Please input VAT percent"));
-    }
-
+   
     const findVat = await Vat.find();
 
-    if (findVat && findVat.length > 0) {
+    if (findVat && findVat.length > 2) {
       return next(
         handleMakeError(
           400,
-          "You can only add 1 vat. Update the existing one instead."
+          "You can only add 2 vat. Update the existing one instead."
         )
       );
     }

@@ -17,7 +17,6 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
 
-
   const [toggleNotify, setToggleNotify] = useState(false);
 
   const [selectedVatValue, setSelectedVatValue] = useState(null);
@@ -267,8 +266,6 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
-      
-
             <div className="flex gap-4">
               <label htmlFor="quantity">Quantity: </label>
               <input
@@ -286,7 +283,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               <p>Total Cost: </p>
               <p>{formatPrice(totalCost)} PHP</p>
               <p className="text-sm text-red-700">
-                (SUPPLIER PRCE + SHIPPING PRICE) * QUANTITY
+                (SUPPLIER PRCE * QUANTITY ) + SHIPPING PRICE
               </p>
             </div>
 

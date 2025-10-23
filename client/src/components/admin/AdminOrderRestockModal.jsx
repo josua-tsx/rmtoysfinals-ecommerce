@@ -38,7 +38,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const calculateTotalExpenses =
     (Number(supplierPrice) + Number(shippingPrice)) * Number(quantity);
 
-  const totalPriceWithVAT = Number(shopPrice) + Number(shopPrice) * selectedVatValue?.vatValue;
+  const totalPriceWithVAT =
+    Number(shopPrice) + Number(shopPrice) * selectedVatValue?.vatValue;
   const roundedPrice = Math.round(totalPriceWithVAT);
 
   useEffect(() => {
@@ -249,7 +250,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               <p>Total Cost: </p>
               <p>{formatPrice(totalCost)} PHP</p>
               <p className="text-sm text-red-700">
-                (SUPPLIER PRCE + SHIPPING PRICE) * QUANTITY
+                (SUPPLIER PRCE * QUANTITY ) + SHIPPING PRICE
               </p>
             </div>
           </div>

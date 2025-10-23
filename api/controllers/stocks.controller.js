@@ -127,7 +127,6 @@ export const OrderStocks = async (req, res, next) => {
 
     await newDelivery.save();
 
-    console.log("Subscribed users found:", subscribedUser.length);
 
     // ✅ Send response FIRST to prevent lag
     res.status(201).json({
@@ -138,6 +137,8 @@ export const OrderStocks = async (req, res, next) => {
           ? "Sending notifications in background"
           : "No notifications sent",
     });
+
+    
 
     // ✅ Process emails in BACKGROUND after response
     if (notifySubscribedUser === true && subscribedUser.length > 0) {
@@ -183,6 +184,8 @@ export const OrderStocks = async (req, res, next) => {
           price: Number(vatShopPrice),
           preVatPrice: Number(shopPrice),
           stocks: newDelivery._id,
+          taxStatus: vatExists.vatPercent > 0 ? "vatable" : "exempt",
+          totalVat: vatExists.vatPercent || 0
         },
         { new: true, runValidators: true }
       ),

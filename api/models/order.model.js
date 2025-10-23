@@ -61,9 +61,19 @@ const OrderModelSchema = new mongoose.Schema(
       default: 35,
     },
 
-    discount: {
-      type: String,
+
+
+    vatableSalesNet: {
+      type: Number
     },
+    vatExemptSales : {
+      type: Number
+    },
+    totalVatAmount:{
+      type: Number
+    },
+
+  
 
     usedCredits: {
       type: Number,

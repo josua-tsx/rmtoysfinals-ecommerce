@@ -69,6 +69,15 @@ const ProductModelSchema = new mongoose.Schema(
       ref: "Supplier",
     },
 
+    taxStatus: {
+      type: String,
+      enum: ["vatable", "exempt"]
+    },
+
+    totalVat: {
+      type: Number
+    },
+
     userId: [
       {
         type: mongoose.Schema.Types.ObjectId,

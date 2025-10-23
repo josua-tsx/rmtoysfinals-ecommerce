@@ -1,83 +1,95 @@
 import { useEffect, useMemo, useState } from "react";
 import { guestSelectedCarts } from "../../lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { IoIosClose } from "react-icons/io";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import formatPrice from "../../reusable/formatPrice";
 import useOrderStore from "../../stores/useOrderStore";
-import { useUserStore } from "../../stores/useUserStore";
 import axiosInstance from "../../lib/axios";
 
 export default function GuestSummaryModal({ onClose }) {
-  const currentUser = useUserStore((state) => state.currentUser);
   const currentOrder = useOrderStore((state) => state.currentOrder);
   const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
-
   const [notes, setNotes] = useState("");
   const [taxes, setTaxes] = useState(0);
-  const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(35);
-  const [cartItems, setCartItems] = useState({});
-  const [useCredits, setUseCredits] = useState("no");
-
+  const [cartItems, setCartItems] = useState([]);
   const [cart, setCart] = useState(guestSelectedCarts());
 
-  console.log(cart);
+  // console.log(cart);
 
-  // Calculate all cart values
-  const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {
-    const totalDiscount =
-      cart?.reduce((total, item) => {
-        const productDiscount = item.discount || 0;
-        return total + productDiscount * item.quantity;
-      }, 0) || 0;
+  const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-    const subtotal =
-      cart?.reduce((total, item) => {
-        return total + item.price * item.quantity;
-      }, 0) || 0;
+  const {
+    subtotal,
+    vatableSalesNet,
+    vatExemptSales,
+    totalVatAmount,
+    totalPoints,
+    totalPrice,
+    shippingVat,
+  } = useMemo(() => {
+    const vatFactor = 1.12; // 12%
 
-    const totalPoints =
-      cart?.reduce((total, item) => {
-        return total + item.points * item.quantity;
-      }, 0) || 0;
+    // Convert shipping to number safely
+    const shippingGross = Number(shippingFee || 0);
 
-    const totalPrice = subtotal - totalDiscount;
+    let grossVatable = 0;
+    let grossExempt = 0;
+    let points = 0;
+    let itemsSubtotal = 0; // sum of item prices only
 
-    return { totalDiscount, subtotal, totalPoints, totalPrice };
-  }, [cart]);
+    for (const item of cart || []) {
+      const price = Number(item?.price || 0);
+      const qty = Number(item?.quantity || 0);
+      const gross = price * qty;
+      const taxStatus = (item?.taxStatus || "").toLowerCase();
+
+      itemsSubtotal += gross;
+      points += Number(item?.points || 0) * qty;
+
+      if (taxStatus === "vatable") {
+        grossVatable += gross;
+      } else {
+        grossExempt += gross;
+      }
+    }
+
+    // ✅ SHIPPING IS TAXABLE: include it in the vatable gross total
+    const grossVatableWithShipping = grossVatable + shippingGross;
+
+    const shippingVat = ROUND(shippingGross - shippingGross / vatFactor);
+
+    // Compute aggregate net and VAT
+    const vatableNetExact = grossVatableWithShipping / vatFactor;
+    const vatExact = grossVatableWithShipping - vatableNetExact;
+
+    const vatableNet = ROUND(vatableNetExact);
+    const totalVat = ROUND(vatExact);
+
+    const subtotal = ROUND(itemsSubtotal);
+    const totalPrice = ROUND(itemsSubtotal + shippingGross);
+
+    return {
+      subtotal,
+      vatableSalesNet: vatableNet,
+      vatExemptSales: ROUND(grossExempt),
+      totalVatAmount: totalVat,
+      totalPoints: points,
+      totalPrice,
+      shippingVat,
+    };
+  }, [cart, shippingFee]);
 
   console.log(currentOrder);
 
   useEffect(() => {
     if (cart) {
-      setCartItems(cart.items);
+      setCartItems(cart);
     }
   }, [cart]);
-
-  //   const { mutate: placeOrder } = useMutation({
-  //     mutationFn: async (data) => {
-  //       const res = await axiosInstance.post(`/order/place-order`, data);
-
-  //       return res.data;
-  //     },
-  //     onSuccess: () => {
-  //       setNotes("");
-  //       onClose();
-  //       queryClient.invalidateQueries({ queryKey: ["order"] });
-  //       queryClient.invalidateQueries({ queryKey: ["cart"] });
-  //       toast.success(`Order placed!`);
-  //       toast.success(
-  //         `Track your order status in your order status page in your profile!`
-  //       );
-  //     },
-  //     onError: (err) => {
-  //       toast.error(err.response.data.message || "something went wrong!");
-  //     },
-  //   });
 
   const { mutate: placeStripeOrder } = useMutation({
     mutationFn: async (data) => {
@@ -101,16 +113,6 @@ export default function GuestSummaryModal({ onClose }) {
       return;
     }
 
-    console.log(orderData);
-
-    // // Validate all items before proceeding
-    // for (const item of orderData.orderItems) {
-    //   if (item.quantity > 5) {
-    //     toast.error("You can only order up to 5 items per product at a time.");
-    //     return;
-    //   }
-    // }
-
     // Proceed if no lock or lock expired
     localStorage.setItem("manual-order-backup", JSON.stringify(orderData));
     setCurrentOrder(orderData);
@@ -130,7 +132,7 @@ export default function GuestSummaryModal({ onClose }) {
       return toast.error("Please input required fields!");
 
     const orderData = {
-      orderItems: cartItems.map((item) => ({
+      orderItems: cartItems?.map((item) => ({
         productId: {
           _id: item._id,
           productName: item.productName,
@@ -150,7 +152,9 @@ export default function GuestSummaryModal({ onClose }) {
       paymentMethod,
       taxPrice: taxes,
       shippingPrice: shippingFee,
-      discount: totalDiscount,
+      vatableSalesNet,
+      vatExemptSales,
+      totalVatAmount,
       subtotal,
       totalPrice: totalPrice,
       notes,
@@ -192,7 +196,9 @@ export default function GuestSummaryModal({ onClose }) {
         paymentMethod,
         taxPrice: taxes,
         shippingPrice: shippingFee,
-        discount: totalDiscount,
+        vatableSalesNet,
+        vatExemptSales,
+        totalVatAmount,
         subtotal,
         totalPrice: totalPrice.toString(),
         notes: notes || "",
@@ -263,7 +269,7 @@ export default function GuestSummaryModal({ onClose }) {
                     </p>
                   </div>
                 </div>
-              </div> */}
+              </div>  */}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -276,6 +282,7 @@ export default function GuestSummaryModal({ onClose }) {
                       name="fullName"
                       className="p-2 rounded-[5px] border border-gray-300"
                       // disabled
+                      maxLength={50}
                     />
                   </div>
                 </div>
@@ -306,6 +313,7 @@ export default function GuestSummaryModal({ onClose }) {
                     name="currentAddress"
                     className="p-2 border border-gray-300 rounded-[5px]"
                     // disabled
+                    maxLength={10}
                   />
                 </div>
               </div>
@@ -401,11 +409,31 @@ export default function GuestSummaryModal({ onClose }) {
                 <span className="">{shippingFee} PHP</span>
               </div>
 
-              <div className="flex justify-between">
-                <span className="text-gray-600">Discount</span>
-                <span className=" text-green-600">
-                  -{formatPrice(totalDiscount)} PHP
+              <div className="flex justify-between text-sm">
+                <span>
+                  Shipping Fee
+                  <span className="text-gray-500">
+                    {" "}
+                    (includes {formatPrice(shippingVat)} VAT)
+                  </span>
+                  :
                 </span>
+                <span>{formatPrice(shippingFee)} PHP</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Vatable Sales (Net)</span>
+                <span>{formatPrice(vatableSalesNet)} PHP</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">VAT Exempt Sales</span>
+                <span>{formatPrice(vatExemptSales)} PHP</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total VAT Amount</span>
+                <span>{formatPrice(totalVatAmount)} PHP</span>
               </div>
 
               <div className="border-t border-gray-200 pt-3 mt-3">

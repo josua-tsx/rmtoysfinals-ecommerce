@@ -1,4 +1,4 @@
-import { handleMakeError } from "../middleware/handleError.js";
+ import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js";
 import Stocks from "../models/stocks.model.js";
@@ -102,7 +102,7 @@ export const getSelectedCart = async (req, res, next) => {
     }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages discount ",
+        "productName price points productDescription productImages preVatPrice taxStatus totalVat",
       populate: {
         path: "stocks",
         select: "quantity",

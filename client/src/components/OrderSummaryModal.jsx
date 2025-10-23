@@ -14,10 +14,7 @@ export default function OrderSummaryModal({ onClose }) {
   const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
   const [notes, setNotes] = useState("");
-  const [taxes, setTaxes] = useState(0);
-  const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(35);
   const [cartItems, setCartItems] = useState({});
   const [useCredits, setUseCredits] = useState("no");
@@ -48,29 +45,68 @@ export default function OrderSummaryModal({ onClose }) {
 
   // console.log(cart);
   console.log(cartItems);
+  const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-  // Calculate all cart values
-  const { totalDiscount, subtotal, totalPoints, totalPrice } = useMemo(() => {
-    const totalDiscount =
-      cart?.reduce((total, item) => {
-        const productDiscount = item.productId.discount || 0;
-        return total + productDiscount * item.quantity;
-      }, 0) || 0;
+  const {
+    subtotal,
+    vatableSalesNet,
+    vatExemptSales,
+    totalVatAmount,
+    totalPoints,
+    totalPrice,
+    shippingVat,
+  } = useMemo(() => {
+    const vatFactor = 1.12; // 12%
 
-    const subtotal =
-      cart?.reduce((total, item) => {
-        return total + item.productId.price * item.quantity;
-      }, 0) || 0;
+    // Convert shipping to number safely
+    const shippingGross = Number(shippingFee || 0);
 
-    const totalPoints =
-      cart?.reduce((total, item) => {
-        return total + item.productId.points * item.quantity;
-      }, 0) || 0;
+    let grossVatable = 0;
+    let grossExempt = 0;
+    let points = 0;
+    let itemsSubtotal = 0; // sum of item prices only
 
-    const totalPrice = subtotal - totalDiscount;
+    for (const item of cart || []) {
+      const price = Number(item?.productId?.price || 0);
+      const qty = Number(item?.quantity || 0);
+      const gross = price * qty;
+      const taxStatus = (item?.productId?.taxStatus || "").toLowerCase();
 
-    return { totalDiscount, subtotal, totalPoints, totalPrice };
-  }, [cart]);
+      itemsSubtotal += gross;
+      points += Number(item?.productId?.points || 0) * qty;
+
+      if (taxStatus === "vatable") {
+        grossVatable += gross;
+      } else {
+        grossExempt += gross;
+      }
+    }
+
+    // ✅ SHIPPING IS TAXABLE: include it in the vatable gross total
+    const grossVatableWithShipping = grossVatable + shippingGross;
+
+    const shippingVat = ROUND(shippingGross - shippingGross / vatFactor);
+
+    // Compute aggregate net and VAT
+    const vatableNetExact = grossVatableWithShipping / vatFactor;
+    const vatExact = grossVatableWithShipping - vatableNetExact;
+
+    const vatableNet = ROUND(vatableNetExact);
+    const totalVat = ROUND(vatExact);
+
+    const subtotal = ROUND(itemsSubtotal);
+    const totalPrice = ROUND(itemsSubtotal + shippingGross);
+
+    return {
+      subtotal,
+      vatableSalesNet: vatableNet,
+      vatExemptSales: ROUND(grossExempt),
+      totalVatAmount: totalVat,
+      totalPoints: points,
+      totalPrice,
+      shippingVat,
+    };
+  }, [cart, shippingFee]);
 
   // Calculate credits and final totalPrice
   const { usedCredits, deductedPrice } = useMemo(() => {
@@ -195,12 +231,13 @@ export default function OrderSummaryModal({ onClose }) {
       orderItems: cartItems,
       shippingAddress: currentAddress,
       paymentMethod,
-      taxPrice: taxes,
       shippingPrice: shippingFee,
-      discount: totalDiscount,
       subtotal,
       totalPrice: deductedPrice,
       notes,
+      vatableSalesNet,
+      vatExemptSales,
+      totalVatAmount,
       quantity: cartItems.quantity,
       totalPoints,
       usedCredits: useCredits === "yes" ? usedCredits : 0,
@@ -225,12 +262,13 @@ export default function OrderSummaryModal({ onClose }) {
         })),
         shippingAddress: currentAddress,
         paymentMethod,
-        taxPrice: taxes,
         shippingPrice: shippingFee,
-        discount: totalDiscount,
         subtotal,
         totalPrice: deductedPrice.toString(),
         notes,
+        vatableSalesNet,
+        vatExemptSales,
+        totalVatAmount,
         totalPoints,
         usedCredits: useCredits === "yes" ? usedCredits : 0,
       };
@@ -501,9 +539,24 @@ export default function OrderSummaryModal({ onClose }) {
                     className="w-16 h-16 object-cover rounded-md mr-4"
                   />
                   <div className="flex-1">
-                    <h4 className=" text-gray-800">
-                      {item.productId.productName}
-                    </h4>
+                    <div className="flex justify-between">
+                      <h4 className=" text-gray-800">
+                        {item.productId?.productName}
+                      </h4>
+                      <div className="flex gap-2">
+                        {item.productId?.taxStatus === "vatable" ? (
+                          <span className="text-green-500">Vatable</span>
+                        ) : (
+                          <span className="text-red-500">Exempted</span>
+                        )}
+
+                        {item?.productId?.taxStatus === "vatable" && (
+                          <span className="text-blue-500">
+                            : {item.productId?.totalVat}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     <div className="flex justify-between text-sm text-gray-600 mt-1">
                       <span>Qty: {item.quantity}</span>
                       <span>
@@ -526,22 +579,39 @@ export default function OrderSummaryModal({ onClose }) {
                 <span className="">{formatPrice(subtotal)} PHP</span>
               </div>
 
-              <div className="flex justify-between">
-                <span className="text-gray-600">Shipping Fee</span>
-                <span className="">{shippingFee} PHP</span>
+              <div className="flex justify-between text-sm">
+                <span>
+                  Shipping Fee
+                  <span className="text-gray-500">
+                    {" "}
+                    (includes {formatPrice(shippingVat)} VAT)
+                  </span>
+                  :
+                </span>
+                <span>{formatPrice(shippingFee)} PHP</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">Discount</span>
-                <span className=" text-green-600">
-                  -{formatPrice(totalDiscount)} PHP
-                </span>
+                <span className="text-gray-600">Vatable Sales (Net)</span>
+                <span>{formatPrice(vatableSalesNet)} PHP</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">VAT Exempt Sales</span>
+                <span>{formatPrice(vatExemptSales)} PHP</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total VAT Amount</span>
+                <span>{formatPrice(totalVatAmount)} PHP</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">Credits Used</span>
                 <span className=" text-green-600">
-                  -{formatPrice(usedCredits)} PHP
+                  {usedCredits > 0
+                    ? `-${formatPrice(usedCredits)} PHP`
+                    : `${formatPrice(0)} PHP`}
                 </span>
               </div>
 

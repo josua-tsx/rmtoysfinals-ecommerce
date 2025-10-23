@@ -9,9 +9,10 @@ import formatPrice from "../reusable/formatPrice";
 import { useNavigate } from "react-router-dom";
 import ReviewModal from "./ReviewModal";
 
-
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
+
+  console.log(order);
 
   // console.log(order);
 
@@ -83,82 +84,76 @@ export default function SingleOrderList({ order, onClose }) {
 
           {/* CARD GOES HERE */}
 
-          <div className="flex justify-between">
-            <div className="flex flex-col text-sm">
-              <div className="flex gap-2">
-                <p>Order ID: </p>
-                <span className="text-indigo-700">{order._id}</span>
-              </div>
+          <div className="flex flex-col text-sm">
+            <div className="flex gap-2">
+              <p>Order ID: </p>
+              <span className="text-indigo-700">{order._id}</span>
+            </div>
 
-              <div className="flex gap-2">
-                <p>Total Items: </p>
-                <span className="text-indigo-700">
-                  {order?.orderItems?.length}
-                </span>
-              </div>
+            <div className="flex gap-2">
+              <p>Total Items: </p>
+              <span className="text-indigo-700">
+                {order?.orderItems?.length}
+              </span>
+            </div>
 
-              {!order.guestUser && (
-                <>
-                  <div className="flex gap-2">
-                    <p>Total Points: </p>
-                    <span className="text-indigo-700">
-                      +{order?.totalPoints}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <p>Used Credit Points: </p>
-                    <span className="text-indigo-700">
-                      {order?.usedCredits ? -order?.usedCredits : 0}
-                    </span>
-                  </div>
-                </>
-              )}
-              {/* <div className="flex gap-2">
+            {!order.guestUser && (
+              <>
+                <div className="flex gap-2">
+                  <p>Total Points: </p>
+                  <span className="text-indigo-700">+{order?.totalPoints}</span>
+                </div>
+                <div className="flex gap-2">
+                  <p>Used Credit Points: </p>
+                  <span className="text-indigo-700">
+                    {order?.usedCredits ? -order?.usedCredits : 0}
+                  </span>
+                </div>
+              </>
+            )}
+            {/* <div className="flex gap-2">
                 <p>Taxes: </p>
                 <span className="text-indigo-700">{formatPrice(order.taxPrice)}</span>
               </div> */}
-              <div className="flex gap-2">
-                <p>Shipping Price: </p>
-                <span className="text-indigo-700">
-                  {formatPrice(order.shippingPrice)} PHP
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <p>Date Ordered: </p>
-                <span className="text-indigo-700">
-                  {new Date(order.createdAt).toLocaleString()}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <p>Estimated Delivery Date: </p>
-                <span className="text-indigo-700">1 - 6 days</span>
-              </div>
-              <div className="flex gap-2">
-                <p>To Ship: </p>
-                <span className="text-indigo-700">{order.shippingAddress}</span>
-              </div>
-              <div className="flex gap-2">
-                <p>Payment Method: </p>
-                <span className="text-indigo-700">{order.paymentMethod}</span>
-              </div>
-              <div className="flex gap-2">
-                <p>Notes: </p>
-                <span
-                  className={`${
-                    order.notes ? "text-indigo-700" : "text-red-700"
-                  } `}
-                >
-                  {!order.notes ? "No notes provided" : order.notes}
-                </span>
-              </div>
-              {(order?.paymentStatus === "Failed" ||
-                order?.paymentStatus === "Refunded") && (
-                <div className="flex gap-2 items-center">
-                  <p>Reasons: </p>
-                  <p className="w-full text-red-700">{order?.reason}</p>
-                </div>
-              )}
+            <div className="flex gap-2">
+              <p>Date Ordered: </p>
+              <span className="text-indigo-700">
+                {new Date(order.createdAt).toLocaleString()}
+              </span>
             </div>
+            <div className="flex gap-2">
+              <p>Estimated Delivery Date: </p>
+              <span className="text-indigo-700">1 - 6 days</span>
+            </div>
+            <div className="flex gap-2">
+              <p>To Ship: </p>
+              <span className="text-indigo-700">{order.shippingAddress}</span>
+            </div>
+            <div className="flex gap-2">
+              <p>Payment Method: </p>
+              <span className="text-indigo-700">{order.paymentMethod}</span>
+            </div>
+            <div className="flex gap-2">
+              <p>Notes: </p>
+              <span
+                className={`${
+                  order.notes ? "text-indigo-700" : "text-red-700"
+                } `}
+              >
+                {!order.notes ? "No notes provided" : order.notes}
+              </span>
+            </div>
+            {(order?.paymentStatus === "Failed" ||
+              order?.paymentStatus === "Refunded") && (
+              <div className="flex gap-2 items-center">
+                <p>Reasons: </p>
+                <p className="w-full text-red-700">{order?.reason}</p>
+              </div>
+            )}
+
+            {/* seperator */}
+            <div className="my-2 border-t border-dashed border-gray-300"></div>
+
             <div className="flex flex-col text-sm">
               <div className="flex gap-2">
                 <p>Subtotal: </p>
@@ -166,6 +161,39 @@ export default function SingleOrderList({ order, onClose }) {
                   {formatPrice(order.subtotal)} PHP
                 </span>
               </div>
+              <div className="flex gap-2">
+                <p>Shipping Price: </p>
+                <span className="text-indigo-700">
+                  {formatPrice(order.shippingPrice)} PHP
+                </span>
+              </div>
+
+              <div className="my-2 border-t border-dashed border-gray-300"></div>
+
+              <div className="flex gap-2">
+                <p>Vatable Sales Net: </p>
+                <span className="text-indigo-700">
+                  {formatPrice(order.vatableSalesNet)} PHP
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <p>Vat Exempt Sales: </p>
+                <span className="text-indigo-700">
+                  {formatPrice(order.vatExemptSales)} PHP
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <p>Total Vat Amount: </p>
+                <span className="text-indigo-700">
+                  {formatPrice(order.totalVatAmount)} PHP
+                </span>
+              </div>
+
+
+
+              <div className="my-2 border-t border-dashed border-gray-300"></div>
+
               <div className="flex gap-2">
                 <p>Total Price: </p>
                 <span className="text-indigo-700">
@@ -232,7 +260,7 @@ export default function SingleOrderList({ order, onClose }) {
                           <button
                             onClick={() => {
                               navigate(`/product/${item?.productId._id}`);
-                              onClose()
+                              onClose();
                             }}
                             className="text-indigo-700 underline"
                           >
