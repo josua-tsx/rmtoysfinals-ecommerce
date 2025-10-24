@@ -14,7 +14,7 @@ export default function SingleOrderList({ order, onClose }) {
 
   console.log(order);
 
-  // console.log(order);
+  // console.log(order);  
 
   const [reasonModal, setReasonModal] = useState(false);
   const [openReviewModal, setOpenReviewModal] = useState(false);
@@ -84,7 +84,7 @@ export default function SingleOrderList({ order, onClose }) {
 
           {/* CARD GOES HERE */}
 
-          <div className="flex flex-col text-sm">
+          <div className="flex flex-col h-[200px] overflow-y-auto md:h-full text-sm">
             <div className="flex gap-2">
               <p>Order ID: </p>
               <span className="text-indigo-700">{order._id}</span>
@@ -290,7 +290,7 @@ export default function SingleOrderList({ order, onClose }) {
                 <img
                   src={order?.gcashQRmethod?.proofOfPaymentImage}
                   alt="receipt imgae"
-                  className="h-[250px] md:h-[550px] max-w-[370px] object-cover rounded-[5px]"
+                  className="h-[250px] md:h-[250px] max-w-[370px] object-cover rounded-[5px]"
                 />
               </div>
 
