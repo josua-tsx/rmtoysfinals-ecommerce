@@ -88,7 +88,7 @@ export default function AdminWorkersTable() {
         onCancel={handleCancel}
       />
 
-         <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
+      <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>WORKER TABLE</h1>
         <div className="flex items-center relative">
@@ -117,7 +117,7 @@ export default function AdminWorkersTable() {
                 <th className="font-normal p-2 pb-5">Phone Number</th>
                 <th className="font-normal p-2 pb-5">Active Address</th>
                 <th className="font-normal p-2 pb-5">Role</th>
-                <th className="font-normal p-2 pb-5">IsOnline</th>
+
                 <th className="font-normal p-2 pb-5">Job Description</th>
                 <th className="font-normal p-2 pb-5">ACTIONS</th>
               </tr>
@@ -153,16 +153,6 @@ export default function AdminWorkersTable() {
                     </td>
                     <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
                       {worker.role}
-                    </td>
-
-                    <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
-                      {worker?.isLoggedIn === true ? <div className="flex items-center gap-2">
-                        <p>Online</p>
-                        <div className="bg-green-400 border border-black h-[20px] rounded-full w-[20px]"></div>
-                      </div> : <div className="flex items-center gap-2">
-                        <p>Ofline</p>
-                        <div className="bg-red-400 h-[20px] border border-black rounded-full w-[20px]"></div>
-                      </div>}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
