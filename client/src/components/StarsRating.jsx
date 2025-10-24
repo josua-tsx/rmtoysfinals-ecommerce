@@ -17,7 +17,7 @@ export default function StarsRating({rating, setRating}) {
                 <FaStar
                 key={index}
                 // onClick={() => handleClick(index)}
-                className={`h-4 w-4 md:w-5 cursor-pointer ${index < rating ? "text-main": "text-gray-300"}`}
+                className={`h-4 w-4 md:w-5 cursor-pointer ${index < rating ? "text-orange-300": "text-gray-300"}`}
                 
                 />
             ))
