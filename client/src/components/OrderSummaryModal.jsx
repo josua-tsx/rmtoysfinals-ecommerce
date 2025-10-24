@@ -523,7 +523,10 @@ export default function OrderSummaryModal({ onClose }) {
 
         {/* Right Panel - Order Summary */}
         <div className="w-full md:w-5/12 bg-gray-50 border border-none md:border-l-black  p-6 overflow-y-auto">
-          <h3 className=" text-lg mb-4">Your Order</h3>
+          <div className="flex justify-between items-center">
+            <h3 className=" text-lg mb-4">Your Order</h3>
+            <h1>Is Vatabable?</h1>
+          </div>
 
           {/* Products List */}
           <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto">

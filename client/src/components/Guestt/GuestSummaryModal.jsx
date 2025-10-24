@@ -367,7 +367,10 @@ export default function GuestSummaryModal({ onClose }) {
 
         {/* Right Panel - Order Summary */}
         <div className="w-full md:w-5/12 bg-gray-50 border border-none md:border-l-black  p-6 overflow-y-auto">
-          <h3 className=" text-lg mb-4">Your Order</h3>
+          <div className="flex justify-between items-center">
+            <h3 className=" text-lg mb-4">Your Order</h3>
+            <h1>Is Vatabable?</h1>
+          </div>
 
           {/* Products List */}
           <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto">
@@ -383,7 +386,22 @@ export default function GuestSummaryModal({ onClose }) {
                     className="w-16 h-16 object-cover rounded-md mr-4"
                   />
                   <div className="flex-1">
-                    <h4 className=" text-gray-800">{item.productName}</h4>
+                    <div className="flex justify-between">
+                      <h4 className=" text-gray-800">{item.productName}</h4>
+                      <div className="flex gap-2">
+                        {item.taxStatus === "vatable" ? (
+                          <span className="text-green-500">Vatable</span>
+                        ) : (
+                          <span className="text-red-500">Exempted</span>
+                        )}
+
+                        {item?.taxStatus === "vatable" && (
+                          <span className="text-blue-500">
+                            : {item.totalVat}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     <div className="flex justify-between text-sm text-gray-600 mt-1">
                       <span>Qty: {item.quantity}</span>
                       <span>{formatPrice(item.price * item.quantity)} PHP</span>
