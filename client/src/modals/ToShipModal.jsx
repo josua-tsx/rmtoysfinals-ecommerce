@@ -14,7 +14,7 @@ export default function ToShipModal({
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["riders"],
+    queryKey: ["riders", "riderId"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/rider/get-riders`);
       return res.data;
@@ -48,7 +48,9 @@ export default function ToShipModal({
                 className={`flex justify-between border ${
                   selectedRiderId === rider._id ? "bg-blue-200" : ""
                 } border-black p-2 rounded-[5px] items-center ${
-                  rider.riderStatus === "unavailable" ? "bg-red-500 text-white" : "text-black"
+                  rider.riderStatus === "unavailable"
+                    ? "bg-red-500 text-white"
+                    : "text-black"
                 }`}
               >
                 <div className="flex gap-2">

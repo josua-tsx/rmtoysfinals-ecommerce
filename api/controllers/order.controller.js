@@ -1202,18 +1202,30 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     // ====== HANDLE RIDER STATUS UPDATE ======
     // If changing to Pending or Processing, make rider available
-    if (status === "Pending" || status === "Processing") {
-      if (previousRiderId) {
-        await updateRiderStatus(previousRiderId, status);
-      }
-      // Also update new rider if provided (though unlikely for Pending/Processing)
-      if (riderId && riderId !== previousRiderId) {
-        await updateRiderStatus(riderId, status);
-      }
-    } else if (riderId) {
-      // For other statuses, update the rider normally
-      await updateRiderStatus(riderId, status);
-    }
+    // ====== HANDLE RIDER STATUS UPDATE ======
+        // This logic correctly handles the new rider (if any) and the previous rider (if any)
+
+        // 1. Handle the NEWLY assigned rider (if status is Shipped or Out for Delivery)
+        if (status === "Shipped" || status === "Out for Delivery") {
+          if (riderId) {
+            // Note: assignRider already sets rider to 'unavailable', 
+            // but updateRiderStatus is fine to call again.
+            await updateRiderStatus(riderId, status);
+          }
+        }
+    
+        // 2. Handle the PREVIOUS rider (if status changes to free them up)
+        if (
+          status === "Delivered" ||
+          status === "Cancelled" ||
+          status === "Pending" ||
+          status === "Processing"
+        ) {
+          if (previousRiderId) {
+            // This makes the rider available again
+            await updateRiderStatus(previousRiderId, status);
+          }
+        }
 
     // ====== HANDLE DELIVERED ======
     if (status === "Delivered") {

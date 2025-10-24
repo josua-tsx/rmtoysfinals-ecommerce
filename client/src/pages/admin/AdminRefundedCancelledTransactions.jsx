@@ -73,7 +73,6 @@ export default function AdminRefundedCancelledTransactions({
 
   console.log(refundedCancelled);
 
-
   if (isRefundedCancelledError) return <p>Error.</p>;
 
   return (
@@ -99,88 +98,107 @@ export default function AdminRefundedCancelledTransactions({
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        {
-          isRefundedCancelledPending ? (
-            <div className="flex justify-center items-center h-full">
-              <LoadingSpinner/>
-            </div>
-          ) : (
-            <table className="w-full divide-y divide-gray-700">
-          <thead>
-            <tr className="">
-              <th className="font-normal p-2 pb-5">ORDER ID</th>
-              <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
-              <th className="font-normal p-2 pb-5">ORDER DATE</th>
-              <th className="font-normal p-2 pb-5">REFUNDED DATE</th>
-              <th className="font-normal p-2 pb-5">AMOUNT REFUNDED</th>
-              <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
-              <th className="font-normal p-2 pb-5">TOTAL ITEMS</th>
-              <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
-              <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
-              <th className="font-normal p-2 pb-5">REASON</th>
-              <th className="font-normal p-2 pb-5">STATUS</th>
-              <th className="font-normal p-2 pb-5">ACTION</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700 ">
-            {filteredRefundedOrder?.length > 0 ? (
-              filteredRefundedOrder.map((refund) => (
-                <tr key={refund._id}>
-                  <td className="px-4">{refund._id}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
-                    {refund.userId?.email}
-                  </td>
-                  <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {new Date(refund.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                    {new Date(refund.updatedAt).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {formatPrice(refund.totalPrice)}
-                  </td>
-                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {refund.userId?.phoneNumber}
-                  <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                    {refund?.totalItemsOrdered}
-                  </td>
-                  </td>
-                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                    {refund.paymentMethod}
-                  </td>
-                  <td className="px-6 py-4 text-red-700 uppercase whitespace-nowrap text-center text-sm">
-                    {refund.paymentStatus}
-                  </td>
-                  <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                    {refund.reason ? refund.reason : "no reason inputed"}
-                  </td>
-                  <td className="py-6 px-6 uppercase text-red-700 whitespace-nowrap text-center text-sm">
-                    {refund.status}
-                  </td>
-                  <td className=" whitespace-nowrap text-center text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleOpenSingleOrder(refund)}
-                        type="button"
-                        className="text-green-700"
-                      >
-                        VIEW
-                      </button>
-                    </div>
+        {isRefundedCancelledPending ? (
+          <div className="flex justify-center items-center h-full">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <table className="w-full divide-y divide-gray-700">
+            <thead>
+              <tr className="">
+                <th className="font-normal p-2 pb-5">ORDER ID</th>
+                <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
+                <th className="font-normal p-2 pb-5">Guest Name</th>
+                <th className="font-normal p-2 pb-5">ORDER DATE</th>
+                <th className="font-normal p-2 pb-5">REFUNDED DATE</th>
+                <th className="font-normal p-2 pb-5">AMOUNT REFUNDED</th>
+                <th className="font-normal p-2 pb-5">PHONE NUMBER</th>
+                <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
+                <th className="font-normal p-2 pb-5">TOTAL ITEMS</th>
+                <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
+                <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
+                <th className="font-normal p-2 pb-5">REASON</th>
+                <th className="font-normal p-2 pb-5">STATUS</th>
+                <th className="font-normal p-2 pb-5">ACTION</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700 ">
+              {filteredRefundedOrder?.length > 0 ? (
+                filteredRefundedOrder.map((refund) => {
+                  const totalItems =
+                    refund.orderItems?.reduce(
+                      (sum, item) => sum + (item.quantity || 0),
+                      0
+                    ) || 0;
+                  return (
+                    <tr key={refund._id}>
+                      <td className="px-4">{refund._id}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
+                        {refund.userId ? refund.userId?.email : "Guest User"}
+                      </td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
+                        {refund.userId
+                          ? refund.userId?.email
+                          : refund.guestUser.name}
+                      </td>
+                      <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {new Date(refund.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                        {new Date(refund.updatedAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {formatPrice(refund.totalPrice)}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {refund.userId
+                          ? refund.userId?.phoneNumber
+                          : refund.guestUser.phone}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {refund.gcashQRmethod
+                          ? refund.gcashQRmethod.gcashPhoneNumber
+                          : refund?.userId?.phoneNumber}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {totalItems}
+                      </td>
+                      <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                        {refund.paymentMethod}
+                      </td>
+                      <td className="px-6 py-4 text-red-700 uppercase whitespace-nowrap text-center text-sm">
+                        {refund.paymentStatus}
+                      </td>
+                      <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                        {refund.reason ? refund.reason : "no reason inputed"}
+                      </td>
+                      <td className="py-6 px-6 uppercase text-red-700 whitespace-nowrap text-center text-sm">
+                        {refund.status}
+                      </td>
+                      <td className=" whitespace-nowrap text-center text-sm">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleOpenSingleOrder(refund)}
+                            type="button"
+                            className="text-green-700"
+                          >
+                            VIEW
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="11" className="text-center py-4">
+                    No Refunded transactions.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="11" className="text-center py-4">
-                  No Refunded transactions.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-          )
-        }
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

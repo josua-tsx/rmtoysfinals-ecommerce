@@ -20,6 +20,8 @@ export default function AdminFailedTransactions({
 
   const queryClient = useQueryClient();
 
+  console.log(failedCancelledData);
+
   const arrayCustomerFailed = Array.isArray(failedCancelledData)
     ? failedCancelledData
     : [];
@@ -69,8 +71,6 @@ export default function AdminFailedTransactions({
       failed.reason.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
-
   if (isFailedCancelledError) return <p>Error.</p>;
 
   return (
@@ -83,7 +83,7 @@ export default function AdminFailedTransactions({
       )}
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>FAILED TRANSACTIONS</h1>
+        <h1>FAILED ONLINE TRANSACTIONS</h1>
         <div className="flex items-center relative">
           <input
             type="text"
@@ -96,107 +96,119 @@ export default function AdminFailedTransactions({
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
-        {
-          isFailedCancelledPending ? (
-            <div className="flex justify-center items-center h-full">
-              <LoadingSpinner/>
-            </div>
-          ): (
-            <table className="w-full divide-y divide-gray-700">
-          <thead>
-            <tr className="">
-              <th className="font-normal p-2 pb-5">ORDER ID</th>
-              <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
-              <th className="font-normal p-2 pb-5">ORDER DATE</th>
-              <th className="font-normal p-2 pb-5">ORDER FAILED DATE</th>
-              <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
-              <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
-              <th className="font-normal p-2 pb-5">TOTAL ITEMS</th>
-              <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
-              <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
-              <th className="font-normal p-2 pb-5">STATUS</th>
-              <th className="font-normal p-2 pb-5">REASON</th>
-              <th className="font-normal p-2 pb-5">ACTION</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700 ">
-            {filteredFailedOrder?.length > 0 ? (
-              filteredFailedOrder.map((failed) => {
-                const totalItems =
-                  failed.orderItems?.reduce(
-                    (sum, item) => sum + (item.quantity || 0),
-                    0
-                  ) || 0;
-
-                return (
-                  <tr key={failed._id}>
-                    <td className="px-4">{failed._id}</td>
-                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2">
-                      {failed.userId?.email}
-                    </td>
-                    <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {new Date(failed.createdAt).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {failed.updatedAt}
-                    </td>
-                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {formatPrice(failed.totalPrice)} PHP
-                    </td>
-                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {failed.userId?.phoneNumber}
-                    </td>
-                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {failed?.totalItemsOrdered}
-                    </td>
-                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {failed.paymentMethod}
-                    </td>
-                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {failed.paymentStatus}
-                    </td>
-                    <td className="py-6 px-6 uppercase whitespace-nowrap text-center text-sm">
-                      {failed.status}
-                    </td>
-                    <td className="py-6 px-6 text-red-700 uppercase whitespace-nowrap text-center text-sm">
-                      {failed.reason}
-                    </td>
-                    <td className=" whitespace-nowrap px-4 text-center text-sm">
-                      <div className="flex gap-2">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleOpenSingleOrder(failed)}
-                            type="button"
-                            className="text-green-700"
-                          >
-                            VIEW
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleCancelSuccessTransact(failed._id)
-                            }
-                            type="button"
-                            className="text-red-700"
-                          >
-                            CANCEL
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="11" className="text-center py-4">
-                  No failed transactions.
-                </td>
+        {isFailedCancelledPending ? (
+          <div className="flex justify-center items-center h-full">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <table className="w-full divide-y divide-gray-700">
+            <thead>
+              <tr className="">
+                <th className="font-normal p-2 pb-5">ORDER ID</th>
+                <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
+                <th className="font-normal p-2 pb-5">GUEST NAME</th>
+                <th className="font-normal p-2 pb-5">ORDER DATE</th>
+                <th className="font-normal p-2 pb-5">ORDER FAILED DATE</th>
+                <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
+                <th className="font-normal p-2 pb-5">PHONE NUMBER</th>
+                <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
+                <th className="font-normal p-2 pb-5">TOTAL ITEMS</th>
+                <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
+                <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
+                <th className="font-normal p-2 pb-5">STATUS</th>
+                <th className="font-normal p-2 pb-5">REASON</th>
+                <th className="font-normal p-2 pb-5">ACTION</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-          )
-        }
+            </thead>
+            <tbody className="divide-y divide-gray-700 ">
+              {filteredFailedOrder?.length > 0 ? (
+                filteredFailedOrder.map((failed) => {
+                  const totalItems =
+                    failed.orderItems?.reduce(
+                      (sum, item) => sum + (item.quantity || 0),
+                      0
+                    ) || 0;
+
+                  return (
+                    <tr key={failed._id}>
+                      <td className="px-4">{failed._id}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2">
+                        {failed.userId ? failed.userId?.email : "Guest User"}
+                      </td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2">
+                        {failed.userId
+                          ? failed.userId?.email
+                          : failed.guestUser.name}
+                      </td>
+                      <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {new Date(failed.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                        {failed.updatedAt}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {formatPrice(failed.totalPrice)} PHP
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {failed.userId
+                          ? failed.userId?.phoneNumber
+                          : failed.guestUser.phone}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {failed.gcashQRmethod
+                          ? failed.gcashQRmethod.gcashPhoneNumber
+                          : failed?.userId?.phoneNumber}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {totalItems}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {failed.paymentMethod}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {failed.paymentStatus}
+                      </td>
+                      <td className="py-6 px-6 uppercase whitespace-nowrap text-center text-sm">
+                        {failed.status}
+                      </td>
+                      <td className="py-6 px-6 text-red-700 uppercase whitespace-nowrap text-center text-sm">
+                        {failed.reason}
+                      </td>
+                      <td className=" whitespace-nowrap px-4 text-center text-sm">
+                        <div className="flex gap-2">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleOpenSingleOrder(failed)}
+                              type="button"
+                              className="text-green-700"
+                            >
+                              VIEW
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleCancelSuccessTransact(failed._id)
+                              }
+                              type="button"
+                              className="text-red-700"
+                            >
+                              CANCEL
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="11" className="text-center py-4">
+                    No failed transactions.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

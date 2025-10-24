@@ -20,10 +20,9 @@ export default function AdminSuccesfullTransactions({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-
   // FOR CANCEL
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
-  const [isCancelSelectedId, setIsCancelSelectedId] = useState(null)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelSelectedId, setIsCancelSelectedId] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -42,8 +41,7 @@ export default function AdminSuccesfullTransactions({
     enabled: !!orderId,
   });
 
-
-  console.log(successOrderData)
+  console.log(successOrderData);
 
   const { mutate: updateToRefundMutation } = useMutation({
     mutationFn: async (orderId) => {
@@ -109,25 +107,22 @@ export default function AdminSuccesfullTransactions({
       success?.status.toLowerCase().includes(searchTerm)
   );
 
-
   const handleCancelSuccessTransact = () => {
-
     if (isCancelSelectedId) {
       cancelSuccessMutation({ orderId: isCancelSelectedId });
-      handleCloseCancelSuccess()
+      handleCloseCancelSuccess();
     }
-
   };
 
   const handleOpenCancelSuccess = (orderId) => {
-    setIsCancelModalOpen(true)
-    setIsCancelSelectedId(orderId)
-  }
+    setIsCancelModalOpen(true);
+    setIsCancelSelectedId(orderId);
+  };
 
   const handleCloseCancelSuccess = () => {
-    setIsCancelModalOpen(false)
-    setIsCancelSelectedId(null)
-  }
+    setIsCancelModalOpen(false);
+    setIsCancelSelectedId(null);
+  };
 
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
@@ -163,7 +158,7 @@ export default function AdminSuccesfullTransactions({
         }
         onConfirm={handleCancelSuccessTransact}
         onCancel={handleCloseCancelSuccess}
-      /> 
+      />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>SUCCESFUL TRANSACTIONS</h1>
@@ -191,6 +186,7 @@ export default function AdminSuccesfullTransactions({
                 <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
                 <th className="font-normal p-2 pb-5">ORDER DATE</th>
                 <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
+                <th className="font-normal p-2 pb-5">PHONE NUMBER</th>
                 <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
                 <th className="font-normal p-2 pb-5">TOTAL ITEMS BOUGHT</th>
                 <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
@@ -213,7 +209,9 @@ export default function AdminSuccesfullTransactions({
                     <tr key={success?._id}>
                       <td className="px-4">{success?._id}</td>
                       <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
-                        {success?.userId?.email}
+                        {success?.userId
+                          ? success?.userId?.email
+                          : "Guest User"}
                       </td>
                       <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
                         {new Date(success.createdAt).toLocaleString()}
@@ -222,7 +220,14 @@ export default function AdminSuccesfullTransactions({
                         {formatPrice(success.totalPrice)} PHP
                       </td>
                       <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {success.userId?.phoneNumber}
+                        {success.userId
+                          ? success.userId?.phoneNumber
+                          : success?.guestUser?.phone}
+                      </td>
+                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
+                        {success.gcashQRmethod
+                          ? success?.gcashQRmethod?.gcashPhoneNumber
+                          : "Not QR method"}
                       </td>
                       <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
                         {totalItemsBought}
@@ -237,7 +242,8 @@ export default function AdminSuccesfullTransactions({
                         {success.status}
                       </td>
                       <td className="py-6 px-6 uppercase whitespace-nowrap text-center text-sm">
-                        {success.userId?.address[0]?.fullAddress || success.shippingAddress}
+                        {success.userId?.address[0]?.fullAddress ||
+                          success.shippingAddress}
                       </td>
                       <td className=" whitespace-nowrap text-center text-sm">
                         <div className="flex gap-2">
@@ -249,9 +255,7 @@ export default function AdminSuccesfullTransactions({
                             VIEW
                           </button>
                           <button
-                            onClick={() =>
-                             handleOpenCancelSuccess(success._id)
-                            }
+                            onClick={() => handleOpenCancelSuccess(success._id)}
                             type="button"
                             className="text-red-700"
                           >

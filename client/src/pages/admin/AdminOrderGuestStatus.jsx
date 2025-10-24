@@ -7,6 +7,7 @@ import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
+import ToShipModal from "../../modals/ToShipModal";
 
 export default function AdminOrderGuestStatus() {
   const queryClient = useQueryClient();
@@ -16,6 +17,8 @@ export default function AdminOrderGuestStatus() {
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [newStatus, setNewStatus] = useState("");
+  const [openToShipModal, setOpenToShipModal] = useState(false);
+  const [selectedRiderId, setSelectedRiderId] = useState(null);
 
   const {
     data: allOrders = [],
@@ -28,8 +31,6 @@ export default function AdminOrderGuestStatus() {
       return res.data;
     },
   });
-
-  console.log(allOrders);
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
@@ -51,8 +52,11 @@ export default function AdminOrderGuestStatus() {
   });
 
   const { mutate: updateStatusMutation } = useMutation({
-    mutationFn: async ({ id, status }) => {
-      const res = await axiosInstance.put(`/order/${id}/status`, { status });
+    mutationFn: async ({ id, status, riderId }) => {
+      const res = await axiosInstance.put(`/order/${id}/status`, {
+        status,
+        riderId,
+      });
       return res.data;
     },
     onSuccess: () => {
@@ -60,12 +64,20 @@ export default function AdminOrderGuestStatus() {
       queryClient.invalidateQueries({ queryKey: ["notificationLogs"] });
       queryClient.invalidateQueries({ queryKey: ["deliveredCancelled"] });
       queryClient.invalidateQueries({ queryKey: ["stocks"] });
+      queryClient.invalidateQueries({ queryKey: ["riders", "riderId"] });
       toast.success("Sucessfully Updated Status!");
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong");
     },
   });
+
+  const selectOrderRiderId = (riderId) => {
+    const orderWithRider = allOrders.find((order) => order.riderId === riderId);
+    const riderIdValue = orderWithRider ? orderWithRider.riderId : null;
+
+    return riderIdValue;
+  };
 
   // const handleChangeStatus = (id, e) => {
   //   const newStatus = e.target.value;
@@ -74,14 +86,31 @@ export default function AdminOrderGuestStatus() {
   // };
 
   const confirmOrderStatus = () => {
-    updateStatusMutation({ id: selectedId, status: newStatus });
+    // if (newStatus === "Shipped" && selectedRiderId === null) {"You must pick a rider to update status to shipped."
+    //   return toast.error("You must pick a rider to update status to shipped.");
+    // }
+
+    updateStatusMutation({
+      id: selectedId,
+      status: newStatus,
+      riderId: selectedRiderId,
+    });
     cancelConfirmModal();
   };
 
-  const handleOpenConfirmModal = (id, e) => {
+  console.log(selectedRiderId);
+
+  const handleOpenConfirmModal = (id, e, riderId) => {
     setOpenConfirmModal(true);
     setSelectedId(id);
+    selectOrderRiderId(riderId);
     setNewStatus(e.target.value);
+
+    if (e.target.value === "Shipped") {
+      setOpenToShipModal(true);
+    } else {
+      setOpenToShipModal(false);
+    }
   };
 
   const cancelConfirmModal = () => {
@@ -93,6 +122,16 @@ export default function AdminOrderGuestStatus() {
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
     setOpenModal(true);
+  };
+
+  const handleCancelOpenShipModal = () => {
+    setOpenToShipModal(false);
+    setOpenConfirmModal(false);
+    setSelectedRiderId(null);
+  };
+
+  const handleConfirmToShipModal = () => {
+    setOpenToShipModal(false);
   };
 
   if (isOrdersError) return <p>error.</p>;
@@ -112,6 +151,14 @@ export default function AdminOrderGuestStatus() {
         onConfirm={confirmOrderStatus}
         title={"Update Order Status"}
         message={"Are you sure you want to update the order status?"}
+      />
+
+      <ToShipModal
+        selectedRiderId={selectedRiderId}
+        setSelectedRiderId={setSelectedRiderId}
+        isOpen={openToShipModal}
+        onConfirm={handleConfirmToShipModal}
+        onCancel={handleCancelOpenShipModal}
       />
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
@@ -220,7 +267,9 @@ export default function AdminOrderGuestStatus() {
                           name="status"
                           id="status"
                           // onChange={(e) => handleChangeStatus(data._id, e)}
-                          onChange={(e) => handleOpenConfirmModal(data._id, e)}
+                          onChange={(e) =>
+                            handleOpenConfirmModal(data._id, e, data.riderId)
+                          }
                           value={data.status}
                           className="outline-none border border-black text-center uppercase py-1 rounded-[5px]"
                         >

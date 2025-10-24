@@ -8,7 +8,6 @@ import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import ToShipModal from "../../modals/ToShipModal";
-import { useEffect } from "react";
 
 export default function AdminOrderStatusTable() {
   const queryClient = useQueryClient();
@@ -63,7 +62,7 @@ export default function AdminOrderStatusTable() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["notificationLogs"] });
-      queryClient.invalidateQueries({ queryKey: ["riders"] });
+      queryClient.invalidateQueries({ queryKey: ["riders", "riderId"] });
       queryClient.invalidateQueries({ queryKey: ["deliveredCancelled"] });
       queryClient.invalidateQueries({ queryKey: ["stocks"] });
       toast.success("Sucessfully Updated Status!");
