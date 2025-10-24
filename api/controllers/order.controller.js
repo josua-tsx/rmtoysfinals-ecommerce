@@ -1142,114 +1142,116 @@ export const getAllCancelled = async (req, res, next) => {
 };
 
 export const updateDeliveryStatus = async (req, res, next) => {
-  const { orderId } = req.params;
-  const { status, isGuest, riderId } = req.body;
-  const userId = req?.user?.id;
-
-  try {
-    if (!validateStatus(status)) {
-      return next(handleMakeError(400, "Invalid delivery status."));
-    }
-
-    let order = await Order.findById(orderId).populate("userId");
-    let rider = await Rider.findById(riderId);
-
-    if (!order) return next(handleMakeError(400, "No order found!"));
-
-    const isGuestOrder = isGuest || !order.userId;
-
-    // Store previous rider for status updates
-    const previousRiderId = order.riderId;
-
-    // ====== HANDLE STATUS: SHIPPED ======
-    if (status === "Shipped") {
-      if (!riderId)
-        return next(
-          handleMakeError(
-            400,
-            "You must pick a rider to update status to shipped."
-          )
-        );
-
-      if (rider?.riderStatus === "unavailable") {
-        return next(
-          handleMakeError(400, "This rider is unavailable for this delivery.")
-        );
-      }
-      await assignRider(order, riderId);
-    }
-
-    // ====== HANDLE STATUS: CANCELLED ======
-    if (status === "Cancelled" && order.status !== "Cancelled") {
-      await handleCancelled(order, isGuestOrder);
-    }
-
-    if (status === "Out for Delivery") {
-      if (!order.riderId) {
-        return next(
-          handleMakeError(400, "You must pick a rider first in Shipped Status")
-        );
-      }
-    }
-
-    // ====== UPDATE ORDER ======
-    order.status = status;
-    if (status === "Delivered") {
-      order.paymentStatus = "Paid";
-    }
-
-    const updatedOrder = await order.save();
-
-    // ====== HANDLE RIDER STATUS UPDATE ======
-    // If changing to Pending or Processing, make rider available
-    // ====== HANDLE RIDER STATUS UPDATE ======
-        // This logic correctly handles the new rider (if any) and the previous rider (if any)
-
-        // 1. Handle the NEWLY assigned rider (if status is Shipped or Out for Delivery)
-        if (status === "Shipped" || status === "Out for Delivery") {
-          if (riderId) {
-            // Note: assignRider already sets rider to 'unavailable', 
-            // but updateRiderStatus is fine to call again.
-            await updateRiderStatus(riderId, status);
-          }
-        }
-    
-        // 2. Handle the PREVIOUS rider (if status changes to free them up)
-        if (
-          status === "Delivered" ||
-          status === "Cancelled" ||
-          status === "Pending" ||
-          status === "Processing"
-        ) {
-          if (previousRiderId) {
-            // This makes the rider available again
-            await updateRiderStatus(previousRiderId, status);
-          }
-        }
-
-    // ====== HANDLE DELIVERED ======
-    if (status === "Delivered") {
-      if (!order.riderId) {
-        return next(
-          handleMakeError(400, "You must pick a rider first in Shipped Status")
-        );
-      }
-      await handleDelivered(updatedOrder);
-    }
-
-    // ====== NOTIFICATIONS ======
-    await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
-
-    return res.status(200).json({
-      success: true,
-      message: "Order status updated successfully",
-      order: updatedOrder,
-    });
-  } catch (error) {
-    console.error("Order status update error:", error.message, error.stack);
-    return next(handleMakeError(500, "Failed to update order status"));
-  }
-};
+    const { orderId } = req.params;
+    const { status, isGuest, riderId } = req.body;
+    const userId = req?.user?.id;
+  
+    try {
+      if (!validateStatus(status)) {
+        return next(handleMakeError(400, "Invalid delivery status."));
+      }
+  
+      let order = await Order.findById(orderId).populate("userId");
+      let rider = await Rider.findById(riderId);
+  
+      if (!order) return next(handleMakeError(400, "No order found!"));
+  
+      const isGuestOrder = isGuest || !order.userId;
+  
+      // Store previous rider for status updates
+      const previousRiderId = order.riderId;
+  
+      // ====== HANDLE STATUS: SHIPPED ======
+      if (status === "Shipped") {
+        if (!riderId)
+          return next(
+            handleMakeError(
+              400,
+              "You must pick a rider to update status to shipped."
+            )
+          );
+  
+        if (rider?.riderStatus === "unavailable") {
+          return next(
+            handleMakeError(400, "This rider is unavailable for this delivery.")
+          );
+        }
+        // assignRider already sets the rider to "unavailable"
+        await assignRider(order, riderId);
+      }
+  
+      // ====== HANDLE STATUS: CANCELLED ======
+      if (status === "Cancelled" && order.status !== "Cancelled") {
+        await handleCancelled(order, isGuestOrder);
+      }
+  
+      // ====== HANDLE STATUS: OUT FOR DELIVERY ======
+      if (status === "Out for Delivery") {
+        if (!order.riderId) {
+          return next(
+            handleMakeError(400, "You must pick a rider first in Shipped Status")
+          );
+        }
+        
+        // --- THIS IS THE FIX ---
+        // Make the currently assigned rider unavailable
+        await updateRiderStatus(order.riderId, "Out for Delivery");
+        // --- END OF FIX ---
+      }
+  
+      // ====== UPDATE ORDER ======
+      order.status = status;
+      if (status === "Delivered") {
+        order.paymentStatus = "Paid";
+      }
+  
+      // If moving back to Pending/Processing, remove the rider from the order
+      if (status === "Pending" || status === "Processing") {
+        order.riderId = null;
+      }
+  
+      const updatedOrder = await order.save();
+  
+      // ====== HANDLE RIDER STATUS UPDATE ======
+      
+      // Handle the PREVIOUS rider (if status changes to free them up)
+      // This runs when status is Delivered, Cancelled, Pending, or Processing
+      if (
+        status === "Delivered" ||
+        status === "Cancelled" ||
+        status === "Pending" ||
+        status === "Processing"
+      ) {
+        if (previousRiderId) {
+          // This makes the rider available again
+          await updateRiderStatus(previousRiderId, status);
+        }
+      }
+  
+      // ====== HANDLE DELIVERED ======
+      if (status === "Delivered") {
+        // We check order.riderId (from the *saved* order) just in case
+        if (!updatedOrder.riderId) {
+          return next(
+            handleMakeError(400, "You must pick a rider first in Shipped Status")
+          );
+        }
+        await handleDelivered(updatedOrder);
+      }
+  
+      // ====== NOTIFICATIONS ======
+      await sendOrderNotification(status, updatedOrder, isGuestOrder, userId);
+  
+      return res.status(200).json({
+        success: true,
+        message: "Order status updated successfully",
+        order: updatedOrder,
+      });
+    } catch (error) {
+      console.error("Order status update error:", error.message, error.stack);
+      return next(handleMakeError(500, "Failed to update order status"));
+    }
+  };
 
 export const getUserDelivered = async (req, res, next) => {
   const userId = req.user.id;

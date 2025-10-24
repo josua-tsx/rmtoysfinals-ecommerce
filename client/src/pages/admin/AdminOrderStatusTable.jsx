@@ -94,10 +94,10 @@ export default function AdminOrderStatusTable() {
 
   console.log(selectedRiderId);
 
-  const handleOpenConfirmModal = (id, e, riderId) => {
+  // New signature:
+  const handleOpenConfirmModal = (id, e) => {
     setOpenConfirmModal(true);
-    setSelectedId(id);
-    selectOrderRiderId(riderId);
+    setSelectedId(id); // selectOrderRiderId(riderId); // <-- DELETE THIS LINE
     setNewStatus(e.target.value);
 
     if (e.target.value === "Shipped") {
@@ -111,6 +111,7 @@ export default function AdminOrderStatusTable() {
     setSelectedId(null);
     setOpenConfirmModal(false);
     setNewStatus("");
+    setSelectedRiderId(null);
   };
 
   const handleOpenSingleOrder = (orderId) => {
@@ -245,12 +246,12 @@ export default function AdminOrderStatusTable() {
                       )}
                     </td>
                     {/* 
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm">{data.status}</td> */}
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">{data.status}</td> */}
                     {/* <td className="px-6 py-4 whitespace-nowrap text-center text-sm"></td> */}
 
                     {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
-                {product.stocks}
-              </td> */}
+                  {product.stocks}
+                </td> */}
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
                       <button
                         onClick={() => handleOpenSingleOrder(data)}
@@ -264,9 +265,7 @@ export default function AdminOrderStatusTable() {
                           name="status"
                           id="status"
                           // onChange={(e) => handleChangeStatus(data._id, e)}
-                          onChange={(e) =>
-                            handleOpenConfirmModal(data._id, e, data.riderId)
-                          }
+                          onChange={(e) => handleOpenConfirmModal(data._id, e)}
                           value={data.status}
                           className="outline-none border border-black text-center uppercase py-1 rounded-[5px]"
                         >

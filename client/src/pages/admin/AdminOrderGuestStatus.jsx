@@ -100,10 +100,10 @@ export default function AdminOrderGuestStatus() {
 
   console.log(selectedRiderId);
 
-  const handleOpenConfirmModal = (id, e, riderId) => {
+  // New signature:
+  const handleOpenConfirmModal = (id, e) => {
     setOpenConfirmModal(true);
-    setSelectedId(id);
-    selectOrderRiderId(riderId);
+    setSelectedId(id); // selectOrderRiderId(riderId); // <-- DELETE THIS LINE
     setNewStatus(e.target.value);
 
     if (e.target.value === "Shipped") {
@@ -267,9 +267,7 @@ export default function AdminOrderGuestStatus() {
                           name="status"
                           id="status"
                           // onChange={(e) => handleChangeStatus(data._id, e)}
-                          onChange={(e) =>
-                            handleOpenConfirmModal(data._id, e, data.riderId)
-                          }
+                          onChange={(e) => handleOpenConfirmModal(data._id, e)}
                           value={data.status}
                           className="outline-none border border-black text-center uppercase py-1 rounded-[5px]"
                         >
