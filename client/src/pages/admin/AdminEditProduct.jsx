@@ -20,7 +20,7 @@ export default function AdminEditProducts() {
   const [images, setImages] = useState([]);
   const [label, setLabel] = useState("");
   const [value, setValue] = useState("");
-  const [discount, setDiscount] = useState(0);
+
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
@@ -53,7 +53,7 @@ export default function AdminEditProducts() {
       setProductName(singleProduct?.productName || "");
       setProductDescription(singleProduct?.productDescription || "");
       setPrice(singleProduct?.price || 0);
-      setDiscount(singleProduct?.discount || 0);
+
       setCategory(singleProduct?.category?._id || "");
       // setSupplier(singleProduct.supplier || "");
       setProductsDetailsArray(singleProduct?.productDetails || []);
@@ -100,7 +100,7 @@ export default function AdminEditProducts() {
       setCategory("");
       // setSupplier("");
       setPrice(0);
-      setDiscount(0);
+
       toast.success("Successfully edited");
       navigate(`/admin/products`);
     },
@@ -117,7 +117,7 @@ export default function AdminEditProducts() {
       price,
       productDescription,
       productDetails: productsDetailsArray,
-      discount,
+
       productImages: images,
       filters,
       category: category,
@@ -352,26 +352,12 @@ export default function AdminEditProducts() {
                     onChange={(e) => setPrice(e.target.value)}
                   />
                 </div>
-                <div className="flex flex-col flex-1">
-                  <label htmlFor="discount" className="pb-2">
-                    Discount
-                  </label>
-                  <input
-                    type="number"
-                    className="p-2 rounded-[5px] border border-black outline-none"
-                    name="discount"
-                    id="discount"
-                    value={discount}
-                    onChange={(e) => setDiscount(e.target.value)}
-                  />
-                </div>
               </div>
               <div className="flex flex-col md:flex-row gap-2 w-full md:items-center">
                 <div className="flex flex-col md:flex-row gap-2 w-full md:items-center">
                   <div className="flex flex-col w-full flex-1">
                     <label htmlFor="points" className="pb-2">
-                      Points
-                      (OPTIONAL)
+                      Points (OPTIONAL)
                     </label>
                     <select
                       className="p-2 rounded-[5px] w-full border border-black outline-none"
