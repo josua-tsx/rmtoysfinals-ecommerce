@@ -110,50 +110,52 @@ export default function EmailSubscriptionComponent() {
               receive email updates straight to your inbox — no spam, just fun!
             </p>
 
-            <form
-              onSubmit={subscribeMutation}
-              className="w-full flex flex-col gap-2 relative"
-            >
-              <input
-                type="text"
-                className={`border ${
-                  isSubscribe ? "opacity-0 hidden md:flex" : "opacity-1"
-                } outline-none border-black w-full rounded-[5px] p-2`}
-                placeholder="Input your email to subscribe!"
-                value={userEmail}
-                disabled
-              />
-              {isSubscribe ? (
-                <button
-                  // onClick={() => openModal()}
-                  // type="button"
-                  onClick={unsubscribeMutation}
-                  className="border bg-red-500 text-white rounded-[5px] border-black p-2"
-                >
-                  Unsubscribe
-                </button>
-              ) : (
-                <button
-                  className={`md:absolute flex justify-center ${
-                    isSubscribe
-                      ? "w-full rounded-l-[5px]"
-                      : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
-                  } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%]`}
-                >
-                  {!isSubscribe ? (
-                    <IoMdSend
-                      size={30}
-                      className="text-white   group-hover:text-black"
-                    />
-                  ) : (
-                    <FaCheck
-                      size={30}
-                      className="text-white   group-hover:text-black"
-                    />
-                  )}
-                </button>
-              )}
-            </form>
+            {currentUser && (
+              <form
+                onSubmit={subscribeMutation}
+                className="w-full flex flex-col gap-2 relative"
+              >
+                <input
+                  type="text"
+                  className={`border ${
+                    isSubscribe ? "opacity-0 hidden md:flex" : "opacity-1"
+                  } outline-none border-black w-full rounded-[5px] p-2`}
+                  placeholder="Input your email to subscribe!"
+                  value={userEmail}
+                  disabled
+                />
+                {isSubscribe ? (
+                  <button
+                    // onClick={() => openModal()}
+                    // type="button"
+                    onClick={unsubscribeMutation}
+                    className="border bg-red-500 text-white rounded-[5px] border-black p-2"
+                  >
+                    Unsubscribe
+                  </button>
+                ) : (
+                  <button
+                    className={`md:absolute flex justify-center ${
+                      isSubscribe
+                        ? "w-full rounded-l-[5px]"
+                        : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
+                    } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%]`}
+                  >
+                    {!isSubscribe ? (
+                      <IoMdSend
+                        size={30}
+                        className="text-white   group-hover:text-black"
+                      />
+                    ) : (
+                      <FaCheck
+                        size={30}
+                        className="text-white   group-hover:text-black"
+                      />
+                    )}
+                  </button>
+                )}
+              </form>
+            )}
           </div>
         </div>
       </div>
