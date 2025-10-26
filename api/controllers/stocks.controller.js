@@ -82,18 +82,30 @@ export const OrderStocks = async (req, res, next) => {
       return next(handleMakeError(400, "Please input date delivery"));
     }
 
-    if (!shopPrice) {
-      return next(handleMakeError(400, "Please input shop price"));
+    const MAX_SHOP_PRICE = 1000000; // $1 Million
+    const MAX_SHIPPING_PRICE = 10000; // $10k
+    const MAX_QUANTITY = 1000;
+    const MAX_SUPPLIER_PRICE = 1000000
+
+    if (!supplierPrice) {
+      return next(handleMakeError(400, "Please input supplier price"));
+    }
+    
+    // It's also smart to check if it's a valid, positive number
+    if (Number(supplierPrice) <= 0) {
+      return next(handleMakeError(400, "Supplier price must be a positive number"));
     }
 
-    if (!shippingPrice) {
-      return next(handleMakeError(400, "Please input shipping Price"));
+    if (Number(supplierPrice) > MAX_SUPPLIER_PRICE) {
+      return next(handleMakeError(400, `Supplier price cannot exceed $${MAX_PRICE}`));
     }
-
 
     // Quantity specific validation
     if (Number(quantity) <= 10) {
-      return next(handleMakeError(400, "Quantity must be at least 10"));
+      return next(handleMakeError(400, "Quantity must be at least 11"));
+    }
+    if (Number(quantity) > MAX_QUANTITY) {
+      return next(handleMakeError(400, `Quantity cannot exceed ${MAX_QUANTITY}`));
     }
 
     // Price validation
@@ -102,6 +114,15 @@ export const OrderStocks = async (req, res, next) => {
         handleMakeError(400, "Shop price cannot be lower than supplier price")
       );
     }
+    if (Number(shopPrice) > MAX_SHOP_PRICE) {
+      return next(handleMakeError(400, `Shop price cannot exceed ${MAX_SHOP_PRICE}`));
+    }
+    
+    // Shipping validation
+    if (Number(shippingPrice) > MAX_SHIPPING_PRICE) {
+       return next(handleMakeError(400, `Shipping price cannot exceed ${MAX_SHIPPING_PRICE}`));
+    }
+
 
     // ✅ Get subscribed users (only email field for efficiency)
     const subscribedUser = await User.find({
@@ -314,12 +335,50 @@ export const reorderStock = async (req, res, next) => {
       return res.status(400).json({ message: "Please input required fields!" });
     }
 
+    const MAX_SHOP_PRICE = 1000000; // $1 Million
+    const MAX_SHIPPING_PRICE = 10000; // $10k
+    const MAX_QUANTITY = 1000;
+    const MAX_SUPPLIER_PRICE = 1000000
+
+    if (!supplierPrice) {
+      return next(handleMakeError(400, "Please input supplier price"));
+    }
+    
+    // It's also smart to check if it's a valid, positive number
+    if (Number(supplierPrice) <= 0) {
+      return next(handleMakeError(400, "Supplier price must be a positive number"));
+    }
+
+    if (Number(supplierPrice) > MAX_SUPPLIER_PRICE) {
+      return next(handleMakeError(400, `Supplier price cannot exceed $${MAX_SUPPLIER_PRICE}`));
+    }
+
+    // Quantity specific validation
+    if (Number(newQuantity) <= 10) {
+      return next(handleMakeError(400, "Quantity must be at least 11"));
+    }
+    if (Number(newQuantity) > MAX_QUANTITY) {
+      return next(handleMakeError(400, `Quantity cannot exceed ${MAX_QUANTITY}`));
+    }
+
     // Price validation
     if (Number(shopPrice) < Number(supplierPrice)) {
       return next(
         handleMakeError(400, "Shop price cannot be lower than supplier price")
       );
     }
+    if (Number(shopPrice) > MAX_SHOP_PRICE) {
+      return next(handleMakeError(400, `Shop price cannot exceed ${MAX_SHOP_PRICE}`));
+    }
+    
+    // Shipping validation
+    if (Number(shippingPrice) > MAX_SHIPPING_PRICE) {
+       return next(handleMakeError(400, `Shipping price cannot exceed ${MAX_SHIPPING_PRICE}`));
+    }
+
+
+
+
 
     // find the existing product on vat, if found then pull it before adding to new one (which the logic bellow)
     const existingStock = await Stocks.findById(stockId);

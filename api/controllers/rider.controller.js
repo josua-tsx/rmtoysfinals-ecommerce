@@ -1,5 +1,7 @@
 import { handleMakeError } from "../middleware/handleError.js";
+import Order from "../models/order.model.js";
 import Rider from "../models/rider.models.js";
+import User from "../models/user.models.js";
 import { validateFullName, validatePHMobile } from "../utils/validations.js";
 import { logAuditTrail } from "./audit.controller.js";
 
@@ -42,6 +44,22 @@ export const addRider = async (req, res, next) => {
         )
       );
     }
+
+
+    const existingUser = await User.findOne({ phoneNumber: riderPhoneNumber });
+    if (existingUser) {
+      return next(handleMakeError(400, "This phone number is registered to an existing account."));
+    }
+
+    const existingGuestOrder = await Order.findOne({
+      "guestUser.phone": riderPhoneNumber,
+      paymentStatus: "Pending",
+    });
+
+    if (existingGuestOrder) {
+      return next(handleMakeError(400, "A pending guest order already exists for this phone."));
+    }
+
 
     const addRider = new Rider({
       riderName,
@@ -212,6 +230,21 @@ export const editRider = async (req, res, next) => {
           )
         );
       }
+
+        const existingUser = await User.findOne({ phoneNumber: newNumber });
+      if (existingUser) {
+        return next(handleMakeError(400, "This phone number is registered to an existing account."));
+      }
+
+      const existingGuestOrder = await Order.findOne({
+        "guestUser.phone": newNumber,
+        paymentStatus: "Pending",
+      });
+
+      if (existingGuestOrder) {
+        return next(handleMakeError(400, "A pending guest order already exists for this phone."));
+      }
+
 
       const updateRider = await Rider.findByIdAndUpdate(
         riderId,

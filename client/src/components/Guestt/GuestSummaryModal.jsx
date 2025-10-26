@@ -295,6 +295,7 @@ export default function GuestSummaryModal({ onClose }) {
                     name="email"
                     className="p-2 border border-gray-300 rounded-[5px]"
                     // disabled
+                    maxLength={254}
                   />
                 </div>
               </div>
@@ -310,7 +311,7 @@ export default function GuestSummaryModal({ onClose }) {
                       name="fullName"
                       className="p-2 rounded-[5px] border border-gray-300"
                       // disabled
-                      maxLength={50}
+                      maxLength={80}
                     />
                   </div>
                 </div>
@@ -321,10 +322,10 @@ export default function GuestSummaryModal({ onClose }) {
                   </label>
                   <div className="flex flex-col gap-2">
                     <input
-                      type="number"
+                      type="tel"
                       name="phoneNumber"
                       className={`p-2 border border-gray-300 rounded-[5px]`}
-
+                      maxLength={11}
                       // disabled
                     />
                   </div>
@@ -341,7 +342,7 @@ export default function GuestSummaryModal({ onClose }) {
                     name="currentAddress"
                     className="p-2 border border-gray-300 rounded-[5px]"
                     // disabled
-                    maxLength={10}
+                    maxLength={200}
                   />
                 </div>
               </div>
@@ -370,6 +371,7 @@ export default function GuestSummaryModal({ onClose }) {
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full p-2 border border-gray-300 resize-none rounded-md outline-none focus:ring-primary focus:border-primary"
                 rows="3"
+                maxLength={200}
                 placeholder="Special instructions, delivery notes, etc."
               ></textarea>
             </div>

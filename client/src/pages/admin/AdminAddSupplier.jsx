@@ -1,15 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import AdminHeader from "../../reusable/Admin/AdminHeader";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
-import { useNavigate } from "react-router-dom";
 
 export default function AdminAddSupplier() {
   const queryClient = useQueryClient();
-
-  const navigate = useNavigate();
 
   const [supplierName, setSupplierName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
@@ -90,6 +86,7 @@ export default function AdminAddSupplier() {
             name="supplierName"
             id="supplierName"
             value={supplierName}
+            maxLength={50}
             onChange={handleInputChange(setSupplierName)}
             className="border border-black w-full rounded-[5px] p-1  outline-none"
           />
@@ -107,6 +104,7 @@ export default function AdminAddSupplier() {
             name="contactPerson"
             id="contactPerson"
             value={contactPerson}
+            maxLength={100}
             onChange={handleInputChange(setContactPerson)}
             className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
           />
@@ -120,11 +118,11 @@ export default function AdminAddSupplier() {
             Contact Number:{" "}
           </label>
           <input
-            type="number"
-            min={0}
+            type="tel"
             name="contactNumber"
             id="contactNumber"
             value={contactNumber}
+            maxLength={11}
             onChange={handleInputChange(setContactNumber)}
             className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
           />
@@ -143,6 +141,7 @@ export default function AdminAddSupplier() {
             name="supplierAddress"
             id="supplierAddress"
             value={supplierAddress}
+            maxLength={200}
             onChange={handleInputChange(setSupplierAddress)}
             className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
           />

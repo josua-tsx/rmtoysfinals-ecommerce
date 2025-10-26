@@ -1,5 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Faqs from "../models/faqs.model.js";
+import { validateAnswer, validateFaqsTitle } from "../utils/validations.js";
 import { logAuditTrail } from "./audit.controller.js";
 
 export const addNewFaqs = async (req, res, next) => {
@@ -9,9 +10,20 @@ export const addNewFaqs = async (req, res, next) => {
     return next(handleMakeError(400, "Title is required"));
   }
 
+  const faqsTitle = validateFaqsTitle(title);
+  if (!faqsTitle.valid) {
+    return next(handleMakeError(400, faqsTitle.message));
+  }
+
   if (!answer.trim()) {
     return next(handleMakeError(400, "Answer is required"));
   }
+
+  const faqsAnswer = validateAnswer(answer);
+  if (!faqsAnswer.valid) {
+    return next(handleMakeError(400, faqsAnswer.message));
+  }
+
 
   try {
     const existingFaqs = await Faqs.find();
@@ -155,8 +167,20 @@ export const updateFaq = async (req, res, next) => {
     return next(handleMakeError(400, "Title is required"));
   }
 
+  const faqsTitle = validateFaqsTitle(newTitle);
+  if (!faqsTitle.valid) {
+    return next(handleMakeError(400, faqsTitle.message));
+  }
+
   if (!newAnswer || !newAnswer.trim()) {
     return next(handleMakeError(400, "Answer is required"));
+  }
+
+
+  
+  const faqsAnswer = validateAnswer(newAnswer);
+  if (!faqsAnswer.valid) {
+    return next(handleMakeError(400, faqsAnswer.message));
   }
 
   try {

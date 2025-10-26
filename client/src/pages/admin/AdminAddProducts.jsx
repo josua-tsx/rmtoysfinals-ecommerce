@@ -192,6 +192,7 @@ export default function AdminAddProducts() {
                   name="productName"
                   id="productName"
                   value={productName}
+                  maxLength={50}
                   onChange={handleInputChange(setProductName)}
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
@@ -215,6 +216,7 @@ export default function AdminAddProducts() {
                   id="productDescription"
                   onChange={handleInputChange(setProductDescription)}
                   value={productDescription}
+                  maxLength={200}
                 ></textarea>
               </div>
 
@@ -237,7 +239,9 @@ export default function AdminAddProducts() {
                     </div>
                     <div className="ml-3 flex flex-col gap-2">
                       <p className="text-md ">
-                        <strong>Important:</strong> Always include COLOR in label and value for filtering purposes. example: LABEL: color VALUE: yellow
+                        <strong>Important:</strong> Always include COLOR in
+                        label and value for filtering purposes. example: LABEL:
+                        color VALUE: yellow
                       </p>
                     </div>
                   </div>
@@ -253,6 +257,7 @@ export default function AdminAddProducts() {
                         type="text"
                         placeholder="label"
                         value={label}
+                        maxLength={40}
                         onChange={handleInputChange(setLabel)}
                         className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />
@@ -261,6 +266,7 @@ export default function AdminAddProducts() {
                         type="text"
                         placeholder="value"
                         value={value}
+                        maxLength={40}
                         onChange={handleInputChange(setValue)}
                         className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />
@@ -318,8 +324,7 @@ export default function AdminAddProducts() {
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <div className="flex flex-col flex-1">
                   <label htmlFor="points" className="pb-2">
-                    Points
-                    (OPTIONAL)
+                    Points (OPTIONAL)
                   </label>
                   <select
                     className="p-2 rounded-[5px] border border-black outline-none"

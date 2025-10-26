@@ -107,6 +107,7 @@ export default function AdminCategoryEdit() {
                 name="categoryName"
                 id="categoryName"
                 value={categoryName}
+                maxLength={50}
                 onChange={handleInputChange(setCategoryName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
               />
@@ -120,6 +121,7 @@ export default function AdminCategoryEdit() {
                 name="categoryDescription"
                 id="categoryDescription"
                 value={categoryDescription}
+                maxLength={200}
                 onChange={handleInputChange(setCategoryDescription)}
                 className="border resize-none border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
               />

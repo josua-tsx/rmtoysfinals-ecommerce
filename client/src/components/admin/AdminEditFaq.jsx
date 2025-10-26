@@ -77,6 +77,7 @@ export default function AdminEditFaq() {
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 type="text"
+                maxLength={100}
                 className="border border-black w-full rounded-[5px] p-1 outline-none"
               />
             </div>
@@ -87,6 +88,7 @@ export default function AdminEditFaq() {
                 id="answer"
                 type="text"
                 value={newAnswer}
+                maxLength={200}
                 onChange={(e) => setNewAnswer(e.target.value)}
                 className="border border-black w-full rounded-[5px] p-1 outline-none"
               />

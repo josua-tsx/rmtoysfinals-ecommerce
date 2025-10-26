@@ -55,6 +55,7 @@ export default function AdminAddFaqs() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            maxLength={100}
             className="border border-black w-full rounded-[5px] p-1 outline-none"
           />
         </div>
@@ -65,6 +66,7 @@ export default function AdminAddFaqs() {
             id="answer"
             type="text"
             value={answer}
+            maxLength={200}
             onChange={(e) => setAnswer(e.target.value)}
             className="border border-black w-full rounded-[5px] p-1 outline-none"
           />

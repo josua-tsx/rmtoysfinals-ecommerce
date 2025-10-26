@@ -78,7 +78,7 @@ export default function AdminEditRider() {
 
           <div className="flex gap-2 p-2 flex-col w-full">
             <div className="flex flex-col gap-2 w-full justify-between">
-              <label htmlFor="">Rider Name: </label>
+              <label htmlFor="">Rider Full Name: </label>
               <input
                 type="text"
                 placeholder="Ex: Brendon Mae"

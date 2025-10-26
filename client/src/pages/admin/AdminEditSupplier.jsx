@@ -125,6 +125,7 @@ export default function AdminEditSupplier() {
                 name="supplierName"
                 id="supplierName"
                 value={supplierName}
+                maxLength={50}
                 onChange={handleInputChange(setSupplierName)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
@@ -142,6 +143,7 @@ export default function AdminEditSupplier() {
                 name="contactPerson"
                 id="contactPerson"
                 value={contactPerson}
+                maxLength={100}
                 onChange={handleInputChange(setContactPerson)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
@@ -155,11 +157,11 @@ export default function AdminEditSupplier() {
                 Contact Number:{" "}
               </label>
               <input
-                type="number"
-                min={0}
+                type="tel"
                 name="contactNumber"
                 id="contactNumber"
                 value={contactNumber}
+                maxLength={11}
                 onChange={handleInputChange(setContactNumber)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />
@@ -168,7 +170,7 @@ export default function AdminEditSupplier() {
                 and exact 11 numbers)
               </p>
             </div>
-           
+
             <div className="flex gap-2 flex-col">
               <label htmlFor="" className="uppercase">
                 Supplier Address:{" "}
@@ -178,6 +180,7 @@ export default function AdminEditSupplier() {
                 name="supplierAddress"
                 id="supplierAddress"
                 value={supplierAddress}
+                maxLength={200}
                 onChange={handleInputChange(setSupplierAddress)}
                 className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
               />

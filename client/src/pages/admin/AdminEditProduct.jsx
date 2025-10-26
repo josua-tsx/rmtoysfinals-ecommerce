@@ -208,6 +208,7 @@ export default function AdminEditProducts() {
                   name="productName"
                   id="productName"
                   value={productName}
+                  maxLength={50}
                   onChange={handleInputChange(setProductName)}
                   className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
                 />
@@ -231,6 +232,7 @@ export default function AdminEditProducts() {
                   id="productDescription"
                   onChange={handleInputChange(setProductDescription)}
                   value={productDescription}
+                  maxLength={200}
                 ></textarea>
               </div>
 
@@ -276,6 +278,7 @@ export default function AdminEditProducts() {
                         type="text"
                         placeholder="label"
                         value={label}
+                        maxLength={40}
                         onChange={handleInputChange(setLabel)}
                         className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />
@@ -284,6 +287,7 @@ export default function AdminEditProducts() {
                         type="text"
                         placeholder="value"
                         value={value}
+                        maxLength={40}
                         onChange={handleInputChange(setValue)}
                         className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
                       />

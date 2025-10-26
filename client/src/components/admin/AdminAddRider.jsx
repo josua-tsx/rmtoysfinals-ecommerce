@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 export default function AdminAddRider() {
   const queryClient = useQueryClient();
   const [riderName, setRiderName] = useState("");
-  const [riderPhoneNum, setRiderPhoneNum] = useState(0);
+  const [riderPhoneNum, setRiderPhoneNum] = useState("");
 
   const { mutate: riderAddMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -48,11 +48,12 @@ export default function AdminAddRider() {
 
       <div className="flex gap-2 p-2 flex-col w-full">
         <div className="flex flex-col gap-2 w-full justify-between">
-          <label htmlFor="">Rider Name: </label>
+          <label htmlFor="">Rider Full Name: </label>
           <input
             type="text"
             placeholder="Ex: Brendon Mae"
             value={riderName}
+            maxLength={100}
             onChange={handleInputChange(setRiderName)}
             className="border border-black p-1 outline-none  rounded-[5px]"
           />
@@ -60,10 +61,11 @@ export default function AdminAddRider() {
         <div className="flex flex-col gap-2 w-full justify-between">
           <label htmlFor="">Rider Phone Number: </label>
           <input
-            type="number"
+            type="tel"
             value={riderPhoneNum}
             onChange={(e) => setRiderPhoneNum(e.target.value)}
             placeholder="Ex: 09*******83"
+            maxLength={11}
             className="border border-black p-1  outline-none rounded-[5px]"
           />
         </div>

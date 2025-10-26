@@ -217,7 +217,9 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
             </div>
 
             {selectedVatValue?.vatPercent > 0 && (
-              <p>Shop price with VAT = {totalPriceWithVAT}</p>
+              <div className="w-[200px] overflow-x-auto">
+                Shop price with VAT = {totalPriceWithVAT}
+              </div>
             )}
 
             <div className="flex gap-4">

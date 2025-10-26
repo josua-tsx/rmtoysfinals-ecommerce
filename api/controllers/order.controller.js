@@ -17,6 +17,7 @@ import {
   updateRiderStatus,
   validateStatus,
 } from "../services/orderService.js";
+import { validateEmail, validateFullName, validatePHMobile } from "../utils/validations.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -45,6 +46,11 @@ export const userPlaceOrder = async (req, res, next) => {
       await session.abortTransaction();
       return next(handleMakeError(400, "Shipping address is required"));
     }
+
+    const shippingAddressCheck = validateSupplierAddress(shippingAddress);
+  if (!shippingAddressCheck.valid) {
+    return next(handleMakeError(400, shippingAddressCheck.message));
+  }
 
     if (orderItems.length === 0) {
       await session.abortTransaction();
@@ -752,6 +758,10 @@ export const placeOrderGcashQR = async (req, res, next) => {
           handleMakeError(400, "Guest orders require name and phone number")
         );
       }
+
+     
+   
+
     }
 
     // For guest orders, validate guest information
@@ -2035,6 +2045,27 @@ export const validateGuestOrder = async (req, res, next) => {
     if (!guestUser?.name || !guestUser?.phone || !guestUser?.email) {
       return next(handleMakeError(400, "Guest orders require name, phone, and email"));
     }
+    if (guestUser.name !== undefined && guestUser.name) {
+      const fullNameCheck = validateFullName(guestUser.name);
+      if (!fullNameCheck.valid) {
+        return next(handleMakeError(400, fullNameCheck.message));
+      }
+    }
+
+    if (guestUser.email) {
+    const userEmailCheck = validateEmail(guestUser.email);
+    if (!userEmailCheck.valid) {
+      return next(handleMakeError(400, userEmailCheck.message));
+     }
+    }
+
+
+      if (guestUser.phone !== undefined && guestUser.phone) {
+        const phoneNumberCheck = validatePHMobile(guestUser.phone);
+        if (!phoneNumberCheck.valid) {
+          return next(handleMakeError(400, phoneNumberCheck.message));
+        }
+      }
 
     const existingUser = await User.findOne({ phoneNumber: guestUser.phone });
     if (existingUser) {
@@ -2046,8 +2077,22 @@ export const validateGuestOrder = async (req, res, next) => {
       paymentStatus: "Pending",
     });
 
+
     if (existingGuestOrder) {
       return next(handleMakeError(400, "A pending guest order already exists for this phone."));
+    }
+
+    const existingPhoneNumber = await Rider.findOne({
+      riderPhoneNumber,
+    });
+
+    if (existingPhoneNumber) {
+      return next(
+        handleMakeError(
+          400,
+          "This phone number is already in the rider table. Try new one."
+        )
+      );
     }
 
     return res.status(200).json({ message: "Validation passed" });

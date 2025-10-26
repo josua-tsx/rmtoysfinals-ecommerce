@@ -103,6 +103,7 @@ export default function AdminEditWorker() {
                 name="email"
                 id="email"
                 value={email}
+                maxLength={254}
                 onChange={handleInputChange(setEmail)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
@@ -119,6 +120,7 @@ export default function AdminEditWorker() {
                 name="username"
                 id="username"
                 value={username}
+                maxLength={50}
                 onChange={handleInputChange(setUsername)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />
@@ -138,6 +140,7 @@ export default function AdminEditWorker() {
                   name="password"
                   id="password"
                   value={password}
+                  maxLength={128}
                   onChange={handleInputChange(setPassword)}
                   className=" outline-none p-2 w-full border-[#313031] border rounded-[5px]"
                 />
@@ -161,7 +164,7 @@ export default function AdminEditWorker() {
             </div>
 
             <div className="flex justify-between flex-col">
-              <label htmlFor="password" className="uppercase mb-2 ">
+              <label htmlFor="role" className="uppercase mb-2 ">
                 ROLE:{" "}
               </label>
               <select
@@ -186,6 +189,7 @@ export default function AdminEditWorker() {
                 name="jobDescription"
                 id="jobDescription"
                 value={jobDescription}
+                maxLength={200}
                 onChange={handleInputChange(setJobDescription)}
                 className=" outline-none p-1  border-[#313031] border rounded-[5px]"
               />

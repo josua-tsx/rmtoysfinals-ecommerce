@@ -1,4 +1,4 @@
-export const validateEmail = (email) => {
+  export const validateEmail = (email) => {
   if (!email) {
     return { valid: false, message: "Email is required" };
   }
@@ -116,7 +116,7 @@ export const validateFullName = (fullName) => {
 
   // Length check (2-100 chars)
   if (trimmedName.length < 2 || trimmedName.length > 100) {
-    return { valid: false, message: "Name must be 2-100 characters" };
+    return { valid: false, message: "Full name must be 2-100 characters" };
   }
 
   // Allow letters, apostrophes, hyphens, spaces, and SINGLE dots
@@ -124,13 +124,13 @@ export const validateFullName = (fullName) => {
     return {
       valid: false,
       message:
-        "Use only letters, spaces, hyphens (-), apostrophes ('), or single dots (.)",
+        "Use only letters, spaces, hyphens (-), apostrophes ('), or single dots at Full name",
     };
   }
 
   // Check for double spaces or invalid punctuation placement
   if (/\s{2,}/.test(trimmedName) || /[-']\s|[\s-']$/.test(trimmedName)) {
-    return { valid: false, message: "Fix spacing between names" };
+    return { valid: false, message: "Fix spacing between full name" };
   }
 
   return { valid: true };
@@ -293,6 +293,96 @@ export const validateProductName = (name) => {
       valid: false,
       message:
         "Product name cannot start or end with a hyphen (-) or apostrophe (')",
+    };
+  }
+
+  return { valid: true };
+};
+
+export const validateFaqsTitle = (name) => {
+  if (!name) {
+    return { valid: false, message: "Faqs title is required" };
+  }
+
+  // Trim and check for leading/trailing spaces
+  if (name !== name.trim()) {
+    return {
+      valid: false,
+      message: "Remove spaces before/after the faqs title",
+    };
+  }
+
+  // Length check (5-50 chars)
+  if (name.length < 5 || name.length > 50) {
+    return {
+      valid: false,
+      message: "Faqs title must be 5-50 characters",
+    };
+  }
+
+  // Double spaces check
+  if (/\s{2,}/.test(name)) {
+    return {
+      valid: false,
+      message: "Double spaces are not allowed",
+    };
+  }
+
+  // Allow letters, numbers, spaces, hyphens (-), and apostrophes (')
+  if (!/^[a-zA-Z0-9 \-']+$/.test(name)) {
+    return {
+      valid: false,
+      message:
+        "Only letters, numbers, spaces, hyphens (-), and apostrophes (') are allowed",
+    };
+  }
+
+  // Prevent names starting with a number
+  if (/^[0-9]/.test(name)) {
+    return {
+      valid: false,
+      message: "Faqs title cannot start with a number",
+    };
+  }
+
+  // Prevent names starting/ending with hyphen/apostrophe
+  if (/^[-']|[-']$/.test(name)) {
+    return {
+      valid: false,
+      message:
+        "Faqs title cannot start or end with a hyphen (-) or apostrophe (')",
+    };
+  }
+
+  return { valid: true };
+};
+
+export const validateAnswer = (desc) => {
+  if (!desc) {
+    return { valid: false, message: "Answer is required" };
+  }
+
+  // Trim and check for leading/trailing spaces
+  if (desc !== desc.trim()) {
+    return {
+      valid: false,
+      message: "Remove spaces before/after the Answer",
+    };
+  }
+
+  // Max length check (200 chars)
+  if (desc.length > 200) {
+    return {
+      valid: false,
+      message: "Answer cannot exceed 200 characters",
+    };
+  }
+
+  // Double spaces check
+  if (/\s{2,}/.test(desc)) {
+    return {
+      valid: false,
+      message: "Double spaces are not allowed",
     };
   }
 

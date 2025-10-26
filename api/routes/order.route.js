@@ -30,7 +30,6 @@ import {
   getUserOrder,
   getUserRefund,
   getUsersOrder,
-  guestOrderStripe,
   placeOrderGcashQR,
   placeOrderStripe,
   searchOrders,
