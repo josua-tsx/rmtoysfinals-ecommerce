@@ -9,11 +9,13 @@ import {
   adminOrderRefund,
   cancelSuccessTransact,
   checkOutSuccess,
+  deleteAllOrders,
   getAllCancelled,
   getAllFailed,
   getAllOrder,
   getAllRefunded,
   getAllSuccess,
+  getAllUntracked,
   getFiveUserDelivered,
   getGuestOrder,
   getLatestCancelledOrder,
@@ -31,10 +33,14 @@ import {
   guestOrderStripe,
   placeOrderGcashQR,
   placeOrderStripe,
+  searchOrders,
+  trackSingleOrder,
   updateDeliveryStatus,
   updatePaymentStatus,
+  updateTrackStatus,
   userCancelOrder,
   userPlaceOrder,
+  validateGuestOrder,
 } from "../controllers/order.controller.js";
 
 const router = express.Router();
@@ -44,6 +50,8 @@ router.post(`/place-order`, requireAuth, userPlaceOrder);
 router.post(`/place-order-stripe`, optionalAuth, placeOrderStripe);
 
 router.post(`/place-order-gcashQR`, optionalAuth, placeOrderGcashQR);
+
+router.post("/validate-guest", validateGuestOrder)
 
 router.post(`/checkout-success`, optionalAuth, checkOutSuccess);
 
@@ -75,10 +83,11 @@ router.get(`/latest/refunded`, getLatestRefundedOrder);
 
 router.get(`/latest/cancelled`, getLatestCancelledOrder);
 
+router.post("/search-order", searchOrders)
+
 router.put(
   `/:orderId/paymentStatus`,
-  requireAuth,
-  requireAdmin,
+
   updatePaymentStatus
 );
 
@@ -103,14 +112,24 @@ router.get(`/get-userRefunded`, requireAuth, getUserRefund);
 
 router.get(`/get-userFailed`, requireAuth, getUserFailed);
 
+router.get("/get-untracked-orders", getAllUntracked)
+
 router.put(
-  `/:orderId/status`,
+  `/:orderId/status`, 
   optionalAuth,
   requireAdmin,
   updateDeliveryStatus
 );
 
+router.put("/update-track-status/:orderId", updateTrackStatus)
+
+router.delete("/delete-orders", requireAuth, requireAdmin, deleteAllOrders)
+
 // router.get(`/:orderId`, requireAuth, requireAdmin , getSingleUserOrder);
 router.get(`/:orderId`, getSingleUserOrder);
+
+router.post("/track-order/:orderId", trackSingleOrder)
+
+
 
 export default router;

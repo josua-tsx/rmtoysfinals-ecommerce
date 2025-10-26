@@ -12,9 +12,7 @@ import ReviewModal from "./ReviewModal";
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
 
-  console.log(order);
-
-  // console.log(order);  
+  // console.log(order);
 
   const [reasonModal, setReasonModal] = useState(false);
   const [openReviewModal, setOpenReviewModal] = useState(false);
@@ -55,6 +53,8 @@ export default function SingleOrderList({ order, onClose }) {
 
     updatePaymentStatusMutation({ id, paymentStatus: newPaymentStatus });
   };
+
+  if (!order) return null;
 
   return (
     <section className="inset-0 z-50   font-main  fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
@@ -190,8 +190,6 @@ export default function SingleOrderList({ order, onClose }) {
                 </span>
               </div>
 
-
-
               <div className="my-2 border-t border-dashed border-gray-300"></div>
 
               <div className="flex gap-2">
@@ -306,8 +304,8 @@ export default function SingleOrderList({ order, onClose }) {
               </div>
             </div>
 
-            {(currentUser.role === "admin" ||
-              currentUser.role === "validatorStaff") && (
+            {(currentUser?.role === "admin" ||
+              currentUser?.role === "validatorStaff") && (
               <div className="w-full flex gap-2 ">
                 <select
                   onChange={(e) => handleChangePaymentStatus(order._id, e)}

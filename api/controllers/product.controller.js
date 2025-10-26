@@ -96,7 +96,6 @@ export const addProduct = async (req, res, next) => {
       productName,
       productDescription,
       productDetails,
-
       productImages,
       category,
       status: "pending",
@@ -482,7 +481,6 @@ export const editProduct = async (req, res, next) => {
     price,
     productDescription,
     productDetails,
-
     productImages,
     category,
     points,

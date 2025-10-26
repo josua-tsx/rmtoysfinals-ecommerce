@@ -10,7 +10,7 @@ export default function GuestCart() {
     useEffect(() => {
       const checkCartChanges = () => {
         const cart = getGuestCart();
-        const count = cart?.items.length
+        const count = cart?.items?.length
         setItemCount(count);
       };
 

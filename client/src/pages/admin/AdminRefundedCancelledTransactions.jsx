@@ -130,16 +130,22 @@ export default function AdminRefundedCancelledTransactions({
                       (sum, item) => sum + (item.quantity || 0),
                       0
                     ) || 0;
+
+                  const guestUserEmail =
+                    "Guest User: " + refund?.guestUser?.email;
+
                   return (
                     <tr key={refund._id}>
                       <td className="px-4">{refund._id}</td>
                       <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
-                        {refund.userId ? refund.userId?.email : "Guest User"}
+                        {refund?.userId
+                          ? refund?.userId?.email
+                          : guestUserEmail}
                       </td>
                       <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
                         {refund.userId
                           ? refund.userId?.email
-                          : refund.guestUser.name}
+                          : refund.guestUser?.name}
                       </td>
                       <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
                         {new Date(refund.createdAt).toLocaleString()}

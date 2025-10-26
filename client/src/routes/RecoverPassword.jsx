@@ -81,7 +81,7 @@ export default function RecoverPassword() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="outline-none p-2 bg-transparent border-black border rounded-[5px]"
+              className="outline-none p-2 bg-white border-black border rounded-[5px]"
             />
           </div>
 

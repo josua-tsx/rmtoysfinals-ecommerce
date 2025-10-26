@@ -1,29 +1,55 @@
 export const getGuestCart = () => {
-  const cart = localStorage.getItem("guestCart");
-  return cart ? JSON.parse(cart) : { items: [] };
-};
+  const raw = localStorage.getItem("guestCart");
+  let parsed;
 
-export const guestSelectedCarts = () => {
-  const cart = JSON.parse(localStorage.getItem("guestCart"));
-  const filteredSelected = cart.items.filter((item) => item.isSelected);
-  return filteredSelected;
+  try {
+    parsed = raw ? JSON.parse(raw) : { items: [] };
+  } catch (error) {
+    console.error("🧨 Error parsing guestCart:", error);
+    parsed = { items: [] };
+  }
+
+  // 🧩 Fix corrupted cases (like arrays with an items prop)
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    console.warn("⚠️ guestCart was not an object. Resetting.");
+    parsed = { items: [] };
+  }
+
+  if (!Array.isArray(parsed.items)) {
+    parsed.items = [];
+  }
+
+  return parsed;
 };
 
 export const addToGuestCart = (product) => {
+  // Always start with an object
   const cart = getGuestCart();
 
   if (!cart.items) {
     cart.items = [];
   }
 
+  // Prevent duplicates
   const existingItem = cart.items.find((item) => item._id === product._id);
   if (existingItem) {
     throw new Error("Product already in cart");
   }
 
+  // Add product
   cart.items.push(product);
+
+  // ✅ Save as an object (not an array!)
   localStorage.setItem("guestCart", JSON.stringify(cart));
+
+  console.log("✅ guestCart saved (object):", cart);
   return cart;
+};
+
+export const guestSelectedCarts = () => {
+  const cart = JSON.parse(localStorage.getItem("guestCart"));
+  const filteredSelected = cart.items.filter((item) => item.isSelected);
+  return filteredSelected;
 };
 
 export const deleteGuestCart = (productId) => {
@@ -88,8 +114,17 @@ export const updateSelected = (productId, isSelected) => {
 };
 
 export const clearGuestOrder = () => {
-  localStorage.removeItem("guestCart");
-  return { items: [] };
+  const cart = getGuestCart();
+  if (!cart.items || cart.items.length === 0) {
+    return { items: [] };
+  }
+  const remainingItems = cart.items.filter((item) => !item.isSelected);
+  const updatedCart = {
+    ...cart,
+    items: remainingItems,
+  };
+  localStorage.setItem("guestCart", JSON.stringify(updatedCart));
+  return updatedCart;
 };
 
 // FORMAT LOCKED UNTIL

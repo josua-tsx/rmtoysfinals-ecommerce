@@ -120,6 +120,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
+    
 
       vat: selectedVatValue?._id,
       vatShopPrice: roundedPrice,

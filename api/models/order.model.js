@@ -20,6 +20,7 @@ const OrderModelSchema = new mongoose.Schema(
     guestUser: {
       name: { type: String },
       phone: { type: String },
+      email: {type: String}
     },
 
     orderItems: [
@@ -118,6 +119,11 @@ const OrderModelSchema = new mongoose.Schema(
         "Refunded",
       ],
       default: "Pending",
+    },
+
+    isTracked: {
+      type: Boolean,
+      default: false
     },
 
     shopPrice: {

@@ -97,12 +97,16 @@ export default function AdminCancelledTransact({
                       (sum, item) => sum + (item.quantity || 0),
                       0
                     ) || 0;
+                  const guestUserEmail =
+                    "Guest User: " + cancel?.guestUser?.email;
 
                   return (
                     <tr key={cancel._id}>
                       <td className="px-4">{cancel._id}</td>
                       <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2">
-                        {cancel.userId ? cancel.userId?.email : "Guest User"}
+                        {cancel?.userId
+                          ? cancel?.userId?.email
+                          : guestUserEmail}
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap text-center text-sm">

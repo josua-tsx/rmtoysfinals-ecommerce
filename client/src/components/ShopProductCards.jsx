@@ -11,6 +11,7 @@ import formatPrice from "../reusable/formatPrice";
 import { CgUnavailable } from "react-icons/cg";
 import { useUserStore } from "../stores/useUserStore";
 import { addToGuestCart } from "../lib/utils";
+// import { addToGuestCart } from "../lib/utils";
 
 export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
@@ -47,6 +48,8 @@ export default function ShopProductCards({ product }) {
       addToCartMutation({ productId });
     } else {
       try {
+        console.log(product);
+
         addToGuestCart({
           ...product,
           quantity: 1,

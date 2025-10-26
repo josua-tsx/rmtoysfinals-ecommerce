@@ -107,16 +107,24 @@ export default function GuestSummaryModal({ onClose }) {
     },
   });
 
-  const handleGcashQRpaymentMethod = (orderData) => {
+  const handleGcashQRpaymentMethod = async (orderData) => {
     if (orderData.orderItems.length === 0) {
       toast.error("Your cart is empty");
       return;
     }
 
-    // Proceed if no lock or lock expired
-    localStorage.setItem("manual-order-backup", JSON.stringify(orderData));
-    setCurrentOrder(orderData);
-    navigate("/guestQRpage");
+    try {
+      const res = await axiosInstance.post("/order/validate-guest", orderData);
+
+      if (res.status === 200) {
+        // Proceed if no lock or lock expired
+        localStorage.setItem("manual-order-backup", JSON.stringify(orderData));
+        setCurrentOrder(orderData);
+        navigate("/guestQRpage");
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message);
+    }
   };
 
   const handleOrderFormSubmit = (e) => {
@@ -125,10 +133,16 @@ export default function GuestSummaryModal({ onClose }) {
     const formData = new FormData(e.target);
     const inputs = Object.fromEntries(formData);
 
-    const { fullName, phoneNumber, paymentMethod, notes, currentAddress } =
-      inputs;
+    const {
+      fullName,
+      email,
+      phoneNumber,
+      paymentMethod,
+      notes,
+      currentAddress,
+    } = inputs;
 
-    if (!fullName || !phoneNumber || !currentAddress)
+    if (!fullName || !phoneNumber || !currentAddress || !email)
       return toast.error("Please input required fields!");
 
     const orderData = {
@@ -148,6 +162,7 @@ export default function GuestSummaryModal({ onClose }) {
       guestUser: {
         name: fullName.trim(),
         phone: phoneNumber.trim(),
+        email: email.trim(),
       },
       paymentMethod,
       taxPrice: taxes,
@@ -191,6 +206,7 @@ export default function GuestSummaryModal({ onClose }) {
         guestUser: {
           name: fullName.trim(),
           phone: phoneNumber.trim(),
+          email: email.trim(),
         },
         shippingAddress: currentAddress,
         paymentMethod,
@@ -270,6 +286,18 @@ export default function GuestSummaryModal({ onClose }) {
                   </div>
                 </div>
               </div>  */}
+
+              <div className="my-3">
+                <label className="block text-sm  text-black mb-1">Email</label>
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="email"
+                    name="email"
+                    className="p-2 border border-gray-300 rounded-[5px]"
+                    // disabled
+                  />
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

@@ -181,6 +181,7 @@ export default function AdminOrderStatusTable() {
                 <th className="font-normal p-2 pb-5">ORDER ID</th>
                 <th className="font-normal p-2 pb-5">CUSTOMER NAME</th>
                 <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
+                <th className="font-normal p-2 pb-5">PHONE NUMBER</th>
                 <th className="font-normal p-2 pb-5">ORDER DATE</th>
                 <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
                 <th className="font-normal p-2 pb-5">TOTAL POINTS</th>
@@ -206,6 +207,11 @@ export default function AdminOrderStatusTable() {
                     <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
                       {data?.userId?.email}
                     </td>
+
+                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
+                      {data?.userId?.phoneNumber}
+                    </td>
+
                     <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
                       {new Date(data?.createdAt).toLocaleString()}
                     </td>

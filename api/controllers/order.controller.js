@@ -226,8 +226,7 @@ export const guestOrderStripe = async (req, res, next) => {
       shippingPrice,
       vatableSalesNet,
       vatExemptSales,
-    totalVatAmount,
-
+     totalVatAmount,
       subtotal,
       totalPrice,
       notes,
@@ -365,8 +364,7 @@ export const placeOrderStripe = async (req, res, next) => {
       shippingPrice,
       vatableSalesNet,
       vatExemptSales,
-    totalVatAmount,
-
+      totalVatAmount,
       subtotal,
       totalPrice,
       notes,
@@ -540,7 +538,6 @@ export const checkOutSuccess = async (req, res, next) => {
       vatableSalesNet,
       vatExemptSales,
       totalVatAmount,
-
       subtotal,
       totalPrice,
       notes = "",
@@ -644,11 +641,12 @@ export const checkOutSuccess = async (req, res, next) => {
 
     // Clear cart for registered users
     if (userId && userId !== "guest") {
-      await Cart.findOneAndUpdate(
-        { userId },
-        { $set: { items: [] } },
-        { session }
-      );
+
+      const userCart = await Cart.findOne({ userId }).session(session);
+      if (userCart) {
+        userCart.items = userCart.items.filter((item) => !item.isSelected)
+        await userCart.save({ session });
+      }
 
       if (parseInt(usedCredits) > 0) {
         await User.findByIdAndUpdate(
@@ -690,7 +688,6 @@ export const placeOrderGcashQR = async (req, res, next) => {
     vatableSalesNet,
     vatExemptSales,
     totalVatAmount,
-
     guestUser, // Added guest user details
   } = req.body;
 
@@ -749,12 +746,53 @@ export const placeOrderGcashQR = async (req, res, next) => {
 
     // For guest orders, validate guest information
     if (!userId) {
-      if (!guestUser?.name || !guestUser?.phone) {
+      if (!guestUser?.name || !guestUser?.phone || !guestUser.email) {
         await session.abortTransaction();
         return next(
           handleMakeError(400, "Guest orders require name and phone number")
         );
       }
+    }
+
+    // For guest orders, validate guest information
+    if (!userId) {
+      if (!guestUser?.name || !guestUser?.phone || !guestUser.email) {
+        await session.abortTransaction();
+        return next(
+          handleMakeError(400, "Guest orders require name and phone number")
+        );
+      }
+
+      // 🛑 NEW CHECK: Check for existing phone number in both Users and Orders
+    
+
+      // 1. Check if the phone number belongs to an existing logged-in User
+      const existingUser = await User.findOne({ phoneNumber: guestUser.phone }).session(session);
+      if (existingUser) {
+        await session.abortTransaction();
+        return next( 
+          handleMakeError(
+            400,
+            "This phone number is registered to an existing account. Please log in to place an order."
+          )
+        );
+      }
+
+      // 2. Check if there are any existing *guest* orders with this phone number
+      // This is less common but checks for potential duplicate/abusive guest usage.
+      // NOTE: Your business logic might prefer to allow multiple guest orders per phone.
+      const existingGuestOrder = await Order.findOne({ 'guestUser.phone': guestUser.phone }).session(session);
+      if (existingGuestOrder) {
+        // You can customize this message. For strict control:
+        await session.abortTransaction();
+        return next(
+          handleMakeError(
+            400,
+            "Another guest order is already associated with this phone number. Please log in or use a different number."
+          )
+        );
+      }
+      // 🛑 END OF NEW CHECK
     }
 
     // For authenticated users using credits
@@ -827,6 +865,10 @@ export const placeOrderGcashQR = async (req, res, next) => {
 
     // Add GCash QR details if applicable
     if (paymentMethod === "GcashQR") {
+
+ 
+
+
       orderData.gcashQRmethod = {
         gcashPhoneNumber: gcashQRmethod.gcashPhoneNumber,
         proofOfPaymentImage: gcashQRmethod.proofOfPaymentImage,
@@ -860,7 +902,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
     if (userId) {
       const userCart = await Cart.findOne({ userId }).session(session);
       if (userCart) {
-        userCart.items = [];
+        userCart.items = userCart.items.filter((item) => !item.isSelected)
         await userCart.save({ session });
       }
 
@@ -947,7 +989,7 @@ export const getAllOrder = async (req, res, next) => {
       })
       .populate({
         path: "userId",
-        select: "fullName email",
+        select: "fullName email phoneNumber",
       })
       .sort({ createdAt: -1 });
 
@@ -978,7 +1020,7 @@ export const getUsersOrder = async (req, res, next) => {
       })
       .populate({
         path: "userId",
-        select: "fullName email",
+        select: "fullName email phoneNumber",
       })
       .sort({ createdAt: -1 });
 
@@ -1183,6 +1225,13 @@ export const updateDeliveryStatus = async (req, res, next) => {
       // ====== HANDLE STATUS: CANCELLED ======
       if (status === "Cancelled" && order.status !== "Cancelled") {
         await handleCancelled(order, isGuestOrder);
+  await Order.findByIdAndUpdate(orderId, {
+    $set: {
+      isTracked: true,
+      "guestUser.phone": null
+    }
+  }, {new: true})
+  
       }
   
       // ====== HANDLE STATUS: OUT FOR DELIVERY ======
@@ -1237,6 +1286,12 @@ export const updateDeliveryStatus = async (req, res, next) => {
           );
         }
         await handleDelivered(updatedOrder);
+
+    await Order.findByIdAndUpdate(orderId, {
+        $set: {
+          isTracked: true,
+        }
+      }, {new: true})
       }
   
       // ====== NOTIFICATIONS ======
@@ -1519,6 +1574,7 @@ export const cancelSuccessTransact = async (req, res, next) => {
       {
         status: "Pending",
         paymentStatus: "Pending",
+        isTracked: false
       },
       {
         new: true,
@@ -1555,6 +1611,7 @@ export const cancelSuccessTransact = async (req, res, next) => {
         $inc: { credits: -order.totalPoints },
       });
     }
+
 
     await logAuditTrail({
       action: "cancelled_Order_Transact",
@@ -1901,3 +1958,142 @@ export const getLatestCancelledOrder = async (req, res, next) => {
     next(error);
   }
 };
+
+
+export const searchOrders = async (req, res, next) => {
+  try {
+    const { phoneNumber } = req.body;
+
+    // Find user by phoneNumber (may not exist for guests)
+    const user = await User.findOne({ phoneNumber });
+
+    // Build query
+    const query = [];
+
+    // Search guest orders
+    query.push({ 'guestUser.phone': phoneNumber });
+
+    // If user exists, search their orders as well
+    if (user) {
+      query.push({ userId: user._id });
+    }
+
+    // Fetch orders
+    const allOrders = await Order.find({isTracked: false, $or: query }).populate({
+      path: "orderItems.productId",
+      select: "productName price "
+    }).sort({createdAt: -1})
+
+    if (!allOrders || allOrders.length === 0) {
+      return res.status(200).json({
+        success: true,
+        // You might want to update the message for clarity
+        message: "No untracked orders found for this phone number",
+        allOrders: []
+      });
+    }
+
+    return res.status(200).json({ success: true, allOrders });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const trackSingleOrder = async(req, res, next) => {
+  // const userId = req.user.id;
+  const { orderId } = req.params;
+
+  try {
+    const order = await Order.findOne({ _id: orderId })
+      .populate({
+        path: "orderItems.productId",
+        select: "productName price quantity category productImages",
+        populate: {
+          path: "category",
+          select: "categoryName",
+        },
+      })
+      .populate({
+        path: "userId",
+        select: "email phoneNumber fullName",
+      });
+
+    if (!order) return next(handleMakeError(400, "Order not foud!"));
+
+    res.status(200).json(order);
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+
+export const validateGuestOrder = async (req, res, next) => {
+  try {
+    const { guestUser } = req.body;
+
+    if (!guestUser?.name || !guestUser?.phone || !guestUser?.email) {
+      return next(handleMakeError(400, "Guest orders require name, phone, and email"));
+    }
+
+    const existingUser = await User.findOne({ phoneNumber: guestUser.phone });
+    if (existingUser) {
+      return next(handleMakeError(400, "This phone number is registered to an existing account."));
+    }
+
+    const existingGuestOrder = await Order.findOne({
+      "guestUser.phone": guestUser.phone,
+      paymentStatus: "Pending",
+    });
+
+    if (existingGuestOrder) {
+      return next(handleMakeError(400, "A pending guest order already exists for this phone."));
+    }
+
+    return res.status(200).json({ message: "Validation passed" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const deleteAllOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.deleteMany()
+    if (orders.length)return res.json({message: "Empty orders", orders: []})
+
+    res.status(200).json({success: true, message: "Succesfully deleted all orders"})
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getAllUntracked = async (req, res, next) => {
+  try {
+    const orders = await Order.find({isTracked: false})
+    if (!orders) res.json({messsage: "No untracked orders found", orders: []})
+    res.status(200).json({success: true, message: "Succesfully untracked fetched orders", orders})
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateTrackStatus = async (req, res, next) => {
+  try {
+    const {orderId} = req.params
+
+    const order = await Order.findByIdAndUpdate(orderId, {
+      $set: {
+        isTracked: true,
+        "guestUser.phone": null
+      }
+    }, {new: true})
+
+    if (!order) return next(handleMakeError(400, "Invalid Order ID or no Order ID"))
+
+    res.status(200).json({success: true, message: "Successfully updated a status", order})
+
+  } catch (error) {
+    next(error)
+  }
+}

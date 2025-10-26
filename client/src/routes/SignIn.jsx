@@ -77,7 +77,7 @@ export default function SignIn() {
               id="email"
               value={loginId}
               onChange={handleInputChange(setLoginId)}
-              className="outline-none p-2 bg-transparent border-black border rounded-[5px]"
+              className="outline-none p-2 bg-white border-black border rounded-[5px]"
             />
           </div>
           <div className="flex justify-between flex-col">
@@ -91,7 +91,7 @@ export default function SignIn() {
                 id="password"
                 value={password}
                 onChange={handleInputChange(setPassword)}
-                className=" outline-none p-2 bg-transparent w-full border-[#313031] border rounded-[5px]"
+                className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
               />
               <label
                 htmlFor=""

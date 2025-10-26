@@ -102,7 +102,7 @@ export default function ResetPassword() {
                   id="password"
                   value={password}
                   onChange={handleInputChange(setPassword)}
-                  className=" outline-none p-2 bg-transparent w-full border-[#313031] border rounded-[5px]"
+                  className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
                 />
                 <label
                   htmlFor=""
@@ -132,7 +132,7 @@ export default function ResetPassword() {
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={handleInputChange(setConfirmPassword)}
-                className=" outline-none p-2 bg-transparent border-[#313031] border rounded-[5px]"
+                className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
               />
               <label
                 htmlFor=""

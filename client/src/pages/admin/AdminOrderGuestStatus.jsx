@@ -32,6 +32,8 @@ export default function AdminOrderGuestStatus() {
     },
   });
 
+  console.log(allOrders)
+
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
   const filteredArrayAllOrders = arrayAllOrders.filter(
@@ -184,6 +186,7 @@ export default function AdminOrderGuestStatus() {
             <thead>
               <tr className="">
                 <th className="font-normal p-2 pb-5">ORDER ID</th>
+                <th className="font-normal p-2 pb-5">CUSTOMER GUEST EMAIL</th>
                 <th className="font-normal p-2 pb-5">CUSTOMER GUEST NAME</th>
                 <th className="font-normal p-2 pb-5">CUSTOMER GUEST PHONE</th>
                 <th className="font-normal p-2 pb-5">CUSTOMER GUEST ADDRESS</th>
@@ -204,6 +207,11 @@ export default function AdminOrderGuestStatus() {
                 filteredArrayAllOrders?.map((data) => (
                   <tr key={data._id}>
                     <td className="px-4 ">{data._id}</td>
+
+                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
+                      {data?.guestUser?.email}
+                    </td>
+                   
                     <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
                       {data?.guestUser?.name}
                     </td>
