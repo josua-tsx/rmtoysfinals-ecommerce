@@ -77,6 +77,7 @@ export default function SignIn() {
               id="email"
               value={loginId}
               onChange={handleInputChange(setLoginId)}
+              maxLength={246}
               className="outline-none p-2 bg-white border-black border rounded-[5px]"
             />
           </div>
@@ -90,6 +91,7 @@ export default function SignIn() {
                 name="password"
                 id="password"
                 value={password}
+                maxLength={128}
                 onChange={handleInputChange(setPassword)}
                 className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
               />

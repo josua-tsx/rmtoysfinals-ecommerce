@@ -237,6 +237,7 @@ export default function ChangeInfoComponent() {
                     defaultValue={currentUser.email || email}
                     onChange={(e) => setEmail(e.target.value)}
                     id="email"
+                    maxLength={128}
                     placeholder="Ex: example@domain.com"
                     className={`border  border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none`}
                   />
@@ -274,6 +275,7 @@ export default function ChangeInfoComponent() {
                     defaultValue={currentUser.username}
                     id="username"
                     placeholder="Ex: johndoe123"
+                    maxLength={30}
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
                   <p className="text-sm pt-1 lowercase text-green-700">
@@ -293,6 +295,7 @@ export default function ChangeInfoComponent() {
                     name="fullName"
                     defaultValue={currentUser.fullName}
                     id="fullName"
+                    maxLength={50}
                     placeholder="Ex: John Doe"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
@@ -326,6 +329,7 @@ export default function ChangeInfoComponent() {
                           type={showPassword ? "text" : "password"}
                           name="password"
                           id="password"
+                          maxLength={128}
                           className=" outline-none p-3  w-full bg-gray-200   border-[#313031] border rounded-[5px]"
                         />
                         <p className="text-sm pt-1 lowercase text-green-700">
@@ -362,11 +366,12 @@ export default function ChangeInfoComponent() {
                 <div className="flex items-center  justify-between gap-5">
                   <div className="flex w-full flex-col gap-1">
                     <input
-                      type="number"
+                      type="tel"
                       name="phoneNumber"
                       id="phoneNumber"
                       placeholder="Ex: 09*******83"
                       defaultValue={currentUser.phoneNumber}
+                      maxLength={11}
                       className="border border-black px-5 py-2  bg-gray-200 rounded-[5px] outline-none"
                     />
                     <p className="text-sm pt-1 lowercase text-green-700">

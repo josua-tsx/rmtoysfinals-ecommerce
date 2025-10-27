@@ -77,6 +77,7 @@ export default function SignUp() {
               name="email"
               id="email"
               value={email}
+              maxLength={254}
               placeholder="Ex: example@domain.com"
               onChange={handleInputChange(setEmail)}
               className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
@@ -94,6 +95,7 @@ export default function SignUp() {
               name="username"
               id="username"
               value={username}
+              maxLength={50}
               placeholder="Ex: johndoe123"
               onChange={handleInputChange(setUsername)}
               className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
@@ -113,6 +115,7 @@ export default function SignUp() {
                 name="password"
                 id="password"
                 value={password}
+                maxLength={128}
                 onChange={handleInputChange(setPassword)}
                 className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
               />
@@ -143,6 +146,7 @@ export default function SignUp() {
               name="confirmPassword"
               id="confirmPassword"
               value={confirmPassword}
+              maxLength={128}
               onChange={handleInputChange(setConfirmPassword)}
               className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
             />

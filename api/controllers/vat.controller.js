@@ -6,6 +6,26 @@ export const addVat = async (req, res, next) => {
   const { vatPercent, vatValue } = req.body;
 
   try {
+
+   // Check that vatPercent is a number and does not exceed 10000
+   if (vatPercent !== undefined && vatPercent !== null) {
+    const percent = Number(vatPercent);
+
+    if (isNaN(percent)) {
+      return next(
+        handleMakeError(400, "VAT percent must be a valid number.")
+      );
+    }
+
+    if (percent > 10000) {
+      return next(
+        handleMakeError(
+          400,
+          "VAT percent cannot exceed 10000."
+        )
+      );
+    }
+  }
    
     const findVat = await Vat.find();
 
@@ -84,8 +104,24 @@ export const editVat = async (req, res, next) => {
   const { vatPercent, vatValue } = req.body; // Using vatPercent (e.g., 12 for 12%)
 
   try {
-    if (!vatPercent) {
-      return next(handleMakeError(400, "Please input VAT percent"));
+
+    if (vatPercent !== undefined && vatPercent !== null) {
+      const percent = Number(vatPercent);
+  
+      if (isNaN(percent)) {
+        return next(
+          handleMakeError(400, "VAT percent must be a valid number.")
+        );
+      }
+  
+      if (percent > 10000) {
+        return next(
+          handleMakeError(
+            400,
+            "VAT percent cannot exceed 10000."
+          )
+        );
+      }
     }
 
     // 1. Update the VAT record
