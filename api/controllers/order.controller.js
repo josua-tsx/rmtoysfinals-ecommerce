@@ -17,7 +17,7 @@ import {
   updateRiderStatus,
   validateStatus,
 } from "../services/orderService.js";
-import { validateEmail, validateFullName, validatePHMobile } from "../utils/validations.js";
+import { validateEmail, validateFullName, validatePHMobile, validateSupplierAddress } from "../utils/validations.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
