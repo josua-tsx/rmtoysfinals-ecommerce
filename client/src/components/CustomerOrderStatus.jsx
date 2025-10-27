@@ -7,12 +7,14 @@ import { useState } from "react";
 import { ConfirmModal } from "../reusable/ConfirmModal";
 import { MdLocalShipping } from "react-icons/md";
 import LoadingSpinner from "../reusable/LoadingSpinner";
+import RefundModal from "./RefundModal";
 
 export default function CustomerOrderStatus() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelOrderId, setCancelOrderId] = useState(null);
+  const [openRefundModal, setOpenRefundModal] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -36,6 +38,8 @@ export default function CustomerOrderStatus() {
     },
     enabled: !!orderId,
   });
+
+  console.log(singleUserOrder);
 
   const { mutate: cancelOrderMutation } = useMutation({
     mutationFn: async (orderId) => {
@@ -75,6 +79,12 @@ export default function CustomerOrderStatus() {
     setOpenModal(true);
   };
 
+  const handleRefundSingle = (orderId) => {
+    setOrderId(orderId._id);
+    setOpenRefundModal(true);
+    setOpenModal(false);
+  };
+
   return (
     <>
       {openModal && singleUserOrder && (
@@ -93,6 +103,16 @@ export default function CustomerOrderStatus() {
         onCancel={handleCloseCancelOrder}
         onConfirm={handleConfirmCancelOrder}
       />
+
+      {openRefundModal && singleUserOrder && (
+        <RefundModal
+          order={singleUserOrder}
+          onClose={() => {
+            setOpenRefundModal(false);
+            setOpenModal(false);
+          }}
+        />
+      )}
 
       {/* CARD GOES HERE */}
 
@@ -130,13 +150,24 @@ export default function CustomerOrderStatus() {
               {/* ACTIONS */}
 
               <div className="flex justify-center gap-2">
-                <button
-                  onClick={() => handleCancelOrder(order._id)}
-                  type="button"
-                  className="px-2 py-1 flex-1 text-sm rounded-lg border border-black bg-red-500 text-white "
-                >
-                  Cancel
-                </button>
+                {order?.paymentMethod === "GcashQR" ||
+                order?.paymentMethod === "Online Payment" ? (
+                  <button
+                    onClick={() => handleRefundSingle(order)}
+                    className="px-2 py-1 flex-1 text-sm rounded-lg border border-black bg-green-500 text-white"
+                  >
+                    Refund
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleCancelOrder(order._id)}
+                    type="button"
+                    className="px-2 py-1 flex-1 text-sm rounded-lg border border-black bg-red-500 text-white "
+                  >
+                    Cancel
+                  </button>
+                )}
+
                 <button
                   className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-blue-500 "
                   onClick={() => handleOpenSingleOrder(order)}

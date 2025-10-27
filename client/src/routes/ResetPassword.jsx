@@ -102,6 +102,7 @@ export default function ResetPassword() {
                   id="password"
                   value={password}
                   onChange={handleInputChange(setPassword)}
+                  maxLength={128}
                   className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
                 />
                 <label
@@ -131,6 +132,7 @@ export default function ResetPassword() {
                 name="confirmPassword"
                 id="confirmPassword"
                 value={confirmPassword}
+                maxLength={128}
                 onChange={handleInputChange(setConfirmPassword)}
                 className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
               />

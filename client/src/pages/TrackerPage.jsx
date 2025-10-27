@@ -143,16 +143,11 @@ export default function TrackerPage() {
       {/* --- Top Card: Order Tracker --- */}
       <div className="bg-card border border-black rounded-[5px] shadow-md p-6 md:p-8">
         {/* Header */}
+
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-8">
           <h1 className="text-2xl font-bold  mb-2 md:mb-0">
             Order ID: <span className="text-blue-500">{singleOrder?._id}</span>
           </h1>
-          <div className="text-sm text-gray-600">
-            <div className="flex gap-4">
-            <p>Expected Arrival expected Arrival</p>
-            <span className="text-blue-500">1-3 days</span>
-            </div>
-          </div>
         </div>
 
         {/* Progress Bar */}

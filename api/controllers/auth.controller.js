@@ -367,6 +367,11 @@ export const forgetPassword = async (req, res, next) => {
     return next(handleMakeError(400, "Please input email"));
   }
 
+  const userEmailCheck = validateEmail(email);
+  if (!userEmailCheck.valid) {
+    return next(handleMakeError(400, userEmailCheck.message));
+  }
+
   try {
     // Check if the email has a recent reset attempt
     const lastAttempt = passwordResetAttempts.get(email);

@@ -80,6 +80,7 @@ export default function RecoverPassword() {
               name="email"
               id="email"
               value={email}
+              maxLength={246}
               onChange={(e) => setEmail(e.target.value)}
               className="outline-none p-2 bg-white border-black border rounded-[5px]"
             />

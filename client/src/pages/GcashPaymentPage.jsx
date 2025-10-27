@@ -42,9 +42,7 @@ export default function GcashPaymentPage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
 
-
-
-  console.log(gcashPhoneNumber)
+  console.log(gcashPhoneNumber);
 
   const { mutate: placeOrderGcashQR } = useMutation({
     mutationFn: async (data) => {
@@ -56,7 +54,7 @@ export default function GcashPaymentPage() {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
       clearOrder();
-      clearGuestOrder()
+      clearGuestOrder();
       navigate("/cart");
     },
     onError: (err) => {
@@ -73,8 +71,8 @@ export default function GcashPaymentPage() {
     }
 
     if (!gcashPhoneNumber) {
-      toast.error("no gcash number")
-      return
+      toast.error("no gcash number");
+      return;
     }
 
     try {
@@ -161,13 +159,14 @@ export default function GcashPaymentPage() {
                   Gcash Phone Number:
                 </label>
                 <input
-                  type="number"
+                  type="tel"
                   id="gcashPhoneNumber"
                   name="gcashPhoneNumber"
                   value={gcashPhoneNumber}
                   onChange={(e) => setGcashPhoneNumber(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-primary"
                   placeholder="Enter your gcash phone number"
+                  maxLength={11}
                   required
                 />
               </div>
@@ -183,6 +182,7 @@ export default function GcashPaymentPage() {
                   value={gcashName}
                   onChange={(e) => setGcashName(e.target.value)}
                   placeholder="Gcash Name"
+                  maxLength={50}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-primary"
                   required
                 />
@@ -227,7 +227,7 @@ export default function GcashPaymentPage() {
                       <input
                         type="file"
                         ref={fileInputRef}
-                        accept="image/*"
+                        accept="image/jpeg, image/png, image/jpg"
                         className="hidden"
                         onChange={handleFileChange}
                       />

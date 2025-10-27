@@ -738,7 +738,7 @@ export const placeOrderGcashQR = async (req, res, next) => {
     if (paymentMethod === "GcashQR") {
       if (
         !gcashQRmethod?.gcashPhoneNumber ||
-        !gcashQRmethod?.proofOfPaymentImage
+        !gcashQRmethod?.proofOfPaymentImage || !gcashQRmethod.gcashName
       ) {
         await session.abortTransaction();
         return next(
@@ -748,6 +748,21 @@ export const placeOrderGcashQR = async (req, res, next) => {
           )
         );
       }
+
+      if (gcashQRmethod?.gcashPhoneNumber){
+        const phoneNumberCheck = validatePHMobile(gcashQRmethod?.gcashPhoneNumber);
+        if (!phoneNumberCheck.valid) {
+          return next(handleMakeError(400, phoneNumberCheck.message));
+        }
+      }
+
+      if (gcashQRmethod.gcashName) {
+        const fullNameCheck = validateFullName(gcashQRmethod.gcashName);
+        if (!fullNameCheck.valid) {
+          return next(handleMakeError(400, fullNameCheck.message));
+        }
+      }
+
     }
 
     // For guest orders, validate guest information
@@ -1299,7 +1314,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     await Order.findByIdAndUpdate(orderId, {
         $set: {
-          isTracked: true,
+          isTracked: isGuestOrder ? false : true,
         }
       }, {new: true})
       }
