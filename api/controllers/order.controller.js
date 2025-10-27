@@ -2077,13 +2077,12 @@ export const validateGuestOrder = async (req, res, next) => {
       paymentStatus: "Pending",
     });
 
-
     if (existingGuestOrder) {
       return next(handleMakeError(400, "A pending guest order already exists for this phone."));
     }
 
     const existingPhoneNumber = await Rider.findOne({
-      riderPhoneNumber,
+      riderPhoneNumber: guestUser.phone,
     });
 
     if (existingPhoneNumber) {

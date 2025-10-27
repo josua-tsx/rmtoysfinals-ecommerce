@@ -120,7 +120,6 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-    
 
       vat: selectedVatValue?._id,
       vatShopPrice: roundedPrice,
@@ -280,7 +279,7 @@ export default function AdminOrderStocksModal({ singleOrder, onClose }) {
               />
             </div>
 
-            <div className="flex items-center flex-wrap gap-4">
+            <div className="flex items-center w-full md:w-[390px] overflow-x-auto flex-wrap gap-4">
               <p>Total Cost: </p>
               <p>{formatPrice(totalCost)} PHP</p>
               <p className="text-sm text-red-700">
