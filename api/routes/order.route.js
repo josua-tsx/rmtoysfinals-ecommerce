@@ -86,8 +86,9 @@ router.post("/search-order", searchOrders)
 
 router.put(
   `/:orderId/paymentStatus`,
-
-  updatePaymentStatus
+  requireAuth,
+  requireAdmin,
+  updatePaymentStatus,
 );
 
 router.put(
@@ -118,7 +119,7 @@ router.put(
   optionalAuth,
   requireAdmin,
   updateDeliveryStatus
-);
+); 
 
 router.put("/update-track-status/:orderId", updateTrackStatus)
 

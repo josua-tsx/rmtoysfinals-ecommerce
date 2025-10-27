@@ -295,7 +295,7 @@ export default function ChangeInfoComponent() {
                     name="fullName"
                     defaultValue={currentUser.fullName}
                     id="fullName"
-                    maxLength={50}
+                    maxLength={100}
                     placeholder="Ex: John Doe"
                     className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />

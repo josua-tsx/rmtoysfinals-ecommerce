@@ -20,6 +20,8 @@ export default function SingleOrderList({ order, onClose }) {
 
   const queryClient = useQueryClient();
 
+  console.log(order._id)
+
   const navigate = useNavigate();
 
   const { mutate: updatePaymentStatusMutation } = useMutation({

@@ -9,6 +9,26 @@ import EditReviewComponent from "./EditReviewComponent";
 import { useUserStore } from "../stores/useUserStore";
 import { ConfirmModal } from "../reusable/ConfirmModal";
 
+function hideName(name) {
+  // Ensure the input is a string
+  const strName = String(name || "");
+
+  // If the name is too short (less than 3 chars), we can't get the first and last two.
+  // In this case, we'll just return asterisks.
+  if (strName.length < 3) {
+    return "***";
+  }
+
+  // Get the first character
+  const firstChar = strName[0];
+
+  // Get the last two characters
+  const lastTwoChars = strName.slice(-2);
+
+  // Combine them with the asterisks
+  return `${firstChar}***${lastTwoChars}`;
+}
+
 export default function ReviewCard({ review }) {
   const currentUser = useUserStore((state) => state.currentUser);
   const [editReviewId, setEditReviewId] = useState(null);
@@ -127,7 +147,7 @@ export default function ReviewCard({ review }) {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium text-gray-900">
-                {review?.userId?.username}
+                {hideName(review?.userId?.username)}
               </h3>
               <div className="flex items-center gap-1">
                 <StarsRating rating={review.rating} size={16} />
