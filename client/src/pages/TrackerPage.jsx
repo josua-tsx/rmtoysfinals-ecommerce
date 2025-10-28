@@ -137,7 +137,7 @@ export default function TrackerPage() {
             disabled={isPending}
             className="flex border  rounded-[5px] bg-primary hover:opacity-95 text-white border-black p-2"
           >
-            {isPending ? "Tracking..." : "Track My Order Status"}
+            {isPending ? "Tracking..." : "Track Order Status"}
           </button>
         </div>
       </div>
