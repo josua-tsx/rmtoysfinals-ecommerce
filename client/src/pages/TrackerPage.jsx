@@ -120,24 +120,30 @@ export default function TrackerPage() {
       )}
 
       <CreditPointsAuto />
-      <div className="flex flex-col md:flex-row justify-start items-center relative  gap-4">
-        <input
-          type="text"
-          placeholder="search for products name"
-          value={searchTerm}
-          max={11}
-          maxLength={11}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border w-full  md:w-[300px] outline-none rounded-[5px] border-black p-2"
-        />
+      <div className="flex flex-col border border-black md:flex-row justify-between items-center relative  gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Track order status by phone number"
+            value={searchTerm}
+            max={11}
+            maxLength={11}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border w-full  md:w-[300px] outline-none rounded-[5px] border-black p-2"
+          />
 
-        <button
-          onClick={() => handleSubmit()}
-          disabled={isPending}
-          className="flex border  rounded-[5px] bg-primary hover:opacity-95 text-white border-black p-2"
-        >
-          {isPending ? "Tracking..." : "Track My Order"}
-        </button>
+          <button
+            onClick={() => handleSubmit()}
+            disabled={isPending}
+            className="flex border  rounded-[5px] bg-primary hover:opacity-95 text-white border-black p-2"
+          >
+            {isPending ? "Tracking..." : "Track My Order Status"}
+          </button>
+        </div>
+
+        <div>
+          hello
+        </div>
       </div>
 
       {/* --- Top Card: Order Tracker --- */}
