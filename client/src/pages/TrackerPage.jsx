@@ -120,7 +120,7 @@ export default function TrackerPage() {
       )}
 
       <CreditPointsAuto />
-      <div className="flex flex-col border border-black md:flex-row justify-between items-center relative  gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center relative  gap-4">
         <div className="flex flex-col md:flex-row gap-4">
           <input
             type="text"
@@ -139,10 +139,6 @@ export default function TrackerPage() {
           >
             {isPending ? "Tracking..." : "Track My Order Status"}
           </button>
-        </div>
-
-        <div>
-          hello
         </div>
       </div>
 
