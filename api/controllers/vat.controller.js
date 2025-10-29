@@ -29,7 +29,7 @@ export const addVat = async (req, res, next) => {
    
     const findVat = await Vat.find();
 
-    if (findVat && findVat.length == 2) {
+    if (findVat.length >= 2) {
       return next(
         handleMakeError(
           400,
@@ -122,6 +122,15 @@ export const editVat = async (req, res, next) => {
           )
         );
       }
+    }
+
+    const existingVat = await Vat.findOne({
+      vatPercent,                 // Find a doc with the same percent
+      _id: { $ne: vatId }        // BUT only if its ID is NOT EQUAL ($ne) to the one we are editing
+    });
+    
+    if (existingVat) {
+      return next(handleMakeError(400, "That VAT percent already exists on another entry."));
     }
 
     // 1. Update the VAT record
