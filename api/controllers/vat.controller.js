@@ -29,7 +29,7 @@ export const addVat = async (req, res, next) => {
    
     const findVat = await Vat.find();
 
-    if (findVat && findVat.length > 2) {
+    if (findVat && findVat.length == 2) {
       return next(
         handleMakeError(
           400,

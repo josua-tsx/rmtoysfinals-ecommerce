@@ -417,17 +417,12 @@ export const deleteMultiProduct = async (req, res, next) => {
 
       // Delete stocks
       await Stocks.deleteMany({ product: _id });
-
-      // Update category
-      await Category.findByIdAndUpdate(category, {
-        $pull: { products: _id },
-      });
-
+      await Category.deleteMany({products: _id})
+      await Vat.deleteMany({productId: _id})
       // Delete from related collections
       await Cart.deleteMany({ "items.productId": _id });
       await Review.deleteMany({ productId: _id });
       await Order.deleteMany({ "orderItems.productId": _id });
-
       // Delete from supplier and vat based on existing stock info
       const stockForProduct = stocks.find(
         (s) => s.product.toString() === _id.toString()
