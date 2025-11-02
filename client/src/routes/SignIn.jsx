@@ -1,7 +1,7 @@
 import ArrowLine from "../reusable/ArrowLine";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import toast from "react-hot-toast";
@@ -23,6 +23,16 @@ export default function SignIn() {
   const togglePassword = () => {
     setShowPassword(!showPassword);
   };
+
+  const { data: isAdminExist, isLoading } = useQuery({
+    queryKey: ["checkAdminExist"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/user/check-admin");
+      return res.data.hasAdmin;
+    },
+  });
+
+  console.log(isAdminExist);
 
   const { mutate: loginMutation, isPending } = useMutation({
     mutationFn: async (userData) => {
@@ -125,7 +135,7 @@ export default function SignIn() {
               >
                 {" "}
                 Forget password
-              </Link> 
+              </Link>
             </div>
           </div>
 
@@ -145,7 +155,7 @@ export default function SignIn() {
               className="text-indigo-500 hover:underline  text-[18px]"
             >
               {" "}
-              Sign Up Here!
+              {isAdminExist ? "Sign Up Here!" : "Create Admin Account"}
             </Link>
           </div>
         </div>

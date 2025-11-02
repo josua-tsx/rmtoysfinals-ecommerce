@@ -2,6 +2,7 @@ import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 import {
   adminUpdateUserStatus,
+  checkIfAdminExists,
   confirmVerifyEmail,
   deleteWorker,
   editWorker,
@@ -21,6 +22,7 @@ router.post(`/confirm-email`, confirmVerifyEmail);
 router.get(`/getAll`, getAll);
 router.get(`/getAllCustomer`, getAllCustomer);
 router.get(`/getAllWorkers`, getAllWorkers);
+router.get(`/check-admin`, checkIfAdminExists);
 router.delete(
   `/delete-worker/:workerId`,
   requireAuth,

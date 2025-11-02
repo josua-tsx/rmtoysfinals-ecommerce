@@ -20,6 +20,7 @@ import { sendGrid } from "../sendGrid/sendGrid.js";
 
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
+
 // REGISTER
 export const signup = async (req, res, next) => {
   const { password, confirmPassword } = req.body;
@@ -71,11 +72,14 @@ export const signup = async (req, res, next) => {
     return next(handleMakeError(400, "Username already exist"));
   }
 
+  const admin = await User.findOne({ role: "admin" });
+
   try {
     const newUser = new User({
       email,
       username,
       password,
+      role: admin ? "customer" : "admin"
     });
 
     // authenticate

@@ -459,10 +459,22 @@ export const adminUpdateUserStatus = async (req, res, next) => {
           description: "User blocked a user",
         },
         role: "admin",
-      });
-    }
-
+      })}
     res.status(200).json(user);
+  } catch (error){
+    next(error);
+  }
+}
+
+
+export const checkIfAdminExists = async (req, res, next) => {
+  try {
+    const admin = await User.findOne({ role: "admin" });
+    if (admin) {
+      res.status(200).json({ hasAdmin: true });
+    } else {
+      res.status(200).json({ hasAdmin: false });
+    }
   } catch (error) {
     next(error);
   }
