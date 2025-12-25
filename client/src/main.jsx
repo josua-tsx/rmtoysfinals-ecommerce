@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -8,68 +8,71 @@ import {
   RootLayout,
   ValidatorStaffLayout,
 } from "./layout/RootLayout.jsx";
-import LandingPage from "./pages/LandingPage.jsx";
-import SignIn from "./routes/SignIn.jsx";
-import SignUp from "./routes/SignUp.jsx";
-import Shop from "./routes/Shop.jsx";
-import ProductDetails from "./pages/ProductDetails.jsx";
-import Reviews from "./pages/Reviews.jsx";
-import PopularPage from "./pages/PopularPage.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
-import CartPage from "./pages/CartPage.jsx";
+
+// Lazy load components
+const LandingPage = lazy(() => import("./pages/LandingPage.jsx"));
+const SignIn = lazy(() => import("./routes/SignIn.jsx"));
+const SignUp = lazy(() => import("./routes/SignUp.jsx"));
+const Shop = lazy(() => import("./routes/Shop.jsx"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails.jsx"));
+const Reviews = lazy(() => import("./pages/Reviews.jsx"));
+const PopularPage = lazy(() => import("./pages/PopularPage.jsx"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage.jsx"));
+const CartPage = lazy(() => import("./pages/CartPage.jsx"));
 
 // react query
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ProtectedAdminRoute } from "./routes/ProtectedRoutes/ProtectedAdminRoute.jsx";
-import AdminOverview from "./pages/admin/AdminOverview.jsx";
-import AdminProducts from "./pages/admin/AdminProducts.jsx";
-import AdminAddProducts from "./pages/admin/AdminAddProducts.jsx";
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview.jsx"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts.jsx"));
+const AdminAddProducts = lazy(() => import("./pages/admin/AdminAddProducts.jsx"));
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PublicRoute } from "./routes/PurblicRoute.jsx";
 import { ProtectedCustomerRoute } from "./routes/ProtectedRoutes/ProtectedCustomerRoute.jsx";
-import AdminEditProducts from "./pages/admin/AdminEditProduct.jsx";
+const AdminEditProducts = lazy(() => import("./pages/admin/AdminEditProduct.jsx"));
 
-import AdminSupplier from "./pages/admin/AdminSupplier.jsx";
-import AdminCategory from "./pages/admin/AdminCategory.jsx";
+const AdminSupplier = lazy(() => import("./pages/admin/AdminSupplier.jsx"));
+const AdminCategory = lazy(() => import("./pages/admin/AdminCategory.jsx"));
 
-import AdminStocks from "./pages/admin/AdminStocks.jsx";
-import AdminUser from "./pages/admin/AdminUser.jsx";
+const AdminStocks = lazy(() => import("./pages/admin/AdminStocks.jsx"));
+const AdminUser = lazy(() => import("./pages/admin/AdminUser.jsx"));
 
-// import AdminDraftProduct from "./pages/admin/AdminDraftProduct.jsx";
-import AdminWorker from "./pages/admin/AdminWorker.jsx";
+const AdminWorker = lazy(() => import("./pages/admin/AdminWorker.jsx"));
 
-import AdminOrderStatus from "./pages/admin/AdminOrderStatus.jsx";
-import AdminOrderTransact from "./pages/admin/AdminOrderTransact.jsx";
-import AdminAuditTrailLogs from "./pages/admin/AdminAuditTrailLogs.jsx";
-import AdminProductReviews from "./pages/admin/AdminProductReviews.jsx";
+const AdminOrderStatus = lazy(() => import("./pages/admin/AdminOrderStatus.jsx"));
+const AdminOrderTransact = lazy(() => import("./pages/admin/AdminOrderTransact.jsx"));
+const AdminAuditTrailLogs = lazy(() => import("./pages/admin/AdminAuditTrailLogs.jsx"));
+const AdminProductReviews = lazy(() => import("./pages/admin/AdminProductReviews.jsx"));
 import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedValidatorStaffRoute.jsx";
 
-import Contact from "./pages/Contact.jsx";
+const Contact = lazy(() => import("./pages/Contact.jsx"));
 
-import AdminStocksPending from "./pages/admin/AdminStocksPending.jsx";
-import PurchaseCancelPage from "./pages/PurchaseCancelPage.jsx";
-import PurchaseSuccessPage from "./pages/PurchaseSuccessPage.jsx";
+const AdminStocksPending = lazy(() => import("./pages/admin/AdminStocksPending.jsx"));
+const PurchaseCancelPage = lazy(() => import("./pages/PurchaseCancelPage.jsx"));
+const PurchaseSuccessPage = lazy(() => import("./pages/PurchaseSuccessPage.jsx"));
 
-import AdminVat from "./pages/admin/AdminVat.jsx";
+const AdminVat = lazy(() => import("./pages/admin/AdminVat.jsx"));
 
-import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
+const GcashPaymentPage = lazy(() => import("./pages/GcashPaymentPage.jsx"));
 
-import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
-import RecoverPassword from "./routes/RecoverPassword.jsx";
-import ResetPassword from "./routes/ResetPassword.jsx";
+const AdminStockHistory = lazy(() => import("./pages/admin/AdminStockHistory.jsx"));
+const RecoverPassword = lazy(() => import("./routes/RecoverPassword.jsx"));
+const ResetPassword = lazy(() => import("./routes/ResetPassword.jsx"));
 
-import GuestCartPage from "./components/Guestt/GuestCartPage.jsx";
-import VerifyEmailComponent from "./components/VerifyEmailComponent.jsx";
-import AdminFaqs from "./components/admin/AdminFaqs.jsx";
-import AdminRider from "./components/admin/AdminRider.jsx";
-import TrackerPage from "./pages/TrackerPage.jsx";
+const GuestCartPage = lazy(() => import("./components/Guestt/GuestCartPage.jsx"));
+const VerifyEmailComponent = lazy(() => import("./components/VerifyEmailComponent.jsx"));
+const AdminFaqs = lazy(() => import("./components/admin/AdminFaqs.jsx"));
+const AdminRider = lazy(() => import("./components/admin/AdminRider.jsx"));
+const TrackerPage = lazy(() => import("./pages/TrackerPage.jsx"));
 
-import AdminTicketDetail from "./pages/admin/AdminTicketDetail.jsx";
-import AdminTicket from "./pages/admin/AdminTicket.jsx";
-import AdminStoreSettings from "./pages/admin/AdminStoreSettings.jsx";
-import CustomerTicketsPage from "./pages/CustomerTicketsPage.jsx";
+const AdminTicketDetail = lazy(() => import("./pages/admin/AdminTicketDetail.jsx"));
+const AdminTicket = lazy(() => import("./pages/admin/AdminTicket.jsx"));
+const AdminStoreSettings = lazy(() => import("./pages/admin/AdminStoreSettings.jsx"));
+const CustomerTicketsPage = lazy(() => import("./pages/CustomerTicketsPage.jsx"));
+
+import LoadingSpinner from "./reusable/LoadingSpinner.jsx";
 
 const queryClient = new QueryClient();
 
@@ -362,7 +365,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <Suspense fallback={<LoadingSpinner fullScreen={true} />}>
+        <RouterProvider router={router} />
+      </Suspense>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </StrictMode>

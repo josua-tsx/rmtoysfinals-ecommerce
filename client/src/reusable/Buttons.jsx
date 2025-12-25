@@ -1,5 +1,3 @@
-import PropTypes from "prop-types";
-
 export default function Buttons({ buttonType, buttonName, icon, onClick }) {
   return (
     <button
@@ -13,10 +11,3 @@ export default function Buttons({ buttonType, buttonName, icon, onClick }) {
     </button>
   );
 }
-
-Buttons.propTypes = {
-  buttonType: PropTypes.string,
-  buttonName: PropTypes.string.isRequired,
-  icon: PropTypes.element,
-  onClick: PropTypes.func,
-};
