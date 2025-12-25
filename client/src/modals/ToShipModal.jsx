@@ -100,13 +100,3 @@ export default function ToShipModal({
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-
-ToShipModal.propTypes = {
-  selectedRiderId: PropTypes.string,
-  setSelectedRiderId: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  isOpen: PropTypes.bool.isRequired,
-};
