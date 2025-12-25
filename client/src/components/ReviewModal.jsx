@@ -199,13 +199,3 @@ export default function ReviewModal({ singleProduct, closeModal }) {
     </section>
   );
 }
-
-import PropTypes from "prop-types";
-
-ReviewModal.propTypes = {
-  singleProduct: PropTypes.shape({
-    _id: PropTypes.string,
-    reviews: PropTypes.array,
-  }).isRequired,
-  closeModal: PropTypes.func.isRequired,
-};

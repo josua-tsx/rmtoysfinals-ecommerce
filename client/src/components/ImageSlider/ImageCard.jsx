@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { TbPinnedFilled } from "react-icons/tb";
 
@@ -28,11 +27,3 @@ export default function ImageCard({ product }) {
     </div>
   );
 }
-
-ImageCard.propTypes = {
-  product: PropTypes.shape({
-    _id: PropTypes.string,
-    productName: PropTypes.string,
-    productImages: PropTypes.arrayOf(PropTypes.string),
-  }),
-};

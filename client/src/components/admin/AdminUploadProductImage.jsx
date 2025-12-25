@@ -171,10 +171,3 @@ export default function AdminUploadProductImage({ images, setImages }) {
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-
-AdminUploadProductImage.propTypes = {
-  images: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setImages: PropTypes.func.isRequired,
-};

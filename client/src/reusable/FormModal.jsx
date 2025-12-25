@@ -50,16 +50,3 @@ export default function FormModal({
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-
-FormModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  title: PropTypes.string.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  children: PropTypes.node.isRequired,
-  submitLabel: PropTypes.string,
-  cancelLabel: PropTypes.string,
-  isSubmitting: PropTypes.bool,
-};

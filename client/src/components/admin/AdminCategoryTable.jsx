@@ -346,9 +346,3 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-
-AdminCategoryTable.propTypes = {
-  enableMultiDel: PropTypes.bool,
-};

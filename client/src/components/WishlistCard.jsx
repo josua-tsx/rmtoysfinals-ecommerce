@@ -115,17 +115,3 @@ export default function WishlistCard({ productWish }) {
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-
-WishlistCard.propTypes = {
-  productWish: PropTypes.shape({
-    _id: PropTypes.string,
-    productId: PropTypes.shape({
-      _id: PropTypes.string,
-      productName: PropTypes.string,
-      price: PropTypes.number,
-      productImages: PropTypes.arrayOf(PropTypes.string),
-    }),
-  }).isRequired,
-};

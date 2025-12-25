@@ -1,5 +1,4 @@
 import { FaCheckCircle } from "react-icons/fa";
-import PropTypes from "prop-types";
 
 export default function AdminButtons({ buttonName1, icon }) {
   return (
@@ -21,8 +20,3 @@ export default function AdminButtons({ buttonName1, icon }) {
     </>
   );
 }
-
-AdminButtons.propTypes = {
-  buttonName1: PropTypes.string.isRequired,
-  icon: PropTypes.element,
-};
