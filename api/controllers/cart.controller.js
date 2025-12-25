@@ -76,11 +76,17 @@ export const getCarts = async (req, res, next) => {
     const carts = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages discount",
-      populate: {
-        path: "stocks",
-        select: "quantity",
-      },
+        "productName price points productDescription productImages discount taxStatus",
+      populate: [
+        {
+          path: "stocks",
+          select: "quantity",
+        },
+        {
+          path: "vat",
+          select: "vatPercent vatValue",
+        },
+      ],
     });
 
     if (!carts || !carts.items) {
@@ -102,11 +108,17 @@ export const getSelectedCart = async (req, res, next) => {
     }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages preVatPrice taxStatus totalVat",
-      populate: {
-        path: "stocks",
-        select: "quantity",
-      },
+        "productName price points productDescription productImages taxStatus",
+      populate: [
+        {
+          path: "stocks",
+          select: "quantity",
+        },
+        {
+          path: "vat",
+          select: "vatPercent vatValue",
+        },
+      ],
     });
 
     if (!carts || !carts.items) {

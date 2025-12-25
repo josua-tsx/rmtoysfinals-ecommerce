@@ -1,28 +1,21 @@
-import React from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
 import SingleOrderList from "./SingleOrderList";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ConfirmModal } from "../reusable/ConfirmModal";
-import { MdLocalShipping } from "react-icons/md";
+
 import LoadingSpinner from "../reusable/LoadingSpinner";
-import RefundModal from "./RefundModal";
 
 export default function CustomerOrderStatus() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelOrderId, setCancelOrderId] = useState(null);
-  const [openRefundModal, setOpenRefundModal] = useState(false);
 
   const queryClient = useQueryClient();
 
-  const {
-    data: userOrder = [],
-    isPending,
-    isError,
-  } = useQuery({
+  const { data: userOrder = [], isPending } = useQuery({
     queryKey: ["order"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/order/get-userOrder`);
@@ -38,9 +31,6 @@ export default function CustomerOrderStatus() {
     },
     enabled: !!orderId,
   });
-
-  console.log(singleUserOrder);
-
   const { mutate: cancelOrderMutation } = useMutation({
     mutationFn: async (orderId) => {
       const res = await axiosInstance.put(`/order/user/cancel-order`, {
@@ -79,12 +69,6 @@ export default function CustomerOrderStatus() {
     setOpenModal(true);
   };
 
-  const handleRefundSingle = (orderId) => {
-    setOrderId(orderId._id);
-    setOpenRefundModal(true);
-    setOpenModal(false);
-  };
-
   return (
     <>
       {openModal && singleUserOrder && (
@@ -104,7 +88,7 @@ export default function CustomerOrderStatus() {
         onConfirm={handleConfirmCancelOrder}
       />
 
-      {openRefundModal && singleUserOrder && (
+      {/* {openRefundModal && singleUserOrder && (
         <RefundModal
           order={singleUserOrder}
           onClose={() => {
@@ -151,25 +135,18 @@ export default function CustomerOrderStatus() {
 
               <div className="flex justify-center gap-2">
                 {order?.paymentMethod === "GcashQR" ||
-                order?.paymentMethod === "Online Payment" ? (
-                  <button
-                    onClick={() => handleRefundSingle(order)}
-                    className="px-2 py-1 flex-1 text-sm rounded-lg border border-black bg-green-500 text-white"
-                  >
-                    Refund
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleCancelOrder(order._id)}
-                    type="button"
-                    className="px-2 py-1 flex-1 text-sm rounded-lg border border-black bg-red-500 text-white "
-                  >
-                    Cancel
-                  </button>
-                )}
+                  (order?.paymentMethod === "Online Payment" && (
+                    <button
+                      onClick={() => handleCancelOrder(order._id)}
+                      type="button"
+                      className="px-2 py-1 flex-1 text-sm rounded-lg border border-black bg-red-500 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                    >
+                      Cancel
+                    </button>
+                  ))}
 
                 <button
-                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-blue-500 "
+                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-blue-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   onClick={() => handleOpenSingleOrder(order)}
                 >
                   View

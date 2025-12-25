@@ -16,7 +16,16 @@ export default {
         "secondary" : "#f7d91b", // for products and forms back ground
         "card" : "#f4f4fc", // for products and forms back ground
         "yellow": "#fffdf6",
-      }
+      },
+      keyframes: {
+        scroll: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+      },
+      animation: {
+        scroll: "scroll 25s linear infinite",
+      },
     },
   },
   plugins: [],

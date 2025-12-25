@@ -1809,91 +1809,91 @@ export const getUserFailed = async (req, res, next) => {
 };
 
 // MONTHLY SALES
-export const getMonthlySales = async (req, res, next) => {
-  try {
-    const { year } = req.query;
-    const currentYear = year ? parseInt(year) : new Date().getFullYear();
+// export const getMonthlySales = async (req, res, next) => {
+//   try {
+//     const { year } = req.query;
+//     const currentYear = year ? parseInt(year) : new Date().getFullYear();
 
-    const sales = await Order.aggregate([
-      {
-        $match: {
-          status: "Delivered",
-          paymentStatus: "Paid",
-          createdAt: {
-            $gte: new Date(`${currentYear}-01-01`),
-            $lte: new Date(`${currentYear}-12-31`),
-          },
-        },
-      },
-      {
-        $project: {
-          month: {
-            $dateToString: {
-              format: "%Y-%m",
-              date: "$createdAt",
-              timezone: "UTC",
-            },
-          },
-          // Use totalPrice directly since it's already in the schema
-          totalSales: "$totalPrice",
-          orderCount: 1,
-        },
-      },
-      {
-        $group: {
-          _id: "$month",
-          totalSales: { $sum: "$totalSales" },
-          orderCount: { $sum: 1 },
-          avgOrderValue: { $avg: "$totalSales" },
-        },
-      },
-      {
-        $sort: { _id: 1 },
-      },
-      {
-        $project: {
-          _id: 0,
-          month: "$_id",
-          totalSales: { $round: ["$totalSales", 2] },
-          orderCount: 1,
-          avgOrderValue: { $round: ["$avgOrderValue", 2] },
-        },
-      },
-    ]);
+//     const sales = await Order.aggregate([
+//       {
+//         $match: {
+//           status: "Delivered",
+//           paymentStatus: "Paid",
+//           createdAt: {
+//             $gte: new Date(`${currentYear}-01-01`),
+//             $lte: new Date(`${currentYear}-12-31`),
+//           },
+//         },
+//       },
+//       {
+//         $project: {
+//           month: {
+//             $dateToString: {
+//               format: "%Y-%m",
+//               date: "$createdAt",
+//               timezone: "UTC",
+//             },
+//           },
+//           // Use totalPrice directly since it's already in the schema
+//           totalSales: "$totalPrice",
+//           orderCount: 1,
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$month",
+//           totalSales: { $sum: "$totalSales" },
+//           orderCount: { $sum: 1 },
+//           avgOrderValue: { $avg: "$totalSales" },
+//         },
+//       },
+//       {
+//         $sort: { _id: 1 },
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           month: "$_id",
+//           totalSales: { $round: ["$totalSales", 2] },
+//           orderCount: 1,
+//           avgOrderValue: { $round: ["$avgOrderValue", 2] },
+//         },
+//       },
+//     ]);
 
-    // If no sales for the year, return empty array with 12 months
-    const allMonths = [
-      "2025-01",
-      "2025-02",
-      "2025-03",
-      "2025-04",
-      "2025-05",
-      "2025-06",
-      "2025-07",
-      "2025-08",
-      "2025-09",
-      "2025-10",
-      "2025-11",
-      "2025-12",
-    ];
+//     // If no sales for the year, return empty array with 12 months
+//     const allMonths = [
+//       "2025-01",
+//       "2025-02",
+//       "2025-03",
+//       "2025-04",
+//       "2025-05",
+//       "2025-06",
+//       "2025-07",
+//       "2025-08",
+//       "2025-09",
+//       "2025-10",
+//       "2025-11",
+//       "2025-12",
+//     ];
 
-    const completeMonthlyData = allMonths.map((month) => {
-      const matchingMonth = sales.find((s) => s.month === month);
-      return (
-        matchingMonth || {
-          month,
-          totalSales: 0,
-          orderCount: 0,
-          avgOrderValue: 0,
-        }
-      );
-    });
+//     const completeMonthlyData = allMonths.map((month) => {
+//       const matchingMonth = sales.find((s) => s.month === month);
+//       return (
+//         matchingMonth || {
+//           month,
+//           totalSales: 0,
+//           orderCount: 0,
+//           avgOrderValue: 0,
+//         }
+//       );
+//     });
 
-    res.status(200).json(completeMonthlyData);
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json(completeMonthlyData);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const getLatestSuccessOrder = async (req, res, next) => {
   try {
@@ -2157,3 +2157,61 @@ export const updateTrackStatus = async (req, res, next) => {
     next(error)
   }
 }
+
+export const getSalesAnalytics = async (req, res, next) => {
+  try {
+    const dailySales = await Order.aggregate([
+      {
+        $match: {
+          paymentStatus: "Paid",
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          totalSales: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const monthlySales = await Order.aggregate([
+      {
+        $match: {
+          paymentStatus: "Paid",
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+          totalSales: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const yearlySales = await Order.aggregate([
+      {
+        $match: {
+          paymentStatus: "Paid",
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y", date: "$createdAt" } },
+          totalSales: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      daily: dailySales,
+      monthly: monthlySales,
+      yearly: yearlySales,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

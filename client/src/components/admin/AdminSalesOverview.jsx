@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AdminStatCard from "./AdminStatCard";
 import axiosInstance from "../../lib/axios";
@@ -19,18 +20,16 @@ import AdminRecentCancelledOrder from "./AdminRecentCancelledOrder.jsx";
 import LoadingSpinner from "../../reusable/LoadingSpinner.jsx";
 
 export default function AdminSalesOverview() {
+  const [chartView, setChartView] = useState("monthly");
   const {
-    data: monthlySales = [],
-    isPending: isMonthlyPending,
-    isError: isMonthlyError,
+    data: analyticsData = { daily: [], monthly: [], yearly: [] },
+    isPending: isAnalyticsPending,
+    isError: isAnalyticsError,
   } = useQuery({
-    queryKey: ["monthlySales"],
+    queryKey: ["salesAnalytics"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/monthly/sales`);
-      return res.data.map((item) => ({
-        ...item,
-        totalSales: item.totalSales,
-      }));
+      const res = await axiosInstance.get(`/order/analytics`);
+      return res.data;
     },
   });
 
@@ -118,54 +117,59 @@ export default function AdminSalesOverview() {
     return sum + item.totalPrice;
   }, 0);
 
-  function getDailySales(orders) {
-    const dailySales = {};
+  // Helper to get sales for a specific date (YYYY-MM-DD)
+  const getSalesForDate = (dateStr) => {
+    const entry = analyticsData.daily.find((d) => d._id === dateStr);
+    return entry ? entry.totalSales : 0;
+  };
 
-    orders.forEach((order) => {
-      // Parse the date (ignore the time part)
-      const date = new Date(order.createdAt).toISOString().split("T")[0]; // Format: YYYY-MM-DD
+  const todayStr = new Date().toISOString().split("T")[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-      // Initialize the daily sales entry for this date if it doesn't exist
-      if (!dailySales[date]) {
-        dailySales[date] = 0;
-      }
+  const todaySales = getSalesForDate(todayStr);
+  const yesterdaySales = getSalesForDate(yesterdayStr);
 
-      // Add the order's totalPrice to the daily sales
-      dailySales[date] += order.totalPrice;
-    });
+  // Helper to generate last 12 months (YYYY-MM)
 
-    // Convert the daily sales object to an array of {date, totalSales}
-    const dailySalesArray = Object.keys(dailySales)?.map((date) => ({
-      date,
-      totalSales: dailySales[date],
-    }));
+  // Helper to generate last 5 years (YYYY)
+  const getLast5Years = () => {
+    const years = [];
+    const currentYear = new Date().getFullYear();
+    for (let i = 0; i < 5; i++) {
+      years.unshift((currentYear - i).toString());
+    }
+    return years;
+  };
 
-    return dailySalesArray;
-  }
+  const processChartData = (view) => {
+    if (view === "monthly") {
+      return analyticsData.monthly;
+    } else {
+      const last5Years = getLast5Years();
+      return last5Years.map((year) => {
+        const found = analyticsData.yearly.find((d) => d._id === year);
+        return {
+          _id: year,
+          totalSales: found ? found.totalSales : 0,
+        };
+      });
+    }
+  };
 
-  // Get daily sales
-  const dailySales = getDailySales(successOrderData);
+  const chartData = processChartData(chartView);
 
-  if (isMonthlyError || isCustomerError || isPendingError || isStocksError)
+  if (isAnalyticsError || isCustomerError || isPendingError || isStocksError)
     return <p>loading...</p>;
 
   return (
-    <div className="flex flex-col bg-yellow gap-16">
+    <div className="flex flex-col bg-yellow gap-20">
       <div className=" grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
         <AdminStatCard
           title={"TODAY SALES"}
-          value={
-            successOrderData.length > 0
-              ? `${formatPrice(dailySales[0]?.totalSales)} PHP`
-              : 0
-          }
-          value2={
-            successOrderData.length > 0
-              ? `yesterday sales + ${formatPrice(
-                  dailySales[1]?.totalSales
-                )} PHP`
-              : 0
-          }
+          value={`${formatPrice(todaySales)} PHP`}
+          value2={`yesterday sales + ${formatPrice(yesterdaySales)} PHP`}
         />
 
         <AdminStatCard
@@ -235,42 +239,69 @@ export default function AdminSalesOverview() {
       </div>
 
       <div className="flex w-full flex-col md:flex-row  gap-20 md:gap-4">
-        <div className=" p-2 w-full h-[500px] relative md:w-[70%] bg-card border border-black rounded-[5px]">
-          <div className="absolute -top-11 -left-1 border rounded-[5px]  bg-primary text-card border-black p-1">
-            <h1>MONTHLY SALES</h1>
-          </div>
-
-          {isMonthlyPending ? (
-            <div className="h-full flex justify-center items-center">
-              <LoadingSpinner />
+        <div className="flex flex-col w-full md:w-[70%] gap-8">
+          {/* Sales Chart with Toggle */}
+          <div className=" p-2 w-full h-[500px] relative bg-card border border-black rounded-[5px]">
+            <div className="absolute -top-14 left-0 flex gap-2">
+              <button
+                onClick={() => setChartView("monthly")}
+                className={`border rounded-[5px] p-2  transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
+                  chartView === "monthly"
+                    ? "bg-primary text-card border-black"
+                    : "bg-white text-black border-black hover:bg-gray-100"
+                }`}
+              >
+                MONTHLY SALES
+              </button>
+              <button
+                onClick={() => setChartView("yearly")}
+                className={`border rounded-[5px] p-2  transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
+                  chartView === "yearly"
+                    ? "bg-primary text-card border-black"
+                    : "bg-white text-black border-black hover:bg-gray-100"
+                }`}
+              >
+                YEARLY SALES
+              </button>
             </div>
-          ) : monthlySales.length === 0 ? (
-            <p>No data available for the chart</p>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlySales}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
-                <XAxis dataKey="month" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" domain={[0, "auto"]} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(31, 41, 55, 0.8)",
-                    borderColor: "#4B5563",
-                  }}
-                  itemStyle={{ color: "#E5E7EB" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="totalSales"
-                  stroke="#6366F1"
-                  strokeWidth={3}
-                  dot={{ fill: "#6366F1", strokeWidth: 2, r: 6 }}
-                  activeDot={{ r: 8, strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
+
+            {isAnalyticsPending ? (
+              <div className="h-full flex justify-center items-center">
+                <LoadingSpinner />
+              </div>
+            ) : chartData.length === 0 ? (
+              <p className="p-4">No data available for the chart</p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
+                  <XAxis dataKey="_id" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" domain={[0, "auto"]} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(31, 41, 55, 0.8)",
+                      borderColor: "#4B5563",
+                    }}
+                    itemStyle={{ color: "#E5E7EB" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="totalSales"
+                    stroke={chartView === "monthly" ? "#6366F1" : "#10B981"}
+                    strokeWidth={3}
+                    dot={{
+                      fill: chartView === "monthly" ? "#6366F1" : "#10B981",
+                      strokeWidth: 2,
+                      r: 6,
+                    }}
+                    activeDot={{ r: 8, strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
+
         <div className="w-full md:w-[30%] flex flex-col gap-14  rounded-[5px] relative ">
           <AdminRecentSuccessOrder />
           <AdminRecentFailedOrder />

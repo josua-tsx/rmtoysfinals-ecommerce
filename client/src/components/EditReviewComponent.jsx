@@ -56,11 +56,11 @@ export default function EditReviewComponent({ singleReview, onClose }) {
       >
         <button
           onClick={onClose}
-          className="absolute border  border-black  text-card bg-primary rounded-[5px] px-5 right-0 -top-8"
+          className="absolute border  border-black  text-card bg-primary rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
         >
           <IoIosClose size={25} />
         </button>
-        <button className="absolute border  border-black  text-card bg-primary rounded-[5px] px-5 left-0 py-1 -top-10">
+        <button className="absolute border  border-black  text-card bg-primary rounded-[5px] px-5 left-0 py-1 -top-10 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
           EDITING REVIEW
         </button>
         <div className="flex gap-2 flex-col  ">
@@ -111,7 +111,7 @@ export default function EditReviewComponent({ singleReview, onClose }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white transition  disabled:opacity-70"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white transition-all  disabled:opacity-70 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
               >
                 {isSubmitting ? (
                   "Submitting..."

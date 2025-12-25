@@ -328,12 +328,12 @@ export const validateFaqsTitle = (name) => {
     };
   }
 
-  // Allow letters, numbers, spaces, hyphens (-), and apostrophes (')
-  if (!/^[a-zA-Z0-9 \-']+$/.test(name)) {
+  // Allow letters, numbers, spaces, hyphens (-), apostrophes ('), and question marks (?)
+  if (!/^[a-zA-Z0-9 \-'?]+$/.test(name)) {
     return {
       valid: false,
       message:
-        "Only letters, numbers, spaces, hyphens (-), and apostrophes (') are allowed",
+        "Title must contain only letters, numbers, spaces, hyphens (-), apostrophes ('), and question marks (?) are allowed",
     };
   }
 
@@ -371,10 +371,10 @@ export const validateAnswer = (desc) => {
   }
 
   // Max length check (200 chars)
-  if (desc.length > 200) {
+  if (desc.length > 500) {
     return {
       valid: false,
-      message: "Answer cannot exceed 200 characters",
+      message: "Answer cannot exceed 500 characters",
     };
   }
 

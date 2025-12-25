@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import axiosInstance from "../lib/axios";
 
@@ -52,7 +52,7 @@ export default function Faq() {
   };
 
   return (
-    <section className=" bg-yellow p-3 font-main pt-28 md:pt-36">
+    <section className=" bg-yellow p-3 font-main pt-28 ">
       <div className="">
         <div className="flex flex-col justify-center items-center h-full ">
           <div className="text-3xl mb-5">FAQs</div>

@@ -247,7 +247,7 @@ export default function GcashPaymentPage() {
                       <button
                         type="button"
                         onClick={handleRemoveImage}
-                        className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                        className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                       >
                         <MdDelete size={16} />
                       </button>
@@ -260,7 +260,7 @@ export default function GcashPaymentPage() {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className={`flex-1 bg-primary border border-black text-white py-2 px-4 rounded-md ${
+                  className={`flex-1 bg-primary border border-black text-white py-2 px-4 rounded-md shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${
                     uploading
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-primary-dark"
@@ -271,7 +271,7 @@ export default function GcashPaymentPage() {
                 <button
                   onClick={() => cancelGcashQRpayment()}
                   type="button"
-                  className="text-white py-2 border border-black px-4 rounded-md bg-red-700"
+                  className="text-white py-2 border border-black px-4 rounded-md bg-red-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
                   Cancel
                 </button>

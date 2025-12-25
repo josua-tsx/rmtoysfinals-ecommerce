@@ -67,13 +67,13 @@ export default function ShopProductCards({ product }) {
   }
 
   return (
-    <div className="w-72 md:w-full h-[250px] md:h-[310px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group rounded-[5px] bg-card border-black shadow-md relative ">
-      <div className="border p-1 text-xs z-10 bg-primary uppercase text-card font-medium absolute top-[-10px] right-[-10px] border-black rounded-[5px]">
+    <div className="w-72 md:w-full h-[250px] rounded-[5px] md:h-[310px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group rounded-toy bg-card border-black shadow-hard hover:shadow-hard-sm hover:translate-y-1 transition-all relative">
+      <div className="border p-1 text-xs z-10 bg-primary uppercase text-card font-medium absolute top-[-10px] right-[-10px] border-black rounded-toy shadow-hard-sm">
         {product?.category?.categoryName}
       </div>
 
       {product?.stocks?.quantity === 0 ? (
-        <div className="absolute flex gap-1 items-center  text-sm border top-[-10px] -left-[10px] md:-left-1 z-10 bg-gray-700 text-card p-1 rounded-[5px]  border-black">
+        <div className="absolute flex gap-1 items-center  text-sm border top-[-10px] -left-[10px] md:-left-1 z-10 bg-gray-700 text-card p-1 rounded-toy border-black shadow-hard-sm">
           <span>
             <CgUnavailable size={20} />
           </span>
@@ -100,7 +100,7 @@ export default function ShopProductCards({ product }) {
             <li className="border-b flex justify-between items-center border-black cursor-pointer hover:bg-gray-300 py-1">
               <button
                 className="w-full text-start"
-                onClick={() => navigate(`/product/${product._id}`)}
+                onClick={() => navigate(`/product/details/${product._id}`)}
               >
                 View Details
               </button>

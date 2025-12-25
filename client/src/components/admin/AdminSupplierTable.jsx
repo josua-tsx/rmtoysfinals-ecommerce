@@ -4,20 +4,28 @@ import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import FormModal from "../../reusable/FormModal";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminSupplierTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
+
+  // Edit Modal State
+  const [isOpenEditModal, setIsOpenEditModal] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [supplierName, setSupplierName] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [supplierAddress, setSupplierAddress] = useState("");
 
   const {
     data: suppliers = [],
@@ -33,12 +41,32 @@ export default function AdminSupplierTable({ enableMultiDel }) {
 
   const arraySuppliers = Array.isArray(suppliers) ? suppliers : [];
 
-  // --- ADD THESE LINES ---
   const numSelected = selectedIds.length;
   const numProducts = arraySuppliers.length;
 
   // Checkbox is ticked only if all products are selected
   const allSelected = numProducts > 0 && numSelected === numProducts;
+
+  // --- EDIT MUTATION ---
+  const { mutate: editSupplierMutation, isPending: isEditPending } =
+    useMutation({
+      mutationFn: async (data) => {
+        const res = await axiosInstance.put(
+          `/supplier/edit-supplier/${selectedSupplier._id}`,
+          data
+        );
+        return res.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["supplier"] });
+        toast.success("Successfully Edited!");
+        setIsOpenEditModal(false);
+        setSelectedSupplier(null);
+      },
+      onError: (err) => {
+        toast.error(err.response.data.message || "Something went wrong");
+      },
+    });
 
   const { mutate: deleteSupplierMutation } = useMutation({
     mutationFn: async (supplierId) => {
@@ -109,7 +137,6 @@ export default function AdminSupplierTable({ enableMultiDel }) {
 
   const cancelMultiDel = () => {
     setSelectedIds([]);
-    console.log("clicked");
   };
 
   const pushMultipleSup = (supplierId) => {
@@ -132,8 +159,24 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     setIsModalOpen(false);
   };
 
-  const navigateToEditSupplier = (supplierId) => {
-    navigate(`/admin/editSupplier/${supplierId}`);
+  // --- EDIT HANDLERS ---
+  const handleOpenEditModal = (supplier) => {
+    setSelectedSupplier(supplier);
+    setSupplierName(supplier.supplierName);
+    setContactPerson(supplier.contactPerson);
+    setContactNumber(supplier.contactNumber);
+    setSupplierAddress(supplier.supplierAddress);
+    setIsOpenEditModal(true);
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    editSupplierMutation({
+      supplierName,
+      contactPerson,
+      contactNumber,
+      supplierAddress,
+    });
   };
 
   const filteredArraySuppliers = arraySuppliers.filter(
@@ -156,6 +199,96 @@ export default function AdminSupplierTable({ enableMultiDel }) {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
+
+      {/* Edit Supplier Modal */}
+      <FormModal
+        isOpen={isOpenEditModal}
+        title="Edit Supplier"
+        onClose={() => setIsOpenEditModal(false)}
+        onSubmit={handleEditSubmit}
+        submitLabel="Update Supplier"
+        isSubmitting={isEditPending}
+      >
+        <div className="flex gap-2 p-2 flex-col">
+          <div className="flex gap-2 flex-col">
+            <label htmlFor="editSupplierName" className="uppercase">
+              Supplier Name:{" "}
+            </label>
+            <input
+              type="text"
+              name="supplierName"
+              id="editSupplierName"
+              value={supplierName}
+              maxLength={50}
+              onChange={handleInputChange(setSupplierName)}
+              className="border border-black w-full rounded-[5px] p-1  outline-none"
+              required
+            />
+            <p className="text-sm pt-1 lowercase text-green-700">
+              (Supplier name do not allow double spaces, and number. it should
+              be between 3 and 50 characters.)
+            </p>
+          </div>
+          <div className="flex gap-2 flex-col">
+            <label htmlFor="editContactPerson" className="uppercase">
+              Contact Person Fulllname :{" "}
+            </label>
+            <input
+              type="text"
+              name="contactPerson"
+              id="editContactPerson"
+              value={contactPerson}
+              maxLength={100}
+              onChange={handleInputChange(setContactPerson)}
+              className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+              required
+            />
+            <p className="text-sm pt-1 lowercase text-green-700">
+              (Contact person full name does not allow double spaces.)
+            </p>
+          </div>
+
+          <div className="flex gap-2 flex-col">
+            <label htmlFor="editContactNumber" className="uppercase">
+              Contact Number:{" "}
+            </label>
+            <input
+              type="tel"
+              name="contactNumber"
+              id="editContactNumber"
+              value={contactNumber}
+              maxLength={11}
+              onChange={handleInputChange(setContactNumber)}
+              className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+              required
+            />
+            <p className="text-sm pt-1 lowercase text-green-700">
+              (Phone number should be valid number. It should start with 09 and
+              exact 11 numbers)
+            </p>
+          </div>
+
+          <div className="flex gap-2 flex-col">
+            <label htmlFor="editSupplierAddress" className="uppercase">
+              Supplier Address:{" "}
+            </label>
+            <input
+              type="text"
+              name="supplierAddress"
+              id="editSupplierAddress"
+              value={supplierAddress}
+              maxLength={200}
+              onChange={handleInputChange(setSupplierAddress)}
+              className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+              required
+            />
+          </div>
+          <p className="text-sm pt-1 lowercase text-green-700">
+            (Supplier address do not allow double spaces and is between 5 and
+            200 max characters long.)
+          </p>
+        </div>
+      </FormModal>
 
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
@@ -228,7 +361,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
                       <div className="flex items-center">
                         <button
-                          onClick={() => navigateToEditSupplier(supplier._id)}
+                          onClick={() => handleOpenEditModal(supplier)}
                           className="text-green-600 hover:text-indigo-300 mr-2"
                         >
                           <CiEdit size={25} />
@@ -261,13 +394,13 @@ export default function AdminSupplierTable({ enableMultiDel }) {
         <div className=" w-full flex gap-2 justify-end p-3">
           <button
             onClick={cancelMultiDel}
-            className="border bg-green-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-green-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Cancel Detete
           </button>
           <button
             onClick={() => handleMultiDelete()}
-            className="border bg-red-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-red-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Confirm Detete
           </button>
@@ -276,3 +409,9 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     </div>
   );
 }
+
+import PropTypes from "prop-types";
+
+AdminSupplierTable.propTypes = {
+  enableMultiDel: PropTypes.bool,
+};

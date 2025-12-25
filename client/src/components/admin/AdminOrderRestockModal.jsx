@@ -1,10 +1,9 @@
-import { IoIosClose } from "react-icons/io";
-
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../lib/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import formatPrice from "../../reusable/formatPrice";
+import FormModal from "../../reusable/FormModal";
 
 export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const [productId, setProductId] = useState("");
@@ -16,72 +15,62 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   const [totalCost, setTotalCost] = useState(0);
   const [deliveryId, setDeliveryId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  // const [discount, setDiscount] = useState(0);
 
   const [selectedVatValue, setSelectedVatValue] = useState(null);
 
   const queryClient = useQueryClient();
+
+  console.log(singleStock);
 
   useEffect(() => {
     if (singleStock) {
       setProductId(singleStock?.product?._id);
       setSupplier(singleStock?.supplier?._id);
       setSupplierPrice(singleStock?.supplierPrice);
+      setShopPrice(singleStock?.shopPrice);
       setShippingPrice(singleStock?.shippingPrice);
       setDeliveryId(singleStock?.deliveryId);
       setSelectedDate(singleStock?.dateDelivery);
-      // setDiscount(singleStock?.product?.discount)
+
+      // Initialize VAT from stock or product
+      if (singleStock?.vat) {
+        setSelectedVatValue(singleStock.vat.vatPercent);
+      }
     }
   }, [singleStock]);
 
   // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
   const calculateTotalExpenses =
-    (Number(supplierPrice) + Number(shippingPrice)) * Number(quantity);
+    Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
 
   const totalPriceWithVAT =
-    Number(shopPrice) + Number(shopPrice) * selectedVatValue?.vatValue;
+    Number(shopPrice) +
+    Number(shopPrice) * (selectedVatValue ? selectedVatValue / 100 : 0);
   const roundedPrice = Math.round(totalPriceWithVAT);
 
   useEffect(() => {
-    if (calculateTotalExpenses) setTotalCost(calculateTotalExpenses);
+    if (calculateTotalExpenses >= 0) setTotalCost(calculateTotalExpenses);
   }, [calculateTotalExpenses]);
 
-  const { mutate: reOrderStockMutation } = useMutation({
-    mutationFn: async (data) => {
-      const res = await axiosInstance.put(
-        `/stocks/reOrder-stock/${singleStock?._id}`,
-        data
-      );
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success("success");
-      queryClient.invalidateQueries({ queryKey: ["stocks"] });
-      onClose();
-    },
-    onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong");
-    },
-  });
-
-  const {
-    data: vats = [],
-    isVatPending,
-    isVatError,
-  } = useQuery({
-    queryKey: ["vats"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/vat/get-vat`);
-      return res.data;
-    },
-  });
-
-  const handleVatOnChange = (e) => {
-    const selectedVatId = e.target.value;
-    const selectedVatValue = vats.find((vat) => vat._id === selectedVatId);
-
-    setSelectedVatValue(selectedVatValue);
-  };
+  const { mutate: reOrderStockMutation, isPending: isSubmitting } = useMutation(
+    {
+      mutationFn: async (data) => {
+        const res = await axiosInstance.put(
+          `/stocks/reOrder-stock/${singleStock?._id}`,
+          data
+        );
+        return res.data;
+      },
+      onSuccess: () => {
+        toast.success("Success");
+        queryClient.invalidateQueries({ queryKey: ["stocks"] });
+        onClose();
+      },
+      onError: (err) => {
+        toast.error(err.response.data.message || "Something went wrong");
+      },
+    }
+  );
 
   const hanldeFormSubmit = (e) => {
     e.preventDefault();
@@ -101,167 +90,148 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
     });
   };
 
-  if (isVatPending) return <p>Loading...</p>;
-  if (isVatError) return <p>Error.</p>;
-
   return (
-    <section className="fixed inset-0 z-50 backdrop-blur-sm p-3">
-      <div className="h-screen flex flex-col justify-center items-center mx-auto">
-        <form
-          onSubmit={hanldeFormSubmit}
-          className="border flex flex-col gap-10 relative border-black w-full md:w-[500px]  rounded-[5px] bg-card"
-        >
-          <div className="absolute -top-10 bg-primary border border-black left-0 rounded-[5px] text-card px-5 py-1">
-            <h1>Order Stock</h1>
+    <FormModal
+      isOpen={true}
+      title="Re-order Stock"
+      onClose={onClose}
+      onSubmit={hanldeFormSubmit}
+      isSubmitting={isSubmitting}
+      submitLabel="Re-order"
+    >
+      <div className="flex gap-2 p-2 flex-col">
+        <div className="flex gap-4 flex-col">
+          <label className="font-medium">Product Name: </label>
+          <input
+            type="text"
+            value={singleStock?.product?.productName || ""}
+            disabled
+            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+          />
+        </div>
+
+        <div className="flex gap-4 flex-col">
+          <label className="font-medium">Delivery ID: </label>
+          <input
+            value={deliveryId || ""}
+            type="text"
+            disabled
+            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+          />
+        </div>
+
+        <div className="flex gap-4 flex-col">
+          <label className="font-medium">VAT Percent: </label>
+          <input
+            type="text"
+            disabled
+            value={selectedVatValue ? `${selectedVatValue}%` : "Exempt (0%)"}
+            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+          />
+        </div>
+
+        <div className="flex gap-4 flex-col">
+          <label className="font-medium">Supplier: </label>
+          <input
+            type="text"
+            value={singleStock?.supplier?.supplierName || ""}
+            disabled
+            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+          />
+        </div>
+
+        <div className="flex gap-4 flex-col">
+          <label htmlFor="deliveryDate" className="font-medium">
+            Date Delivery:{" "}
+          </label>
+          <input
+            type="date"
+            id="deliveryDate"
+            className="border border-black rounded-[5px] p-2"
+            max={new Date().toISOString().split("T")[0]}
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="supplierPrice" className="font-medium">
+              Supplier Price:{" "}
+            </label>
+            <input
+              className="border border-black rounded-[5px] p-2"
+              type="number"
+              min={0}
+              id="supplierPrice"
+              value={supplierPrice}
+              onChange={(e) => setSupplierPrice(e.target.value)}
+              required
+            />
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute border border-black text-card bg-red-700 rounded-[5px] px-5 right-0 -top-8"
-          >
-            <IoIosClose size={25} />
-          </button>
-
-          <div className="p-4 flex gap-2 flex-col">
-            <div className="flex gap-4">
-              <label htmlFor="">Product Name: </label>
-              <input
-                type="text"
-                name="productName"
-                id="productName"
-                value={singleStock?.product?.productName}
-                disabled
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <label htmlFor="">Delivery ID: </label>
-              <input
-                value={deliveryId}
-                type="text"
-                id="deliveryId"
-                name="deliveryId"
-                disabled
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <label htmlFor="deliveryDate">Date Delivery: </label>
-              <input
-                type="date"
-                id="deliveryDate"
-                name="deliveryDate"
-                className="border border-black rounded-[5px] px-2"
-                max={new Date().toISOString().split("T")[0]}
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <label htmlFor="">Supplier: </label>
-              <input
-                type="text"
-                id="supplier"
-                name="supplier"
-                value={singleStock?.supplier?.supplierName}
-                disabled
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <label htmlFor="">VAT Percent: </label>
-              <select
-                name="vatPercent"
-                id="vatPercent"
-                value={selectedVatValue?._id}
-                onChange={handleVatOnChange}
-                className="rounded-[5px] border border-black outline-none"
-              >
-                <option value="">Select VAT Percent</option>
-                {vats.length > 0 &&
-                  vats.map((vat) => (
-                    <option key={vat._id} value={vat?._id}>
-                      {vat?.vatPercent} %
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            <div className="flex gap-4">
-              <label htmlFor="supplierPrice">Supplier Price: </label>
-              <input
-                className="border border-black rounded-[5px] px-2"
-                type="number"
-                min={0}
-                name="supplierPrice"
-                id="supplierPrice"
-                value={supplierPrice}
-                onChange={(e) => setSupplierPrice(e.target.value)}
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <label htmlFor="shopPrice">Shop Price: </label>
-              <input
-                className="border border-black rounded-[5px] px-2"
-                type="number"
-                min={0}
-                name="shopPrice"
-                id="shopPrice"
-                value={shopPrice}
-                step={"any"}
-                onChange={(e) => setShopPrice(e.target.value)}
-              />
-            </div>
-
-            {selectedVatValue?.vatPercent > 0 && (
-              <div className="w-[200px] overflow-x-auto">
-                Shop price with VAT = {totalPriceWithVAT}
-              </div>
-            )}
-
-            <div className="flex gap-4">
-              <label htmlFor="shippingPrice">Shipping Price: </label>
-              <input
-                className="border border-black rounded-[5px] px-2"
-                type="number"
-                min={0}
-                name="shippingPrice"
-                id="shippingPrice"
-                value={shippingPrice}
-                onChange={(e) => setShippingPrice(e.target.value)}
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <label htmlFor="quantity">Quantity: </label>
-              <input
-                className="border border-black rounded-[5px] px-2"
-                type="number"
-                name="quantity"
-                id="quantity"
-                value={quantity}
-                min={0}
-                onChange={(e) => setQuantity(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-center flex-wrap gap-4">
-              <p>Total Cost: </p>
-              <p>{formatPrice(totalCost)} PHP</p>
-              <p className="text-sm text-red-700">
-                (SUPPLIER PRCE * QUANTITY ) + SHIPPING PRICE
-              </p>
-            </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="shopPrice" className="font-medium">
+              Shop Price:{" "}
+            </label>
+            <input
+              className="border border-black rounded-[5px] p-2"
+              type="number"
+              min={0}
+              id="shopPrice"
+              value={shopPrice}
+              onChange={(e) => setShopPrice(e.target.value)}
+              step="any"
+              required
+            />
           </div>
+        </div>
 
-          <button className="bg-primary text-card p-2 rounded-bl-[5px] rounded-br-[5px]">
-            Order
-          </button>
-        </form>
+        {selectedVatValue?.vatPercent > 0 && (
+          <p className="text-sm text-green-700">
+            Shop price with VAT = ₱{formatPrice(roundedPrice)}
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="shippingPrice" className="font-medium">
+              Shipping Price:{" "}
+            </label>
+            <input
+              className="border border-black rounded-[5px] p-2"
+              type="number"
+              min={0}
+              id="shippingPrice"
+              value={shippingPrice}
+              onChange={(e) => setShippingPrice(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="quantity" className="font-medium">
+              Quantity:{" "}
+            </label>
+            <input
+              className="border border-black rounded-[5px] p-2"
+              type="number"
+              id="quantity"
+              value={quantity}
+              min={0}
+              onChange={(e) => setQuantity(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center flex-wrap gap-2 bg-gray-100 p-2 rounded">
+          <span className="font-bold">Total Cost: </span>
+          <span>{formatPrice(totalCost)} PHP</span>
+          <p className="text-xs text-red-700 ml-auto">
+            (SUPPLIER PRICE * QUANTITY) + SHIPPING
+          </p>
+        </div>
       </div>
-    </section>
+    </FormModal>
   );
 }

@@ -200,7 +200,7 @@ export default function AdminAddStocks() {
           <div className="flex gap-2 p-2">
             <button
               type="submit"
-              className="bg-primary flex-1 border border-black text-card p-2 rounded-[5px]"
+              className="bg-primary flex-1 border border-black text-card p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               Add Stocks
             </button>

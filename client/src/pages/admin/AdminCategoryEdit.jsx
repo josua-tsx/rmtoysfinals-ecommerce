@@ -11,9 +11,8 @@ export default function AdminCategoryEdit() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-
-  const [categoryName, setCategoryName] = useState("")
-  const [categoryDescription, setCategoryDescription] = useState("")
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryDescription, setCategoryDescription] = useState("");
 
   const {
     data: singleCategory,
@@ -26,15 +25,15 @@ export default function AdminCategoryEdit() {
       const res = await axiosInstance.get(
         `/category/get-single/${editCategoryId}`
       );
-      return res.data
+      return res.data;
     },
     enabled: !!params.editCategoryId,
   });
 
   useEffect(() => {
     if (singleCategory) {
-        setCategoryName(singleCategory.categoryName)
-        setCategoryDescription(singleCategory.categoryDescription)
+      setCategoryName(singleCategory.categoryName);
+      setCategoryDescription(singleCategory.categoryDescription);
     }
   }, [singleCategory]);
 
@@ -129,7 +128,7 @@ export default function AdminCategoryEdit() {
           </div>
 
           <div className="flex flex-col p-2 gap-2 md:flex-row">
-            <button className="flex-1 border border-black bg-primary text-card rounded-[5px]  p-2">
+            <button className="flex-1 border border-black bg-primary text-card rounded-[5px]  p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
               Update Category
             </button>
             <button

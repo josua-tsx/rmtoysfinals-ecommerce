@@ -40,7 +40,7 @@ export default function RecoverPassword() {
             FORGET PASSWORD
           </span>
         </div>
-   
+
         {/* FORM */}
         <form
           onSubmit={handleForgetPasswordSubmit}
@@ -89,7 +89,7 @@ export default function RecoverPassword() {
           <div className="flex justify-center w-full">
             <button
               disabled={isPending}
-              className="border border-black p-2 text-white rounded-[5px] bg-primary"
+              className="border border-black p-2 text-white rounded-[5px] bg-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               {isPending ? "Loading..." : "Send Code"}
             </button>

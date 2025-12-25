@@ -1,5 +1,4 @@
 import AdminImagePlaceholder from "../../reusable/Admin/AdminImagePlaceholder";
-import Buttons from "../../reusable/Buttons";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -145,16 +144,17 @@ export default function AdminUploadProductImage({ images, setImages }) {
                 </button>
               </div>
             ))}
-          </div>  
+          </div>
         </div>
       </div>
 
       <div className="border border-black rounded-[5px] bg-card p-4">
         <h1>UPLOAD IMAGE</h1>
         <div className="flex flex-col md:flex-row gap-2 justify-between items-center pt-5 pb-2">
-          <button type="button"
+          <button
+            type="button"
             onClick={handleImageSubmit}
-            className="border w-full md:w-[80%] border-black bg-primary text-card p-2 rounded-[5px]"
+            className="border w-full md:w-[80%] border-black bg-primary text-card p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             {uploading ? "Uploading" : "Upload Image"}
           </button>
@@ -162,7 +162,7 @@ export default function AdminUploadProductImage({ images, setImages }) {
           <button
             type="button"
             onClick={() => setImages([])}
-            className="bg-blue-700 p-2 px-4 rounded-[5px] border w-full  md:w-[20%] border-black text-card"
+            className="bg-blue-700 p-2 px-4 rounded-[5px] border w-full  md:w-[20%] border-black text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Reset
           </button>
@@ -171,3 +171,10 @@ export default function AdminUploadProductImage({ images, setImages }) {
     </div>
   );
 }
+
+import PropTypes from "prop-types";
+
+AdminUploadProductImage.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setImages: PropTypes.func.isRequired,
+};

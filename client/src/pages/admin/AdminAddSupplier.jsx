@@ -153,7 +153,7 @@ export default function AdminAddSupplier() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-2 p-2">
-        <button className="border flex-1 border-black rounded-[5px] bg-primary text-card p-2">
+        <button className="border flex-1 border-black rounded-[5px] bg-primary text-card p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
           Add Supplier
         </button>
         <button

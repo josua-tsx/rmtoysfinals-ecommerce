@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React from "react";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
@@ -66,7 +65,7 @@ export default function AdminAddFaqs() {
             id="answer"
             type="text"
             value={answer}
-            maxLength={200}
+            maxLength={500}
             onChange={(e) => setAnswer(e.target.value)}
             className="border border-black w-full rounded-[5px] p-1 outline-none"
           />

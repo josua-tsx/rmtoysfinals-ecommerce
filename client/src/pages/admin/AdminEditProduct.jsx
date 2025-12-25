@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { SiGooglegemini } from "react-icons/si";
 
 export default function AdminEditProducts() {
   const params = useParams();
@@ -30,21 +31,22 @@ export default function AdminEditProducts() {
   const [points, setPoints] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditIndex, setCurrentIndex] = useState(null);
+  const [taxStatus, setTaxStatus] = useState("vatable");
+  const [vat, setVat] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const {
     data: singleProduct,
     isPending: isProductPending,
     isError: isProductError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["product", params.productid],
     queryFn: async () => {
-      const { editProductId } = params;
-      const res = await axiosInstance.get(
-        `/product/get-product/${editProductId}`
-      );
+      const { productid } = params;
+      const res = await axiosInstance.get(`/product/get-product/${productid}`);
       return res.data;
     },
-    enabled: !!params.editProductId,
+    enabled: !!params.productid,
   });
 
   useEffect(() => {
@@ -59,16 +61,10 @@ export default function AdminEditProducts() {
       setProductsDetailsArray(singleProduct?.productDetails || []);
       setImages(singleProduct?.productImages || []);
       setPoints(singleProduct?.points);
+      setTaxStatus(singleProduct?.taxStatus || "vatable");
+      setVat(singleProduct?.vat?._id || "");
     }
   }, [singleProduct]);
-
-  // const { data, isPending, isError } = useQuery({
-  //   queryKey: ["filters"],
-  //   queryFn: async () => {
-  //     const res = await axiosInstance.get(`/filter/get-filters`);
-  //     return res.data;
-  //   },
-  // });
 
   const {
     data: categories = [],
@@ -82,11 +78,23 @@ export default function AdminEditProducts() {
     },
   });
 
+  const {
+    data: vatOptions = [],
+    isPending: isVatPending,
+    isError: isVatError,
+  } = useQuery({
+    queryKey: ["vat"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/vat/get-vat`);
+      return res.data;
+    },
+  });
+
   const { mutate: editProductMutation } = useMutation({
     mutationFn: async (data) => {
-      const { editProductId } = params;
+      const { productid } = params;
       const res = await axiosInstance.put(
-        `/product/edit-product/${editProductId}`,
+        `/product/edit-product/${productid}`,
         data
       );
       return res.data;
@@ -123,6 +131,8 @@ export default function AdminEditProducts() {
       category: category,
       // supplier: supplier,
       points,
+      taxStatus,
+      vat: taxStatus === "vatable" ? vat : null,
     });
   };
 
@@ -178,6 +188,44 @@ export default function AdminEditProducts() {
     setValue(productsDetailsArray[index].value);
   };
 
+  // AI Product Description Generator
+  const handleGenerateWithAI = async () => {
+    if (!productName || productName.trim().length < 3) {
+      toast.error("Please enter a product name first (at least 3 characters)");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await axiosInstance.post(
+        "/gemini/generate-product-description",
+        {
+          productName: productName.trim(),
+        }
+      );
+
+      if (response.data.success) {
+        // Auto-fill description
+        setProductDescription(response.data.description);
+
+        // Auto-fill product details
+        setProductsDetailsArray(response.data.details);
+
+        toast.success("AI generated content successfully!");
+      } else {
+        toast.error(response.data.message || "Failed to generate content");
+      }
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to generate content. Please try again."
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleRemoveLabelValue = (index) => {
     setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
   };
@@ -202,7 +250,27 @@ export default function AdminEditProducts() {
           <div className="flex-1 p-2 flex flex-col gap-3 ">
             <div className="border flex-1 pb-5  border-black rounded-[5px] bg-card p-4">
               <div className="mb-3">
-                <h1 className="mb-3">PRODUCT NAME: </h1>
+                <div className="flex items-center justify-between mb-3">
+                  <h1 className="mb-3">PRODUCT NAME: </h1>
+                  <button
+                    type="button"
+                    onClick={handleGenerateWithAI}
+                    disabled={
+                      isGenerating ||
+                      !productName ||
+                      productName.trim().length < 3
+                    }
+                    className="flex items-center gap-2 px-3 py-1 bg-primary text-card rounded-[5px] border border-black hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                  >
+                    {isGenerating ? (
+                      <div className="animate-spin h-4 w-4 border-2 border-card border-t-transparent rounded-full" />
+                    ) : (
+                      <SiGooglegemini size={16} />
+                    )}
+                    {isGenerating ? "Generating..." : "Generate with AI"}
+                  </button>
+                </div>
+
                 <input
                   type="text"
                   name="productName"
@@ -398,6 +466,42 @@ export default function AdminEditProducts() {
                   </select>
                 </div>
 
+                <div className="flex flex-col pt-4">
+                  <h1 className="py-2">TAX STATUS</h1>
+                  <select
+                    name="taxStatus"
+                    id="taxStatus"
+                    value={taxStatus}
+                    onChange={(e) => setTaxStatus(e.target.value)}
+                    className="p-2 rounded-[5px] border border-black outline-none"
+                  >
+                    <option value="vatable">Vatable</option>
+                    <option value="exempt">Tax Exempt</option>
+                  </select>
+                </div>
+
+                {taxStatus === "vatable" && (
+                  <div className="flex flex-col pt-4">
+                    <h1 className="py-2">VAT RATE *</h1>
+                    <select
+                      name="vat"
+                      id="vat"
+                      value={vat}
+                      onChange={(e) => setVat(e.target.value)}
+                      className="p-2 rounded-[5px] border border-black outline-none"
+                      required
+                    >
+                      <option value="">Select VAT Rate</option>
+                      {vatOptions.length > 0 &&
+                        vatOptions.map((option) => (
+                          <option key={option._id} value={option._id}>
+                            {option.vatPercent}% VAT
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+
                 {/* <div className="flex flex-col">
                   <h1 className="py-2">Suppliers</h1>
                   <select
@@ -464,14 +568,14 @@ export default function AdminEditProducts() {
                 <Buttons buttonType={"button"} buttonName={"draft"} icon={<IoArchive />} />
               </div> */}
 
-              <button className="flex-1 py-2 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card">
+              <button className="flex-1 py-2 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
                 UPDATE THIS PRODUCT
                 <FaCheckCircle />
               </button>
               <button
                 onClick={() => navigate(`/admin/products`)}
                 type="button"
-                className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
+                className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 Cancel
               </button>

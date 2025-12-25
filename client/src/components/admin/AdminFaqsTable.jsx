@@ -6,16 +6,21 @@ import { ConfirmModal } from "../../reusable/ConfirmModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import FormModal from "../../reusable/FormModal";
 
 export default function AdminFaqsTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
+
+  // Edit Modal State
+  const [isOpenEditModal, setIsOpenEditModal] = useState(false);
+  const [selectedFaq, setSelectedFaq] = useState(null);
+  const [title, setTitle] = useState("");
+  const [answer, setAnswer] = useState("");
 
   const {
     data: faqsTable = [],
@@ -33,6 +38,26 @@ export default function AdminFaqsTable({ enableMultiDel }) {
   const numProducts = faqsTable.length;
 
   const allSelected = numProducts > 0 && numSelected === numProducts;
+
+  // --- EDIT MUTATION ---
+  const { mutate: updateFaqMutation, isPending: isEditPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.put(
+        `/faqs/update-faq/${selectedFaq._id}`,
+        data
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["faqs"] });
+      toast.success("Updated Succesfully!");
+      setIsOpenEditModal(false);
+      setSelectedFaq(null);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message);
+    },
+  });
 
   useEffect(() => {
     if (!enableMultiDel) {
@@ -98,16 +123,12 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     }
   };
 
-  const handleSelectAll = (e) => {
+  const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds([]);
     } else {
       setSelectedIds(faqsTable.map((category) => category._id));
     }
-  };
-
-  const navigateToEdit = (id) => {
-    navigate(`/admin/editFaq/${id}`);
   };
 
   const openDeleteModal = (id) => {
@@ -126,6 +147,19 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     setOpenModal(false);
   };
 
+  // --- EDIT HANDLERS ---
+  const handleOpenEditModal = (faq) => {
+    setSelectedFaq(faq);
+    setTitle(faq.title);
+    setAnswer(faq.answer);
+    setIsOpenEditModal(true);
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    updateFaqMutation({ title, answer });
+  };
+
   if (isError) return <p>Error</p>;
 
   return (
@@ -142,6 +176,45 @@ export default function AdminFaqsTable({ enableMultiDel }) {
         onConfirm={confirmDeleteModal}
         onCancel={cancelDeleteModal}
       />
+
+      {/* Edit FAQ Modal */}
+      <FormModal
+        isOpen={isOpenEditModal}
+        title="Edit FAQ"
+        onClose={() => setIsOpenEditModal(false)}
+        onSubmit={handleEditSubmit}
+        submitLabel="Update FAQ"
+        isSubmitting={isEditPending}
+      >
+        <div className="flex gap-2 p-2 flex-col">
+          <div className="flex gap-2 flex-col">
+            <label htmlFor="editTitle">Faqs Title: </label>
+            <input
+              name="title"
+              id="editTitle"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={100}
+              className="border border-black w-full rounded-[5px] p-1 outline-none"
+              required
+            />
+          </div>
+          <div className="flex gap-2 flex-col">
+            <label htmlFor="editAnswer">Faqs Answer: </label>
+            <input
+              name="answer"
+              id="editAnswer"
+              type="text"
+              value={answer}
+              maxLength={500}
+              onChange={(e) => setAnswer(e.target.value)}
+              className="border border-black w-full rounded-[5px] p-1 outline-none"
+              required
+            />
+          </div>
+        </div>
+      </FormModal>
 
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
         <h1>FAQS TABLE</h1>
@@ -180,7 +253,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
                     <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
                       {faq?.title}
                     </td>
-                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
+                    <td className="px-2 py-4 w-[500px] whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
                       {faq?.answer}
                     </td>
                     <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
@@ -192,7 +265,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
                       <div className="flex items-center">
                         <button
                           type="button"
-                          onClick={() => navigateToEdit(faq._id)}
+                          onClick={() => handleOpenEditModal(faq)}
                           className="text-green-600 hover:text-indigo-300 mr-2"
                         >
                           <CiEdit size={25} />
@@ -231,13 +304,13 @@ export default function AdminFaqsTable({ enableMultiDel }) {
         <div className=" w-full flex gap-2 justify-end p-3">
           <button
             onClick={cancelMultiDelete}
-            className="border bg-green-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-green-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Cancel Detete
           </button>
           <button
             onClick={() => handleDeletMulti()}
-            className="border bg-red-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-red-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Confirm Detete
           </button>
@@ -246,3 +319,9 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     </div>
   );
 }
+
+import PropTypes from "prop-types";
+
+AdminFaqsTable.propTypes = {
+  enableMultiDel: PropTypes.bool,
+};

@@ -105,7 +105,7 @@ export default function AdminAddCategory() {
         </button>
         <button
           type="button"
-          className="bg-red-600 md:w-[20%] border p-2 border-black rounded-[5px] text-card "
+          className="bg-red-600 md:w-[20%] border p-2 border-black rounded-[5px] text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           onClick={handleClearButton}
         >
           Clear

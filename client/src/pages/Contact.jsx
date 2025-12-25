@@ -6,33 +6,31 @@ import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 
 export default function Contact() {
+  const [senderEmail, setSenderEmail] = useState("");
+  const [message, setMessage] = useState("");
 
-  const [senderEmail, setSenderEmail] = useState("")
-  const [message, setMessage] = useState("")
-
-  const {mutate: sendEmailMutation, isPending} = useMutation({
+  const { mutate: sendEmailMutation, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/send/send-email`, data)
-      return res.data
-    }, 
+      const res = await axiosInstance.post(`/send/send-email`, data);
+      return res.data;
+    },
     onSuccess: () => {
-      toast.success(`Email Sent!`)
-      setSenderEmail("")
-      setMessage("")
+      toast.success(`Email Sent!`);
+      setSenderEmail("");
+      setMessage("");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong!")
-    }
-  })
+      toast.error(err.response.data.message || "something went wrong!");
+    },
+  });
 
-  console.log(senderEmail)
-  console.log(message)
+  console.log(senderEmail);
+  console.log(message);
 
   const handleFormSubmit = (e) => {
-    e.preventDefault()
-      sendEmailMutation({senderEmail, message})
-  }
-
+    e.preventDefault();
+    sendEmailMutation({ senderEmail, message });
+  };
 
   return (
     <section className="pt-[130px] p-3 font-main h-full bg-yellow">
@@ -53,29 +51,39 @@ export default function Contact() {
             </div>
 
             <div className="flex justify-center gap-4">
-              <a href="https://www.facebook.com/Rmcarsandmotorbikes" target="_blank" className="text-gray-700 hover:text-blue-600">
+              <a
+                href="https://www.facebook.com/Rmcarsandmotorbikes"
+                target="_blank"
+                className="text-gray-700 hover:text-blue-600"
+              >
                 <FaFacebook size={24} />
               </a>
             </div>
 
-            <form onSubmit={handleFormSubmit}
-            className="flex flex-col gap-6 w-full">
+            <form
+              onSubmit={handleFormSubmit}
+              className="flex flex-col gap-6 w-full"
+            >
               <div className="flex flex-col gap-1">
-                <label htmlFor="senderEmail" className="text-gray-600">Email</label>
-                <input 
-                  type="email" 
-                  id="senderEmail" 
+                <label htmlFor="senderEmail" className="text-gray-600">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="senderEmail"
                   className="p-3 border border-black rounded focus:outline-primary"
                   placeholder="Your email address"
                   value={senderEmail}
                   onChange={(e) => setSenderEmail(e.target.value)}
                 />
               </div>
-              
+
               <div className="flex flex-col gap-1">
-                <label htmlFor="message" className="text-gray-600">Message</label>
-                <textarea   
-                  id="message" 
+                <label htmlFor="message" className="text-gray-600">
+                  Message
+                </label>
+                <textarea
+                  id="message"
                   name="message"
                   rows="4"
                   value={message}
@@ -86,18 +94,16 @@ export default function Contact() {
               </div>
 
               {/*  Honeypot (hidden from humans) */}
-              <input type="text" name="website" className="hidden"/>
+              <input type="text" name="website" className="hidden" />
 
-              <button 
+              <button
                 type="submit"
                 disabled={isPending}
-                className="bg-primary border border-black hover:bg-blue-700 text-white font-medium py-3 px-6 rounded transition duration-200"
+                className="bg-primary border border-black hover:bg-blue-700 text-white font-medium py-3 px-6 rounded transition duration-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
               >
                 {isPending ? "Loading..." : "Send"}
               </button>
             </form>
-
-            
           </div>
         </div>
       </div>

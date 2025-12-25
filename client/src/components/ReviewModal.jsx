@@ -53,13 +53,15 @@ export default function ReviewModal({ singleProduct, closeModal }) {
         <div className="flex flex-col md:flex-row-reverse gap-2 relative">
           <div
             className={` ${
-              singleProduct?.reviews ? "md:w-[35%]" : "w-[100%] md:w-[50%] mx-auto"
+              singleProduct?.reviews
+                ? "md:w-[35%]"
+                : "w-[100%] md:w-[50%] mx-auto"
             } flex flex-col gap-2 relative`}
           >
             {/* close button */}
             <button
               onClick={closeModal}
-              className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8"
+              className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               <IoIosClose size={25} />
             </button>
@@ -95,7 +97,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               <button
                 onClick={() => setShowReview(!showReview)}
                 type="button"
-                className="border border-black bg-primary text-card p-1 w-full rounded-[5px]"
+                className="border border-black bg-primary text-card p-1 w-full rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 {showReview ? "Hide Review" : "Add Review"}
               </button>
@@ -160,7 +162,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white transition  disabled:opacity-70"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white disabled:opacity-70 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                     >
                       {isSubmitting ? (
                         "Submitting..."
@@ -197,3 +199,13 @@ export default function ReviewModal({ singleProduct, closeModal }) {
     </section>
   );
 }
+
+import PropTypes from "prop-types";
+
+ReviewModal.propTypes = {
+  singleProduct: PropTypes.shape({
+    _id: PropTypes.string,
+    reviews: PropTypes.array,
+  }).isRequired,
+  closeModal: PropTypes.func.isRequired,
+};

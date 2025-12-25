@@ -1,23 +1,32 @@
-import sgMail from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 import { config } from "dotenv";
 
 config();
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Create Brevo (Sendinblue) transporter
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_EMAIL,      // Brevo SMTP login (e.g., xxx@smtp-brevo.com)
+    pass: process.env.BREVO_SMTP_KEY,   // Your Brevo SMTP key
+  },
+});
 
 export const sendGrid = async (to, subject, html) => {
   try {
     const mailOptions = {
       to,
-      from: "jgonobsit@tfvc.edu.ph", // ✅ verified single sender
+      from: process.env.BREVO_SENDER_EMAIL, // Verified sender email
       subject,
       html,
     };
-    const result = await sgMail.send(mailOptions);
-    console.log(`✅ Email sent from gonobsit@tfvc.edu.ph to ${to}`);
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent to ${to}`);
     return result;
   } catch (error) {
-    console.error("❌ SendGrid error:", error.response?.body || error);
+    console.error("❌ Brevo email error:", error.message || error);
+    throw error;
   }
 };
-

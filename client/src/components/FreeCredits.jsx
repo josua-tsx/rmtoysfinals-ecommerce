@@ -70,7 +70,7 @@ export default function FreeCredits() {
 
             setOpenModal(true);
           }}
-          className="border border-black p-2 bg-card  rounded-[5px] "
+          className="border border-black p-2   rounded-[5px] bg-primary text-card shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] "
         >
           Play to Claim Free Credits 🎮
         </button>
@@ -147,7 +147,7 @@ export default function FreeCredits() {
               <div className="p-2">
                 <button
                   onClick={() => handleReset()}
-                  className=" flex justify-center rounded-[5px] border border-black w-full p-2 bg-primary text-white"
+                  className=" flex justify-center bg-primary text-card shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] rounded-[5px] border border-black w-full p-2"
                 >
                   {lockExpiry ? lockExpiry : "Play"}
                 </button>

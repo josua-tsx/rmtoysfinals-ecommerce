@@ -5,9 +5,9 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import FormModal from "../../reusable/FormModal";
 
 export default function AdminWorkersTable() {
   const queryClient = useQueryClient();
@@ -16,7 +16,15 @@ export default function AdminWorkersTable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setIsSelectedId] = useState(null);
 
-  const navigate = useNavigate();
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedWorker, setSelectedWorker] = useState(null);
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [role, setRole] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     data: workers = [],
@@ -47,11 +55,35 @@ export default function AdminWorkersTable() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["worker"] });
+      queryClient.invalidateQueries({ queryKey: ["validatorStaff"] });
       toast.success("worker deleted");
     },
     onError: (err) => {
       toast.error(err.response.data.message || "something went wrong");
+    },
+  });
+
+  const { mutate: updateWorkerMutation, isPending: isUpdating } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.put(
+        `/user/edit-worker/${selectedWorker._id}`,
+        data
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["validatorStaff"] });
+      setEmail("");
+      setUsername("");
+      setJobDescription("");
+      setRole("");
+      setPassword("");
+      toast.success("Successfully worker updated!");
+      setIsEditModalOpen(false);
+      setSelectedWorker(null);
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "something went wrong!");
     },
   });
 
@@ -72,6 +104,32 @@ export default function AdminWorkersTable() {
     setIsModalOpen(false);
   };
 
+  // Edit Handlers
+  const handleEditClick = (worker) => {
+    setSelectedWorker(worker);
+    setEmail(worker.email);
+    setUsername(worker.username);
+    setJobDescription(worker.jobDescription);
+    setRole(worker.role);
+    setPassword(""); // Reset password field
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    updateWorkerMutation({
+      email,
+      username,
+      password,
+      role,
+      jobDescription,
+    });
+  };
+
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   if (isWorkersError) {
     <p>Error</p>;
   }
@@ -87,6 +145,128 @@ export default function AdminWorkersTable() {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
+
+      {/* Edit Worker Modal */}
+      <FormModal
+        isOpen={isEditModalOpen}
+        title="Edit Worker"
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleEditSubmit}
+        submitLabel="Update Worker"
+        isSubmitting={isUpdating}
+      >
+        <div className="flex gap-2 p-2 flex-col">
+          <div className="flex justify-between flex-col">
+            <label htmlFor="editEmail" className="uppercase mb-2">
+              WORKER EMAIL:{" "}
+            </label>
+            <input
+              type="text"
+              name="email"
+              id="editEmail"
+              value={email}
+              maxLength={254}
+              onChange={(e) => setEmail(e.target.value)}
+              className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+              required
+            />
+            <p className="text-sm pt-1 text-green-700">
+              (Enter a valid email.)
+            </p>
+          </div>
+          <div className="flex justify-between flex-col">
+            <label htmlFor="editUsername" className="uppercase mb-2 ">
+              Username:{" "}
+            </label>
+            <input
+              type="text"
+              name="username"
+              id="editUsername"
+              value={username}
+              maxLength={50}
+              onChange={(e) => setUsername(e.target.value)}
+              className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+              required
+            />
+            <p className="text-sm pt-1 text-green-700">
+              (Username must be 5-50 letters and contain no numbers or special
+              characters.)
+            </p>
+          </div>
+
+          <div className="flex justify-between flex-col">
+            <label htmlFor="editPassword" className="uppercase mb-2 ">
+              Password:{" "}
+            </label>
+            <div className="flex flex-col  gap-2 relative w-full">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                id="editPassword"
+                value={password}
+                maxLength={128}
+                onChange={(e) => setPassword(e.target.value)}
+                className=" outline-none p-2 w-full border-[#313031] border rounded-[5px]"
+                // Password is optional during edit usually, but keeping consistency with existing logic.
+                // If backend requires it, keep required. AdminEditWorker did not have required explicitly but had validation text.
+                // Assuming optional to keep current password if empty, or required to change.
+                // The original AdminEditWorker code had it as an input, suggesting you can change it.
+                // Let's leave it as controllable input.
+              />
+              <button
+                type="button"
+                onClick={togglePassword}
+                className="absolute right-2 top-3 flex items-center gap-2 cursor-pointer"
+              >
+                <p className="text-xs">SHOW PASSWORD</p>
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  readOnly
+                  className="border size-[20px] border-black cursor-pointer"
+                />
+              </button>
+              <p className="text-sm text-green-700">
+                (Password must be at least 8 characters, include one uppercase
+                letter, one number, and one special character.)
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-between flex-col">
+            <label htmlFor="editRole" className="uppercase mb-2 ">
+              ROLE:{" "}
+            </label>
+            <select
+              name="role"
+              id="editRole"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="border outline-none border-black rounded-[5px] py-1"
+              required
+            >
+              <option value="staff">Staff</option>
+              <option value="validatorStaff">Validator Staff</option>
+            </select>
+          </div>
+
+          <div className="flex justify-between flex-col">
+            <label htmlFor="editJobDescription" className="uppercase mb-2 ">
+              Job Description:{" "}
+            </label>
+            <input
+              type="text"
+              name="jobDescription"
+              id="editJobDescription"
+              value={jobDescription}
+              maxLength={200}
+              onChange={(e) => setJobDescription(e.target.value)}
+              className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+              required
+            />
+          </div>
+        </div>
+      </FormModal>
 
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
@@ -161,10 +341,7 @@ export default function AdminWorkersTable() {
 
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
                       <button
-                        onClick={() =>
-                          navigate(`/admin/editWorker/${worker._id}`)
-                        }
-                        // onClick={() => navigateToeditPage(product._id)}
+                        onClick={() => handleEditClick(worker)}
                         className="text-green-600 hover:text-indigo-300 mr-2"
                       >
                         <CiEdit size={25} />

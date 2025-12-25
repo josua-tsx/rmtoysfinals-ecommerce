@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { FaCheckCircle } from "react-icons/fa";
+import {
+  FaCheckCircle,
+  FaCamera,
+  FaEye,
+  FaEyeSlash,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
 
 import app from "../firebase/firebase";
@@ -19,7 +25,6 @@ export default function ChangeInfoComponent() {
   const [file, setFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [fileError, setFileError] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -34,11 +39,10 @@ export default function ChangeInfoComponent() {
 
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
-  console.log(currentUser.isEmailVerified);
 
   const fileRef = useRef(null);
 
-  const { mutate: updateProfile } = useMutation({
+  const { mutate: updateProfile, isPending: isUpdating } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(
         `/user/update/${currentUser._id}`,
@@ -47,32 +51,31 @@ export default function ChangeInfoComponent() {
       return res.data;
     },
     onSuccess: (data) => {
-      console.log(data);
       setCurrentUser(data);
       setShowPassword(false);
       toast.success("Profile Updated Successfully");
       setChangePassword(false);
     },
     onError: (err) => {
-      toast.error(err.response.data.message);
+      toast.error(err.response?.data?.message || "An error occurred");
     },
   });
 
   const { mutate: verifyEmailMutation, isPending: isVerifying } = useMutation({
     mutationFn: async (email) => {
-      const res = await axiosInstance.post(`/user/verify-email`, email);
+      const res = await axiosInstance.post(`/user/verify-email`, { email });
       return res.data;
     },
     onSuccess: () => {
-      toast.success("Email sent");
+      toast.success("Verification email sent");
     },
     onError: (err) => {
-      toast.error(err.response.data.message);
+      toast.error(err.response?.data?.message || "Failed to send email");
     },
   });
 
   const handleVerifyEmail = (email) => {
-    verifyEmailMutation({ email });
+    verifyEmailMutation(email);
   };
 
   const handleFormSubmit = (e) => {
@@ -83,18 +86,14 @@ export default function ChangeInfoComponent() {
 
     const { username, email, password, phoneNumber, fullName } = inputs;
 
-    try {
-      updateProfile({
-        username,
-        email,
-        password,
-        avatar: imageUrl ? imageUrl : currentUser.avatar,
-        phoneNumber,
-        fullName,
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    updateProfile({
+      username,
+      email,
+      password,
+      avatar: imageUrl ? imageUrl : currentUser.avatar,
+      phoneNumber,
+      fullName,
+    });
   };
 
   const handleFileChange = (e) => {
@@ -120,9 +119,7 @@ export default function ChangeInfoComponent() {
   const handleProfilePhotoUpload = (file) => {
     setUploadProgress(0);
 
-    if (!file) {
-      console.log("file did not exist");
-    }
+    if (!file) return;
 
     const storage = getStorage(app);
     const fileName = new Date().getTime() + file.name;
@@ -138,13 +135,11 @@ export default function ChangeInfoComponent() {
         setUploadProgress(rounded);
       },
       (error) => {
-        setFileError(true);
         console.log("Upload failed", error);
-        toast.error(error);
+        toast.error("Image upload failed");
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
-          setFileError(false);
           toast.success(`Avatar uploaded`);
           setImageUrl(downloadUrl);
         });
@@ -159,238 +154,255 @@ export default function ChangeInfoComponent() {
   }, [file]);
 
   return (
-    <div>
-      <h1 className="text-xl">Change Information</h1>
-      <form onSubmit={handleFormSubmit} className="my-5 flex flex-col gap-10 ">
-        <div className="flex flex-col items-center gap-4 justify-center">
-          <p>AVATAR</p>
-          <input
-            hidden
-            type="file"
-            ref={fileRef}
-            accept="image/jpeg, image/png, image/jpg"
-            onChange={handleFileChange}
-            name="image"
-          />
-          <img
-            src={currentUser.avatar}
-            alt="avatar.img"
-            className="w-[150px] h-[150px] rounded-full border border-black object-cover"
-          />
-          <button
-            type="button"
-            onClick={() => fileRef.current.click()}
-            className="bg-primary  border border-black text-card px-2 py-1 rounded-[5px]"
-          >
-            Change Avatar
-          </button>
-          <div className="flex flex-col items-center">
-            <p className="text-sm text-green-700">
-              (File size must be less than 2MB )
-            </p>
-            <p className="text-sm text-center text-green-700">
-              (Image.png, image.jpeg, and image.jgp are only allowed. )
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-5 w-[90%] md:w-[70%] mx-auto ">
-          <div className="flex flex-col md:flex-row md:items-center my-2 justify-between text-md md:text-lg ">
-            <h1 className="my-5">Personal Information</h1>
-          </div>
-
-          <div className="bg-yellow-50 border-l-4 text-red-700 border-red-700 p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-yellow-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3 flex flex-col gap-2">
-                <p className="text-md ">
-                  <strong>Important:</strong> Your phone number is very
-                  important — this is where we’ll send SMS updates about your
-                  orders and other important notifications. Please make sure
-                  it’s valid and up to date.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <div>
-              <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="email">Email: </label>
-                <div className="flex flex-col relative">
-                  <input
-                    type="email"
-                    name="email"
-                    defaultValue={currentUser.email || email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    id="email"
-                    maxLength={128}
-                    placeholder="Ex: example@domain.com"
-                    className={`border  border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none`}
-                  />
-                  <p className="text-sm pt-1 lowercase text-green-700">
-                    (Enter a valid email.)
-                  </p>
-                  {currentUser && !currentUser.isEmailVerified ? (
-                    <button
-                      type="button"
-                      disabled={isVerifying}
-                      onClick={() => handleVerifyEmail(currentUser.email)}
-                      className="border absolute right-0 bg-red-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
-                    >
-                      {isVerifying ? "Verifying..." : "Verify"}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={true}
-                      className="border absolute right-0 bg-blue-500 text-white px-[5%] rounded-r-[5px] border-black p-2"
-                    >
-                      Verified
-                    </button>
-                  )}
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="border-b border-gray-100 pb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+        <p className="text-gray-500 mt-1">
+          Manage your account information and preferences
+        </p>
+      </div>
+      <div className="  p-8 space-y-8">
+        <form onSubmit={handleFormSubmit} className="space-y-8">
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center space-y-4">
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => fileRef.current.click()}
+            >
+              <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-50 shadow-inner">
+                <img
+                  src={
+                    imageUrl ||
+                    currentUser.avatar ||
+                    "https://via.placeholder.com/150"
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <FaCamera className="text-white text-2xl" />
                 </div>
               </div>
+              {uploadProgress > 0 && uploadProgress < 100 && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              )}
             </div>
-            <div>
-              <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="username">Username: </label>
-                <div className="flex flex-col">
+
+            <input
+              hidden
+              type="file"
+              ref={fileRef}
+              accept="image/jpeg, image/png, image/jpg"
+              onChange={handleFileChange}
+              name="image"
+            />
+
+            <div className="text-center space-y-1">
+              <button
+                type="button"
+                onClick={() => fileRef.current.click()}
+                className="bg-primary text-white transition-all text-lg border border-black px-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+              >
+                Change Profile Photo
+              </button>
+              <p className="text-xs text-gray-400">
+                JPG, GIF or PNG. Max size 2MB
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-8">
+            {/* Personal Information */}
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-gray-900 border-l-4 border-primary pl-3">
+                Personal Information
+              </h2>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 text-amber-800">
+                <FaExclamationTriangle className="flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <span className="font-semibold">Important:</span> Keep your
+                  phone number up to date. We use this to send you critical
+                  updates about your orders and account security.
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      name="email"
+                      defaultValue={currentUser.email || email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      placeholder="name@example.com"
+                      maxLength={128}
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      {currentUser?.isEmailVerified ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                          Verified
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={isVerifying}
+                          onClick={() => handleVerifyEmail(currentUser.email)}
+                          className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-md font-medium transition-colors"
+                        >
+                          {isVerifying ? "Sending..." : "Verify Now"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Username Field */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Username
+                  </label>
                   <input
                     type="text"
                     name="username"
                     defaultValue={currentUser.username}
-                    id="username"
-                    placeholder="Ex: johndoe123"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder="johndoe123"
                     maxLength={30}
-                    className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                  <p className="text-sm pt-1 lowercase text-green-700">
-                    (Username must be 3-30 characters long and contain no
-                    special characters.)
+                  <p className="text-xs text-gray-500">
+                    3-30 characters, no special characters
                   </p>
                 </div>
-              </div>
-            </div>
 
-            <div>
-              <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="fullName">Full Name: </label>
-                <div className="flex flex-col">
+                {/* Full Name Field */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     name="fullName"
                     defaultValue={currentUser.fullName}
-                    id="fullName"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder="John Doe"
                     maxLength={100}
-                    placeholder="Ex: John Doe"
-                    className="border border-black px-5 py-2 w-full bg-gray-200 rounded-[5px] outline-none"
                   />
-                  <p className="text-sm pt-1 lowercase text-green-700">
-                    (Fullname must be 2-100 characters long. Fullname must only
-                    use letters, spaces, hyphens (-), apostrophes ('), or dot
-                    (.) )
+                </div>
+
+                {/* Phone Number Field */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    defaultValue={currentUser.phoneNumber}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder="09xxxxxxxxx"
+                    maxLength={11}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Must be a valid 11-digit number starting with 09
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="">
+            {/* Security Section */}
+            <div className="space-y-6 pt-6 border-t border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900 border-l-4 border-red-500 pl-3">
+                Security
+              </h2>
+
               {!changePassword ? (
-                <div className="flex flex-col gap-2 my-2">
-                  <label htmlFor="">Do you want to change your password?</label>
+                <div>
                   <button
-                    onClick={() => setChangePassword(!changePassword)}
-                    className="border border-black p-2  rounded-[5px] bg-primary text-card "
+                    type="button"
+                    onClick={() => setChangePassword(true)}
+                    className=" inline-flex items-center justify-center px-4 py-2 border border-black text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
                   >
                     Change Password
                   </button>
                 </div>
               ) : (
-                <div className="flex  w-full gap-[10px] flex-col">
-                  <label htmlFor="password">Password: </label>
-                  <div className="flex items-center  justify-between gap-5">
-                    <div className="flex relative  w-full">
-                      <div className="flex flex-col w-full">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          name="password"
-                          id="password"
-                          maxLength={128}
-                          className=" outline-none p-3  w-full bg-gray-200   border-[#313031] border rounded-[5px]"
-                        />
-                        <p className="text-sm pt-1 lowercase text-green-700">
-                          (Password must be at least 8 characters and contain at
-                          least 1 uppercase letter, symbol, and number)
-                        </p>
-                      </div>
-                      <label
-                        htmlFor=""
-                        className="absolute right-2 top-4 flex items-center gap-2"
+                <div className=" rounded-lg p-6 space-y-4 border border-black bg-white animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        className="w-full pl-4 pr-10 py-2.5 bg-white border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        placeholder="Enter new password"
+                        maxLength={128}
+                      />
+                      <button
+                        type="button"
+                        onClick={togglePassword}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
                       >
-                        <p className="text-xs">Show Password</p>
-                        <input
-                          type="checkbox"
-                          onChange={togglePassword}
-                          checked={showPassword}
-                          className="border  size-[20px]  border-black"
-                        />
-                      </label>
+                        {showPassword ? (
+                          <FaEyeSlash size={18} />
+                        ) : (
+                          <FaEye size={18} />
+                        )}
+                      </button>
                     </div>
+                    <p className="text-xs text-gray-500">
+                      Must be at least 8 characters with 1 lowercase, 1
+                      uppercase, 1 symbol, and 1 number
+                    </p>
                   </div>
-                  <button
-                    className="border border-black p-2 rounded-[5px] bg-red-700 text-card "
-                    onClick={() => setChangePassword(!changePassword)}
-                  >
-                    Cancel
-                  </button>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setChangePassword(false)}
+                      className="text-sm font-medium px-4 py-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
-            <div>
-              <div className="flex  w-full gap-[10px] flex-col">
-                <label htmlFor="phoneNum">Phone Number: </label>
-                <div className="flex items-center  justify-between gap-5">
-                  <div className="flex w-full flex-col gap-1">
-                    <input
-                      type="tel"
-                      name="phoneNumber"
-                      id="phoneNumber"
-                      placeholder="Ex: 09*******83"
-                      defaultValue={currentUser.phoneNumber}
-                      maxLength={11}
-                      className="border border-black px-5 py-2  bg-gray-200 rounded-[5px] outline-none"
-                    />
-                    <p className="text-sm pt-1 lowercase text-green-700">
-                      (Phone number should be valid number. It should start with
-                      09 and exact 11 numbers)
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-        </div>
-        <div className="flex justify-center">
-          <button className="hover:opacity-95  flex items-center border gap-5 px-5 border-black p-2 rounded-[5px] bg-primary text-card">
-            Update
-            <FaCheckCircle size={15} />
-          </button>
-        </div>
-      </form>
+
+          <div className="pt-6 border-t border-gray-100 flex justify-end">
+            <button
+              type="submit"
+              disabled={isUpdating}
+              className="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary/90 px-8 py-2.5 rounded-lg font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all transform disabled:opacity-70 disabled:pointer-events-none hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+            >
+              {isUpdating ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Updating...</span>
+                </>
+              ) : (
+                <>
+                  <span>Save Changes</span>
+                  <FaCheckCircle className="text-lg" />
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

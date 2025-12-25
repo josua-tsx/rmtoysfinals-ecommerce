@@ -1,16 +1,13 @@
-import React from "react";
 import axiosInstance from "../lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 import SingleOrderList from "./SingleOrderList";
 import { Link } from "react-router-dom";
-import ReviewModal from "./ReviewModal";
 
 export default function CustomerDeliveredStatus() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  const [openRefundModal, setOpenRefundModal] = useState(false);
 
   const {
     data: userDelivered = [],
@@ -37,12 +34,6 @@ export default function CustomerDeliveredStatus() {
   const handleOpenSingleOrder = (orderId) => {
     setOrderId(orderId._id);
     setOpenModal(true);
-  };
-
-  const handleRefundSingle = (orderId) => {
-    setOrderId(orderId._id);
-    setOpenRefundModal(true);
-    setOpenModal(false);
   };
 
   if (isError) return <p>Error</p>;
@@ -93,7 +84,7 @@ export default function CustomerDeliveredStatus() {
 
               <div className="flex justify-center gap-2">
                 <button
-                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-blue-500 "
+                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-blue-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   onClick={() => handleOpenSingleOrder(order)}
                 >
                   View
@@ -101,7 +92,7 @@ export default function CustomerDeliveredStatus() {
 
                 <button
                   onClick={() => handleOpenSingleOrder(order)}
-                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-primary "
+                  className="px-2 flex-1  py-1 text-sm rounded-lg border border-black text-white  bg-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
                   Add Review
                 </button>

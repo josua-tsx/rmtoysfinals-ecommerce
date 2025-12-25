@@ -150,24 +150,24 @@ export default function SignUp() {
               onChange={handleInputChange(setConfirmPassword)}
               className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
             />
-             <label
-                htmlFor=""
-                className="absolute right-2 top-12 flex items-center gap-2"
-              >
-                <p className="text-xs">Show Password</p>
-                <input
-                  type="checkbox"
-                  onChange={togglePasswordTWo}
-                  checked={showPasswordTwo}
-                  className="border  size-[20px]  border-black"
-                />
-              </label>
+            <label
+              htmlFor=""
+              className="absolute right-2 top-12 flex items-center gap-2"
+            >
+              <p className="text-xs">Show Password</p>
+              <input
+                type="checkbox"
+                onChange={togglePasswordTWo}
+                checked={showPasswordTwo}
+                className="border  size-[20px]  border-black"
+              />
+            </label>
           </div>
 
           <div className="flex justify-center mt-4 gap-2">
             <button
               disabled={isPending}
-              className="border p-2 px-5  bg-primary w-[100px] border-black  hover:opacity-95   font-medium text-white rounded-[5px]"
+              className="border p-2 px-5 bg-primary w-[100px] border-black hover:opacity-95 font-medium text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               Sign Up
             </button>

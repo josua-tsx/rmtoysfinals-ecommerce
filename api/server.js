@@ -24,7 +24,12 @@ import subscribeRoute from "../api/routes/subscribe.route.js";
 import faqsRoute from "../api/routes/faqs.route.js";
 import riderRoute from "../api/routes/rider.route.js";
 import playRoute from "../api/routes/random.route.js";
-import { sendGrid } from "./sendGrid/sendGrid.js";
+import geminiRoute from "../api/routes/gemini.route.js";
+import chatbotRoute from "../api/routes/chatbot.route.js";
+import ticketRoute from "../api/routes/ticket.route.js";
+import storeInfoRoute from "../api/routes/storeInfo.route.js";
+import { generatePDF } from "./services/pdfService.js";
+
 
 // Load environment variables from .env file
 config();
@@ -74,6 +79,10 @@ app.use(`/api/subscribe`, subscribeRoute);
 app.use(`/api/faqs`, faqsRoute);
 app.use("/api/rider", riderRoute);
 app.use(`/api/random`, playRoute);
+app.use(`/api/gemini`, geminiRoute);
+app.use(`/api/chatbot`, chatbotRoute);
+app.use(`/api/ticket`, ticketRoute);
+app.use(`/api/store-info`, storeInfoRoute);
 
 // Error handling middleware
 app.use(handleError);
@@ -81,6 +90,24 @@ app.use(handleError);
 // Test function
 
 
+app.post('/api/generate-pdf', async (req, res) => {
+  try {
+      // The data for the template (comes from the React frontend)
+      const data = req.body; 
+
+      // Generate the PDF
+      const pdfBuffer = await generatePDF(data);
+
+      // Send the PDF back to the client
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
+      res.send(pdfBuffer);
+
+  } catch (error) {
+      console.error('Error generating PDF:', error);
+      res.status(500).send('Error generating PDF');
+  }
+});
 // async function safeDropOrderIndex() {
 //   try {
 //     // Get all indexes from the riders collection

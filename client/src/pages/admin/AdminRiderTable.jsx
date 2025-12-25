@@ -7,16 +7,22 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import FormModal from "../../reusable/FormModal";
+import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminRiderTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Edit Modal State
+  const [isOpenEditModal, setIsOpenEditModal] = useState(false);
+  const [selectedRider, setSelectedRider] = useState(null);
+  const [riderName, setRiderName] = useState("");
+  const [riderPhoneNum, setRiderPhoneNum] = useState("");
 
   const {
     data: getRiders = [],
@@ -32,12 +38,33 @@ export default function AdminRiderTable({ enableMultiDel }) {
 
   const arrayRiders = Array.isArray(getRiders) ? getRiders : [];
 
-  // --- ADD THESE LINES ---
   const numSelected = selectedIds?.length;
   const numProducts = arrayRiders?.length;
 
   // Checkbox is ticked only if all products are selected
   const allSelected = numProducts > 0 && numSelected === numProducts;
+
+  // --- EDIT MUTATION ---
+  const { mutate: updateRiderMutation, isPending: isEditPending } = useMutation(
+    {
+      mutationFn: async (data) => {
+        const res = await axiosInstance.put(
+          `/rider/edit-rider/${selectedRider._id}`,
+          data
+        );
+        return res.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["riders"] });
+        setIsOpenEditModal(false);
+        setSelectedRider(null);
+        toast.success("Rider updated succesfully!");
+      },
+      onError: (err) => {
+        toast.error(err.response.data.message);
+      },
+    }
+  );
 
   const filteredArrayRiders = arrayRiders.filter(
     (rider) =>
@@ -131,6 +158,19 @@ export default function AdminRiderTable({ enableMultiDel }) {
     setOpenModal(false);
   };
 
+  // --- EDIT HANDLERS ---
+  const handleOpenEditModal = (rider) => {
+    setSelectedRider(rider);
+    setRiderName(rider.riderName);
+    setRiderPhoneNum(rider.riderPhoneNumber);
+    setIsOpenEditModal(true);
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    updateRiderMutation({ riderName, riderPhoneNumber: riderPhoneNum });
+  };
+
   if (isError) return <p>Error...</p>;
 
   return (
@@ -144,6 +184,41 @@ export default function AdminRiderTable({ enableMultiDel }) {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
+
+      {/* Edit Rider Modal */}
+      <FormModal
+        isOpen={isOpenEditModal}
+        title="Edit Rider"
+        onClose={() => setIsOpenEditModal(false)}
+        onSubmit={handleEditSubmit}
+        submitLabel="Update Rider"
+        isSubmitting={isEditPending}
+      >
+        <div className="flex gap-2 p-2 flex-col w-full">
+          <div className="flex flex-col gap-2 w-full justify-between">
+            <label htmlFor="editRiderName">Rider Full Name: </label>
+            <input
+              type="text"
+              id="editRiderName"
+              placeholder="Ex: Brendon Mae"
+              value={riderName}
+              onChange={handleInputChange(setRiderName)}
+              className="border border-black p-1 outline-none  rounded-[5px]"
+            />
+          </div>
+          <div className="flex flex-col gap-2 w-full justify-between">
+            <label htmlFor="editRiderPhoneNum">Rider Phone Number: </label>
+            <input
+              type="number"
+              id="editRiderPhoneNum"
+              value={riderPhoneNum}
+              onChange={(e) => setRiderPhoneNum(e.target.value)}
+              placeholder="Ex: 09*******83"
+              className="border border-black p-1  outline-none rounded-[5px]"
+            />
+          </div>
+        </div>
+      </FormModal>
 
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
       <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
@@ -209,7 +284,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
                     <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
                       <div className="flex items-center">
                         <button
-                          onClick={() => navigate(`/admin/rider/${rider._id}`)}
+                          onClick={() => handleOpenEditModal(rider)}
                           // onClick={() => navigateToeditPage(product._id)}
                           className="text-green-600 hover:text-indigo-300 mr-2"
                         >
@@ -247,13 +322,13 @@ export default function AdminRiderTable({ enableMultiDel }) {
         <div className=" w-full flex gap-2 justify-end p-3">
           <button
             onClick={handleCancelMultiDel}
-            className="border bg-green-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-green-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Cancel Detete
           </button>
           <button
             onClick={() => handleDeleteMulti()}
-            className="border bg-red-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-red-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Confirm Detete
           </button>

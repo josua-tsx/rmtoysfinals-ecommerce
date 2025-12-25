@@ -23,7 +23,7 @@ export default function GuestCartPage() {
     if (currentOrder) {
       clearOrder();
     }
-  }, [currentOrder]);
+  }, [currentOrder, clearOrder]);
 
   const totalPrice = cart?.items?.reduce((total, item) => {
     return total + item.price * item.quantity;
@@ -73,12 +73,12 @@ export default function GuestCartPage() {
                 </h3>
                 <p className="text-gray-500 mb-4">
                   {" "}
-                  Add items to your cart by clicking "Add to Cart" on products.
-                  They'll appear here ready for purchase.
+                  Add items to your cart by clicking &quot;Add to Cart&quot; on
+                  products. They&apos;ll appear here ready for purchase.
                 </p>
                 <button
                   onClick={() => navigate("/shop")}
-                  className="bg-primary border border-black p-2 rounded-[5px] text-white"
+                  className="bg-primary border border-black p-2 rounded-[5px] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
                   Browse products
                 </button>

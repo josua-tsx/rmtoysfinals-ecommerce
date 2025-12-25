@@ -22,7 +22,8 @@ import {
   getLatestFailedOrder,
   getLatestRefundedOrder,
   getLatestSuccessOrder,
-  getMonthlySales,
+  // getMonthlySales,
+  getSalesAnalytics,
   getSingleUserOrder,
   getUserCancelled,
   getUserDelivered,
@@ -40,9 +41,12 @@ import {
   userCancelOrder,
   userPlaceOrder,
   validateGuestOrder,
+
 } from "../controllers/order.controller.js";
 
 const router = express.Router();
+
+router.get("/analytics", requireAuth, requireAdmin, getSalesAnalytics);
 
 router.post(`/place-order`, requireAuth, userPlaceOrder);
 
@@ -72,7 +76,7 @@ router.get(`/get-refundedCancelled`, getAllRefunded);
 
 router.get(`/get-cancelled`, getAllCancelled);
 
-router.get(`/monthly/sales`, getMonthlySales);
+// router.get(`/monthly/sales`, getMonthlySales);
 
 router.get(`/latest/success`, getLatestSuccessOrder);
 

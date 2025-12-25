@@ -24,6 +24,8 @@ export const addProduct = async (req, res, next) => {
     productImages,
     category,
     points,
+    taxStatus,
+    vat,
   } = req.body;
 
   if (!productName) {
@@ -44,6 +46,11 @@ export const addProduct = async (req, res, next) => {
     productImages.length === 0
   ) {
     return next(handleMakeError(400, "At least one product image is required"));
+  }
+
+  // Validate VAT requirement for vatable products
+  if (taxStatus === "vatable" && !vat) {
+    return next(handleMakeError(400, "VAT is required for vatable products"));
   }
 
   const productNameCheck = validateProductName(productName);
@@ -100,6 +107,8 @@ export const addProduct = async (req, res, next) => {
       category,
       status: "pending",
       points,
+      taxStatus,
+      vat: taxStatus === "vatable" ? vat : null,
     });
 
     await newProduct.save();
@@ -188,6 +197,10 @@ export const getProducts = async (req, res, next) => {
         path: "reviews",
         select: "commentReview rating",
       })
+      .populate({
+        path: "vat",
+        select: "vatPercent vatValue",
+      })
       .sort(sortOptions)
       .skip(skip)
       .limit(parseInt(limit));
@@ -219,6 +232,10 @@ export const getStockStatusPendings = async (req, res, next) => {
       .populate({
         path: "stocks",
         select: "stockQuantity",
+      })
+      .populate({
+        path: "vat",
+        select: "vatPercent vatValue",
       });
 
     res.status(200).json(products);
@@ -342,7 +359,8 @@ export const deleteProduct = async (req, res, next) => {
 
     const existingStocks = await Stocks.findOne({ product: productId });
 
-    if (!existingStocks) return next(handleMakeError(400, "Stock not found!"));
+    // If no stock validation, just proceed. Pending products have no stocks.
+    // if (!existingStocks) return next(handleMakeError(400, "Stock not found!"));
 
     if (!singleProduct) return next(handleMakeError(400, "Product not found"));
 
@@ -352,13 +370,15 @@ export const deleteProduct = async (req, res, next) => {
       $pull: { products: productId },
     });
 
-    await Supplier.findByIdAndUpdate(existingStocks.supplier, {
-      $pull: { product: productId },
-    });
+    if (existingStocks) {
+      await Supplier.findByIdAndUpdate(existingStocks.supplier, {
+        $pull: { product: productId },
+      });
 
-    await Vat.findByIdAndUpdate(existingStocks.vat, {
-      $pull: { productId: productId },
-    });
+      await Vat.findByIdAndUpdate(existingStocks.vat, {
+        $pull: { productId: productId },
+      });
+    }
 
     await Cart.deleteMany({ "items.productId": productId });
 
@@ -417,8 +437,11 @@ export const deleteMultiProduct = async (req, res, next) => {
 
       // Delete stocks
       await Stocks.deleteMany({ product: _id });
-      await Category.deleteMany({products: _id})
-      await Vat.deleteMany({productId: _id})
+      await Category.updateMany(
+        { products: _id },
+        { $pull: { products: _id } }
+      );
+      await Vat.deleteMany({ productId: _id });
       // Delete from related collections
       await Cart.deleteMany({ "items.productId": _id });
       await Review.deleteMany({ productId: _id });
@@ -479,6 +502,8 @@ export const editProduct = async (req, res, next) => {
     productImages,
     category,
     points,
+    taxStatus,
+    vat,
   } = req.body;
 
   try {
@@ -506,6 +531,11 @@ export const editProduct = async (req, res, next) => {
 
     if (price <= 0) {
       return next(handleMakeError(400, "Price cannot be 0 or negative!"));
+    }
+
+    // Validate VAT requirement for vatable products
+    if (taxStatus === "vatable" && !vat) {
+      return next(handleMakeError(400, "VAT is required for vatable products"));
     }
 
     const productNameCheck = validateProductName(productName);
@@ -552,40 +582,46 @@ export const editProduct = async (req, res, next) => {
         productImages,
         category,
         status: "published",
-        category,
         points,
+        taxStatus,
+        vat: taxStatus === "vatable" ? vat : null,
       },
       {
         new: true,
       }
-    );
+    ).populate({
+      path: "vat",
+      select: "vatPercent vatValue",
+    });
 
     if (!updateProduct) {
       return next(handleMakeError(400, "Product Not Found!"));
     }
 
-    const stocksToUpdate = await Stocks.findOne({ product: id }).populate({
-      path: "vat",
-      select: "vatPercent vatValue",
-    });
+    const stocksToUpdate = await Stocks.findOne({ product: id });
 
-    const vatAmountPerUnit = price * (stocksToUpdate.vat.vatPercent / 100);
-    const newVatShopPrice = price + vatAmountPerUnit;
-    const newVatToRemit = vatAmountPerUnit * stocksToUpdate.quantity;
+    if (stocksToUpdate) {
+      // Use the product's VAT (which we just updated)
+      const vatPercent = updateProduct.vat?.vatPercent || 0;
+      const vatAmountPerUnit = price * (vatPercent / 100);
+      const newVatShopPrice = price + vatAmountPerUnit;
+      const newVatToRemit = vatAmountPerUnit * stocksToUpdate.quantity;
 
-    await Stocks.findByIdAndUpdate(
-      stocksToUpdate._id,
-      {
-        $set: {
-          shopPrice: price,
-          vatShopPrice: newVatShopPrice,
-          vatToRemit: newVatToRemit,
+      await Stocks.findByIdAndUpdate(
+        stocksToUpdate._id,
+        {
+          $set: {
+            shopPrice: price,
+            vatShopPrice: newVatShopPrice,
+            vatToRemit: newVatToRemit,
+            vat: updateProduct.vat, // Sync VAT from product
+          },
         },
-      },
-      {
-        new: true,
-      }
-    );
+        {
+          new: true,
+        }
+      );
+    }
 
     await logAuditTrail({
       action: "update_product",
@@ -625,6 +661,10 @@ export const getSingleProduct = async (req, res, next) => {
           path: "userId",
           select: "avatar username email",
         },
+      })
+      .populate({
+        path: "vat",
+        select: "vatPercent vatValue",
       });
 
     if (!getSingleProduct)

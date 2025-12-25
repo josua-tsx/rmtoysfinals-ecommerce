@@ -127,10 +127,18 @@ export default function AdminProductOverview() {
   });
 
   // Construct the pieData
-  const pieData = allCategories.map((category) => ({
-    categoryName: category?.categoryName,
-    categoryDescription: category?.products.length, // Number of products in the category
-  }));
+  const pieData = allCategories.map((category) => {
+    const productCount = Array.isArray(category?.products)
+      ? category.products.length
+      : 0;
+    return {
+      categoryName: category?.categoryName || "Unknown",
+      categoryDescription: productCount, // Number of products in the category
+      value: productCount, // Also add value for better compatibility
+    };
+  });
+
+  console.log("pieData:", pieData);
 
   if (
     isCategoriesError ||
@@ -197,28 +205,36 @@ export default function AdminProductOverview() {
       </div>
 
       <div className="flex flex-col md:flex-row  justify-between gap-16 md:gap-4">
-        <div className="border border-black w-full flex-1 bg-card relative rounded-[5px]">
-          <div className="absolute -top-11 -left-1 border rounded-[5px]  bg-primary text-card border-black p-1">
-            <h1>CATEGORIES DISTRIBUTION</h1>
+        <div className="border border-black w-full flex-1 bg-card relative rounded-[5px] h-[400px]">
+          <div className="absolute -top-11 -left-1 border rounded-[5px]   bg-primary text-card border-black p-1">
+            <h1 className="">CATEGORIES DISTRIBUTION</h1>
           </div>
-          <ResponsiveContainer width="100%" height={"100%"}>
+          <ResponsiveContainer width="100%" height="100%">
             {isCategoriesPending ? (
               <div className="flex h-full justify-center items-center">
                 <LoadingSpinner />
               </div>
+            ) : pieData.every((item) => item.value === 0) ? (
+              <div className="flex h-full justify-center items-center p-4">
+                <p className="text-center">
+                  No products assigned to categories yet.
+                  <br />
+                  Add products to see the distribution.
+                </p>
+              </div>
             ) : (
-              <PieChart width={730} height={200}>
-                {/* Outer Pie: Outer ring */}
+              <PieChart>
                 <Pie
                   data={pieData}
                   dataKey="categoryDescription"
                   nameKey="categoryName"
                   cx="50%"
-                  outerRadius={90} // Size of the outer ring
+                  cy="50%"
+                  outerRadius={120}
                   fill="#8884d8"
                   label={({ name, percent }) =>
                     `${name} ${(percent * 100).toFixed(0)}%`
-                  } // Custom label for outer pie chart (category name)
+                  }
                 />
               </PieChart>
             )}

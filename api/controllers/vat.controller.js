@@ -29,11 +29,11 @@ export const addVat = async (req, res, next) => {
    
     const findVat = await Vat.find();
 
-    if (findVat.length >= 2) {
+    if (findVat.length >= 1) {
       return next(
         handleMakeError(
           400,
-          "You can only add 2 vat. Update the existing one instead."
+          "You can only add 1 VAT rate. Update the existing one instead."
         )
       );
     }

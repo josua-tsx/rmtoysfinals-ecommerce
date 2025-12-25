@@ -6,8 +6,7 @@ import CreditPointsAuto from "../components/CreditPointsAuto.jsx";
 import { useNavigate } from "react-router-dom";
 
 export default function WishListPage() {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const {
     data: wishlist = [],
@@ -21,17 +20,19 @@ export default function WishListPage() {
     },
   });
 
-  if (isPending) return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-    </div>
-  );
-  
-  if (isError) return (
-    <div className="flex justify-center items-center h-screen">
-      <p className="text-red-500">Error loading wishlist</p>
-    </div>
-  );
+  if (isPending)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-red-500">Error loading wishlist</p>
+      </div>
+    );
 
   return (
     <section className="pt-[130px] text-sm md:text-normal p-3 bg-yellow min-h-screen font-main">
@@ -42,11 +43,13 @@ export default function WishListPage() {
             My Wishlist
           </h1>
           <p className="text-gray-600 mt-2">
-            {wishlist?.items?.length > 1 ? wishlist?.items?.length + " items saved for later" : wishlist?.items?.length + " item saved for later" } 
+            {wishlist?.items?.length > 1
+              ? wishlist?.items?.length + " items saved for later"
+              : wishlist?.items?.length + " item saved for later"}
           </p>
         </div>
 
-        <CreditPointsAuto/>
+        <CreditPointsAuto />
 
         <div className="flex flex-col  lg:flex-row gap-6">
           <div className="h-[550px] overflow-y-auto bg-yellow md:flex-1">
@@ -59,10 +62,16 @@ export default function WishListPage() {
             ) : (
               <div className="bg-white rounded-lg p-8 text-center shadow-sm border border-black">
                 <FaHeart className="mx-auto text-4xl text-black mb-4" />
-                <h3 className="text-xl font-medium text-black mb-2">Your wishlist is empty</h3>
-                <p className="text-gray-500 mb-4">Save your favorite items here for easy access</p>
-                <button onClick={() => navigate("/shop")} 
-                className="bg-primary border border-black p-2 rounded-[5px] text-white">
+                <h3 className="text-xl font-medium text-black mb-2">
+                  Your wishlist is empty
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Save your favorite items here for easy access
+                </p>
+                <button
+                  onClick={() => navigate("/shop")}
+                  className="bg-primary border border-black p-2 rounded-[5px] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
                   Browse products
                 </button>
               </div>
@@ -76,11 +85,13 @@ export default function WishListPage() {
                   <FaHeart className="mr-2 text-black" />
                   Wishlist Summary
                 </h2>
-                
+
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
                     <span className="">Items</span>
-                    <span className="font-medium">{wishlist?.items?.length}</span>
+                    <span className="font-medium">
+                      {wishlist?.items?.length}
+                    </span>
                   </div>
                 </div>
               </div>

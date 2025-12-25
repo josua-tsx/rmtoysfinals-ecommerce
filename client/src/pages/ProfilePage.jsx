@@ -13,15 +13,25 @@ const MENU_ITEMS = [
 
   { name: "orderhistory", label: "Order History", component: OrderHistory },
   // { name: "mywishlist", label: "My Wishlist", component: WishListComponent },
-  { name: "shippingaddress", label: "Shipping Address", component: ShippingAddressComponent },
-  { name: "changeinformation", label: "Change Information", component: ChangeInfoComponent },
+  {
+    name: "shippingaddress",
+    label: "Shipping Address",
+    component: ShippingAddressComponent,
+  },
+  {
+    name: "changeinformation",
+    label: "Change Information",
+    component: ChangeInfoComponent,
+  },
   // { name: "setting", label: "SETTING", component: SettingComponent },
 ];
 
 export default function ProfilePage() {
   const [activeComponent, setActiveComponent] = useState("profile");
 
-  const ActiveComponent = MENU_ITEMS.find(item => item.name === activeComponent).component || ProfileComponent;
+  const ActiveComponent =
+    MENU_ITEMS.find((item) => item.name === activeComponent).component ||
+    ProfileComponent;
 
   return (
     <section className="pt-[130px]  h-full bg-yellow p-3 font-main">
@@ -49,9 +59,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-
-      <FooterSection/>
-
+      <FooterSection />
     </section>
   );
 }

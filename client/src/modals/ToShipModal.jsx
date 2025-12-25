@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
 import axiosInstance from "../lib/axios";
 
 export default function ToShipModal({
@@ -70,7 +69,7 @@ export default function ToShipModal({
                   <button
                     disabled={rider.riderStatus === "unavailable"}
                     onClick={() => handleSelectRider(rider._id)}
-                    className="border border-black rounded-[5px] p-2 bg-primary text-white"
+                    className="border border-black rounded-[5px] p-2 bg-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   >
                     {rider.riderStatus === "unavailable"
                       ? "Unavailable"
@@ -86,13 +85,13 @@ export default function ToShipModal({
         <div className="flex gap-2 pt-4 justify-center">
           <button
             onClick={onConfirm}
-            className="border rounded-[5px] px-4 border-black bg-primary p-2 text-white"
+            className="border rounded-[5px] px-4 border-black bg-primary p-2 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Confirm
           </button>
           <button
             onClick={onCancel}
-            className="border rounded-[5px] px-4 border-black bg-red-600 p-2 text-white"
+            className="border rounded-[5px] px-4 border-black bg-red-600 p-2 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Cancel
           </button>
@@ -101,3 +100,13 @@ export default function ToShipModal({
     </div>
   );
 }
+
+import PropTypes from "prop-types";
+
+ToShipModal.propTypes = {
+  selectedRiderId: PropTypes.string,
+  setSelectedRiderId: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  isOpen: PropTypes.bool.isRequired,
+};

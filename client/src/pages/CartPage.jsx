@@ -23,7 +23,7 @@ export default function CartPage() {
     if (currentOrder) {
       clearOrder();
     }
-  }, [currentOrder]);
+  }, [currentOrder, clearOrder]);
 
   const {
     data: cart = [],
@@ -35,13 +35,9 @@ export default function CartPage() {
       const res = await axiosInstance.get(`/cart/get`);
       return res.data;
     },
-  }); 
+  });
 
-  console.log(cart)
-
-
-
-
+  console.log(cart);
 
   const totalPrice = cart?.items?.reduce((total, item) => {
     return total + item.productId.price * item.quantity;
@@ -93,7 +89,7 @@ export default function CartPage() {
                 </p>
                 <button
                   onClick={() => navigate("/shop")}
-                  className="bg-primary border border-black p-2 rounded-[5px] text-white"
+                  className="bg-primary border border-black p-2 rounded-[5px] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
                   Browse products
                 </button>

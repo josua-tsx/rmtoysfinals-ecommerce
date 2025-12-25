@@ -23,7 +23,7 @@ export const ConfirmModal = ({
           </button>
           <button
             onClick={onCancel}
-            className="border border-black  bg-red-500 flex-1 text-card rounded-[5px] "
+            className="border border-black bg-red-500 flex-1 text-card rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Cancel
           </button>
@@ -31,4 +31,14 @@ export const ConfirmModal = ({
       </div>
     </div>
   );
+};
+
+import PropTypes from "prop-types";
+
+ConfirmModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
 };

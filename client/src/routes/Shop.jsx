@@ -43,6 +43,8 @@ export default function Shop() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  console.log(data);
+
   // Flatten pages to products array
   const products = useMemo(
     () => data?.pages.flatMap((page) => page.products) || [],
@@ -93,7 +95,7 @@ export default function Shop() {
         <p className="text-red-600">Error loading products: {error.message}</p>
         <button
           onClick={() => queryClient.refetchQueries({ queryKey: ["products"] })}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
         >
           Retry
         </button>

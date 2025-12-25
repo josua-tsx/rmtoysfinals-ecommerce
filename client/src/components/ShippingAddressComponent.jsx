@@ -1,5 +1,4 @@
 import { FaCheckCircle } from "react-icons/fa";
-import AddressSection from "../hooks/AddressSection";
 
 import {
   regions,
@@ -36,7 +35,7 @@ export default function ShippingAddressComponent() {
 
   const [selectedId, setSelectedId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const {
     data: currentUserAddress,
     isPending,
@@ -161,7 +160,7 @@ export default function ShippingAddressComponent() {
   if (isError) return <p>loading...</p>;
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto p-6">
       {openModal && singleAddressEdit && (
         <EditAddress
           address={singleAddressEdit}
@@ -179,178 +178,191 @@ export default function ShippingAddressComponent() {
         onCancel={handleCancel}
       />
 
-      <h1 className="text-xl">Shipping Address</h1>
+      <div className="border-b border-gray-100 pb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Shipping Address</h1>
+        <p className="text-gray-500 mt-1">
+          Manage your shipping addresses for delivery
+        </p>
+      </div>
 
-      <div className="w-[90%] md:w-[80%] mx-auto my-5">
-        <div className="bg-yellow-50 border-l-4 border-red-700 text-red-700 p-4 mb-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-yellow-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3 flex flex-col gap-2">
-              <p className="text-md ">
-                <strong>Important:</strong> Your delivery address must be valid
-                and accurate. Incomplete or false addresses may result in
-                automatic cancellation of your order.
-              </p>
-            </div>
+      <div className="p-8 space-y-8">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 text-amber-800">
+          <div className="flex-shrink-0 mt-0.5">
+            <svg
+              className="h-5 w-5 text-amber-600"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="text-sm">
+            <span className="font-semibold">Important:</span> Your delivery
+            address must be valid and accurate. Incomplete or false addresses
+            may result in automatic cancellation of your order.
           </div>
         </div>
 
-        <form onSubmit={handleAddressSubmit} className="flex flex-col gap-5">
-          {/* <div className="flex justify-end">
-            <button
-              type="button"
-              className="hover:opacity-95 uppercase flex items-center border gap-5 px-5 border-black p-2 rounded-[5px] bg-primary text-card"
-            >
-              Add new address
-              <FaCheckCircle size={15} />
-            </button>
-          </div> */}
+        <form onSubmit={handleAddressSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Country
+              </label>
+              <select
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                name="country"
+                id="contry"
+              >
+                <option value="Philippines">Philippines</option>
+              </select>
+            </div>
 
-          <AddressSection title={"Country"}>
-            <select
-              className="bg-gray-200  p-2 border border-black rounded-[5px]"
-              name="country"
-              id="contry"
-            >
-              <option value="Philippines">Philippines</option>
-            </select>
-          </AddressSection>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Region
+              </label>
+              <select
+                value={selectedRegion ? selectedRegion.reg_code : ""}
+                onChange={handleRegionChange}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                name="region"
+                id="region"
+              >
+                <option value="">Select Region</option>
+                {regions.map((region) => (
+                  <option key={region.name} value={region.reg_code}>
+                    {region.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <AddressSection title={"Region"}>
-            <select
-              value={selectedRegion ? selectedRegion.reg_code : ""}
-              onChange={handleRegionChange}
-              className="bg-gray-200  p-2 border border-black rounded-[5px]"
-              name="region"
-              id="region"
-            >
-              <option value="">Select Region</option>
-              {regions.map((region) => (
-                <option key={region.name} value={region.reg_code}>
-                  {region.name}
-                </option>
-              ))}
-            </select>
-          </AddressSection>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                State / Province
+              </label>
+              <select
+                value={selectedProvince ? selectedRegion.prov_code : ""}
+                onChange={handleProvinceChange}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                name="stateProvince"
+                id="stateProvince"
+              >
+                <option value="">Select Province</option>
+                {provinces.map((province) => (
+                  <option key={province.name} value={province.prov_code}>
+                    {province.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <AddressSection title={"State / Province"}>
-            <select
-              value={selectedProvince ? selectedRegion.prov_code : ""}
-              onChange={handleProvinceChange}
-              className="bg-gray-200  p-2 border border-black rounded-[5px]"
-              name="stateProvince"
-              id="stateProvince"
-            >
-              <option value="">Select Province</option>
-              {provinces.map((province) => (
-                <option key={province.name} value={province.prov_code}>
-                  {province.name}
-                </option>
-              ))}
-            </select>
-          </AddressSection>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">City</label>
+              <select
+                value={selectedCity}
+                onChange={handleCityChange}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                name="city"
+                id="city"
+              >
+                <option value="">Select City</option>
+                {cities.map((city) => (
+                  <option key={city.name} value={city.name}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <AddressSection title={"City"}>
-            <select
-              value={selectedCity}
-              onChange={handleCityChange}
-              className="bg-gray-200  p-2 border border-black rounded-[5px]"
-              name="city"
-              id="city"
-            >
-              <option value="">Select City</option>
-              {cities.map((city) => (
-                <option key={city.name} value={city.name}>
-                  {city.name}
-                </option>
-              ))}
-            </select>
-          </AddressSection>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Barangay
+              </label>
+              <input
+                type="text"
+                value={barangay}
+                onChange={handleInputChange(setBarangay)}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                name="barangay"
+                id="barangay"
+                pattern="^[a-zA-Z\s'-]{2,100}$"
+                title="Use only letters, hyphens, or apostrophes."
+                placeholder="Ex: Lower bicutan"
+                required
+              />
+            </div>
 
-          <AddressSection title={"Barangay"}>
-            <input
-              type="text"
-              value={barangay}
-              onChange={handleInputChange(setBarangay)}
-              className="bg-gray-200 outline-none p-2 border border-black rounded-[5px]"
-              name="barangay"
-              id="barangay"
-              pattern="^[a-zA-Z\s'-]{2,100}$"
-              title="Use only letters, hyphens, or apostrophes."
-              placeholder="Ex: Lower bicutan"
-              required
-            ></input>
-          </AddressSection>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Street Name, Building, House No.
+              </label>
+              <input
+                value={streetBuildingHouseNum}
+                onChange={handleInputChange(setStreetBuildingHouseNum)}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                placeholder="Ex: 14 St. #28"
+                type="text"
+                pattern="^[a-zA-Z0-9\s\.,#'-]{5,200}$"
+                title="Use letters, numbers, or symbols like .,-#"
+                id="streetBuildingHouseNum"
+                name="streetBuildingHouseNum"
+                required
+              />
+            </div>
+          </div>
 
-          <AddressSection
-            title={"Street Name, Building, House No."}
-          >
-            <input
-              value={streetBuildingHouseNum}
-              onChange={handleInputChange(setStreetBuildingHouseNum)}
-              className="bg-gray-200 outline-none p-2 border border-black rounded-[5px]"
-              placeholder="Ex: 14 St. #28"
-              type="text"
-              pattern="^[a-zA-Z0-9\s\.,#'-]{5,200}$"
-              title="Use letters, numbers, or symbols like .,-#"
-              id="streetBuildingHouseNum"
-              name="streetBuildingHouseNum"
-              required
-            />
-          </AddressSection>
-
-          <div className="flex justify-end">
-            <button className="hover:opacity-95 uppercase flex items-center border gap-5 px-5 border-black p-2 rounded-[5px] bg-primary text-card">
-              Save Address
-              <FaCheckCircle size={15} />
+          <div className="flex justify-end pt-4">
+            <button className="inline-flex items-center gap-2 bg-primary border border-black text-white hover:bg-primary/90 px-8 py-2.5 rounded-lg font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all transform active:scale-95">
+              <span>Save Address</span>
+              <FaCheckCircle className="text-lg" />
             </button>
           </div>
         </form>
 
-        <div className="flex flex-col mt-10 border-t-gray-400 pt-5 border border-r-0 border-l-0 border-b-0 gap-2">
-          <h1>Your Address: </h1>
-          <div className="flex flex-col gap-5">
-            <ul className="flex flex-col gap-3">
-              {currentUserAddress.length > 0 ? (
-                currentUserAddress.map((add) => (
-                  <li
-                    key={add._id}
-                    className="border flex justify-between border-black p-1 px-2 rounded-[5px]"
-                  >
-                    {add.fullAddress}
-                    <div className="flex gap-2">
+        <div className="pt-6 border-t border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900 border-l-4 border-primary pl-3 mb-6">
+            Saved Addresses
+          </h2>
+          <div className="space-y-4">
+            {currentUserAddress.length > 0 ? (
+              currentUserAddress.map((add) => (
+                <div
+                  key={add._id}
+                  className="bg-white border border-gray-200 rounded-lg p-5 hover:border-primary/50 transition-colors shadow-sm"
+                >
+                  <div className="flex justify-between items-start gap-4">
+                    <p className="text-gray-700 leading-relaxed font-medium">
+                      {add.fullAddress}
+                    </p>
+                    <div className="flex gap-3 shrink-0">
                       <button
                         onClick={() => handleOpenEdit(add)}
-                        className="text-green-600"
+                        className="text-sm text-green-600 hover:text-green-700 font-medium px-3 py-1 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteclick(add._id)}
-                        className="text-red-600"
+                        className="text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
                       >
                         Delete
                       </button>
                     </div>
-                  </li>
-                ))
-              ) : (
-                <p className="text-sm">(no address yet)</p>
-              )}
-            </ul>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 italic text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                No addresses saved yet
+              </p>
+            )}
           </div>
         </div>
       </div>

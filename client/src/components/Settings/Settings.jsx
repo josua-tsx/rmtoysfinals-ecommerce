@@ -23,7 +23,7 @@ export default function Settings({ toggle, openSetting }) {
   });
 
   return (
-    <div className="relative font-main text-sm md:text-normal">
+    <div className="relative z-50 font-main text-sm md:text-normal">
       <button onClick={toggle} className="relative">
         <BsThreeDotsVertical size={25} />
       </button>
@@ -61,8 +61,8 @@ export default function Settings({ toggle, openSetting }) {
           <li className=" p-1 hover:bg-gray-300">
             <button
               onClick={() => {
-                signOut()
-                console.log("sign out")
+                signOut();
+                console.log("sign out");
               }}
               className="  flex justify-between w-full items-center"
             >

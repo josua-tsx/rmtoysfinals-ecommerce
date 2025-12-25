@@ -34,12 +34,11 @@ export const OrderStocks = async (req, res, next) => {
   } = req.body;
 
   try {
-    // ✅ Validate required fields first
+    // ✅ Validate required fields first (Removed VAT from strict check)
     if (
       !product ||
       !supplier ||
       !deliveryId ||
-      !vat ||
       !shippingPrice ||
       !dateDelivery ||
       !shopPrice
@@ -47,57 +46,55 @@ export const OrderStocks = async (req, res, next) => {
       return res.status(400).json({ message: "Please input required fields!" });
     }
 
-    // ✅ Validate ObjectIds before using them
+    // ✅ Validate ObjectIds
     if (!mongoose.Types.ObjectId.isValid(product)) {
       return next(handleMakeError(400, "Invalid product ID"));
     }
-
     if (!mongoose.Types.ObjectId.isValid(supplier)) {
       return next(handleMakeError(400, "Invalid supplier ID"));
     }
 
-    if (!mongoose.Types.ObjectId.isValid(vat)) {
-      return next(handleMakeError(400, "Invalid VAT ID"));
-    }
-
-    // ✅ Check if referenced documents exist
-    const [productExists, supplierExists, vatExists] = await Promise.all([
-      Product.findById(product),
-      Supplier.findById(supplier),
-      Vat.findById(vat),
-    ]);
-
+    // ✅ Fetch Product FIRST to check Tax Status
+    const productExists = await Product.findById(product);
     if (!productExists) {
       return next(handleMakeError(404, "Product not found"));
     }
+
+    // ✅ Handle VAT Logic
+    let vatExists = null;
+    
+    if (productExists.taxStatus === "vatable") {
+      if (!vat || !mongoose.Types.ObjectId.isValid(vat)) {
+        return next(handleMakeError(400, "VAT ID is required for vatable products"));
+      }
+      vatExists = await Vat.findById(vat);
+      if (!vatExists) {
+        return next(handleMakeError(404, "VAT not found"));
+      }
+    } 
+    // If Status is 'exempt' (or others), we proceed with vatExists = null
+
+    const supplierExists = await Supplier.findById(supplier);
     if (!supplierExists) {
       return next(handleMakeError(404, "Supplier not found"));
     }
-    if (!vatExists) {
-      return next(handleMakeError(404, "VAT not found"));
-    }
 
     // ✅ Additional validations
-    if (!dateDelivery) {
-      return next(handleMakeError(400, "Please input date delivery"));
-    }
-
     const MAX_SHOP_PRICE = 1000000; // $1 Million
     const MAX_SHIPPING_PRICE = 10000; // $10k
     const MAX_QUANTITY = 1000;
-    const MAX_SUPPLIER_PRICE = 1000000
+    const MAX_SUPPLIER_PRICE = 1000000;
 
     if (!supplierPrice) {
       return next(handleMakeError(400, "Please input supplier price"));
     }
     
-    // It's also smart to check if it's a valid, positive number
     if (Number(supplierPrice) <= 0) {
       return next(handleMakeError(400, "Supplier price must be a positive number"));
     }
 
     if (Number(supplierPrice) > MAX_SUPPLIER_PRICE) {
-      return next(handleMakeError(400, `Supplier price cannot exceed $${MAX_PRICE}`));
+      return next(handleMakeError(400, `Supplier price cannot exceed $${MAX_SUPPLIER_PRICE}`));
     }
 
     // Quantity specific validation
@@ -129,6 +126,11 @@ export const OrderStocks = async (req, res, next) => {
       isSubscribed: true,
     }).select("email");
 
+    // ✅ Calculate VAT values server-side
+    const vatPercent = vatExists ? vatExists.vatPercent : 0;
+    const calculatedVatShopPrice = Number(shopPrice) * (1 + vatPercent / 100);
+    const calculatedVatToRemit = (calculatedVatShopPrice - Number(shopPrice)) * Number(quantity);
+
     // ✅ Create and save new delivery
     const newDelivery = new Stocks({
       product,
@@ -141,9 +143,9 @@ export const OrderStocks = async (req, res, next) => {
       deliveryStatus: "delivered",
       deliveryId,
       dateDelivery: new Date(dateDelivery),
-      vat,
-      vatShopPrice: Number(vatShopPrice),
-      vatToRemit: (Number(vatShopPrice) - Number(shopPrice)) * Number(quantity),
+      vat: vatExists ? vatExists._id : null,
+      vatShopPrice: calculatedVatShopPrice,
+      vatToRemit: calculatedVatToRemit,
     });
 
     await newDelivery.save();
@@ -189,7 +191,7 @@ export const OrderStocks = async (req, res, next) => {
       quantityOrdered: Number(quantity),
       supplierPrice: Number(supplierPrice) || 0,
       shippingPrice: Number(shippingPrice),
-      vatPercentApplied: vatExists.vatPercent|| 0, // Use actual percentage from VAT document
+      vatPercentApplied: vatPercent, 
       shopPrice: Number(shopPrice),
       receivedDate: new Date(dateDelivery),
       receivedQuantity: Number(quantity),
@@ -202,20 +204,20 @@ export const OrderStocks = async (req, res, next) => {
         product,
         {
           status: "published",
-          price: Number(vatShopPrice),
+          price: calculatedVatShopPrice,
           preVatPrice: Number(shopPrice),
           stocks: newDelivery._id,
-          taxStatus: vatExists.vatPercent > 0 ? "vatable" : "exempt",
-          totalVat: vatExists.vatPercent || 0
+          taxStatus: vatPercent > 0 ? "vatable" : "exempt",
+          totalVat: vatPercent
         },
         { new: true, runValidators: true }
       ),
       Supplier.findByIdAndUpdate(supplier, {
         $push: { product: newDelivery.product },
       }),
-      Vat.findByIdAndUpdate(vat, {
+      (vatExists && Vat.findByIdAndUpdate(vat, {
         $addToSet: { productId: newDelivery.product },
-      }),
+      }))
     ]);
   } catch (error) {
     console.error("OrderStocks error:", error);
@@ -280,18 +282,18 @@ const processEmailsInBackground = async (
   }
 
   console.log(
-    `📧 Email summary: ${results.successful} sent, ${results.failed} failed`
+    `📧 Email summary: ${results.successful} sent, ${ sults.failed} failed`
   );
   return results;
 };
 
 export const reorderStock = async (req, res, next) => {
   const {
-    product,
+    product: productIdFromBody, // Rename to avoid confusion
     supplier,
     supplierPrice,
     shopPrice,
-    quantity: newQuantity, // Rename to newQuantity for clarity
+    quantity: newQuantity,
     category,
     shippingPrice,
     totalCost: newTotalCost,
@@ -305,13 +307,20 @@ export const reorderStock = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
+    // 1. Fetch Existing Stock Early
+    const existingStock = await Stocks.findById(stockId);
+    if (!existingStock) return next(handleMakeError(400, "No stock found!"));
+
+    const productId = productIdFromBody || existingStock.product;
+
     if (!dateDelivery) {
       return next(handleMakeError(400, "Please input date delivery"));
     }
 
-    if (!newVatPercent) {
-      return next(handleMakeError(400, "Please select VAT"));
-    }
+    // Commented out strict VAT check to allow fallback
+    // if (!newVatPercent) {
+    //   return next(handleMakeError(400, "Please select VAT"));
+    // }
 
     if (!supplier) {
       return next(handleMakeError(400, "Please select Supplier"));
@@ -325,16 +334,6 @@ export const reorderStock = async (req, res, next) => {
       return next(handleMakeError(400, "Please input shipping Price"));
     }
 
-    if (
-      !dateDelivery ||
-      !newVatPercent ||
-      !supplier ||
-      !shopPrice ||
-      !shippingPrice
-    ) {
-      return res.status(400).json({ message: "Please input required fields!" });
-    }
-
     const MAX_SHOP_PRICE = 1000000; // $1 Million
     const MAX_SHIPPING_PRICE = 10000; // $10k
     const MAX_QUANTITY = 1000;
@@ -344,7 +343,6 @@ export const reorderStock = async (req, res, next) => {
       return next(handleMakeError(400, "Please input supplier price"));
     }
     
-    // It's also smart to check if it's a valid, positive number
     if (Number(supplierPrice) <= 0) {
       return next(handleMakeError(400, "Supplier price must be a positive number"));
     }
@@ -354,8 +352,8 @@ export const reorderStock = async (req, res, next) => {
     }
 
     // Quantity specific validation
-    if (Number(newQuantity) <= 10) {
-      return next(handleMakeError(400, "Quantity must be at least 11"));
+    if (Number(newQuantity) <= 0) { // Changed this to allow smaller re-orders if needed, or keep at 10? User generally wants > 0
+      return next(handleMakeError(400, "Quantity must be greater than 0"));
     }
     if (Number(newQuantity) > MAX_QUANTITY) {
       return next(handleMakeError(400, `Quantity cannot exceed ${MAX_QUANTITY}`));
@@ -376,44 +374,67 @@ export const reorderStock = async (req, res, next) => {
        return next(handleMakeError(400, `Shipping price cannot exceed ${MAX_SHIPPING_PRICE}`));
     }
 
+    // 2. Determine VAT to use
+    let vatIdToUse = newVatPercent;
+    
+    // If not provided in body, fall back to existing stock's VAT
+    if (!vatIdToUse) {
+        vatIdToUse = existingStock.vat; 
+    }
 
+    // If still null, maybe check product (optional, but good for safety)
+    if (!vatIdToUse) {
+       const prod = await Product.findById(productId);
+       if (prod && prod.vat) {
+         vatIdToUse = prod.vat;
+       }
+    }
 
+    // 3. Fetch VAT details for calculation
+    let vatPercent = 0;
+    let vatDoc = null;
 
+    if (vatIdToUse) {
+        vatDoc = await Vat.findById(vatIdToUse);
+        if (vatDoc) {
+            vatPercent = vatDoc.vatPercent;
+        }
+    }
 
-    // find the existing product on vat, if found then pull it before adding to new one (which the logic bellow)
-    const existingStock = await Stocks.findById(stockId);
-    if (!existingStock) return next(handleMakeError(400, "No stock found!"));
-
-    // 2. Calculate the new total quantity and total cost
+    // 4. Calculate stats
     const updatedQuantity = existingStock.quantity + Number(newQuantity);
-    // const updatedTotalCost = existingStock.totalCost + Number(newTotalCost);
+    
+    const calculatedVatShopPrice = Number(shopPrice) * (1 + vatPercent / 100);
+    const calculatedVatToRemit = (calculatedVatShopPrice - Number(shopPrice)) * updatedQuantity;
 
-    // 3. Update the stock with all fields including the new quantity
+    // 5. Update the stock
     const updateDeliver = await Stocks.findByIdAndUpdate(
       stockId,
       {
-        product,
+        product: productId,
         supplier,
         supplierPrice,
         shopPrice,
-        quantity: updatedQuantity, // Use the summed quantity
+        quantity: updatedQuantity, 
         category,
         shippingPrice,
-        totalCost: supplierPrice * updatedQuantity + shippingPrice,
+        totalCost: Number(supplierPrice) * Number(updatedQuantity) + Number(shippingPrice), // Recalculate total cost carefully
         deliveryStatus: "delivered",
         deliveryId,
         dateDelivery,
-        vat: newVatPercent,
-        vatShopPrice,
-        vatToRemit:
-          (Number(vatShopPrice) - Number(shopPrice)) * updatedQuantity,
+        vat: vatDoc ? vatDoc._id : null, // Ensure we save the resolved ID
+        vatShopPrice: calculatedVatShopPrice,
+        vatToRemit: calculatedVatToRemit,
       },
-      { new: true } // Return the updated document
+      { new: true } 
     );
 
-    await Vat.findByIdAndUpdate(newVatPercent, {
-      $addToSet: { productId: updateDeliver.product },
-    });
+    // Update VAT relationship if valid
+    if (vatDoc) {
+        await Vat.findByIdAndUpdate(vatDoc._id, {
+        $addToSet: { productId: updateDeliver.product },
+        });
+    }
 
     await orderStockLogs({
       action: "admin_reordered_stock",
@@ -421,21 +442,23 @@ export const reorderStock = async (req, res, next) => {
       deliveryId,
       supplier,
       category,
-      quantityOrdered: newQuantity,
+      quantityOrdered: Number(newQuantity),
       supplierPrice,
       shippingPrice,
-      vatPercentApplied: newVatPercent,
-      shopPrice,
-      receivedDate: dateDelivery,
-      receivedQuantity: newQuantity,
-      totalCost: newTotalCost,
+      vatPercentApplied: vatPercent, // Log the actual percent used
+      shopPrice: Number(shopPrice),
+      receivedDate: new Date(dateDelivery),
+      receivedQuantity: Number(newQuantity),
+      totalCost: Number(newTotalCost) || (Number(supplierPrice) * Number(newQuantity) + Number(shippingPrice)), // Use provided or calculated
     });
 
     await Product.findByIdAndUpdate(
       existingStock.product,
       {
-        price: vatShopPrice,
-        preVatPrice: shopPrice,
+        price: calculatedVatShopPrice,
+        preVatPrice: Number(shopPrice),
+        taxStatus: vatPercent > 0 ? "vatable" : "exempt", // Update tax status based on effective VAT
+        totalVat: vatPercent
       },
       { new: true, runValidators: true }
     );
@@ -516,7 +539,7 @@ export const getStocks = async (req, res, next) => {
       })
       .populate({
         path: "vat",
-        select: "vatPercent vatValue",
+        select: "vatPercent vatValue vatName",
       })
       .populate({
         path: "supplier",

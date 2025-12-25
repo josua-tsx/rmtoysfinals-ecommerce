@@ -56,12 +56,9 @@ export default function OrderSummaryModal({ onClose }) {
     totalPrice,
     shippingVat,
   } = useMemo(() => {
-    const vatFactor = 1.12; // 12%
-
     // Convert shipping to number safely
     const shippingGross = Number(shippingFee || 0);
 
-    let grossVatable = 0;
     let grossExempt = 0;
     let points = 0;
     let itemsSubtotal = 0; // sum of item prices only
@@ -75,36 +72,51 @@ export default function OrderSummaryModal({ onClose }) {
       itemsSubtotal += gross;
       points += Number(item?.productId?.points || 0) * qty;
 
-      if (taxStatus === "vatable") {
-        grossVatable += gross;
-      } else {
+      if (taxStatus !== "vatable") {
+        // Exempt or zero-VAT - treat as non-taxable
         grossExempt += gross;
       }
     }
 
-    // ✅ SHIPPING IS TAXABLE: include it in the vatable gross total
-    const grossVatableWithShipping = grossVatable + shippingGross;
+    // Shipping is VAT-exempt (not subject to VAT)
 
-    const shippingVat = ROUND(shippingGross - shippingGross / vatFactor);
+    // Calculate VAT from vatable items (VAT-inclusive pricing)
+    // For each vatable item, price already includes VAT
+    let totalVatableNet = 0;
+    let totalVatAmount = 0;
 
-    // Compute aggregate net and VAT
-    const vatableNetExact = grossVatableWithShipping / vatFactor;
-    const vatExact = grossVatableWithShipping - vatableNetExact;
+    for (const item of cart || []) {
+      const taxStatus = (item?.productId?.taxStatus || "").toLowerCase();
+      if (taxStatus === "vatable") {
+        const price = Number(item?.productId?.price || 0);
+        const qty = Number(item?.quantity || 0);
+        const gross = price * qty;
 
-    const vatableNet = ROUND(vatableNetExact);
-    const totalVat = ROUND(vatExact);
+        // Get VAT rate from product, default to 12% if not found
+        const vatRate = item?.productId?.vat?.vatPercent ?? 12;
+        const vatFactor = 1 + vatRate / 100;
+
+        // Calculate net and VAT (VAT-inclusive)
+        const net = gross / vatFactor;
+        const vat = gross - net;
+
+        totalVatableNet += net;
+        totalVatAmount += vat;
+      }
+    }
+
+    // Shipping is not included in VAT calculation
 
     const subtotal = ROUND(itemsSubtotal);
     const totalPrice = ROUND(itemsSubtotal + shippingGross);
 
     return {
       subtotal,
-      vatableSalesNet: vatableNet,
+      vatableSalesNet: ROUND(totalVatableNet),
       vatExemptSales: ROUND(grossExempt),
-      totalVatAmount: totalVat,
+      totalVatAmount: ROUND(totalVatAmount),
       totalPoints: points,
       totalPrice,
-      shippingVat,
     };
   }, [cart, shippingFee]);
 
@@ -507,13 +519,13 @@ export default function OrderSummaryModal({ onClose }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-black bg-red-700 text-white rounded-md "
+                className="px-4 py-2 border border-black bg-red-700 text-white rounded-md shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 flex-1 border border-black bg-primary text-white rounded-md hover:bg-primary-dark"
+                className="px-4 py-2 flex-1 border border-black bg-primary text-white rounded-md hover:bg-primary-dark shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 Place Order
               </button>
@@ -555,7 +567,7 @@ export default function OrderSummaryModal({ onClose }) {
 
                         {item?.productId?.taxStatus === "vatable" && (
                           <span className="text-blue-500">
-                            : {item.productId?.totalVat}%
+                            - {item.productId?.vat?.vatPercent}%
                           </span>
                         )}
                       </div>
@@ -583,14 +595,7 @@ export default function OrderSummaryModal({ onClose }) {
               </div>
 
               <div className="flex justify-between text-sm">
-                <span>
-                  Shipping Fee
-                  <span className="text-gray-500">
-                    {" "}
-                    (includes {formatPrice(shippingVat)} VAT)
-                  </span>
-                  :
-                </span>
+                <span className="text-gray-600">Shipping Fee :</span>
                 <span>{formatPrice(shippingFee)} PHP</span>
               </div>
 

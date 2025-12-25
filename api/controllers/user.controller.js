@@ -66,7 +66,7 @@ export const verifyUserEmail = async (req, res, next) => {
   await validUser.save();
 
   // Send verification email
-  const verificationUrl = `https://www.rmtoys.store/verify-email?token=${verificationToken}`;
+  const verificationUrl = process.env.NODE_ENV === "development" ? process.env.FRONTEND_URL + `/verify-email?token=${verificationToken}` : process.env.CLIENT_URL + `/verify-email?token=${verificationToken}`;
 
   try {
     await sendGrid(
@@ -271,8 +271,10 @@ export const getAllCustomer = async (req, res, next) => {
 export const getAllWorkers = async (req, res, next) => {
   try {
     const workers = await User.find({
-      role: { $ne: "customer" },
-      _id: { $ne: "674a8b6e31d97896a7d5e9e2" },
+      // $nin: fetch those are not in (the array)
+      role: { 
+        $nin: ["admin", "customer"]
+       },
     })
       .populate({
         path: "address",

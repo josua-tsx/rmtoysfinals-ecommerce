@@ -20,7 +20,7 @@ export default function SingleOrderList({ order, onClose }) {
 
   const queryClient = useQueryClient();
 
-  console.log(order._id)
+  console.log(order._id);
 
   const navigate = useNavigate();
 
@@ -79,7 +79,7 @@ export default function SingleOrderList({ order, onClose }) {
           <button
             onClick={onClose}
             type="button"
-            className="absolute border border-black text-card bg-primary rounded-[5px] px-5 right-0 -top-8"
+            className="absolute border border-black text-card bg-primary rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             <IoIosClose size={25} />
           </button>
@@ -339,3 +339,10 @@ export default function SingleOrderList({ order, onClose }) {
     </section>
   );
 }
+
+import PropTypes from "prop-types";
+
+SingleOrderList.propTypes = {
+  order: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+};

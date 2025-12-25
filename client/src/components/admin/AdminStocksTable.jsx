@@ -10,7 +10,6 @@ import { useUserStore } from "../../stores/useUserStore";
 
 export default function AdminStocksTable() {
   const currentUser = useUserStore((state) => state.currentUser);
-  console.log(currentUser);
 
   // const queryClient = useQueryClient();
 
@@ -228,7 +227,7 @@ export default function AdminStocksTable() {
                           currentUser.role === "validatorStaff"
                             ? "hidden"
                             : "block"
-                        } border border-black p-1 px-2 rounded-[5px] bg-red-700 text-white hover:text-indigo-300 mr-2`}
+                        } border border-black p-1 px-2 rounded-[5px] bg-red-700 text-white hover:text-indigo-300 mr-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all`}
                       >
                         Reduce Quantity
                       </button>

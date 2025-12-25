@@ -8,6 +8,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import useOrderStore from "../stores/useOrderStore";
 import FooterSection from "../components/FooterSection";
+import ChatWidget from "../components/ChatWidget";
 
 const RootLayout = () => {
   // 🧠 User store
@@ -30,15 +31,6 @@ const RootLayout = () => {
       clearOrder();
     }
   }, [currentOrder]);
-
-  // 🔁 Query: fetch stocks
-  const { data: stocks = [] } = useQuery({
-    queryKey: ["stocks"],
-    queryFn: async () => {
-      const res = await axiosInstance.get("/stocks/get-stocks");
-      return res.data;
-    },
-  });
 
   // ❌ Mutation: sign-out user
   const { mutate: signOut } = useMutation({
@@ -67,12 +59,13 @@ const RootLayout = () => {
       {/* Main Content */}
       <main className="bg-yellow">
         <Outlet />
+        <ChatWidget />
       </main>
       <footer className="bg-yellow">
         <FooterSection />
       </footer>
       <Toaster
-      position="top-right"
+        position="top-right"
         toastOptions={{
           style: {
             width: "300px",
@@ -102,6 +95,7 @@ const RequiredAuth = () => {
       <main className="">
         <Outlet />
       </main>
+
       <Toaster
         position="top-right"
         toastOptions={{

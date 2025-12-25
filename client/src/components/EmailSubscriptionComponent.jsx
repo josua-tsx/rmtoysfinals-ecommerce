@@ -1,4 +1,3 @@
-import React from "react";
 import columnOnePic from "../assets/column1.png";
 import { IoMdSend } from "react-icons/io";
 import { IoIosNotifications } from "react-icons/io";
@@ -45,7 +44,7 @@ export default function EmailSubscriptionComponent() {
     },
   });
 
-  const { mutate: unsubscribeMutation, isPending } = useMutation({
+  const { mutate: unsubscribeMutation } = useMutation({
     mutationFn: async () => {
       const res = await axiosInstance.delete(`/subscribe/unsubscribe`);
       return res.data;
@@ -72,7 +71,7 @@ export default function EmailSubscriptionComponent() {
   // };
 
   return (
-    <section className="bg-yellow p-3 font-main pt-28 md:pt-36">
+    <section className="bg-yellow p-3 font-main pt-28">
       {/* <ConfirmModal
         isOpen={openConfirmModal}
         title={"Confirm Unsubscribe"}
@@ -129,7 +128,7 @@ export default function EmailSubscriptionComponent() {
                     // onClick={() => openModal()}
                     // type="button"
                     onClick={unsubscribeMutation}
-                    className="border bg-red-500 text-white rounded-[5px] border-black p-2"
+                    className="border bg-red-500 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   >
                     Unsubscribe
                   </button>
@@ -139,7 +138,7 @@ export default function EmailSubscriptionComponent() {
                       isSubscribe
                         ? "w-full rounded-l-[5px]"
                         : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
-                    } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%]`}
+                    } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all`}
                   >
                     {!isSubscribe ? (
                       <IoMdSend

@@ -1,11 +1,23 @@
 import { useState } from "react";
-import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { Link } from "react-router-dom";
-import { IoMdArrowDropright } from "react-icons/io";
-import { IoMdArrowDropleft } from "react-icons/io";
-import { MdCategory } from "react-icons/md";
-import { IoIosStats } from "react-icons/io";
-import { MdKeyboardReturn } from "react-icons/md";
+import {
+  IoMdArrowDropright,
+  IoMdArrowDropleft,
+  IoIosStats,
+} from "react-icons/io";
+import { MdCategory, MdKeyboardReturn, MdDeliveryDining } from "react-icons/md";
+import {
+  FaPuzzlePiece,
+  FaBoxOpen,
+  FaUsers,
+  FaWarehouse,
+  FaQuestionCircle,
+  FaTruckLoading,
+  FaPercentage,
+  FaMoneyBillWave,
+} from "react-icons/fa";
+import { BiSupport } from "react-icons/bi";
+import { AiOutlineAudit } from "react-icons/ai";
 import { useUserStore } from "../../stores/useUserStore";
 
 import RMTOYSLOGO from "../../assets/RMTOYSLOGOFINAL.png";
@@ -22,12 +34,12 @@ export default function AdminSideBar() {
     {
       name: "Order Status",
       path: "/admin/orderStatus",
-      icon: <TbLayoutDashboardFilled size={20} />,
+      icon: <FaBoxOpen size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
     },
     {
       name: "Product Maintenance",
-      icon: <TbLayoutDashboardFilled size={20} />,
+      icon: <FaPuzzlePiece size={20} />,
       allowedRoles: ["admin"],
       inner: [
         {
@@ -52,27 +64,17 @@ export default function AdminSideBar() {
       name: "Category Maintenance",
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin"],
-      inner: [
-        {
-          name: "Category Table",
-          path: "/admin/category",
-        },
-      ],
+      path: "/admin/category",
     },
     {
       name: "Supplier Maintenance",
-      icon: <MdCategory size={20} />,
+      icon: <FaTruckLoading size={20} />,
       allowedRoles: ["admin"],
-      inner: [
-        {
-          name: "Supplier Table",
-          path: "/admin/supplier",
-        },
-      ],
+      path: "/admin/supplier",
     },
     {
       name: "User Maintenance",
-      icon: <MdCategory size={20} />,
+      icon: <FaUsers size={20} />,
       allowedRoles: ["admin"],
       inner: [
         {
@@ -88,32 +90,21 @@ export default function AdminSideBar() {
 
     {
       name: "Rider Maintenance",
-      icon: <MdCategory size={20} />,
+      icon: <MdDeliveryDining size={20} />,
       allowedRoles: ["admin"],
-      inner: [
-        {
-          name: "Rider Table",
-          path: "/admin/rider",
-        },
-      ],
+      path: "/admin/rider",
     },
 
     {
       name: "Faqs Maintenance",
-      path: "/admin/audit",
-      icon: <MdCategory size={20} />,
+      path: "/admin/faqs",
+      icon: <FaQuestionCircle size={20} />,
       allowedRoles: ["admin"],
-      inner: [
-        {
-          name: "Faqs Table",
-          path: "/admin/faqs",
-        },
-      ],
     },
 
     {
       name: "Stocks",
-      icon: <MdCategory size={20} />,
+      icon: <FaWarehouse size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
       inner: [
         {
@@ -134,31 +125,29 @@ export default function AdminSideBar() {
 
     {
       name: "Value added tax",
-      icon: <MdCategory size={20} />,
+      icon: <FaPercentage size={20} />,
       allowedRoles: ["admin"],
-      inner: [
-        {
-          name: "VAT Table",
-          path: "/admin/vat",
-        },
-        {
-          name: "Add VAT",
-          path: "/admin/addVat",
-        },
-      ],
+      path: "/admin/vat",
+    },
+
+    {
+      name: "Tickets",
+      path: "/admin/tickets",
+      icon: <BiSupport size={20} />,
+      allowedRoles: ["admin"],
     },
 
     {
       name: "Order Transactions",
       path: "/admin/orderTransactions",
-      icon: <MdCategory size={20} />,
+      icon: <FaMoneyBillWave size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
     },
 
     {
       name: "Logs",
       path: "/admin/audit",
-      icon: <MdCategory size={20} />,
+      icon: <AiOutlineAudit size={20} />,
       allowedRoles: ["admin"],
     },
 

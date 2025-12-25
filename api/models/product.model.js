@@ -74,8 +74,9 @@ const ProductModelSchema = new mongoose.Schema(
       enum: ["vatable", "exempt"]
     },
 
-    totalVat: {
-      type: Number
+    vat: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vat",
     },
 
     userId: [

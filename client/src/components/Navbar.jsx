@@ -5,7 +5,7 @@ import ArrowLine from "../reusable/ArrowLine";
 import Cart from "./Cart";
 import Profile from "./Profile";
 import Settings from "./Settings/Settings";
-
+import SettingsMobile from "./Settings/SettingsMobile";
 
 import { navItems } from "../const/const";
 import { useUserStore } from "../stores/useUserStore";
@@ -40,15 +40,19 @@ export default function Navbar() {
     setOpenSetting((prev) => !prev);
   };
 
+  const navItemsWithoutSupport = currentUser
+    ? navItems
+    : navItems.filter((item) => item.name !== "Support");
+
   return (
     <header className=" bg-yellow fixed p-4 py-4 top-0 left-0 right-0 z-40">
       <nav className="flex justify-between max-w-[1280px] mx-auto relative">
         {/* MOBILE NAVBAR */}
         <div
-          className={` absolute flex flex-col h-screen w-48 transition-all ${
+          className={` absolute flex flex-col h-screen  w-[80%] transition-all ${
             isExpanded
               ? "opacity-100 translate-x-0"
-              : "opacity-0 translate-x-[-900px]"
+              : "opacity-0 translate-x-[-900px] hidden"
           } left-[-15px] top-[-15px] shadow-gray-500  shadow-xl backdrop-blur-sm z-50`}
         >
           <div>
@@ -69,9 +73,8 @@ export default function Navbar() {
           </div>
 
           {currentUser ? (
-            <div className="flex-1 flex border-t-gray-400 border justify-between items-center py-2 mb-[20px] px-1 bg-card">
+            <div className="flex-1 flex border-t-gray-400 border justify-start py-2 mb-[20px] px-1 bg-card">
               <Profile />
-              <Settings toggle={handleOpenSetting} openSetting={openSetting} />
             </div>
           ) : (
             ""
@@ -79,23 +82,31 @@ export default function Navbar() {
 
           {/* RENDER NAVBAR LIST ITEMS */}
           <ul className=" p-3 font-main lg:flex relative  gap-7 h-screen flex flex-col  justify-start text-xl shadow-lg">
-            <div className="absolute right-4 top-4"></div>
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <Link to={`${item.path}`}>
-                  <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="hover:bg-primary hover:text-white p-1 "
-                  >
-                    {item.name}
-                  </button>
-                </Link>
-              </li>
-            ))}
+            {navItemsWithoutSupport.map((item) => {
+              // exclude support if no user and do not display it in navbar
+
+              return (
+                <li key={item.name}>
+                  <Link to={`${item.path}`} className="">
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="hover:bg-primary w-full p-1 flex justify-between items-center hover:text-white "
+                    >
+                      {item.name}
+                      {item.icon && <item.icon />}
+                    </button>
+                  </Link>
+                </li>
+              );
+            })}
+
+            <div className="border-t border-gray-400"></div>
+
+            <SettingsMobile toggle={() => setIsExpanded(false)} />
           </ul>
         </div>
         {/* DESKTOP NAVBAR */}
-        <div className="flex items-center justify-center lg:justify-between w-full z-40">
+        <div className="flex items-center justify-center lg:justify-between w-full z-49">
           <div className="w-full lg:w-[200px]  flex justify-between lg:justify-start items-center relative">
             <div className="lg:hidden">
               <button className="" onClick={() => setIsExpanded(!isExpanded)}>
@@ -103,7 +114,7 @@ export default function Navbar() {
               </button>
             </div>
 
-            <Link>
+            <Link to="/">
               <img src={RMTOYSLOGO} className="w-[75px] md:w-[80px] " alt="" />
             </Link>
 
@@ -135,10 +146,10 @@ export default function Navbar() {
           </div>
 
           <ul className="hidden font-main lg:flex gap-5 z-50 flex-row">
-            {navItems.map((item) => (
+            {navItemsWithoutSupport.map((item) => (
               <li key={item.name}>
                 <Link to={`${item.path}`}>
-                  <button className="hover:bg-primary hover:text-white  text-lg ">
+                  <button className="hover:bg-primary p-1 hover:text-white  text-lg ">
                     {item.name}
                   </button>
                 </Link>

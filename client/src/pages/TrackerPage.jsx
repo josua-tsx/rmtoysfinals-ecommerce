@@ -34,7 +34,7 @@ export default function TrackerPage() {
   const currentTrackOrder = useTrackOrderStore(
     (state) => state.currentTrackOrder
   );
-  const clearTrackOrder = useTrackOrderStore((state) => state.clearTrackOrder);
+
   const currentUser = useUserStore((state) => state.currentUser);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -135,7 +135,7 @@ export default function TrackerPage() {
           <button
             onClick={() => handleSubmit()}
             disabled={isPending}
-            className="flex border  rounded-[5px] bg-primary hover:opacity-95 text-white border-black p-2"
+            className="flex border rounded-[5px] bg-primary hover:opacity-95 text-white border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             {isPending ? "Tracking..." : "Track Order Status"}
           </button>
@@ -279,7 +279,7 @@ export default function TrackerPage() {
                       track?._id === singleOrder?._id
                         ? "bg-black text-white"
                         : "bg-blue-500"
-                    } text-white p-1 border border-black rounded-[5px] px-5`}
+                    } text-white p-1 border border-black rounded-[5px] px-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all`}
                   >
                     Track
                   </button>

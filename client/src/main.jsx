@@ -4,7 +4,6 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import {
   AdminLayout,
-  RequiredAuth,
   RequiredAuthGcashPage,
   RootLayout,
   ValidatorStaffLayout,
@@ -35,22 +34,17 @@ import AdminEditProducts from "./pages/admin/AdminEditProduct.jsx";
 import AdminSupplier from "./pages/admin/AdminSupplier.jsx";
 import AdminCategory from "./pages/admin/AdminCategory.jsx";
 
-import AdminCategoryEdit from "./pages/admin/AdminCategoryEdit.jsx";
-import AdminEditSupplier from "./pages/admin/AdminEditSupplier.jsx";
 import AdminStocks from "./pages/admin/AdminStocks.jsx";
 import AdminUser from "./pages/admin/AdminUser.jsx";
 
 // import AdminDraftProduct from "./pages/admin/AdminDraftProduct.jsx";
 import AdminWorker from "./pages/admin/AdminWorker.jsx";
 
-import OrderSummaryModal from "./components/OrderSummaryModal.jsx";
-import SingleOrderList from "./components/SingleOrderList.jsx";
 import AdminOrderStatus from "./pages/admin/AdminOrderStatus.jsx";
 import AdminOrderTransact from "./pages/admin/AdminOrderTransact.jsx";
 import AdminAuditTrailLogs from "./pages/admin/AdminAuditTrailLogs.jsx";
 import AdminProductReviews from "./pages/admin/AdminProductReviews.jsx";
 import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedValidatorStaffRoute.jsx";
-import AdminEditWorker from "./pages/admin/AdminEditWorker.jsx";
 
 import Contact from "./pages/Contact.jsx";
 
@@ -59,8 +53,7 @@ import PurchaseCancelPage from "./pages/PurchaseCancelPage.jsx";
 import PurchaseSuccessPage from "./pages/PurchaseSuccessPage.jsx";
 
 import AdminVat from "./pages/admin/AdminVat.jsx";
-import AdminAddVat from "./pages/admin/AdminAddVat.jsx";
-import AdminEditVat from "./pages/admin/AdminEditVat.jsx";
+
 import GcashPaymentPage from "./pages/GcashPaymentPage.jsx";
 
 import AdminStockHistory from "./pages/admin/AdminStockHistory.jsx";
@@ -68,13 +61,15 @@ import RecoverPassword from "./routes/RecoverPassword.jsx";
 import ResetPassword from "./routes/ResetPassword.jsx";
 
 import GuestCartPage from "./components/Guestt/GuestCartPage.jsx";
-import GuestSummaryModal from "./components/Guestt/GuestSummaryModal.jsx";
 import VerifyEmailComponent from "./components/VerifyEmailComponent.jsx";
 import AdminFaqs from "./components/admin/AdminFaqs.jsx";
-import AdminEditFaq from "./components/admin/AdminEditFaq.jsx";
 import AdminRider from "./components/admin/AdminRider.jsx";
-import AdminEditRider from "./pages/admin/AdminEditRider.jsx";
 import TrackerPage from "./pages/TrackerPage.jsx";
+
+import AdminTicketDetail from "./pages/admin/AdminTicketDetail.jsx";
+import AdminTicket from "./pages/admin/AdminTicket.jsx";
+import AdminStoreSettings from "./pages/admin/AdminStoreSettings.jsx";
+import CustomerTicketsPage from "./pages/CustomerTicketsPage.jsx";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +83,14 @@ const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
+        path: `/my-tickets`,
+        element: <CustomerTicketsPage />,
+      },
+      {
+        path: "/tracker",
+        element: <TrackerPage />,
+      },
+      {
         path: `/sign-in`,
         element: <PublicRoute element={<SignIn />} />,
       },
@@ -96,181 +99,122 @@ const router = createBrowserRouter([
         element: <PublicRoute element={<SignUp />} />,
       },
       {
-        path: `/forget-password`,
-        element: <RecoverPassword />,
-      },
-      {
-        path: `/reset-password`,
-        element: <ResetPassword />,
-      },
-      {
         path: `/shop`,
         element: <Shop />,
-      },
-      {
-        path: `/product/:productId`,
-        element: <ProductDetails />,
-      },
-      {
-        path: `/reviews`,
-        element: <Reviews />,
       },
       {
         path: `/popular`,
         element: <PopularPage />,
       },
       {
+        path: `/product/details/:productId`,
+        element: <ProductDetails />,
+      },
+
+      {
+        path: `/reviews`,
+        element: <Reviews />,
+      },
+
+      {
         path: `/contact`,
         element: <Contact />,
       },
       {
-        path: `/guest`,
-        element: <GuestCartPage />,
+        path: "/recover-password",
+        element: <RecoverPassword />,
       },
       {
-        path: `/guestOrder`,
-        element: <GuestSummaryModal />,
-      },
-      {
-        path: "/guestQRpage",
-        element: <GcashPaymentPage />,
-      },
-      {
-        path: "/tracker",
-        element: <TrackerPage />,
-      },
-    ],
-  },
-
-  {
-    element: (
-      <ProtectedCustomerRoute>
-        <RequiredAuthGcashPage />
-      </ProtectedCustomerRoute>
-    ),
-    children: [
-      {
-        path: "/gcashQRpayment",
-        element: <GcashPaymentPage />,
-      },
-    ],
-  },
-
-  {
-    element: (
-      <ProtectedCustomerRoute>
-        <RequiredAuth />
-      </ProtectedCustomerRoute>
-    ),
-    children: [
-      {
-        path: `/profile`,
-        element: <ProfilePage />,
-      },
-      {
-        path: `/cart`,
-        element: <CartPage />,
-      },
-
-      {
-        path: `/order`,
-        element: <OrderSummaryModal />,
-      },
-      {
-        path: `/orderSingle`,
-        element: <SingleOrderList />,
+        path: "/reset-password/:token",
+        element: <ResetPassword />,
       },
       {
         path: "/verify-email",
         element: <VerifyEmailComponent />,
       },
+      {
+        path: "/tracker-orders",
+        element: <TrackerPage />,
+      },
+
+      {
+        path: "/cart",
+        element: (
+          <ProtectedCustomerRoute>
+            <CartPage />
+          </ProtectedCustomerRoute>
+        ),
+      },
+      {
+        path: "/guest-cart",
+        element: <GuestCartPage />,
+      },
+      {
+        path: "/profile",
+        element: (
+          <ProtectedCustomerRoute>
+            <ProfilePage />
+          </ProtectedCustomerRoute>
+        ),
+        children: [],
+      },
     ],
   },
 
   {
-    path: "admin",
+    path: `/payment-gcash`,
+    element: (
+      <RequiredAuthGcashPage>
+        <GcashPaymentPage />
+      </RequiredAuthGcashPage>
+    ),
+  },
+
+  {
+    path: "/admin",
     element: (
       <ProtectedAdminRoute>
         <AdminLayout />
       </ProtectedAdminRoute>
     ),
     children: [
-      // OVERVIEW
-
       {
         path: "",
         element: <AdminOverview />,
       },
-
       {
-        path: "/admin/overview",
+        path: "overview",
         element: <AdminOverview />,
       },
-
-      // status
       {
-        path: "/admin/orderStatus",
-        element: <AdminOrderStatus />,
-      },
-
-      // FILTER
-
-      // PRODUCTS
-
-      {
-        path: "/admin/editWorker/:userId",
-        element: <AdminEditWorker />,
-      },
-
-      {
-        path: "/admin/products",
+        path: "products",
         element: <AdminProducts />,
       },
-
       {
         path: "/admin/addProducts",
         element: <AdminAddProducts />,
       },
       {
-        path: "/admin/editProduct/:editProductId",
+        path: "/admin/editProduct/:productid",
         element: <AdminEditProducts />,
       },
-      // {
-      //   path: "/admin/draftProducts",
-      //   element: <AdminDraftProduct />,
-      // },
-
       {
-        path: "/admin/productReviews",
-        element: <AdminProductReviews />,
+        path: "/admin/category",
+        element: <AdminCategory />,
       },
 
       // SUPPLIER
-
       {
         path: "/admin/supplier",
         element: <AdminSupplier />,
       },
 
       {
-        path: "/admin/editSupplier/:editSupplierId",
-        element: <AdminEditSupplier />,
-      },
-
-      // CATEGORY
-
-      {
-        path: "/admin/category",
-        element: <AdminCategory />,
-      },
-
-      {
-        path: "/admin/editCategory/:editCategoryId",
-        element: <AdminCategoryEdit />,
+        path: "/admin/user",
+        element: <AdminUser />,
       },
 
       // STOCKS
-
       {
         path: "/admin/stocks",
         element: <AdminStocks />,
@@ -280,30 +224,42 @@ const router = createBrowserRouter([
         path: "/admin/pendingStocks",
         element: <AdminStocksPending />,
       },
+
       {
         path: "/admin/stockHistory",
         element: <AdminStockHistory />,
       },
 
-      {
-        path: "/admin/user",
-        element: <AdminUser />,
-      },
+      // WORKER
       {
         path: "/admin/worker",
         element: <AdminWorker />,
       },
 
-      // RIDER
-
       {
-        path: "/admin/rider",
-        element: <AdminRider />,
+        path: "/admin/orderStatus",
+        element: <AdminOrderStatus />,
       },
 
       {
-        path: "/admin/rider/:riderId",
-        element: <AdminEditRider />,
+        path: "/admin/orderTransactions",
+        element: <AdminOrderTransact />,
+      },
+
+      {
+        path: "/admin/audit",
+        element: <AdminAuditTrailLogs />,
+      },
+
+      {
+        path: "/admin/productReviews",
+        element: <AdminProductReviews />,
+      },
+
+      //  RIDER
+      {
+        path: "/admin/rider",
+        element: <AdminRider />,
       },
 
       // VAT
@@ -312,24 +268,16 @@ const router = createBrowserRouter([
         path: "/admin/vat",
         element: <AdminVat />,
       },
-      {
-        path: "/admin/addVat",
-        element: <AdminAddVat />,
-      },
-      {
-        path: "/admin/editVat/:vatId",
-        element: <AdminEditVat />,
-      },
 
       // AUDIT
 
       {
-        path: `/admin/audit`,
+        path: "/admin/audit",
         element: <AdminAuditTrailLogs />,
       },
 
       {
-        path: `/admin/orderTransactions`,
+        path: "/admin/orderTransactions",
         element: <AdminOrderTransact />,
       },
 
@@ -338,9 +286,20 @@ const router = createBrowserRouter([
         path: "/admin/faqs",
         element: <AdminFaqs />,
       },
+      // TICKETS
       {
-        path: `/admin/editFaq/:faqSingleId`,
-        element: <AdminEditFaq />,
+        path: "/admin/tickets",
+        element: <AdminTicket />,
+      },
+      {
+        path: "/admin/ticket/:ticketId",
+        element: <AdminTicketDetail />,
+      },
+
+      // STORE SETTINGS (AI CHATBOT CONFIG)
+      {
+        path: "/admin/store-settings",
+        element: <AdminStoreSettings />,
       },
     ],
   },

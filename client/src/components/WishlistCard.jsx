@@ -108,10 +108,24 @@ export default function WishlistCard({ productWish }) {
       <button
         onClick={() => handleTransferToCart(productWish.productId._id)}
         type="button"
-        className="bg-primary w-full text-card rounded-b-[5px] py-1"
+        className="bg-primary w-full text-card rounded-b-[5px] py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
       >
         TRANSFER TO CART
       </button>
     </div>
   );
 }
+
+import PropTypes from "prop-types";
+
+WishlistCard.propTypes = {
+  productWish: PropTypes.shape({
+    _id: PropTypes.string,
+    productId: PropTypes.shape({
+      _id: PropTypes.string,
+      productName: PropTypes.string,
+      price: PropTypes.number,
+      productImages: PropTypes.arrayOf(PropTypes.string),
+    }),
+  }).isRequired,
+};

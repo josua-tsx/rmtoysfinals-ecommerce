@@ -68,7 +68,7 @@ export default function ResetPassword() {
           className="relative border flex gap-8 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg"
         >
           <div className="flex justify-between flex-col">
-          <div className="bg-yellow-50 border-l-4 text-red-700 mb-4 text-sm border-red-700 p-4 ">
+            <div className="bg-yellow-50 border-l-4 text-red-700 mb-4 text-sm border-red-700 p-4 ">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -86,7 +86,9 @@ export default function ResetPassword() {
                 </div>
                 <div className="ml-3 flex flex-col gap-2">
                   <p className="text-md ">
-                    <strong>Important:</strong> Emails sometimes took 3 - 20 mins to arrive. Please wait patiently and always check your email. Thank you!
+                    <strong>Important:</strong> Emails sometimes took 3 - 20
+                    mins to arrive. Please wait patiently and always check your
+                    email. Thank you!
                   </p>
                 </div>
               </div>
@@ -154,7 +156,7 @@ export default function ResetPassword() {
           <div className="flex justify-center w-full">
             <button
               disabled={isPending}
-              className="border border-black p-2 text-white rounded-[5px] bg-primary"
+              className="border border-black p-2 text-white rounded-[5px] bg-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               {isPending ? "Loading.." : "Reset Password"}
             </button>

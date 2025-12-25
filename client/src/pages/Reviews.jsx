@@ -9,7 +9,6 @@ import CreditPointsAuto from "../components/CreditPointsAuto";
 export default function Reviews() {
   const [selectedComponent, setSelectedComponent] = useState("fiveStar");
 
-
   const handleChangeComponent = (e) => {
     const newSelectedComponent = e.target.value;
     setSelectedComponent(newSelectedComponent);
@@ -19,7 +18,7 @@ export default function Reviews() {
     <section className="pt-[130px] text-sm md:text-normal  bg-yellow h-full p-3 font-main">
       <div className="max-w-[1280px] mx-auto">
         <h1 className="text-3xl mb-5">Reviews</h1>
-        <CreditPointsAuto/>
+        <CreditPointsAuto />
 
         <div className="flex gap-10 bg-yellow  flex-col md:flex-row">
           <div className="text-center md:text-start">
@@ -38,11 +37,11 @@ export default function Reviews() {
 
           {/* REVIEWS CONTAINER HERE */}
           <div className="flex-1 gap-10 flex flex-col">
-            {selectedComponent === "oneStar" && <OneStarReviews  />}
-            {selectedComponent === "twoStar" && <TwoStarReviews  />}
-            {selectedComponent === "threeStar" && <ThreeStarReviews  />}
-            {selectedComponent === "fourStar" && <FourStarReviews  />}
-            {selectedComponent === "fiveStar" && <FiveStarReviews  />}
+            {selectedComponent === "oneStar" && <OneStarReviews />}
+            {selectedComponent === "twoStar" && <TwoStarReviews />}
+            {selectedComponent === "threeStar" && <ThreeStarReviews />}
+            {selectedComponent === "fourStar" && <FourStarReviews />}
+            {selectedComponent === "fiveStar" && <FiveStarReviews />}
           </div>
         </div>
       </div>

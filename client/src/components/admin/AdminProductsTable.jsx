@@ -314,13 +314,13 @@ export default function AdminProductsTable({ enableMultiDel }) {
         <div className=" w-full flex gap-2 justify-end p-3">
           <button
             onClick={cancelMultiDel}
-            className="border bg-green-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-green-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Cancel Detete
           </button>
           <button
             onClick={() => handleMultiDelete()}
-            className="border bg-red-700 text-white rounded-[5px] border-black p-2"
+            className="border bg-red-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Confirm Detete
           </button>
@@ -329,3 +329,9 @@ export default function AdminProductsTable({ enableMultiDel }) {
     </div>
   );
 }
+
+import PropTypes from "prop-types";
+
+AdminProductsTable.propTypes = {
+  enableMultiDel: PropTypes.bool,
+};

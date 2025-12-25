@@ -418,7 +418,7 @@ export const forgetPassword = async (req, res, next) => {
     validUser.resetTokenExpiry = resetTokenExpiry;
     await validUser.save();
 
-    const resetLink = `https://www.rmtoys.store/reset-password?token=${resetToken}`;
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
     await sendGrid(
       validUser.email,

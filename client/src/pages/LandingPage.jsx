@@ -8,10 +8,9 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col h-full relative">
       <Hero />
-      <FreeCredits/>
+      <FreeCredits />
       <Faq />
       <EmailSubscriptionComponent />
     </div>
   );
 }
-  
