@@ -339,10 +339,3 @@ export default function SingleOrderList({ order, onClose }) {
     </section>
   );
 }
-
-import PropTypes from "prop-types";
-
-SingleOrderList.propTypes = {
-  order: PropTypes.object.isRequired,
-  onClose: PropTypes.func.isRequired,
-};

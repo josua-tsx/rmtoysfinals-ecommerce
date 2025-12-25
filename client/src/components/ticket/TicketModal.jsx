@@ -12,7 +12,6 @@ import {
   HiOutlineChatBubbleLeftEllipsis,
 } from "react-icons/hi2";
 import { useUserStore } from "../../stores/useUserStore";
-import PropTypes from "prop-types";
 
 const ISSUE_TYPES = [
   {
@@ -295,8 +294,3 @@ export default function TicketModal({ isOpen, onClose }) {
     </section>
   );
 }
-
-TicketModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-};

@@ -32,13 +32,3 @@ export const ConfirmModal = ({
     </div>
   );
 };
-
-import PropTypes from "prop-types";
-
-ConfirmModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  title: PropTypes.string.isRequired,
-  message: PropTypes.string.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-};

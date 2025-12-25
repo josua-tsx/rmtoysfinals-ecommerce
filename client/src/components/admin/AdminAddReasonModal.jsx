@@ -67,12 +67,3 @@ export default function AdminAddReasonModal({ singleOrderData, onClose }) {
     </section>
   );
 }
-
-import PropTypes from "prop-types";
-
-AdminAddReasonModal.propTypes = {
-  singleOrderData: PropTypes.shape({
-    _id: PropTypes.string,
-  }).isRequired,
-  onClose: PropTypes.func.isRequired,
-};

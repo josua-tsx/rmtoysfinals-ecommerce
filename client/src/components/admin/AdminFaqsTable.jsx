@@ -319,9 +319,3 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-
-AdminFaqsTable.propTypes = {
-  enableMultiDel: PropTypes.bool,
-};

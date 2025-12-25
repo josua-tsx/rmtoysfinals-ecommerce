@@ -409,9 +409,3 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-
-AdminSupplierTable.propTypes = {
-  enableMultiDel: PropTypes.bool,
-};
