@@ -1,11 +1,13 @@
+import Buttons from "../reusable/Buttons";
 import { Link, useNavigate } from "react-router-dom";
-import ArrowLine from "../reusable/ArrowLine";
 
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
 import { useState } from "react";
 import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
+import { FaUserPlus } from "react-icons/fa";
+import PasswordInput from "../reusable/PasswordInput";
 // import { useUserStore } from "../stores/useUserStore";
 
 export default function SignUp() {
@@ -13,23 +15,10 @@ export default function SignUp() {
 
   // const {setCurrentUser} = useUserStore()
 
-  // State to manage password visibility
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordTwo, setShowPasswordTwo] = useState(false);
-
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  // Toggle the password visibility
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const togglePasswordTWo = () => {
-    setShowPasswordTwo(!showPasswordTwo);
-  };
 
   const { mutate: signUpMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -54,22 +43,23 @@ export default function SignUp() {
     signUpMutation({ username, email, password, confirmPassword });
   };
   return (
-    <section className="pt-[180px] h-full bg-yellow p-4 font-main">
-      <div className="max-w-[600px]  mx-auto overflow-hidden">
-        <div className="relative px-2  mb-4 flex justify-end w-full">
-          <div className="relative flex-1">
-            <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
-          </div>
-          <span className="border bg-[#313031] opacity-80 text-white border-[#313031] py-1 rounded-[5px] px-3">
-            SIGN UP
-          </span>
-        </div>
+    <section className="h-screen bg-yellow p-4 font-main">
+      <div className="max-w-[600px] h-full flex flex-col justify-center   mx-auto ">
         <form
           onSubmit={handleFormSubmit}
-          className="relative border flex gap-2 bg-card flex-col border-[#313031] p-4 rounded-[5px] pt-[40px] pb-[70px] shadow-lg"
+          className="relative border flex gap-2 bg-card flex-col border-[#313031] p-4 rounded-[5px] pt-[40px] pb-[70px] shadow-lg mt-8"
         >
+          {/* Sticker Header */}
+          <div className="absolute -top-5 -left-4 bg-[#22c55e] text-white border border-black px-6 py-2.5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-30">
+            <h1 className="font-black uppercase tracking-widest text-sm italic">
+              SIGN UP
+            </h1>
+          </div>
           <div className="flex justify-between flex-col">
-            <label htmlFor="email" className=" mb-2">
+            <label
+              htmlFor="email"
+              className=" mb-1 uppercase text-[10px] font-black tracking-widest text-gray-500"
+            >
               Email:{" "}
             </label>
             <input
@@ -80,14 +70,17 @@ export default function SignUp() {
               maxLength={254}
               placeholder="Ex: example@domain.com"
               onChange={handleInputChange(setEmail)}
-              className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
+              className=" outline-none p-3 bg-white border-[#313031] border rounded-[5px]"
             />
-            <p className="text-sm pt-1 text-green-700">
+            <p className="text-[10px] pt-1 text-green-700 font-bold uppercase tracking-tighter">
               (Enter a valid email.)
             </p>
           </div>
           <div className="flex justify-between flex-col">
-            <label htmlFor="username" className=" mb-2 ">
+            <label
+              htmlFor="username"
+              className=" mb-1 uppercase text-[10px] font-black tracking-widest text-gray-500"
+            >
               Username:{" "}
             </label>
             <input
@@ -98,79 +91,40 @@ export default function SignUp() {
               maxLength={50}
               placeholder="Ex: johndoe123"
               onChange={handleInputChange(setUsername)}
-              className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
+              className=" outline-none p-3 bg-white border-[#313031] border rounded-[5px]"
             />
-            <p className="text-sm pt-1 text-green-700">
+            <p className="text-[10px] pt-1 text-green-700 font-bold uppercase tracking-tighter">
               (Username must be 3-30 characters long and contain no special
               characters.)
             </p>
           </div>
-          <div className="flex justify-between flex-col">
-            <label htmlFor="password" className=" mb-2 ">
-              Password:{" "}
-            </label>
-            <div className="flex flex-col gap-2 relative w-full">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                id="password"
-                value={password}
-                maxLength={128}
-                onChange={handleInputChange(setPassword)}
-                className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
-              />
-              <label
-                htmlFor=""
-                className="absolute right-2 top-4 flex items-center gap-2"
-              >
-                <p className="text-xs">Show Password</p>
-                <input
-                  type="checkbox"
-                  onChange={togglePassword}
-                  checked={showPassword}
-                  className="border  size-[20px]  border-black"
-                />
-              </label>
-              <p className="text-sm text-green-700">
-                (Password must be at least 8 characters and contain at least 1
-                uppercase letter, symbol, and number)
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-between relative flex-col">
-            <label htmlFor="password2" className=" mb-2 ">
-              Confirm password:{" "}
-            </label>
-            <input
-              type={showPasswordTwo ? "Text" : "Password"}
-              name="confirmPassword"
-              id="confirmPassword"
-              value={confirmPassword}
-              maxLength={128}
-              onChange={handleInputChange(setConfirmPassword)}
-              className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
-            />
-            <label
-              htmlFor=""
-              className="absolute right-2 top-12 flex items-center gap-2"
-            >
-              <p className="text-xs">Show Password</p>
-              <input
-                type="checkbox"
-                onChange={togglePasswordTWo}
-                checked={showPasswordTwo}
-                className="border  size-[20px]  border-black"
-              />
-            </label>
-          </div>
+
+          <PasswordInput
+            label="Password:"
+            name="password"
+            value={password}
+            onChange={handleInputChange(setPassword)}
+            errorText="(Password must be at least 8 characters and contain at least 1 uppercase letter, symbol, and number)"
+          />
+
+          <PasswordInput
+            label="Confirm password:"
+            name="confirmPassword"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={handleInputChange(setConfirmPassword)}
+          />
 
           <div className="flex justify-center mt-4 gap-2">
-            <button
-              disabled={isPending}
-              className="border p-2 px-5 bg-primary w-[100px] border-black hover:opacity-95 font-medium text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            >
-              Sign Up
-            </button>
+            <Buttons
+              buttonType="submit"
+              isLoading={isPending}
+              loadingText="Signing Up..."
+              buttonName="Sign Up"
+              icon={<FaUserPlus size={20} />}
+              animateIcon={true}
+              className=" py-4 "
+            />
           </div>
 
           <div className="absolute rounded-b-[5px] bottom-0 left-0 right-0 mx-auto bg-indigo-500 h-[40px]">
@@ -178,11 +132,8 @@ export default function SignUp() {
           </div>
         </form>
 
-        <div className="mt-4 flex justify-between">
-          <div className="relative flex-1">
-            <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
-          </div>
-          <div className="text-sm  flex gap-2">
+        <div className="mt-8 flex justify-end">
+          <div className="text-sm flex gap-2">
             Already have an account?{" "}
             <Link
               to={`/sign-in`}

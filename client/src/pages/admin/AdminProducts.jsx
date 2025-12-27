@@ -7,27 +7,31 @@ export default function AdminProducts() {
   const [enableMultiDel, setEnableMultiDel] = useState(false);
 
   return (
-    <section className="bg-yellow h-screen">
+    <section className="bg-[#fffdf6] min-h-screen pb-20">
       <AdminHeader title={"PRODUCTS"} />
-      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
-        {/* main */}
-        <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-          <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-          {/* CARD */}
-        </div>
-
-        
-
-        <div className="w-full  flex gap-2">
-          <button
-            onClick={() => setEnableMultiDel(!enableMultiDel)}
-            className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px]"
-          >
-            {
-              enableMultiDel ? "Cancel Delete" : "Multiple delete"
-            }
-            <MdDelete />
-          </button>
+      <div className="max-w-[95%] pt-10 mx-auto flex gap-10 flex-col px-4">
+        {/* Actions Area */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-dashed border-gray-300 pb-8">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-black uppercase text-[11px] tracking-[0.3em] text-gray-500 pl-1">
+              Data Management
+            </h2>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setEnableMultiDel(!enableMultiDel)}
+                className={`flex items-center gap-3 border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group ${
+                  enableMultiDel
+                    ? "bg-red-500 text-white"
+                    : "bg-white text-black"
+                }`}
+              >
+                {enableMultiDel ? "STOP DELETE" : "BATCH DELETE"}
+                <MdDelete
+                  className={`text-xl ${enableMultiDel ? "" : "text-red-600"}`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         <AdminProductsTable enableMultiDel={enableMultiDel} />

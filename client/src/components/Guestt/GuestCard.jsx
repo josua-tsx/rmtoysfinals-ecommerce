@@ -128,9 +128,9 @@ export default function GuestCard({ productCart, refreshCart }) {
         <button
           onClick={() => setOpenDeleteModal(true)}
           type="button"
-          className="flex items-center bottom-0 gap-1 right-2 lg:relative text-red-600"
+          className="p-1.5 bg-red-600 text-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
         >
-          <MdDelete size={25} />
+          <MdDelete size={22} />
         </button>
       </div>
       <div>

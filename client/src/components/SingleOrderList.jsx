@@ -1,4 +1,5 @@
 import { IoIosClose } from "react-icons/io";
+
 import { useUserStore } from "../stores/useUserStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
@@ -19,8 +20,6 @@ export default function SingleOrderList({ order, onClose }) {
   const [singleProduct, setSingleProduct] = useState({});
 
   const queryClient = useQueryClient();
-
-  console.log(order._id);
 
   const navigate = useNavigate();
 
@@ -74,265 +73,303 @@ export default function SingleOrderList({ order, onClose }) {
         />
       )}
 
-      <div className="h-screen relative flex flex-col md:flex-row-reverse justify-center gap-2 md:gap-10 items-center ">
-        <div className="border relative p-2 flex flex-col gap-2 border-black w-full md:w-[500px] bg-card rounded-[5px]">
-          <button
-            onClick={onClose}
-            type="button"
-            className="absolute border border-black text-card bg-primary rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            <IoIosClose size={25} />
-          </button>
-
-          {/* CARD GOES HERE */}
-
-          <div className="flex flex-col h-[200px] overflow-y-auto md:h-full text-sm">
-            <div className="flex gap-2">
-              <p>Order ID: </p>
-              <span className="text-indigo-700">{order._id}</span>
+      <div className="min-h-screen relative flex flex-col md:flex-row-reverse justify-center gap-6 md:gap-10 items-center py-10">
+        <div className="border relative p-0 flex flex-col gap-0 border-black w-full md:w-[550px] bg-card rounded-[5px]  max-h-[90vh] overflow-hidden">
+          {/* Header Sticker */}
+          <div className="bg-primary text-white border-b border-black p-4 flex justify-between items-center relative z-10">
+            <div>
+              <h1 className="font-black uppercase tracking-widest text-sm">
+                Order Summary
+              </h1>
+              <p className="font-mono text-[10px] opacity-80">#{order._id}</p>
             </div>
+            <button
+              onClick={onClose}
+              type="button"
+              className="bg-red-600 text-white border border-black size-8 flex items-center justify-center rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all group"
+            >
+              <IoIosClose
+                size={24}
+                className="group-hover:rotate-90 transition-transform"
+              />
+            </button>
+          </div>
 
-            <div className="flex gap-2">
-              <p>Total Items: </p>
-              <span className="text-indigo-700">
-                {order?.orderItems?.length}
-              </span>
+          <div className="flex flex-col h-full overflow-y-auto p-6 gap-6">
+            {/* General Info Section */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                  Items
+                </label>
+                <span className="font-black text-indigo-700">
+                  {order?.orderItems?.length} Products
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                  Date Ordered
+                </label>
+                <span className="font-bold text-gray-600 text-xs">
+                  {new Date(order.createdAt).toLocaleString()}
+                </span>
+              </div>
             </div>
 
             {!order.guestUser && (
-              <>
-                <div className="flex gap-2">
-                  <p>Total Points: </p>
-                  <span className="text-indigo-700">+{order?.totalPoints}</span>
-                </div>
-                <div className="flex gap-2">
-                  <p>Used Credit Points: </p>
-                  <span className="text-indigo-700">
-                    {order?.usedCredits ? -order?.usedCredits : 0}
+              <div className="grid grid-cols-2 gap-4 bg-gray-50 border border-dashed border-black rounded-[5px] p-3">
+                <div className="flex flex-col gap-1">
+                  <label className="font-black uppercase text-[10px] tracking-widest text-green-600">
+                    Earned Points
+                  </label>
+                  <span className="font-black text-green-700">
+                    +{order?.totalPoints}
                   </span>
                 </div>
-              </>
-            )}
-            {/* <div className="flex gap-2">
-                <p>Taxes: </p>
-                <span className="text-indigo-700">{formatPrice(order.taxPrice)}</span>
-              </div> */}
-            <div className="flex gap-2">
-              <p>Date Ordered: </p>
-              <span className="text-indigo-700">
-                {new Date(order.createdAt).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <p>Estimated Delivery Date: </p>
-              <span className="text-indigo-700">1 - 6 days</span>
-            </div>
-            <div className="flex gap-2">
-              <p>To Ship: </p>
-              <span className="text-indigo-700">{order.shippingAddress}</span>
-            </div>
-            <div className="flex gap-2">
-              <p>Payment Method: </p>
-              <span className="text-indigo-700">{order.paymentMethod}</span>
-            </div>
-            <div className="flex gap-2">
-              <p>Notes: </p>
-              <span
-                className={`${
-                  order.notes ? "text-indigo-700" : "text-red-700"
-                } `}
-              >
-                {!order.notes ? "No notes provided" : order.notes}
-              </span>
-            </div>
-            {(order?.paymentStatus === "Failed" ||
-              order?.paymentStatus === "Refunded") && (
-              <div className="flex gap-2 items-center">
-                <p>Reasons: </p>
-                <p className="w-full text-red-700">{order?.reason}</p>
+                <div className="flex flex-col gap-1">
+                  <label className="font-black uppercase text-[10px] tracking-widest text-red-500">
+                    Used Credits
+                  </label>
+                  <span className="font-black text-red-700">
+                    -{order?.usedCredits ? order?.usedCredits : 0}
+                  </span>
+                </div>
               </div>
             )}
 
-            {/* seperator */}
-            <div className="my-2 border-t border-dashed border-gray-300"></div>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                  Shipping To
+                </label>
+                <div className="p-3 bg-white border border-black rounded-[5px] text-xs font-bold leading-relaxed">
+                  {order.shippingAddress}
+                </div>
+              </div>
 
-            <div className="flex flex-col text-sm">
-              <div className="flex gap-2">
-                <p>Subtotal: </p>
-                <span className="text-indigo-700">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                    Payment
+                  </label>
+                  <span className="px-3 py-1 bg-white border border-black rounded-[5px] text-[10px] font-black uppercase text-center">
+                    {order.paymentMethod}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                    Notes
+                  </label>
+                  <span
+                    className={`text-[10px] font-bold italic ${
+                      order.notes ? "text-gray-600" : "text-gray-400"
+                    }`}
+                  >
+                    {order.notes || "No extra notes provided."}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Refund/Fail Reason */}
+            {(order?.paymentStatus === "Failed" ||
+              order?.paymentStatus === "Refunded") && (
+              <div className="p-3 bg-red-50 border border-red-600 rounded-[5px] flex flex-col gap-1">
+                <label className="font-black uppercase text-[10px] tracking-widest text-red-700">
+                  Issue Reported
+                </label>
+                <p className="text-sm font-bold text-red-900">
+                  {order?.reason || "No reason specified."}
+                </p>
+              </div>
+            )}
+
+            {/* Financials */}
+            <div className="flex flex-col border border-black rounded-[5px] bg-white divide-y-2 divide-black overflow-hidden ">
+              <div className="p-3 flex justify-between items-center text-xs">
+                <span className="font-black uppercase tracking-widest text-gray-500">
+                  Subtotal
+                </span>
+                <span className="font-mono font-bold text-gray-700">
                   {formatPrice(order.subtotal)} PHP
                 </span>
               </div>
-              <div className="flex gap-2">
-                <p>Shipping Price: </p>
-                <span className="text-indigo-700">
+              <div className="p-3 flex justify-between items-center text-xs">
+                <span className="font-black uppercase tracking-widest text-gray-500">
+                  Shipping
+                </span>
+                <span className="font-mono font-bold text-gray-700">
                   {formatPrice(order.shippingPrice)} PHP
                 </span>
               </div>
-
-              <div className="my-2 border-t border-dashed border-gray-300"></div>
-
-              <div className="flex gap-2">
-                <p>Vatable Sales Net: </p>
-                <span className="text-indigo-700">
-                  {formatPrice(order.vatableSalesNet)} PHP
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <p>Vat Exempt Sales: </p>
-                <span className="text-indigo-700">
-                  {formatPrice(order.vatExemptSales)} PHP
-                </span>
-              </div>
-
-              <div className="flex gap-2">
-                <p>Total Vat Amount: </p>
-                <span className="text-indigo-700">
-                  {formatPrice(order.totalVatAmount)} PHP
-                </span>
-              </div>
-
-              <div className="my-2 border-t border-dashed border-gray-300"></div>
-
-              <div className="flex gap-2">
-                <p>Total Price: </p>
-                <span className="text-indigo-700">
-                  {formatPrice(order.totalPrice)} PHP
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <p>Status: </p>
-
-                {order.status && order.status === "Cancelled" ? (
-                  <span className="text-red-700">{order.status}</span>
-                ) : (
-                  <span className="text-blue-700">{order.status}</span>
-                )}
-              </div>
-              {order?.paymentMethod === "Gcash" && (
-                <div className="flex gap-2">
-                  <p>Payment Status: </p>
-                  {(order.paymentStatus && order.paymentStatus === "Failed") ||
-                  order.paymentStatus === "Refunded" ? (
-                    <span className="text-red-700">{order.paymentStatus}</span>
-                  ) : (
-                    <span className="text-blue-700">{order.paymentStatus}</span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 max-h-[156px] md:max-h-[500px] overflow-y-auto">
-            {order?.orderItems?.length > 0 &&
-              order?.orderItems.map((item) => (
-                <div
-                  key={item?._id}
-                  className="border border-black bg-card rounded-[5px] p-2 flex gap-4 items-center"
-                >
-                  <img
-                    src={item?.productId?.productImages[0]}
-                    alt="product image"
-                    className="w-12"
-                  />
-                  <div className="text-sm flex justify-between w-full">
-                    <div>
-                      <div className="text-sm flex  gap-2">
-                        <p>Name: </p>
-                        <span>{item?.productId?.productName}</span>
-                      </div>
-                      <div className="text-sm flex  gap-2">
-                        <p>Price: </p>
-                        <span>{item?.productId?.price}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex gap-2">
-                        <p>Category: </p>
-                        <span>{item?.productId?.category?.categoryName}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <p>Quantity: </p>
-                        <span>{item?.quantity}</span>
-                      </div>
-                      {order?.status === "Delivered" ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              navigate(`/product/${item?.productId._id}`);
-                              onClose();
-                            }}
-                            className="text-indigo-700 underline"
-                          >
-                            View Product
-                          </button>
-                          <button
-                            onClick={() => handleSetProductId(item?.productId)}
-                            className="text-primary underline"
-                          >
-                            Add a Review
-                          </button>
-                        </div>
-                      ) : (
-                        ""
-                      )}
-                    </div>
+              <div className="p-3 bg-indigo-50 border-t border-black flex justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="font-black uppercase text-[10px] tracking-widest text-indigo-600">
+                    Total Price
+                  </span>
+                  <div className="flex gap-2 items-center">
+                    <span
+                      className={`text-[10px] font-black uppercase px-2 rounded-full border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] ${
+                        order.status === "Cancelled"
+                          ? "bg-red-400 text-white"
+                          : "bg-green-400 text-white"
+                      }`}
+                    >
+                      {order.status}
+                    </span>
                   </div>
                 </div>
-              ))}
+                <span className="font-mono font-black text-2xl text-indigo-900 leading-none">
+                  ₱{formatPrice(order.totalPrice)}
+                </span>
+              </div>
+            </div>
+
+            {/* Product List */}
+            <div className="flex flex-col gap-3">
+              <label className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                Order Items
+              </label>
+              <div className="flex flex-col gap-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
+                {order?.orderItems?.length > 0 &&
+                  order?.orderItems.map((item) => (
+                    <div
+                      key={item?._id}
+                      className="border border-black bg-white rounded-[5px] p-3 flex gap-4 items-center "
+                    >
+                      <div className="size-16 bg-gray-50 border border-black rounded-[5px] overflow-hidden flex-shrink-0">
+                        <img
+                          src={item?.productId?.productImages[0]}
+                          alt="product"
+                          className="w-full h-full object-contain p-1"
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <h3 className="text-sm font-black uppercase truncate">
+                            {item?.productId?.productName}
+                          </h3>
+                          <span className="font-mono font-bold text-xs">
+                            ₱{item?.productId?.price}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-[10px] font-black uppercase text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                            {item?.productId?.category?.categoryName}
+                          </span>
+                          <span className="font-black text-xs text-indigo-600 bg-indigo-50 size-6 flex items-center justify-center rounded-full border border-indigo-200">
+                            x{item?.quantity}
+                          </span>
+                        </div>
+                        {order?.status === "Delivered" && (
+                          <div className="flex gap-3 mt-2 pt-2 border-t border-gray-100">
+                            <button
+                              onClick={() => {
+                                navigate(`/product/${item?.productId._id}`);
+                                onClose();
+                              }}
+                              className="text-[10px] font-black uppercase text-indigo-600 hover:underline"
+                            >
+                              Details
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleSetProductId(item?.productId)
+                              }
+                              className="text-[10px] font-black uppercase text-primary hover:underline"
+                            >
+                              Add Review
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
         </div>
 
         {order.paymentMethod === "GcashQR" && (
-          <div className="border border-black flex flex-col p-2 gap-5 bg-card  rounded-[5px]">
-            <div className="flex flex-col gap-5">
-              <div className="h-full">
+          <div className="border border-black flex flex-col p-0 bg-card rounded-[5px] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w-full md:w-[400px] overflow-hidden">
+            {/* Payment Proof Header */}
+            <div className="bg-amber-400 text-black border-b-2 border-black p-4">
+              <h2 className="font-black uppercase tracking-widest text-sm">
+                Payment Proof
+              </h2>
+            </div>
+
+            <div className="p-6 flex flex-col gap-6">
+              <div className="aspect-[4/3] bg-gray-100 border border-black rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
                 <img
                   src={order?.gcashQRmethod?.proofOfPaymentImage}
-                  alt="receipt imgae"
-                  className="h-[250px] md:h-[250px] max-w-[370px] object-cover rounded-[5px]"
+                  alt="Proof of payment"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in"
+                  onClick={() =>
+                    window.open(
+                      order?.gcashQRmethod?.proofOfPaymentImage,
+                      "_blank"
+                    )
+                  }
                 />
               </div>
 
-              <div className="flex text-sm flex-col gap-1">
-                <div className="flex flex-col md:flex-row gap-2">
-                  <p>Gcash Name: </p>
-                  <p>{order?.gcashQRmethod?.gcashName}</p>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1 p-3 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <span className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                    GCash Name
+                  </span>
+                  <p className="font-bold text-sm truncate">
+                    {order?.gcashQRmethod?.gcashName}
+                  </p>
                 </div>
-                <div className="flex flex-col md:flex-row gap-2">
-                  <p>Gcash Number: </p>
-                  <p>{order?.gcashQRmethod?.gcashPhoneNumber}</p>
+                <div className="flex flex-col gap-1 p-3 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <span className="font-black uppercase text-[10px] tracking-widest text-gray-400">
+                    GCash Number
+                  </span>
+                  <p className="font-mono font-bold text-sm">
+                    {order?.gcashQRmethod?.gcashPhoneNumber}
+                  </p>
                 </div>
               </div>
+
+              {(currentUser?.role === "admin" ||
+                currentUser?.role === "validatorStaff") && (
+                <div className="flex flex-col gap-4 pt-4 border-t-2 border-black border-dashed">
+                  <div className="flex flex-col gap-1">
+                    <label className="font-black uppercase text-[10px] tracking-widest text-gray-400 ml-1">
+                      Validate Payment
+                    </label>
+                    <div className="flex gap-2">
+                      <select
+                        onChange={(e) =>
+                          handleChangePaymentStatus(order._id, e)
+                        }
+                        value={order?.paymentStatus}
+                        name="paymentStatus"
+                        id="paymentStatus"
+                        className="flex-1 border border-black p-2 rounded-[5px] outline-none font-black uppercase text-xs bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all cursor-pointer"
+                      >
+                        <option value="Pending">🕒 PENDING</option>
+                        <option value="Paid">✔️ PAID</option>
+                        <option value="Failed">❌ FAILED</option>
+                        <option value="Refunded">🔄 REFUNDED</option>
+                      </select>
+
+                      {(order?.paymentStatus === "Failed" ||
+                        order?.paymentStatus === "Refunded") && (
+                        <button
+                          onClick={() => setReasonModal(true)}
+                          className="px-4 py-2 border border-black bg-red-600 text-white font-black uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                        >
+                          Reasons
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {(currentUser?.role === "admin" ||
-              currentUser?.role === "validatorStaff") && (
-              <div className="w-full flex gap-2 ">
-                <select
-                  onChange={(e) => handleChangePaymentStatus(order._id, e)}
-                  value={order?.paymentStatus}
-                  name="paymentStatus"
-                  id="paymentStatus"
-                  className="text-center flex-1 border border-black p-1 rounded-[5px] outline-none"
-                >
-                  <option value="Pending">PENDING</option>
-                  <option value="Paid">PAID</option>
-                  <option value="Failed">FAILED</option>
-                  <option value="Refunded">REFUNDED</option>
-                </select>
-
-                {(order?.paymentStatus === "Failed" ||
-                  order?.paymentStatus === "Refunded") && (
-                  <button
-                    onClick={() => setReasonModal(true)}
-                    className="bg-red-700 px-2 text-card rounded-[5px]"
-                  >
-                    Reasons
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>

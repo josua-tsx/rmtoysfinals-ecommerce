@@ -53,59 +53,74 @@ export default function Faq() {
 
   return (
     <section className=" bg-yellow p-3 font-main pt-28 ">
-      <div className="">
-        <div className="flex flex-col justify-center items-center h-full ">
-          <div className="text-3xl mb-5">FAQs</div>
+      <div className="max-w-[800px] mx-auto relative">
+        <div className="flex flex-col justify-center items-center h-full relative">
+          <div className="absolute -top-10 -left-4 bg-[#22c55e] text-white border border-black px-8 py-2 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform rotate-1 z-20">
+            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest ">
+              FAQs
+            </h1>
+          </div>
+          <div className="h-10"></div> {/* Spacer for the sticker */}
           <div className="flex flex-col w-full md:w-[750px] gap-5">
             {faqsComponent && faqsComponent.length > 0
               ? faqsComponent.map((faq) => (
                   <li
-                    className="border flex flex-col gap-4 w-full list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
+                    className="border flex flex-col gap-4 w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     key={faq._id}
+                    onClick={() => handleToggleList(faq._id)}
                   >
-                    {faq.title}
+                    <h3 className=" text-lg tracking-tight pr-4">
+                      {faq.title}
+                    </h3>
 
                     {openAnswer && openAnswer === faq._id && (
-                      <p className="text-gray-600">{faq.answer}</p>
+                      <div className="mt-2 border-t-2 border-black/5 pt-4">
+                        <p className="text-gray-700 leading-relaxed font-main">
+                          {faq.answer}
+                        </p>
+                      </div>
                     )}
 
-                    <button
-                      onClick={() => handleToggleList(faq._id)}
-                      className="absolute justify-end flex top-2 right-2 inset-0 "
-                    >
+                    <div className="absolute right-4 top-5">
                       <IoMdAdd
+                        size={24}
                         className={`${
                           openAnswer && openAnswer === faq._id
-                            ? "rotate-90"
-                            : "rotate-0"
-                        } transition-transform duration-300`}
+                            ? "rotate-45 text-red-600"
+                            : "rotate-0 text-black"
+                        } transition-all duration-300 transform scale-125`}
                       />
-                    </button>
+                    </div>
                   </li>
                 ))
               : List.map((faq) => (
                   <li
-                    className="border flex flex-col gap-4 list-none transition-all duration-300 bg-card  border-[#182b5b] focus:outline-primary text-lg md:text-xl p-2 rounded-[5px] relative cursor-pointer pr-10"
+                    className="border flex flex-col gap-4 w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     key={faq._id}
+                    onClick={() => handleToggleList(faq._id)}
                   >
-                    {faq.title}
+                    <h3 className="text-lg md:text-xl  tracking-tight pr-4">
+                      {faq.title}
+                    </h3>
 
                     {openAnswer && openAnswer === faq._id && (
-                      <p className="text-gray-600">{faq.answer}</p>
+                      <div className="mt-2 border-t-2 border-black/5 pt-4">
+                        <p className="text-gray-700 leading-relaxed font-main">
+                          {faq.answer}
+                        </p>
+                      </div>
                     )}
 
-                    <button
-                      onClick={() => handleToggleList(faq._id)}
-                      className="absolute justify-end flex top-2 right-2 inset-0 "
-                    >
+                    <div className="absolute right-4 top-5">
                       <IoMdAdd
+                        size={24}
                         className={`${
                           openAnswer && openAnswer === faq._id
-                            ? "rotate-90"
-                            : "rotate-0"
-                        } transition-transform duration-300`}
+                            ? "rotate-45 text-red-600"
+                            : "rotate-0 text-black"
+                        } transition-all duration-300 transform scale-125`}
                       />
-                    </button>
+                    </div>
                   </li>
                 ))}
           </div>

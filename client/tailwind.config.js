@@ -12,7 +12,7 @@ export default {
         "sub": ['Share Tech Mono', 'monospace']
       },
       colors: {
-        "primary" : "#08bb69", // text and bg-colors for butttons and etc.
+        "primary" : "#22c55e", // text and bg-colors for butttons and etc.
         "secondary" : "#f7d91b", // for products and forms back ground
         "card" : "#f4f4fc", // for products and forms back ground
         "yellow": "#fffdf6",

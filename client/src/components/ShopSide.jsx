@@ -17,14 +17,6 @@ export default function ShopSide({
   const [filterCategory, setFilterCategory] = useState([]);
   const [filterColor, setFilterColor] = useState("");
 
-  // const { data, isLoading, isError } = useQuery({
-  //   queryKey: ["filters"],
-  //   queryFn: async () => {
-  //     const res = await axiosInstance.get(`/filter/get-filters`);
-  //     return res.data;
-  //   },
-  // });
-
   const {
     data: categories = [],
     isPending: isCategoryPending,
@@ -81,7 +73,7 @@ export default function ShopSide({
     setSelectedCategory("");
     setFilterCategory("");
     setFilterColor("");
-    setSearchTerm("")
+    setSearchTerm("");
     setSortBy("createdAt");
     setSortOrder("desc");
     setSortOption("latest");
@@ -95,32 +87,38 @@ export default function ShopSide({
     return <p>loading...</p>;
   }
 
-  // const handlePriceChange = (event) => {
-  //   const value = event.target.value;
-  //   setPriceRangeState([0, value]);
-  // };
-
   const handleSortChange = (event) => {
     setSortOption(event.target.value);
   };
 
   return (
-    <div className=" flex w-[90%] text-sm md:text-normal  mx-auto md:w-[320px] justify-center px-5 gap-5 flex-col relative overflow-x-hidden md:justify-start p-3 border-black border rounded-[5px] bg-card ">
-      <div className="flex justify-between pb-5 ">
-        <h1 className="text-xl">Filter</h1>
-        <button type="button" onClick={() => setShowFilter((prev) => !prev)}>
+    <div className="flex w-[90%] text-sm md:text-normal mx-auto md:w-[320px] justify-center px-5 gap-5 flex-col relative overflow-visible md:justify-start p-3 border-black border rounded-[5px] bg-card mt-4">
+      {/* Green Sticker Header */}
+      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black uppercase tracking-widest text-sm ">
+          Filter
+        </h1>
+      </div>
+
+      <div className="flex justify-between pb-2 pt-6">
+        <div className="w-1"></div> {/* Spacer for header */}
+        <button
+          type="button"
+          onClick={() => setShowFilter((prev) => !prev)}
+          className="border border-black p-1 rounded-[5px] bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+        >
           <IoFilter size={20} />
         </button>
       </div>
 
-      <div className="flex items-center relative  gap-2">
+      <div className="flex items-center relative gap-2">
         <input
           type="text"
           placeholder="search for products name"
           onChange={handleSearchChange}
-          className="border w-full outline-none rounded-[2.5px] border-black p-1"
+          className="border w-full outline-none rounded-[5px] border-black p-2 bg-white shadow-inner font-main focus:ring-2 focus:ring-primary/20 transition-all"
         />
-        <IoSearch size={25} className="absolute right-2" />
+        <IoSearch size={22} className="absolute right-3" />
       </div>
       <form onSubmit={handleSubmitFilter} className="flex flex-col gap-5">
         <div
@@ -154,26 +152,12 @@ export default function ShopSide({
 
           {/* price range */}
 
-          {/* <FilterSection title={"price range"}>
-            <div className={`flex flex-col`}>
-              <span className="text-gray-700">PHP {priceRangeState[1]}</span>
-              <input
-                min={0}
-                max={30000}
-                type="range"
-                name="priceRange"
-                value={priceRangeState[1]}
-                onChange={handlePriceChange}
-                className="w-full"
-              />
-            </div>
-          </FilterSection> */}
-
           {/* CATEGORIES */}
-
-          <div className={` flex-col gap-2  pb-5`}>
+          <div className="flex flex-col gap-2 pb-5 border-t border-black pt-5">
             <div className="flex items-start justify-between">
-              <h1 className="text-xl mb-2">Categories</h1>
+              <h1 className="font-black uppercase tracking-widest text-sm  mb-2 bg-primary text-white px-2 py-1 rounded-[5px] border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                Categories
+              </h1>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -192,10 +176,7 @@ export default function ShopSide({
                         checked={filterCategory.includes(category.categoryName)}
                         onChange={(e) => setFilterCategory(e.target.value)}
                       />
-                      <label
-                        htmlFor={category.categoryName}
-                        className=""
-                      >
+                      <label htmlFor={category.categoryName} className="">
                         {category.categoryName}
                       </label>
                     </div>
@@ -203,35 +184,6 @@ export default function ShopSide({
               </div>
             </div>
           </div>
-
-          {/* FILTER */}
-          {/* {data.map((filter) => (
-            <div key={filter._id} className={` flex-col gap-2  pb-5`}>
-              <div className="flex items-start justify-between">
-                <h1 className="text-xl mb-2 uppercase">{filter.filterName}</h1>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <div className={`flex flex-col gap-2`}>
-                  {filter.filterValue.map((value) => (
-                    <div key={value} className={`flex items-center gap-3`}>
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4  text-blue-600 bg-gray-100 border-gray-300 rounded  dark:bg-gray-700 dark:border-gray-600"
-                        id={value}
-                        name={value}
-                      />
-                      <label htmlFor={value} className="uppercase">
-                        {value}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))} */}
-
-          {/* COLORS */}
 
           <FilterSection title={"Colors"}>
             <div className={` flex flex-col gap-2`}>
@@ -245,24 +197,20 @@ export default function ShopSide({
                       checked={filterColor.includes(color)}
                       onChange={(e) => setFilterColor(e.target.value)}
                     />
-                    <span className=""
-                    
-                    >
-                      {color}
-                    </span>
+                    <span className="">{color}</span>
                   </label>
                 ))}
             </div>
           </FilterSection>
 
           <div className="flex gap-2">
-            <button className="border flex-1 hover:opacity-95 bg-gee  justify-center  items-center w-full border-black p-2 rounded-[5px] bg-primary text-card">
+            <button className="border flex-1 justify-center items-center w-full border-black p-2 rounded-[5px] bg-primary text-card font-bold uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
               Apply Filter
             </button>
             <button
               type="button"
               onClick={handleResetFilter}
-              className="border border-black bg-red-700 text-card px-3 rounded-[5px]"
+              className="border border-black bg-red-700 text-card px-3 rounded-[5px] font-bold uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all"
             >
               Reset
             </button>

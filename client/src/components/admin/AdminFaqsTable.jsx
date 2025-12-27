@@ -163,15 +163,19 @@ export default function AdminFaqsTable({ enableMultiDel }) {
   if (isError) return <p>Error</p>;
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
-      <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-      {/* CARD */}
+    <div className="font-main text-sm md:text-normal border rounded-[5px] border-black bg-card relative mt-8 overflow-visible">
+      {/* Amber Sticker Header for FAQs */}
+      <div className="absolute -top-4 -left-3 bg-[#f59e0b] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
+          Knowledge Base List
+        </h1>
+      </div>
 
       <ConfirmModal
         isOpen={openModal}
-        title={"Confirm delete"}
+        title={"Confirm Deletion"}
         message={
-          "Are you sure you want to delete this FAQ? This action cannot be undone."
+          "Are you sure you want to delete this FAQ entry? This action cannot be undone."
         }
         onConfirm={confirmDeleteModal}
         onCancel={cancelDeleteModal}
@@ -180,15 +184,20 @@ export default function AdminFaqsTable({ enableMultiDel }) {
       {/* Edit FAQ Modal */}
       <FormModal
         isOpen={isOpenEditModal}
-        title="Edit FAQ"
+        title="Update FAQ Entry"
         onClose={() => setIsOpenEditModal(false)}
         onSubmit={handleEditSubmit}
-        submitLabel="Update FAQ"
+        submitLabel="SAVE CHANGES"
         isSubmitting={isEditPending}
       >
-        <div className="flex gap-2 p-2 flex-col">
-          <div className="flex gap-2 flex-col">
-            <label htmlFor="editTitle">Faqs Title: </label>
+        <div className="flex gap-6 p-4 flex-col bg-gray-50/50">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editTitle"
+              className="font-black uppercase text-xs tracking-widest text-gray-500"
+            >
+              Question
+            </label>
             <input
               name="title"
               id="editTitle"
@@ -196,123 +205,162 @@ export default function AdminFaqsTable({ enableMultiDel }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={100}
-              className="border border-black w-full rounded-[5px] p-1 outline-none"
+              className="border-2 border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
               required
             />
           </div>
-          <div className="flex gap-2 flex-col">
-            <label htmlFor="editAnswer">Faqs Answer: </label>
-            <input
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editAnswer"
+              className="font-black uppercase text-xs tracking-widest text-gray-500"
+            >
+              Answer
+            </label>
+            <textarea
               name="answer"
               id="editAnswer"
-              type="text"
+              rows={4}
               value={answer}
               maxLength={500}
               onChange={(e) => setAnswer(e.target.value)}
-              className="border border-black w-full rounded-[5px] p-1 outline-none"
+              className="border border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none"
               required
-            />
+            ></textarea>
           </div>
         </div>
       </FormModal>
 
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>FAQS TABLE</h1>
+      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4 pt-8 bg-gray-50/50">
+        <div className="hidden md:block">
+          <p className="text-[11px] font-black uppercase text-gray-500 tracking-widest pl-1">
+            Displaying {faqsTable.length} Frequently Asked Questions
+          </p>
+        </div>
+        {enableMultiDel && (
+          <div className="flex items-center gap-3 bg-red-50 border border-red-600 px-4 py-1.5 rounded-full">
+            <span className="font-black uppercase text-[10px] text-red-600">
+              Selecting for Batch Delete
+            </span>
+            <div className="size-2 bg-red-600 rounded-full animate-ping"></div>
+          </div>
+        )}
       </div>
-      <div className="overflow-y-auto  py-3">
+      <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
         {isLoading ? (
-          <div className="flex justify-center items-center h-full">
+          <div className="flex justify-center items-center h-[400px]">
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead className="relative">
-              <tr className="flex justify-between">
-                <th className="font-normal p-2 pb-5">Title</th>
-                <th className="font-normal p-2 pb-5">Answer</th>
-                <th className="font-normal p-2 pb-5">Date Added</th>
-                <th className="font-normal p-2 pb-5">ACTIONS</th>
-                {faqsTable.length > 0 && enableMultiDel && (
-                  <input
-                    type="checkbox"
-                    // onChange={() => pushMultipleProd(product._id)}
-                    checked={allSelected}
-                    onChange={handleSelectAll}
-                    className="absolute right-4 top-7"
-                  />
+          <table className="w-full border-collapse">
+            <thead className="sticky top-0 bg-white z-10">
+              <tr className="border-b border-black">
+                {enableMultiDel && (
+                  <th className="px-4 py-4 text-center border-r border-black w-10">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={handleSelectAll}
+                      className="size-4 cursor-pointer accent-black"
+                    />
+                  </th>
                 )}
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  Question
+                </th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  Response
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  Created
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest text-black">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
+            <tbody className="divide-y divide-black text-[16px]">
               {faqsTable.length > 0 ? (
                 faqsTable.map((faq) => (
                   <tr
                     key={faq._id}
-                    className="flex items-center justify-between"
+                    className="hover:bg-gray-50 transition-colors group"
                   >
-                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
-                      {faq?.title}
-                    </td>
-                    <td className="px-2 py-4 w-[500px] whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
-                      {faq?.answer}
-                    </td>
-                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
-                      {" "}
-                      {new Date(faq.createdAt).toLocaleString()}
-                    </td>
-
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
-                      <div className="flex items-center">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditModal(faq)}
-                          className="text-green-600 hover:text-indigo-300 mr-2"
-                        >
-                          <CiEdit size={25} />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isDeleting}
-                          onClick={() => openDeleteModal(faq._id)}
-                          className="text-red-600 hover:text-red-300"
-                        >
-                          <MdDelete size={25} />
-                        </button>
-                      </div>
-
-                      {enableMultiDel ? (
+                    {enableMultiDel && (
+                      <td className="px-4 py-4 border-r border-black text-center">
                         <input
                           type="checkbox"
-                          id="wdwadwk"
                           checked={selectedIds.includes(faq._id)}
                           onChange={() => pushMultiFaqs(faq._id)}
+                          className="size-4 cursor-pointer accent-black"
                         />
-                      ) : (
-                        ""
-                      )}
+                      </td>
+                    )}
+                    <td className="px-4 py-4 border-r border-black">
+                      <p className="uppercase max-w-[200px] line-clamp-2 text-black">
+                        {faq?.title}
+                      </p>
+                    </td>
+                    <td className="px-4 py-4 border-r border-black">
+                      <div className="bg-white border border-dashed border-gray-200 p-2 rounded-[5px] group-hover:border-black transition-colors">
+                        <p className="max-w-[400px] line-clamp-2 text-gray-600 italic">
+                          {faq?.answer}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 border-r border-black text-center text-black">
+                      <span className="text-gray-500">
+                        {new Date(faq.createdAt).toLocaleDateString()}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-4 text-center">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleOpenEditModal(faq)}
+                          className="bg-indigo-50 text-indigo-600 border border-indigo-600 size-10 flex items-center justify-center rounded-[5px] shadow-[3px_3px_0px_0px_rgba(79,70,229,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                          title="Edit Entry"
+                        >
+                          <CiEdit size={22} />
+                        </button>
+                        <button
+                          disabled={isDeleting}
+                          onClick={() => openDeleteModal(faq._id)}
+                          className="bg-red-50 text-red-600 border border-red-600 size-10 flex items-center justify-center rounded-[5px] shadow-[3px_3px_0px_0px_rgba(220,38,38,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                          title="Remove Entry"
+                        >
+                          <MdDelete size={20} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
-                <p>No faqs.</p>
+                <tr>
+                  <td
+                    colSpan={enableMultiDel ? 5 : 4}
+                    className="p-12 text-center text-gray-400 font-black uppercase tracking-widest text-xs"
+                  >
+                    No knowledge base entries found
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         )}
       </div>
       {selectedIds && selectedIds.length > 0 && (
-        <div className=" w-full flex gap-2 justify-end p-3">
+        <div className="absolute -bottom-16 right-0 flex gap-4 p-4 bg-white border border-black rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-10">
           <button
             onClick={cancelMultiDelete}
-            className="border bg-green-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="bg-white text-black border border-black py-2 px-6 rounded-[5px] font-black uppercase text-xs hover:bg-gray-50 transition-colors"
           >
-            Cancel Detete
+            CANCEL SELECTION
           </button>
           <button
             onClick={() => handleDeletMulti()}
-            className="border bg-red-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="bg-red-500 text-white border border-black py-2 px-6 rounded-[5px] font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
-            Confirm Detete
+            DELETE SELECTED ({selectedIds.length})
           </button>
         </div>
       )}

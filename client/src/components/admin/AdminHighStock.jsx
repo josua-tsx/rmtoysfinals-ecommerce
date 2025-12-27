@@ -1,15 +1,23 @@
 export default function AdminHighStock({ stock }) {
-  console.log(stock);
-
   return (
-    <div className="border border-black flex flex-col justify-center  p-2 px-10 text-center  relative  bg-card rounded-[5px]">
-      <div className="border border-black absolute rounded-full bg-green-400 top-2 right-2 size-[20px]"></div>
-
-      <div className="flex flex-col md:flex-row items-center md:gap-2">
-        <h1 className="text-sm">HIGH STOCKS</h1>
-        <p>PRODUCTS</p>
-        <p>{stock ? stock.length : 0}</p>
+    <div className="bg-white border border-black p-4 flex flex-col items-center justify-center gap-2 rounded-[5px] relative overflow-hidden group hover:-translate-y-1 transition-transform">
+      {/* Background glow */}
+      <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+        <div className="w-16 h-16 bg-green-500 rounded-full blur-xl"></div>
       </div>
+
+      {/* Status indicator */}
+      <div className="absolute top-3 right-3 w-4 h-4 bg-green-500 border border-black rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"></div>
+
+      <span className="text-xs font-black uppercase text-green-700 tracking-wider">
+        High Stock
+      </span>
+      <span className="text-3xl font-black text-black">
+        {stock ? stock.length : 0}
+      </span>
+      <span className="text-[10px] uppercase font-bold text-gray-500">
+        Products
+      </span>
     </div>
   );
 }

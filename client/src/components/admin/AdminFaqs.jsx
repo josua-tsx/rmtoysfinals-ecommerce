@@ -38,71 +38,113 @@ export default function AdminFaqs() {
   };
 
   return (
-    <section className="bg-yellow h-screen">
-      <AdminHeader title={"FAQS"} />
-      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-16 flex-col">
-        {/* main */}
-        <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-          {/* CARD */}
-        </div>
+    <section className="bg-[#fffdf6] min-h-screen pb-20">
+      <AdminHeader title={"Knowledge Base & FAQs"} />
+      <div className="max-w-[95%] pt-10 mx-auto flex gap-10 flex-col px-4">
+        {/* Actions Area */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-dashed border-gray-300 pb-8">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-black uppercase text-[11px] tracking-[0.3em] text-gray-500 pl-1">
+              Data Management
+            </h2>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowAdd((prev) => !prev)}
+                className="flex items-center gap-3 bg-indigo-600 text-white border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group"
+              >
+                {showAdd ? "CANCEL ADD" : "ADD NEW FAQ"}
+                <IoMdAdd
+                  className={`text-xl transition-transform ${
+                    showAdd ? "rotate-45" : "group-hover:scale-125"
+                  }`}
+                />
+              </button>
 
-        <div className="w-full  flex gap-2">
-          <button
-            onClick={() => setShowAdd((prev) => !prev)}
-            className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            {showAdd ? "Cancel" : "Add Faq"}
-            <IoMdAdd />
-          </button>
+              <button
+                onClick={() => setEnableMultiDel(!enableMultiDel)}
+                className={`flex items-center gap-3 border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group ${
+                  enableMultiDel
+                    ? "bg-red-500 text-white"
+                    : "bg-white text-black"
+                }`}
+              >
+                {enableMultiDel ? "STOP DELETE" : "BATCH DELETE"}
+                <MdDelete
+                  className={`text-xl ${enableMultiDel ? "" : "text-red-600"}`}
+                />
+              </button>
+            </div>
+          </div>
 
-          <button
-            onClick={() => setEnableMultiDel(!enableMultiDel)}
-            className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            {enableMultiDel ? "Cancel Delete" : "Multiple Delete"}
-            <MdDelete />
-          </button>
+          <div className="hidden lg:flex items-center gap-4 bg-amber-50 border border-amber-200 p-4 rounded-[5px] border-dashed">
+            <div className="size-10 bg-amber-400 border border-black flex items-center justify-center rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-xl">
+              ?
+            </div>
+            <div>
+              <p className="font-black uppercase text-[10px] text-amber-800">
+                Quick Tip
+              </p>
+              <p className="text-[10px] font-bold text-amber-600 max-w-[200px]">
+                Keep answers concise and informative for the best user
+                experience.
+              </p>
+            </div>
+          </div>
         </div>
 
         <FormModal
           isOpen={showAdd}
-          title="Add FAQ"
+          title="Create New FAQ Entry"
           onClose={() => setShowAdd(false)}
           onSubmit={handleSubmit}
-          submitLabel="Add FAQ"
+          submitLabel="PUBLISH FAQ"
           isSubmitting={isPending}
         >
-          <div className="flex gap-2 p-2 flex-col">
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="title">Faqs Title: </label>
+          <div className="flex gap-6 p-4 flex-col bg-gray-50/50">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="title"
+                className="font-black uppercase text-xs tracking-widest text-gray-500"
+              >
+                FAQ Question
+              </label>
               <input
                 name="title"
                 id="title"
                 type="text"
+                placeholder="e.g., How do I track my order?"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={100}
-                className="border border-black w-full rounded-[5px] p-1 outline-none"
+                className="border border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-gray-300"
                 required
               />
             </div>
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="answer">Faqs Answer: </label>
-              <input
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="answer"
+                className="font-black uppercase text-xs tracking-widest text-gray-500"
+              >
+                Detailed Answer
+              </label>
+              <textarea
                 name="answer"
                 id="answer"
-                type="text"
+                rows={4}
+                placeholder="Provide a clear, helpful response..."
                 value={answer}
                 maxLength={500}
                 onChange={(e) => setAnswer(e.target.value)}
-                className="border border-black w-full rounded-[5px] p-1 outline-none"
+                className="border border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-gray-300 resize-none"
                 required
-              />
+              ></textarea>
             </div>
           </div>
         </FormModal>
 
-        <AdminFaqsTable enableMultiDel={enableMultiDel} />
+        <div className="transition-all duration-300">
+          <AdminFaqsTable enableMultiDel={enableMultiDel} />
+        </div>
       </div>
     </section>
   );

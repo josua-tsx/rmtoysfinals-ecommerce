@@ -132,7 +132,14 @@ export default function AdminSuccesfullTransactions({
   if (isSuccessError) return <p>Error</p>;
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
+    <div className="font-main text-sm md:text-normal border rounded-[5px] border-black bg-card relative mt-8 overflow-visible">
+      {/* Green Sticker Header for Successful Transactions */}
+      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black uppercase tracking-widest text-sm ">
+          Successful Transactions
+        </h1>
+      </div>
+
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -160,43 +167,65 @@ export default function AdminSuccesfullTransactions({
         onCancel={handleCloseCancelSuccess}
       />
 
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>SUCCESFUL TRANSACTIONS</h1>
-        <div className="flex items-center relative">
+      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4 pt-8 bg-gray-50/50">
+        <div className="hidden md:block">
+          <p className="text-[11px] font-black uppercase text-gray-500 tracking-widest pl-1">
+            History of completed payments and successful orders
+          </p>
+        </div>
+        <div className="flex items-center relative group w-full md:w-auto">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search success transact.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            placeholder="SEARCH BY ID, EMAIL, METHOD..."
+            className="border border-black w-full md:w-[350px] rounded-[5px] py-2 pl-4 pr-10 focus:outline-none font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all placeholder:text-gray-300"
           />
-          <IoSearch className="absolute right-0" size={25} />
+          <IoSearch
+            className="absolute right-3 text-black group-focus-within:scale-110 transition-transform"
+            size={20}
+          />
         </div>
       </div>
-      <div className="overflow-y-auto  h-[600px] py-3">
+      <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
         {isSuccessPending ? (
-          <div className="flex justify-center items-center h-full">
+          <div className="flex justify-center items-center h-[400px]">
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead>
-              <tr className="">
-                <th className="font-normal p-2 pb-5">ORDER ID</th>
-                <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
-                <th className="font-normal p-2 pb-5">ORDER DATE</th>
-                <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
-                <th className="font-normal p-2 pb-5">PHONE NUMBER</th>
-                <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
-                <th className="font-normal p-2 pb-5">TOTAL ITEMS BOUGHT</th>
-                <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
-                <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
-                <th className="font-normal p-2 pb-5">STATUS</th>
-                <th className="font-normal p-2 pb-5">ADDRESS</th>
-                <th className="font-normal p-2 pb-5">ACTION</th>
+          <table className="w-full border-collapse">
+            <thead className="sticky top-0 bg-white z-10">
+              <tr className="border-b border-black">
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  ORDER ID
+                </th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  CUSTOMER
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  DATE
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  AMOUNT
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  INFO
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  METHOD
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  STATUS
+                </th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  ADDRESS
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest text-black">
+                  ACTION
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
+            <tbody className="divide-y divide-black text-[16px]">
               {filteredSuccessOrder.length > 0 ? (
                 filteredSuccessOrder.map((success) => {
                   const totalItemsBought =
@@ -205,72 +234,93 @@ export default function AdminSuccesfullTransactions({
                       0
                     ) || 0;
 
-                  const guestUserEmail =
-                    "Guest User: " + success?.guestUser?.email;
-
                   return (
-                    <tr key={success?._id}>
-                      <td className="px-4">{success?._id}</td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium gap-2">
-                        {success?.userId
-                          ? success?.userId?.email
-                          : guestUserEmail}
+                    <tr
+                      key={success?._id}
+                      className="hover:bg-gray-50 transition-colors group"
+                    >
+                      <td className="px-4 py-4 border-r border-black font-mono text-black">
+                        #{success?._id.slice(-6)}...
                       </td>
-                      <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {new Date(success.createdAt).toLocaleString()}
+                      <td className="px-4 py-4 border-r border-black">
+                        <div className="flex flex-col">
+                          <span className="uppercase truncate max-w-[150px] text-black">
+                            {success?.userId
+                              ? success?.userId?.email
+                              : success?.guestUser?.email}
+                          </span>
+                          <span className="text-[9px] font-black uppercase text-gray-500">
+                            {success.userId ? "MEMBER" : "GUEST"}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                        {formatPrice(success.totalPrice)} PHP
+                      <td className="px-4 py-4 border-r border-black text-center text-black">
+                        <span className="text-gray-600">
+                          {new Date(success.createdAt).toLocaleDateString()}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {success.userId
-                          ? success.userId?.phoneNumber
-                          : success?.guestUser?.phone}
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <span className="font-black text-xs text-indigo-700">
+                          {formatPrice(success.totalPrice)} PHP
+                        </span>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {success.gcashQRmethod
-                          ? success?.gcashQRmethod?.gcashPhoneNumber
-                          : "Not QR method"}
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <div className="flex flex-col items-center">
+                          <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full font-black uppercase text-[9px] text-black">
+                            {totalItemsBought} ITEMS
+                          </span>
+                          <span className="text-[10px] font-mono text-gray-500 mt-1">
+                            {success.userId
+                              ? success.userId?.phoneNumber
+                              : success?.guestUser?.phone}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {totalItemsBought}
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <span className="px-2 py-1 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-black">
+                          {success.paymentMethod}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {success.paymentMethod}
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-green-600 font-black uppercase">
+                            {success.paymentStatus}
+                          </span>
+                          <span className="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-[9px]">
+                            {success.status}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 uppercase text-green-700 whitespace-nowrap text-center text-sm">
-                        {success.paymentStatus}
+                      <td className="px-4 py-4 border-r border-black max-w-[200px]">
+                        <p className="truncate text-gray-500 italic">
+                          {success.userId?.address[0]?.fullAddress ||
+                            success.shippingAddress}
+                        </p>
                       </td>
-                      <td className="px-6 py-4 uppercase text-green-700 whitespace-nowrap text-center text-sm">
-                        {success.status}
-                      </td>
-                      <td className="py-6 px-6 uppercase whitespace-nowrap text-center text-sm">
-                        {success.userId?.address[0]?.fullAddress ||
-                          success.shippingAddress}
-                      </td>
-                      <td className=" whitespace-nowrap text-center text-sm">
-                        <div className="flex gap-2">
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex flex-col gap-2">
                           <button
                             onClick={() => handleOpenSingleOrder(success)}
-                            type="button"
-                            className="text-indigo-700"
+                            className="bg-indigo-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                           >
                             VIEW
                           </button>
-                          <button
-                            onClick={() => handleOpenCancelSuccess(success._id)}
-                            type="button"
-                            className="text-red-700"
-                          >
-                            CANCEL
-                          </button>
-                          <button
-                            onClick={() => handleRefundClick(success._id)}
-                            type="button"
-                            className="text-green-700"
-                          >
-                            REFUND
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                handleOpenCancelSuccess(success._id)
+                              }
+                              className="flex-1 bg-red-400 text-black border border-black py-1 px-2 rounded-[5px] font-black uppercase text-[9px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                            >
+                              CANCEL
+                            </button>
+                            <button
+                              onClick={() => handleRefundClick(success._id)}
+                              className="flex-1 bg-amber-400 text-black border border-black py-1 px-2 rounded-[5px] font-black uppercase text-[9px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                            >
+                              REFUND
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -278,8 +328,11 @@ export default function AdminSuccesfullTransactions({
                 })
               ) : (
                 <tr>
-                  <td colSpan="11" className="text-center py-4">
-                    No successful transactions.
+                  <td
+                    colSpan="9"
+                    className="p-12 text-center text-gray-400 font-black uppercase tracking-widest text-xs"
+                  >
+                    No successful transactions found
                   </td>
                 </tr>
               )}

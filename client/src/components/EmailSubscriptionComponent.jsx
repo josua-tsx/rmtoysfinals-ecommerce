@@ -80,9 +80,13 @@ export default function EmailSubscriptionComponent() {
         onConfirm={confirmModal}
       /> */}
 
-      <div className="max-w-[1280px] mx-auto p-4">
-        <h1 className="text-center text-3xl mb-5">Subscribe</h1>
-        <div className="flex flex-col gap-8 md:flex-row border border-black bg-card p-4 rounded-[5px] ">
+      <div className="max-w-[1280px] mx-auto p-4 relative">
+        <div className="absolute -top-4 -left-2 bg-[#22c55e] text-white border border-black px-8 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest ">
+            Subscribe
+          </h1>
+        </div>
+        <div className="flex flex-col gap-8 md:flex-row border border-black bg-card p-6 md:p-8 rounded-[5px] relative overflow-hidden">
           <div className="md:flex-1  flex justify-center">
             <img
               src={columnOnePic}
@@ -92,13 +96,13 @@ export default function EmailSubscriptionComponent() {
           </div>
 
           <div className="flex flex-col md:flex-1 gap-4  w-full text-center items-center justify-center">
-            <h2 className="flex items-center gap-2">
+            <h2 className="flex items-center gap-2 bg-white border border-black px-4 py-1 rounded-[5px] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]  font-black uppercase tracking-widest text-sm">
               Updates
-              <IoIosNotifications size={30} />
+              <IoIosNotifications size={24} className="text-primary" />
             </h2>
 
-            <h1 className="text-lg md:text-2xl">
-              Subscribe for updates to get the latest toy updates!
+            <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter leading-tight">
+              Get the latest toy updates!
             </h1>
 
             <p className="text-gray-600">
@@ -117,18 +121,16 @@ export default function EmailSubscriptionComponent() {
                 <input
                   type="text"
                   className={`border ${
-                    isSubscribe ? "opacity-0 hidden md:flex" : "opacity-1"
-                  } outline-none border-black w-full rounded-[5px] p-2`}
+                    isSubscribe ? "opacity-30" : "opacity-100"
+                  } outline-none border-black w-full rounded-[5px] p-3  text-sm shadow-inner`}
                   placeholder="Input your email to subscribe!"
                   value={userEmail}
                   disabled
                 />
                 {isSubscribe ? (
                   <button
-                    // onClick={() => openModal()}
-                    // type="button"
                     onClick={unsubscribeMutation}
-                    className="border bg-red-500 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                    className="border bg-red-500 text-white rounded-[5px] border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all  font-black uppercase tracking-widest active:scale-95"
                   >
                     Unsubscribe
                   </button>
@@ -137,18 +139,23 @@ export default function EmailSubscriptionComponent() {
                     className={`md:absolute flex justify-center ${
                       isSubscribe
                         ? "w-full rounded-l-[5px]"
-                        : " md:rounded-l-none p-1 md:p-0 md:rounded-r-[5px]"
-                    } items-center bg-blue-500 hover:bg-primary group right-0 rounded-[5px]  top-0 bottom-0 border border-black px-[10%] md:px-[5%] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all`}
+                        : " md:rounded-l-none p-2 md:p-0 md:rounded-r-[5px]"
+                    } items-center bg-[#22c55e] hover:bg-primary group right-0 rounded-[5px] top-0 bottom-0 border border-black px-[10%] md:px-[8%] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all active:scale-95`}
                   >
                     {!isSubscribe ? (
-                      <IoMdSend
-                        size={30}
-                        className="text-white   group-hover:text-black"
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className="hidden md:block  font-black text-white uppercase tracking-widest">
+                          Join
+                        </span>
+                        <IoMdSend
+                          size={24}
+                          className="text-white group-hover:text-black"
+                        />
+                      </div>
                     ) : (
                       <FaCheck
                         size={30}
-                        className="text-white   group-hover:text-black"
+                        className="text-white group-hover:text-black"
                       />
                     )}
                   </button>

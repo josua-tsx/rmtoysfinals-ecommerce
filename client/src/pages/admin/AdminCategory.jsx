@@ -46,33 +46,43 @@ export default function AdminCategory() {
   };
 
   return (
-    <section className="bg-yellow h-screen">
+    <section className="bg-[#fffdf6] min-h-screen pb-20">
       <AdminHeader title={"Category"} />
-      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-16 flex-col">
-        {/* main */}
-        <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-          {/* <AdminStatCard title={"TOTAL PRODUCTS"} value={300}/>
-        <AdminStatCard title={"TOTAL CATEGORIES"} value={5}/>
-        <AdminStatCard title={"STOCKS"} value={300}/>
-        <AdminStatCard title={"STOCKS"} value={300}/> */}
-        </div>
+      <div className="max-w-[95%] pt-10 mx-auto flex gap-10 flex-col px-4">
+        {/* Actions Area */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-dashed border-gray-300 pb-8">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-black uppercase text-[11px] tracking-[0.3em] text-gray-500 pl-1">
+              Data Management
+            </h2>
+            <div className="flex gap-4">
+              <button
+                onClick={toggleAddCategory}
+                className="flex items-center gap-3 bg-indigo-600 text-white border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group"
+              >
+                {showAdd ? "CANCEL ADD" : "ADD CATEGORY"}
+                <IoMdAdd
+                  className={`text-xl transition-transform ${
+                    showAdd ? "rotate-45" : "group-hover:scale-125"
+                  }`}
+                />
+              </button>
 
-        <div className="w-full  flex justify-start gap-2">
-          <button
-            onClick={toggleAddCategory}
-            className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            Add Category
-            <IoMdAdd />
-          </button>
-
-          <button
-            onClick={() => setEnableMultiDel(!enableMultiDel)}
-            className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            {enableMultiDel ? "Cancel Delete" : "Multiple delete"}
-            <MdDelete />
-          </button>
+              <button
+                onClick={() => setEnableMultiDel(!enableMultiDel)}
+                className={`flex items-center gap-3 border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group ${
+                  enableMultiDel
+                    ? "bg-red-500 text-white"
+                    : "bg-white text-black"
+                }`}
+              >
+                {enableMultiDel ? "STOP DELETE" : "BATCH DELETE"}
+                <MdDelete
+                  className={`text-xl ${enableMultiDel ? "" : "text-red-600"}`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Add Category Modal */}

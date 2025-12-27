@@ -1,29 +1,21 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import ArrowLine from "../reusable/ArrowLine";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+import Buttons from "../reusable/Buttons";
+import { FaSignInAlt } from "react-icons/fa";
+
+import PasswordInput from "../reusable/PasswordInput";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordTwo, setShowPasswordTwo] = useState(false);
-
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const togglePasswordTWo = () => {
-    setShowPasswordTwo(!showPasswordTwo);
-  };
 
   const { mutate: resetPasswordMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -50,23 +42,26 @@ export default function ResetPassword() {
     resetPasswordMutation({ token, newPassword: password });
   };
 
-  return (
-    <section className="pt-[180px] md:pb-32 h-full bg-yellow p-4 font-main ">
-      <div className="max-w-[600px]  mx-auto overflow-hidden">
-        <div className="relative px-2  mb-4 flex justify-end w-full">
-          <div className="relative flex-1">
-            <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
-          </div>
-          <span className="border bg-[#313031] opacity-80 text-white  py-1 rounded-[5px] px-3">
-            Reset Password
-          </span>
-        </div>
+  useEffect(() => {
+    if (!token) {
+      navigate(`/sign-in`);
+    }
+  }, [token]);
 
+  return (
+    <section className="h-screen bg-yellow p-4 font-main ">
+      <div className="max-w-[600px] h-full flex flex-col justify-center   mx-auto ">
         {/* FORM */}
         <form
           onSubmit={handleResetPasswordSubmit}
-          className="relative border flex gap-8 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg"
+          className="relative border flex gap-6 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg mt-8"
         >
+          {/* Sticker Header */}
+          <div className="absolute -top-5 -left-4 bg-[#22c55e] text-white border border-black px-6 py-2.5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-30">
+            <h1 className="font-black uppercase tracking-widest text-sm italic">
+              RESET PASSWORD
+            </h1>
+          </div>
           <div className="flex justify-between flex-col">
             <div className="bg-yellow-50 border-l-4 text-red-700 mb-4 text-sm border-red-700 p-4 ">
               <div className="flex">
@@ -93,73 +88,35 @@ export default function ResetPassword() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-between flex-col">
-              <label htmlFor="password" className=" mb-2 ">
-                New Password:{" "}
-              </label>
-              <div className="flex flex-col gap-2 relative w-full">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  id="password"
-                  value={password}
-                  onChange={handleInputChange(setPassword)}
-                  maxLength={128}
-                  className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
-                />
-                <label
-                  htmlFor=""
-                  className="absolute right-2 top-4 flex items-center gap-2"
-                >
-                  <p className="text-xs">Show Password</p>
-                  <input
-                    type="checkbox"
-                    onChange={togglePassword}
-                    checked={showPassword}
-                    className="border  size-[20px]  border-black"
-                  />
-                </label>
-                <p className="text-sm text-green-700">
-                  (Password must be at least 8 characters and contain at least 1
-                  uppercase letter, symbol, and number)
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-between relative flex-col">
-              <label htmlFor="password2" className=" mb-2 ">
-                Confirm New password:{" "}
-              </label>
-              <input
-                type={showPasswordTwo ? "Text" : "Password"}
-                name="confirmPassword"
-                id="confirmPassword"
-                value={confirmPassword}
-                maxLength={128}
-                onChange={handleInputChange(setConfirmPassword)}
-                className=" outline-none p-2 bg-white border-[#313031] border rounded-[5px]"
-              />
-              <label
-                htmlFor=""
-                className="absolute right-2 top-12 flex items-center gap-2"
-              >
-                <p className="text-xs">Show Password</p>
-                <input
-                  type="checkbox"
-                  onChange={togglePasswordTWo}
-                  checked={showPasswordTwo}
-                  className="border  size-[20px]  border-black"
-                />
-              </label>
-            </div>
+
+            <PasswordInput
+              label="New Password:"
+              name="password"
+              value={password}
+              onChange={handleInputChange(setPassword)}
+              errorText="(Password must be at least 8 characters and contain at least 1 uppercase letter, symbol, and number)"
+            />
+
+            <PasswordInput
+              label="Confirm New password:"
+              name="confirmPassword"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={handleInputChange(setConfirmPassword)}
+              containerClassName="mt-4"
+            />
           </div>
 
           <div className="flex justify-center w-full">
-            <button
-              disabled={isPending}
-              className="border border-black p-2 text-white rounded-[5px] bg-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            >
-              {isPending ? "Loading.." : "Reset Password"}
-            </button>
+            <Buttons
+              buttonType="submit"
+              isLoading={isPending}
+              loadingText="Resetting..."
+              buttonName="Reset Password"
+              icon={<FaSignInAlt size={20} />}
+              animateIcon={true}
+              className="py-4"
+            />
           </div>
 
           <div className="absolute rounded-b-[5px] bottom-0 left-0 right-0 mx-auto bg-indigo-500 h-[40px]">
@@ -167,10 +124,7 @@ export default function ResetPassword() {
           </div>
         </form>
 
-        <div className="mt-4 flex justify-between">
-          <div className="relative flex-1">
-            <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
-          </div>
+        <div className="mt-8 flex justify-end">
           <div className="text-sm  flex items-center gap-2">
             Already have an account?{" "}
             <Link

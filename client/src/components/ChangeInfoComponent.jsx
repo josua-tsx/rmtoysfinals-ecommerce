@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  FaCheckCircle,
-  FaCamera,
-  FaEye,
-  FaEyeSlash,
-  FaExclamationTriangle,
-} from "react-icons/fa";
+import { FaCheckCircle, FaCamera, FaExclamationTriangle } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
+import Buttons from "../reusable/Buttons";
+import PasswordInput from "../reusable/PasswordInput";
 
 import app from "../firebase/firebase";
 
@@ -29,14 +25,6 @@ export default function ChangeInfoComponent() {
 
   const [email, setEmail] = useState("");
 
-  // State to manage password visibility
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Toggle the password visibility
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
 
@@ -52,7 +40,6 @@ export default function ChangeInfoComponent() {
     },
     onSuccess: (data) => {
       setCurrentUser(data);
-      setShowPassword(false);
       toast.success("Profile Updated Successfully");
       setChangePassword(false);
     },
@@ -202,15 +189,14 @@ export default function ChangeInfoComponent() {
               name="image"
             />
 
-            <div className="text-center space-y-1">
-              <button
-                type="button"
+            <div className="text-center space-y-2">
+              <Buttons
+                buttonName="Change Profile Photo"
                 onClick={() => fileRef.current.click()}
-                className="bg-primary text-white transition-all text-lg border border-black px-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
-              >
-                Change Profile Photo
-              </button>
-              <p className="text-xs text-gray-400">
+                animateIcon={true}
+                className="w-fit mx-auto px-6 py-2 "
+              />
+              <p className="text-[10px] font-black uppercase text-gray-400">
                 JPG, GIF or PNG. Max size 2MB
               </p>
             </div>
@@ -331,51 +317,28 @@ export default function ChangeInfoComponent() {
                   <button
                     type="button"
                     onClick={() => setChangePassword(true)}
-                    className=" inline-flex items-center justify-center px-4 py-2 border border-black text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                    className=" inline-flex items-center justify-center px-4 py-2 border border-black text-xs font-black uppercase tracking-widest rounded-[5px] text-gray-700 bg-white hover:bg-gray-50 focus:outline-none shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   >
                     Change Password
                   </button>
                 </div>
               ) : (
                 <div className=" rounded-lg p-6 space-y-4 border border-black bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      New Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        className="w-full pl-4 pr-10 py-2.5 bg-white border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                        placeholder="Enter new password"
-                        maxLength={128}
-                      />
-                      <button
-                        type="button"
-                        onClick={togglePassword}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                      >
-                        {showPassword ? (
-                          <FaEyeSlash size={18} />
-                        ) : (
-                          <FaEye size={18} />
-                        )}
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      Must be at least 8 characters with 1 lowercase, 1
-                      uppercase, 1 symbol, and 1 number
-                    </p>
-                  </div>
+                  <PasswordInput
+                    label="New Password"
+                    name="password"
+                    placeholder="Enter new password"
+                    className="!bg-white"
+                    errorText="Must be at least 8 characters with 1 lowercase, 1 uppercase, 1 symbol, and 1 number"
+                  />
 
                   <div className="flex justify-end pt-2">
-                    <button
-                      type="button"
+                    <Buttons
+                      buttonType="button"
+                      buttonName="Cancel"
                       onClick={() => setChangePassword(false)}
-                      className="text-sm font-medium px-4 py-2"
-                    >
-                      Cancel
-                    </button>
+                      className="w-fit bg-white border border-black !py-1 !text-black"
+                    />
                   </div>
                 </div>
               )}
@@ -383,23 +346,15 @@ export default function ChangeInfoComponent() {
           </div>
 
           <div className="pt-6 border-t border-gray-100 flex justify-end">
-            <button
-              type="submit"
-              disabled={isUpdating}
-              className="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary/90 px-8 py-2.5 rounded-lg font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all transform disabled:opacity-70 disabled:pointer-events-none hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
-            >
-              {isUpdating ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Updating...</span>
-                </>
-              ) : (
-                <>
-                  <span>Save Changes</span>
-                  <FaCheckCircle className="text-lg" />
-                </>
-              )}
-            </button>
+            <Buttons
+              buttonType="submit"
+              buttonName="Save Changes"
+              isLoading={isUpdating}
+              loadingText="Updating..."
+              icon={<FaCheckCircle className="text-lg" />}
+              animateIcon={true}
+              className="w-fit px-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+            />
           </div>
         </form>
       </div>

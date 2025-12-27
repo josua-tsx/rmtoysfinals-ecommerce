@@ -16,6 +16,8 @@ import {
   IoCloseCircleOutline,
   IoSend,
 } from "react-icons/io5";
+import Buttons from "../../reusable/Buttons";
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 const STATUS_CONFIG = {
   Pending: {
@@ -340,7 +342,7 @@ export default function AdminTicketDetail() {
                     <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
                       Order Number
                     </p>
-                    <p className="font-bold text-indigo-700 font-mono">
+                    <p className="font-bold text-indigo-700 ">
                       {ticket.orderNumber}
                     </p>
                   </div>
@@ -386,22 +388,22 @@ export default function AdminTicketDetail() {
                 <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
                   Quick Actions
                 </h4>
-                <button
+                <Buttons
                   onClick={() => updateStatus({ status: "Resolved" })}
                   disabled={isUpdatingStatus || ticket.status === "Resolved"}
-                  className="w-full bg-green-600 text-white border border-black py-2.5 rounded-[5px] text-sm font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
-                >
-                  <IoCheckmarkCircleOutline size={18} />
-                  Mark as Resolved
-                </button>
-                <button
+                  buttonName="Mark as Resolved"
+                  icon={<FaCheckCircle size={18} />}
+                  animateIcon={true}
+                  className="w-full bg-green-600 !text-white  py-2.5"
+                />
+                <Buttons
                   onClick={() => updateStatus({ status: "Closed" })}
                   disabled={isUpdatingStatus || ticket.status === "Closed"}
-                  className="w-full bg-gray-700 text-white border border-black py-2.5 rounded-[5px] text-sm font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
-                >
-                  <IoCloseCircleOutline size={18} />
-                  Close Ticket
-                </button>
+                  buttonName="Close Ticket"
+                  icon={<FaTimesCircle size={18} />}
+                  animateIcon={true}
+                  className="w-full bg-gray-700 !text-white  py-2.5"
+                />
               </div>
             </div>
           </div>

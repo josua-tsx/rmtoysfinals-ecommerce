@@ -1,10 +1,9 @@
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import AdminUploadProductImage from "../../components/admin/AdminUploadProductImage";
-import { MdDelete } from "react-icons/md";
-import { CiEdit } from "react-icons/ci";
+import { FiEdit3 } from "react-icons/fi";
+import { HiTrash } from "react-icons/hi";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoIosAdd } from "react-icons/io";
-import Buttons from "../../reusable/Buttons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useEffect, useState } from "react";
@@ -78,11 +77,7 @@ export default function AdminEditProducts() {
     },
   });
 
-  const {
-    data: vatOptions = [],
-    isPending: isVatPending,
-    isError: isVatError,
-  } = useQuery({
+  const { data: vatOptions = [] } = useQuery({
     queryKey: ["vat"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/vat/get-vat`);
@@ -239,19 +234,22 @@ export default function AdminEditProducts() {
   }
 
   return (
-    <section className="bg-yellow text-sm md:text-normal h-screen font-main">
-      <AdminHeader title={"ADD NEW PRODUCTS"} />
+    <section className="bg-yellow min-h-screen text-sm md:text-normal font-main pb-20">
+      <AdminHeader title={"EDIT PRODUCT"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
         <form
           onSubmit={handleFormSubmit}
-          className="flex gap-2 flex-col-reverse md:flex-row "
+          className="flex gap-6 flex-col-reverse lg:flex-row"
         >
-          <div className="flex-1 p-2 flex flex-col gap-3 ">
-            <div className="border flex-1 pb-5  border-black rounded-[5px] bg-card p-4">
-              <div className="mb-3">
+          <div className="flex-1 flex flex-col gap-6 ">
+            {/* MAIN FORM CONTAINER */}
+            <div className="border border-black rounded-[5px] bg-card p-6 ">
+              <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h1 className="mb-3">PRODUCT NAME: </h1>
+                  <h1 className="font-black uppercase tracking-widest ">
+                    PRODUCT NAME:
+                  </h1>
                   <button
                     type="button"
                     onClick={handleGenerateWithAI}
@@ -260,10 +258,10 @@ export default function AdminEditProducts() {
                       !productName ||
                       productName.trim().length < 3
                     }
-                    className="flex items-center gap-2 px-3 py-1 bg-primary text-card rounded-[5px] border border-black hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#22c55e] text-card rounded-[5px] border border-black hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
                   >
                     {isGenerating ? (
-                      <div className="animate-spin h-4 w-4 border-2 border-card border-t-transparent rounded-full" />
+                      <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />
                     ) : (
                       <SiGooglegemini size={16} />
                     )}
@@ -278,24 +276,26 @@ export default function AdminEditProducts() {
                   value={productName}
                   maxLength={50}
                   onChange={handleInputChange(setProductName)}
-                  className="border border-black w-full rounded-[5px] p-2 h-[50p] outline-none"
+                  className="border border-black w-full rounded-[5px] p-3 outline-none focus:ring-0 text-lg font-bold"
                 />
-                <p className="text-sm pt-1  text-green-700">
-                  (Product name should nin 5 characters, max 50 characters, no
-                  double spaces, uppercase letters allowed)
+                <p className="text-[11px] pt-2  uppercase tracking-tight">
+                  (Product name must be 5-50 characters. Double spaces are not
+                  allowed)
                 </p>
               </div>
 
-              <div className="mb-3">
-                <div className="flex flex-col md:flex-row md:gap-2">
-                  <h1 className="mb-3">DESCRIPTION: </h1>
-                  <p className="text-sm pt-1  text-green-700">
+              <div className="mb-6">
+                <div className="flex flex-col mb-3">
+                  <h1 className="font-black uppercase tracking-widest ">
+                    DESCRIPTION:
+                  </h1>
+                  <p className="text-[11px]  uppercase tracking-tight">
                     (Product description should max 200 characters, no double
                     spaces, uppercase letters allowed.)
                   </p>
                 </div>
                 <textarea
-                  className="border border-black w-full p-2 h-[100px] resize-none outline-none rounded-[5px]"
+                  className="border border-black w-full p-3 h-[120px] resize-none outline-none rounded-[5px] focus:ring-0 leading-relaxed"
                   name="productDescription"
                   id="productDescription"
                   onChange={handleInputChange(setProductDescription)}
@@ -304,12 +304,12 @@ export default function AdminEditProducts() {
                 ></textarea>
               </div>
 
-              <div className="mb-3">
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                  <div className="flex">
+              <div className="mb-6">
+                <div className="bg-red-50 border-l-4 border-red-600 p-4 mb-6 shadow-sm">
+                  <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <svg
-                        className="h-5 w-5 text-yellow-400"
+                        className="h-5 w-5 text-red-600"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -321,8 +321,8 @@ export default function AdminEditProducts() {
                         />
                       </svg>
                     </div>
-                    <div className="ml-3 flex flex-col gap-2">
-                      <p className="text-md text-black">
+                    <div className="ml-3">
+                      <p className="text-xs text-red-700 uppercase font-black tracking-wider">
                         <strong>Important:</strong> Always include COLOR in
                         label and value for filtering purposes. example: LABEL:
                         color VALUE: yellow
@@ -330,260 +330,226 @@ export default function AdminEditProducts() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col md:gap-2 md:flex-row">
-                  <h1 className="mb-3">PRODUCT DETAILS: </h1>
-                  <p className="text-sm pt-1  text-green-700">
-                    (Always include COLOR for LABEL and COLOR for VALUE EX:
-                    LABEL: COLOR VALUE: RED)
-                  </p>
-                </div>
 
-                <div className=" flex flex-col gap-5 ">
-                  <div className="flex md:items-center flex-col md:flex-row md:justify-between gap-5 ">
-                    <div className="flex flex-col md:flex-row gap-2  md:gap-5">
-                      <label htmlFor="label">LABEL</label>
-                      <input
-                        type="text"
-                        placeholder="label"
-                        value={label}
-                        maxLength={40}
-                        onChange={handleInputChange(setLabel)}
-                        className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
-                      />
-                      <label htmlFor="value">VALUE</label>
-                      <input
-                        type="text"
-                        placeholder="value"
-                        value={value}
-                        maxLength={40}
-                        onChange={handleInputChange(setValue)}
-                        className="w-[100px] px-2 border border-black outline-none rounded-[5px]"
-                      />
+                <h1 className="font-black uppercase tracking-widest  mb-4">
+                  PRODUCT DETAILS:
+                </h1>
+
+                <div className="flex flex-col gap-6">
+                  <div className="flex md:items-end flex-col md:flex-row gap-4">
+                    <div className="flex flex-1 gap-4">
+                      <div className="flex flex-col flex-1">
+                        <label
+                          htmlFor="label"
+                          className="text-[10px] font-black  uppercase tracking-widest mb-1 pl-1"
+                        >
+                          LABEL
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Color"
+                          value={label}
+                          maxLength={40}
+                          onChange={handleInputChange(setLabel)}
+                          className="w-full px-3 py-2 border border-black outline-none rounded-[5px] focus:ring-0"
+                        />
+                      </div>
+                      <div className="flex flex-col flex-1">
+                        <label
+                          htmlFor="value"
+                          className="text-[10px] font-black  uppercase tracking-widest mb-1 pl-1"
+                        >
+                          VALUE
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Red"
+                          value={value}
+                          maxLength={40}
+                          onChange={handleInputChange(setValue)}
+                          className="w-full px-3 py-2 border border-black outline-none rounded-[5px] focus:ring-0"
+                        />
+                      </div>
                     </div>
-                    <div
+                    <button
+                      type="button"
                       onClick={handleSubmitLabelValueObject}
-                      className="w-full md:w-[170px]"
+                      className="bg-[#22c55e] text-white border border-black px-6 py-2 rounded-[5px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all min-w-[140px]"
                     >
-                      <Buttons
-                        buttonName={`${isEditing ? "update" : "add details"}`}
-                        icon={<IoIosAdd size={25} />}
-                      />
-                    </div>
+                      {isEditing ? "Update" : "Add Detail"}
+                      <IoIosAdd size={20} />
+                    </button>
                   </div>
 
-                  {/* DETAILS GOES HERE */}
+                  {/* DETAILS LIST */}
                   <div className="overflow-y-auto max-h-[281px]">
-                    <ul className="flex flex-col gap-4  ">
-                      {productsDetailsArray.length > 0 &&
-                        productsDetailsArray.map((item, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center overflow-x-auto gap-2 justify-between bg-white rounded-[5px] p-2 border-black border"
-                          >
-                            <div className="flex gap-5">
-                              <p className="text-sm">{item.label}</p>
-                              {":"}
-                              <p className="text-sm">{item.value}</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleEditLabelValue(index)}
-                                type="button"
-                                className=" text-green-600 hover:text-indigo-300 mr-2"
-                              >
-                                <CiEdit size={25} />
-                              </button>
-                              <button
-                                onClick={() => handleRemoveLabelValue(index)}
-                                type="button"
-                                className=" text-red-600"
-                              >
-                                <MdDelete size={25} />
-                              </button>
-                            </div>
-                          </li>
-                        ))}
+                    <ul className="flex flex-col gap-3">
+                      {productsDetailsArray.map((item, index) => (
+                        <li
+                          key={index}
+                          className="flex items-center justify-between bg-white rounded-[5px] p-3 border border-black"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black  uppercase tracking-tighter">
+                              {item.label}
+                            </span>
+                            <span className="font-bold ">{item.value}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditLabelValue(index)}
+                              type="button"
+                              className="w-8 h-8 flex items-center justify-center bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                            >
+                              <FiEdit3 size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleRemoveLabelValue(index)}
+                              type="button"
+                              className="w-8 h-8 flex items-center justify-center bg-[#ef4444] text-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                            >
+                              <HiTrash size={18} />
+                            </button>
+                          </div>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="border flex flex-col gap-2 border-black rounded-[5px] uppercase bg-card p-4">
-              <div className="flex flex-col md:flex-row gap-2">
-                <div className="flex flex-col flex-1">
-                  <label htmlFor="price" className="pb-2">
-                    price
+            {/* SECONDARY SETTINGS CONTAINER */}
+            <div className="border border-black rounded-[5px] bg-card p-6 ">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="price"
+                    className="text-[10px] font-black  uppercase tracking-widest mb-2 pl-1"
+                  >
+                    Price
                   </label>
                   <input
                     type="number"
-                    className="p-2 rounded-[5px] border border-black outline-none"
+                    className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
                     name="price"
                     id="price"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                   />
                 </div>
-              </div>
-              <div className="flex flex-col md:flex-row gap-2 w-full md:items-center">
-                <div className="flex flex-col md:flex-row gap-2 w-full md:items-center">
-                  <div className="flex flex-col w-full flex-1">
-                    <label htmlFor="points" className="pb-2">
-                      Points (OPTIONAL)
-                    </label>
-                    <select
-                      className="p-2 rounded-[5px] w-full border border-black outline-none"
-                      name="points"
-                      id="points"
-                      value={points}
-                      onChange={(e) => setPoints(e.target.value)}
-                    >
-                      <option>Select Points</option>
-                      <option value="10">10 Points</option>
-                      <option value="15">15 Points</option>
-                    </select>
-                  </div>
-                </div>{" "}
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="points"
+                    className="text-[10px] font-black  uppercase tracking-widest mb-2 pl-1"
+                  >
+                    Points (OPTIONAL)
+                  </label>
+                  <select
+                    className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
+                    name="points"
+                    id="points"
+                    value={points}
+                    onChange={(e) => setPoints(e.target.value)}
+                  >
+                    <option value="0">No Points</option>
+                    <option value="10">10 Points</option>
+                    <option value="15">15 Points</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="flex flex-col">
-                  <h1 className="py-2">Categories</h1>
+                  <label
+                    htmlFor="category"
+                    className="text-[10px] font-black  uppercase tracking-widest mb-2 pl-1"
+                  >
+                    Category
+                  </label>
                   <select
                     name="category"
                     id="category"
-                    value={category} // This should be set to the category _id, not categoryName
+                    value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="-2 rounded-[5px] py-2 border border-black outline-none"
+                    className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
                   >
                     <option value="">Select Category</option>
-                    {categories.length > 0 &&
-                      categories.map((category) => (
-                        <option key={category._id} value={category._id}>
-                          {category.categoryName}
-                        </option>
-                      ))}
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.categoryName}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
-                <div className="flex flex-col pt-4">
-                  <h1 className="py-2">TAX STATUS</h1>
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="taxStatus"
+                    className="text-[10px] font-black  uppercase tracking-widest mb-2 pl-1"
+                  >
+                    TAX STATUS
+                  </label>
                   <select
                     name="taxStatus"
                     id="taxStatus"
                     value={taxStatus}
                     onChange={(e) => setTaxStatus(e.target.value)}
-                    className="p-2 rounded-[5px] border border-black outline-none"
+                    className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
                   >
-                    <option value="vatable">Vatable</option>
+                    <option value="vatable">Vatiable</option>
                     <option value="exempt">Tax Exempt</option>
                   </select>
                 </div>
 
                 {taxStatus === "vatable" && (
-                  <div className="flex flex-col pt-4">
-                    <h1 className="py-2">VAT RATE *</h1>
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="vat"
+                      className="text-[10px] font-black  uppercase tracking-widest mb-2 pl-1"
+                    >
+                      VAT RATE *
+                    </label>
                     <select
                       name="vat"
                       id="vat"
                       value={vat}
                       onChange={(e) => setVat(e.target.value)}
-                      className="p-2 rounded-[5px] border border-black outline-none"
+                      className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
                       required
                     >
-                      <option value="">Select VAT Rate</option>
-                      {vatOptions.length > 0 &&
-                        vatOptions.map((option) => (
-                          <option key={option._id} value={option._id}>
-                            {option.vatPercent}% VAT
-                          </option>
-                        ))}
+                      <option value="">Select Rate</option>
+                      {vatOptions.map((option) => (
+                        <option key={option._id} value={option._id}>
+                          {option.vatPercent}% VAT
+                        </option>
+                      ))}
                     </select>
                   </div>
                 )}
-
-                {/* <div className="flex flex-col">
-                  <h1 className="py-2">Suppliers</h1>
-                  <select
-                    name="supplier"
-                    id="supplier"
-                    value={supplier}
-                    onChange={(e) => setSupplier(e.target.value)}
-                    className="-2 rounded-[5px] py-2 border border-black outline-none"
-                  >
-                    <option value="">Select Supplier</option>
-                    {suppliers.length > 0 &&
-                      suppliers.map((supplier) => (
-                        <option key={supplier._id} value={supplier._id}>
-                          {supplier.supplierName}
-                        </option>
-                      ))}
-                  </select>
-                </div> */}
               </div>
-
-              {/* <div className="flex flex-col border-t-gray-400 border border-r-0 border-l-0 border-b-0 pt-4 my-2 gap-2">
-                <h1 className="py-2">FILTERS</h1>
-
-                <div className="flex gap-2 flex-wrap">
-                  {data &&
-                    data.map((item) => (
-                      <div key={item.id} className="flex-1 flex flex-col">
-                        <label className="pb-2" htmlFor={item.filterName}>
-                          {item.filterName}
-                        </label>
-                        <select
-                          className="p-2 rounded-[5px] border border-black outline-none"
-                          name={item.filterName}
-                          id={item.filterName}
-                 
-                          onChange={(e) =>
-                            setFilters((prevFilters) => ({
-                              ...prevFilters, // Keep existing filters intact
-                              [item.filterName]: e.target.value, // Update the current filter value
-                            }))
-                          }
-                        >
-                          <option value={value}>
-                            select {item.filterName}
-                          </option>
-                          {Array.isArray(item.filterValue) &&
-                            item.filterValue.map((value, index) => (
-                              <option key={`${item.id}-${index}`} value={value}>
-                                {value}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    ))}
-                </div>
-              </div> */}
             </div>
 
-            <div className="flex flex-col md:flex-row justify-end gap-2">
-              {/* <div
-                onClick={() => handleFormDraftSubmit()}
-                className="w-[100px] md:w-[200px]"
-              >
-                <Buttons buttonType={"button"} buttonName={"draft"} icon={<IoArchive />} />
-              </div> */}
-
-              <button className="flex-1 py-2 flex justify-between items-center rounded-[5px] px-4 border border-black bg-primary text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+            {/* ACTION BUTTONS */}
+            <div className="flex flex-col md:flex-row gap-4 mt-2">
+              <button className="flex-1 bg-[#22c55e] text-white p-4 flex justify-between items-center rounded-[5px] border border-black font-black uppercase tracking-[0.1em] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all active:scale-95">
                 UPDATE THIS PRODUCT
-                <FaCheckCircle />
+                <FaCheckCircle size={20} />
               </button>
               <button
                 onClick={() => navigate(`/admin/products`)}
                 type="button"
-                className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                className="bg-[#ef4444] text-white p-4 md:w-[30%] border border-black rounded-[5px] font-black uppercase tracking-[0.1em] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all active:scale-95"
               >
                 Cancel
               </button>
             </div>
           </div>
 
-          {/* COLUMN 2 */}
-          <AdminUploadProductImage images={images} setImages={setImages} />
+          {/* COLUMN 2 - IMAGE UPLOAD */}
+          <div className="lg:w-[320px]">
+            <AdminUploadProductImage images={images} setImages={setImages} />
+          </div>
         </form>
       </div>
     </section>

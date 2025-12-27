@@ -93,144 +93,179 @@ export default function ProductDetails() {
           </div>
         ) : (
           <div className="flex flex-col md:flex-row flex-wrap gap-3">
-            <div className="flex w-[320px]  md:w-[400px] justify-between mx-auto flex-col gap-2">
+            <div className="flex w-[320px] md:w-[400px] justify-between mx-auto flex-col gap-4">
               {/* main picture */}
-              <div className="border h-full flex items-center bg-card rounded-[5px] border-black p-3">
+              <div className="border h-full flex items-center bg-card rounded-[5px] border-black p-4  relative overflow-hidden">
                 <img
                   src={singleProduct?.productImages[0]}
                   alt="product-main-image"
-                  className="w-[240px] max-h-[500px] mx-auto md:w-full"
+                  className="w-full max-h-[500px] mx-auto object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
                 />
               </div>
 
-              <div className="flex gap-2 justify-between w-full">
+              <div className="flex gap-4 justify-start w-full overflow-x-auto pb-2">
                 {singleProduct.productImages.length > 0 &&
                   singleProduct?.productImages.slice(1).map((images) => (
                     <div
                       key={images}
-                      className="bg-card border-black border px-5 p-3 rounded-[5px]"
+                      className="bg-white border-2 border-black px-4 py-2 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-shrink-0"
                     >
-                      <img src={images} alt="" className="w-[85px] h-auto" />
+                      <img
+                        src={images}
+                        alt=""
+                        className="w-[60px] md:w-[80px] h-auto object-contain mix-blend-multiply"
+                      />
                     </div>
                   ))}
               </div>
             </div>
 
-            <div className="border flex relative flex-col justify-between gap-2 flex-1  bg-card rounded-[5px] w-[320px] md:w-[full] mx-auto p-3 border-black">
+            <div className="border flex relative flex-col justify-between gap-6 flex-1 bg-card rounded-[5px] w-[320px] md:w-full mx-auto p-6 border-black ">
               {/* PRODUCT DEATAILS */}
-              <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 w-full">
-                  <h1 className="text-2xl md:text-4xl break-all ">
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-3 w-full relative">
+                  <div className="absolute -top-10 -left-8 bg-[#22c55e] text-white border border-black px-6 py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+                    <span className="font-black uppercase tracking-widest text-xs ">
+                      {singleProduct?.category?.categoryName}
+                    </span>
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-black break-all tracking-tighter uppercase font-main pt-2">
                     {singleProduct.productName}
                   </h1>
                 </div>
 
-                <div className="flex gap-8">
-                  <p>Description:</p>
-                  <p className="break-all">
+                <div className="flex flex-col gap-1 border-l-4 border-primary pl-4 py-1">
+                  <p className="text-xs  font-black  uppercase">Description</p>
+                  <p className="text-gray-700 leading-relaxed">
                     {singleProduct.productDescription}
                   </p>
                 </div>
 
                 {/* STARS */}
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-3 items-center bg-white border border-black p-2 rounded-[5px] w-fit shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                   <StarsRating rating={averageRating} />
-                  <p>
-                    ({averageRating ? averageRating.toFixed(2) : 0} average)
+                  <p className=" font-bold text-xs uppercase">
+                    {averageRating ? averageRating.toFixed(1) : 0} Average
                   </p>
                 </div>
 
-                <div className=" flex flex-col gap-2">
-                  <div className="flex items-center gap-3">
-                    <p>Price:</p>
-                    <div className="text-lg flex relative  text-indigo-500">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/50 border border-black p-4 rounded-[5px]">
+                  <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                    <p className=" font-black text-xs text-gray-500 uppercase">
+                      Price
+                    </p>
+                    <div className="text-xl  font-black text-blue-700">
                       {formatPrice(singleProduct.price)} PHP
                     </div>
                   </div>
-                  {singleProduct?.stocks ? (
-                    <div className="flex items-center gap-3">
-                      <p>Stocks:</p>
-
+                  <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                    <p className=" font-black text-xs text-gray-500 uppercase">
+                      Stocks
+                    </p>
+                    <div className="text-xl  font-black text-blue-700">
                       {singleProduct?.stocks?.quantity > 0 ? (
-                        <span className="text-lg text-indigo-500">
-                          {formatPrice(singleProduct?.stocks?.quantity)}
-                        </span>
+                        formatPrice(singleProduct?.stocks?.quantity)
                       ) : (
-                        <p>Out of stock</p>
+                        <span className="text-red-600 font-black">
+                          OUT OF STOCK
+                        </span>
                       )}
                     </div>
-                  ) : (
-                    ""
+                  </div>
+                  <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                    <p className=" font-black text-xs text-gray-500 uppercase">
+                      Sold
+                    </p>
+                    <div className="text-xl  font-black text-blue-700">
+                      {singleProduct?.sold || 0}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                    <p className=" font-black text-xs text-gray-500 uppercase">
+                      Points
+                    </p>
+                    <div className="text-xl  font-black text-blue-700 bg-blue-100 px-3 py-0.5 rounded-full border border-blue-300">
+                      {singleProduct?.points || 0}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <Buttons
+                    buttonName="Technical Specs"
+                    onClick={() => setHideShowDetails(!hideShowDetails)}
+                    icon={
+                      hideShowDetails ? (
+                        <MdOutlineKeyboardArrowDown size={25} />
+                      ) : (
+                        <MdOutlineKeyboardArrowUp size={25} />
+                      )
+                    }
+                    className="bg-white !text-black px-4 py-3"
+                  />
+
+                  {hideShowDetails && (
+                    <div className="border bg-white rounded-[5px] border-black p-4 gap-3 flex flex-col shadow-inner">
+                      {singleProduct.productDetails.length > 0
+                        ? singleProduct.productDetails.map((detail, index) => (
+                            <div
+                              key={index}
+                              className="flex justify-between items-center border-b border-gray-100 pb-1 last:border-0 last:pb-0"
+                            >
+                              <p className=" font-black text-[10px]  uppercase tracking-tighter">
+                                {detail.label}
+                              </p>
+                              <span className=" font-bold text-sm bg-gray-50 px-2 py-0.5 border border-gray-200 rounded">
+                                {detail.value}
+                              </span>
+                            </div>
+                          ))
+                        : singleProduct.productDetails.length > 0 &&
+                          singleProduct.productDetails.map((detail, index) => (
+                            <div key={index} className="flex uppercase gap-3">
+                              <p className="uppercase">{detail.label}:</p>
+                              <span>{detail.value}</span>
+                            </div>
+                          ))}
+                    </div>
                   )}
-                  <div className="flex items-center gap-3">
-                    <p>Category:</p>
-                    <span className="text-lg text-indigo-500">
-                      {singleProduct?.category?.categoryName}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p>Sold:</p>
-                    <span className="text-lg text-indigo-500">
-                      {singleProduct?.sold}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p>Points:</p>
-                    <span className="text-lg text-indigo-500">
-                      {singleProduct?.points}
-                    </span>
-                  </div>
                 </div>
-
-                <div className="flex items-center gap-5">
-                  <p>Product Details</p>
-                  <button onClick={() => setHideShowDetails(!hideShowDetails)}>
-                    {hideShowDetails ? (
-                      <MdOutlineKeyboardArrowDown size={25} />
-                    ) : (
-                      <MdOutlineKeyboardArrowUp size={25} />
-                    )}
-                  </button>
-                </div>
-
-                <div
-                  className={`border ${
-                    hideShowDetails ? "flex" : "hidden"
-                  } rounded-[5px] border-black p-3 gap-2 flex-col`}
-                >
-                  {singleProduct.productDetails.length > 0 &&
-                    singleProduct.productDetails.map((detail, index) => (
-                      <div key={index} className="flex uppercase gap-3">
-                        <p className="uppercase">{detail.label}:</p>
-                        <span>{detail.value}</span>
-                      </div>
-                    ))}
-                </div>
-
-                {/* ADD ADITIONAL INFORMATIONS */}
               </div>
               {/* SEE ALL REVIEWS AND ADD REVIEWS */}
-              <div className="flex justify-between py-2">
-                <button onClick={() => ShowModal()} className=" underline ">
-                  See All Reviews ({singleProduct?.reviews?.length})
+              <div className="flex justify-between py-2 border-t border-black mt-4">
+                <button
+                  onClick={() => ShowModal()}
+                  className=" font-black uppercase text-xs hover:text-primary transition-colors flex items-center gap-2"
+                >
+                  <MdRateReview size={18} />
+                  See All Reviews ({singleProduct?.reviews?.length || 0})
                 </button>
               </div>
             </div>
 
             {/* BUY AND ADD BUTTON*/}
-            <div className="border w-[327px] md:w-full lg:w-[210px] mx-auto flex flex-col gap-2 h-full border-black bg-card rounded-[5px] p-4">
-              <div className="flex flex-col gap-2">
+            <div className="border w-[327px] md:w-full lg:w-[240px] mx-auto flex flex-col gap-5 h-fit border-black bg-card rounded-[5px] p-6 ">
+              <div className="flex flex-col gap-4">
                 <Buttons
                   onClick={() => handleAddToCart(singleProduct._id)}
-                  buttonName={"Add to cart"}
+                  buttonName="Add to cart"
                   icon={<FaCartPlus size={20} />}
+                  animateIcon={true}
+                  className=""
                 />
+
                 <Buttons
-                  // onClick={() => handleAddToCart(singleProduct._id)}
-                  buttonName={"Add Review"}
-                  icon={<MdRateReview size={20} />}
                   onClick={() => ShowModal()}
+                  buttonName="Add Review"
+                  icon={<MdRateReview size={20} />}
+                  animateIcon={true}
+                  className="bg-white !text-black"
                 />
+              </div>
+              <div className="mt-2 text-center">
+                <p className="text-[10px]  font-black  uppercase tracking-tighter">
+                  Secure Transaction
+                </p>
               </div>
             </div>
           </div>

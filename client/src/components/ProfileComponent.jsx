@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 
 import { RiVerifiedBadgeFill } from "react-icons/ri";
+import Buttons from "../reusable/Buttons";
 
 export default function ProfileComponent({ setActiveComponent }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -83,12 +84,11 @@ export default function ProfileComponent({ setActiveComponent }) {
             <h2 className="text-lg font-semibold text-gray-900 border-l-4 border-primary pl-3">
               Personal Information
             </h2>
-            <button
+            <Buttons
+              buttonName="Edit Information"
               onClick={() => setActiveComponent("changeinformation")}
-              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              Edit Information
-            </button>
+              className="w-fit scale-75 md:scale-100 px-4 py-2"
+            />
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-6 border border-black">
@@ -151,12 +151,11 @@ export default function ProfileComponent({ setActiveComponent }) {
             <h2 className="text-lg font-semibold text-gray-900 border-l-4 border-primary pl-3">
               Current Shipping Address
             </h2>
-            <button
+            <Buttons
+              buttonName="Manage Addresses"
               onClick={() => setActiveComponent("shippingaddress")}
-              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              Manage Addresses
-            </button>
+              className="w-fit scale-75 md:scale-100 px-4 py-2"
+            />
           </div>
 
           <div className="space-y-4">
@@ -229,3 +228,8 @@ export default function ProfileComponent({ setActiveComponent }) {
     </div>
   );
 }
+
+import PropTypes from "prop-types";
+ProfileComponent.propTypes = {
+  setActiveComponent: PropTypes.func.isRequired,
+};

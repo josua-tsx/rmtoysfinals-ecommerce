@@ -12,6 +12,8 @@ import {
   HiOutlineChatBubbleLeftEllipsis,
 } from "react-icons/hi2";
 import { useUserStore } from "../../stores/useUserStore";
+import Buttons from "../../reusable/Buttons";
+import { FaPaperPlane } from "react-icons/fa";
 
 const ISSUE_TYPES = [
   {
@@ -280,13 +282,15 @@ export default function TicketModal({ isOpen, onClose }) {
               </div>
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full bg-primary border border-black text-card py-3 rounded-[5px] font-medium hover:opacity-90 disabled:opacity-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              >
-                {isPending ? "Submitting..." : "Submit Ticket"}
-              </button>
+              <Buttons
+                buttonType="submit"
+                isLoading={isPending}
+                loadingText="Submitting..."
+                buttonName="Submit Ticket"
+                icon={<FaPaperPlane size={18} />}
+                animateIcon={true}
+                className="w-full py-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              />
             </form>
           </div>
         </div>

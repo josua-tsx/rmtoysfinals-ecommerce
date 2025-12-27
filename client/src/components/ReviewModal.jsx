@@ -5,6 +5,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { FaPaperPlane } from "react-icons/fa";
+import { MdRateReview } from "react-icons/md";
+import Buttons from "../reusable/Buttons.jsx";
 
 export default function ReviewModal({ singleProduct, closeModal }) {
   const [showReview, setShowReview] = useState(false);
@@ -48,29 +50,34 @@ export default function ReviewModal({ singleProduct, closeModal }) {
   };
 
   return (
-    <section className=" pt-[50px] md:pt-[130px] text-sm md:text-normal inset-0 fixed z-40 backdrop-blur-sm p-3">
-      <div className="md:w-[80%]  h-screen  mx-auto">
-        <div className="flex flex-col md:flex-row-reverse gap-2 relative">
+    <section className="pt-[50px] md:pt-[130px] text-sm md:text-normal inset-0 fixed z-50 backdrop-blur-md p-3 font-main overflow-y-auto">
+      <div className="max-w-[1200px] mx-auto min-h-screen pb-10">
+        <div className="flex flex-col md:flex-row-reverse gap-6 relative">
           <div
             className={` ${
               singleProduct?.reviews
                 ? "md:w-[35%]"
                 : "w-[100%] md:w-[50%] mx-auto"
-            } flex flex-col gap-2 relative`}
+            } flex flex-col gap-4 relative`}
           >
             {/* close button */}
             <button
               onClick={closeModal}
-              className="absolute border  border-black  text-card bg-red-500 rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              className="absolute -top-10 right-0 bg-red-600 text-white border border-black px-4 py-1.5 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all z-50 active:scale-95 group font-black"
             >
-              <IoIosClose size={25} />
+              <IoIosClose
+                size={28}
+                className="group-hover:rotate-90 transition-transform"
+              />
             </button>
-            <div className="flex bg-card border rounded-[5px] p-3 border-black flex-col text-center gap-2">
-              <div className="bg-yellow-50 border-l-4 my-1  rounded border-red-700 p-3  text-red-700">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+
+            <div className="flex bg-card border border-black rounded-[5px] p-4  flex-col text-center gap-4 relative mt-2 pt-8">
+              {/* Retro Note Sticker */}
+              <div className="bg-[#ef4444] text-white border border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform rotate-1 mb-2">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 bg-white p-1 rounded-sm border border-black">
                     <svg
-                      className="h-5 w-5 text-yellow-400"
+                      className="h-4 w-4 text-red-600"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
@@ -82,24 +89,24 @@ export default function ReviewModal({ singleProduct, closeModal }) {
                       />
                     </svg>
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-yellow-700">
-                      <strong>Note: </strong>
-                      You can only add a review once for every products.
-                    </p>
-                    <p className="text-sm text-yellow-700">
-                      You can only add a review for products you've purchased
+                  <div className="text-left text-normal  uppercase tracking-tight leading-tight">
+                    <p>NOTE: ONE REVIEW PER PRODUCT.</p>
+                    <p className="mt-1 opacity-90 lowercase ">
+                      Only for purchased items.
                     </p>
                   </div>
                 </div>
               </div>
-              <h1 className="text-normal">Add Review Here</h1>
+
+              <h1 className="font-black uppercase text-sm tracking-widest text-gray-500">
+                Review Section
+              </h1>
               <button
                 onClick={() => setShowReview(!showReview)}
                 type="button"
-                className="border border-black bg-primary text-card p-1 w-full rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                className="bg-[#22c55e] text-white border border-black p-3 w-full rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-black uppercase tracking-widest text-xs active:scale-95"
               >
-                {showReview ? "Hide Review" : "Add Review"}
+                {showReview ? "Cancel Review" : "Add Your Review"}
               </button>
             </div>
 
@@ -108,89 +115,108 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               onSubmit={handleSubmitReview}
               className={`${
                 showReview ? "flex" : "hidden"
-              } flex-col gap-5 bg-card border rounded-[5px] p-3  border-black`}
+              } flex-col gap-6 bg-card border border-black rounded-[5px] p-6  mt-2`}
             >
-              <div className="flex gap-2 flex-col ">
-                <h1 className="text-center">
-                  How satisfied are you with the product?
+              <div className="flex gap-4 flex-col">
+                <h1 className="font-black uppercase text-xs tracking-wider text-center flex items-center justify-center gap-2">
+                  <span className="w-10 h-[2px] bg-black/10"></span>
+                  Satisfaction Level
+                  <span className="w-10 h-[2px] bg-black/10"></span>
                 </h1>
-                <div className="flex items-center border border-black rounded-[5px] bg-yellow justify-center gap-4">
+
+                <div className="flex items-center border border-black rounded-[5px] bg-yellow p-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
                   <button
-                    className="text-[30px] text-green-700"
-                    type="button"
-                    onClick={() => {
-                      setRating(rating + 1);
-                      if (rating === 5) {
-                        setRating(5);
-                        return toast.error("The max rating is 5");
-                      }
-                    }}
-                    disabled={rating === 5}
-                  >
-                    +
-                  </button>
-                  <p className="text-lg">{rating}</p>
-                  <button
-                    className="text-[30px] text-red-700"
+                    className="flex-1 text-[24px] font-black text-red-700 bg-white border-r border-black hover:bg-red-50 transition-colors py-1 disabled:opacity-30"
                     type="button"
                     onClick={() => {
                       setRating(rating - 1);
                       if (rating === 1) {
                         setRating(1);
-                        return toast.error("The min rating is 1");
+                        return toast.error("Minimum rating is 1");
                       }
                     }}
                     disabled={rating === 1}
                   >
                     -
                   </button>
+                  <div className="px-8 font-black text-2xl flex flex-col items-center">
+                    <span className="text-[10px] text-gray-400 -mb-1">
+                      RATING
+                    </span>
+                    {rating}
+                  </div>
+                  <button
+                    className="flex-1 text-[24px] font-black text-green-700 bg-white border-l border-black hover:bg-green-50 transition-colors py-1 disabled:opacity-30"
+                    type="button"
+                    onClick={() => {
+                      setRating(rating + 1);
+                      if (rating === 5) {
+                        setRating(5);
+                        return toast.error("Maximum rating is 5");
+                      }
+                    }}
+                    disabled={rating === 5}
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
-              <div className=" flex flex-col gap-2 ">
-                <h1>Add your comment here</h1>
+              <div className="flex flex-col gap-3">
+                <h1 className="font-black uppercase text-xs tracking-wider">
+                  Your Comments
+                </h1>
 
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-4">
                   <textarea
                     name="review"
                     id="review"
                     value={commentReview}
+                    placeholder="Type your feedback here..."
                     onChange={(e) => setCommentReview(e.target.value)}
-                    className="border h-[150px] p-2 border-black rounded-[5px] w-full resize-none outline-none"
+                    className="border h-[150px] p-4 border-black rounded-[5px] w-full resize-none outline-none shadow-inner bg-gray-50 focus:bg-white transition-colors"
                   ></textarea>
-                  <div className="w-full">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary border border-black py-2 font-medium text-white disabled:opacity-70 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                    >
-                      {isSubmitting ? (
-                        "Submitting..."
-                      ) : (
-                        <>
-                          <FaPaperPlane />
-                          Submit Review
-                        </>
-                      )}
-                    </button>
-                  </div>
+
+                  <Buttons
+                    buttonType="submit"
+                    disabled={isSubmitting}
+                    isLoading={isSubmitting}
+                    loadingText="TRANSMITTING..."
+                    buttonName="SUBMIT FEEDBACK"
+                    icon={<FaPaperPlane size={18} />}
+                    animateIcon={true}
+                    className="w-full py-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                  />
                 </div>
               </div>
             </form>
           </div>
 
           {singleProduct?.reviews && (
-            <div className="bg-card h-full md:h-[650px] w-full md:w-[70%] p-5 mx-auto overflow-y-auto  py-5 flex flex-col gap-4 border-black border rounded-[5px]">
-              {/* REVIEW CARD GOES HERE */}
-
+            <div className="bg-card h-[650px] w-full md:w-[65%] p-6 mx-auto overflow-y-auto flex flex-col gap-6 border border-black rounded-[5px] ">
+              {" "}
+              {/* shadow-[8px_8px_0px_0px_rgba(34,197,94,1)] green shadow*/}
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-black uppercase tracking-widest text-lg">
+                  Product Reviews
+                </h2>
+                <div className="bg-black text-white px-3 py-1 rounded text-xs">
+                  {singleProduct?.reviews?.length || 0} TOTAL
+                </div>
+              </div>
               {singleProduct?.reviews?.length > 0 ? (
-                [...singleProduct?.reviews]
-                  ?.reverse()
+                [...(singleProduct?.reviews || [])]
+                  .reverse()
                   .map((review, index) => (
                     <ReviewCard key={index} review={review} />
                   ))
               ) : (
-                <p className="text-center">no review yet.</p>
+                <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-300 transform opacity-20">
+                  <MdRateReview size={80} />
+                  <p className="font-black uppercase tracking-widest text-2xl">
+                    no feedback yet
+                  </p>
+                </div>
               )}
             </div>
           )}

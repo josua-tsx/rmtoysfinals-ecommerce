@@ -169,7 +169,14 @@ export default function AdminProductsTable({ enableMultiDel }) {
   if (isError) return <p>Error loading filters</p>;
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible">
+      {/* Green Sticker Header */}
+      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
+          Products Table
+        </h1>
+      </div>
+
       {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
@@ -179,131 +186,175 @@ export default function AdminProductsTable({ enableMultiDel }) {
         onCancel={cancelDelete}
       />
 
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>PRODUCTS TABLE</h1>
-        <div className="flex relative items-center">
-          <input
-            type="text"
-            placeholder="search products.."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="border w-[130px] md:w-[300px] border-black relative rounded-[5px] p-1 focus:outline-none"
-          />
-          <IoSearch className="absolute right-0" size={25} />
+      <div className="flex-col border-b-2 border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
+        <div className="flex items-center gap-1 flex-col md:flex-row">
+          <label className="font-black  uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
+            Search Products
+          </label>
+          <div className="flex items-center relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Ex: Toy car..."
+              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
+            />
+            <IoSearch className="absolute right-3" size={20} />
+          </div>
         </div>
       </div>
-      <div className="overflow-y-auto  h-[600px] py-3">
+
+      <div className="overflow-y-auto h-[600px] py-3">
         {isPending ? (
           <div className="flex h-full justify-center items-center">
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead className="relative">
-              <tr className="">
-                {/* <th className="font-normal p-2 pb-5">ID</th> */}
-                <th className="font-normal p-2 pb-5">NAME</th>
-                <th className="font-normal p-2 pb-5">CATEGORY</th>
-                <th className="font-normal p-2 pb-5">PRICE</th>
-                <th className="font-normal p-2 pb-5">STATUS</th>
-                <th className="font-normal p-2 pb-5">REVIEWS</th>
-                <th className="font-normal p-2 pb-5">SOLD</th>
-                <th className="font-normal p-2 pb-5">POINTS</th>
-                <th className="font-normal p-2 pb-5">DATE CREATED</th>
-                {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
-                <th className="font-normal p-2 pb-5">ACTIONS</th>
+          <table className="w-full">
+            <thead className="border-b border-black relative">
+              <tr>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
+                  Product Name
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Category
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Price
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Status
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Reviews
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Sold
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Points
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Created
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Actions
+                </th>
                 {productArray.length > 0 && enableMultiDel && (
-                  <input
-                    type="checkbox"
-                    // onChange={() => pushMultipleProd(product._id)}
-                    checked={allSelected}
-                    onChange={handleSelectAll}
-                    className="absolute right-4 top-2"
-                  />
+                  <th className="p-4 pb-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
+                    />
+                  </th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
+            <tbody className="divide-y divide-black text-[13px]">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
-                  <tr key={product._id}>
-                    {/* <td className="px-4 ">{product._id}</td> */}
-                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
-                      <img
-                        src={product.productImages[0]}
-                        alt="Product img"
-                        className="size-10 rounded-full"
-                      />
-                      {product.productName}
+                  <tr
+                    key={product._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.productImages[0]}
+                          alt="Product img"
+                          className="size-10 rounded-[5px] border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] object-cover bg-white"
+                        />
+                        <span className=" text-[16px] tracking-tight text-black">
+                          {product.productName}
+                        </span>
+                      </div>
                     </td>
 
-                    <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {product.category && product.category.categoryName}
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px]  text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                        {product.category && product.category.categoryName}
+                      </span>
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {formatPrice(product?.price)} PHP
+                    <td className="p-4 text-center font-mono  text-[16px] text-black">
+                      {formatPrice(product?.price)}
                     </td>
 
-                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
-                      {product.status}
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px]  text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        {product.status}
+                      </span>
                     </td>
 
-                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-center  text-[16px]">
                       {product?.reviews?.length}
                     </td>
 
-                    <td className="px-6 py-4 text-indigo-700 uppercase whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-center  text-[16px] text-green-600">
                       {product?.sold}
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-center  text-[16px]">
                       {product?.points}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {new Date(product.createdAt).toLocaleString()}
+
+                    <td className="p-4 text-center  text-[16px] text-gray-500 font-mono">
+                      {new Date(product.createdAt).toLocaleDateString()}
                     </td>
 
-                    {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
-                    {product.stocks}
-                  </td> */}
-                    <td className="px-4 py-4 w-full whitespace-nowrap  text-sm flex justify-between">
-                      <div className="flex items-center gap-3">
+                    <td className="p-4">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => navigateToeditPage(product._id)}
-                          className="text-green-600 hover:text-indigo-300 mr-2"
+                          title="Edit"
+                          className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                         >
-                          <CiEdit size={25} />
+                          <CiEdit size={18} className="stroke-[1px]" />
                         </button>
                         <button
                           onClick={() => handleDeleteClick(product._id)}
-                          className="text-red-600 hover:text-red-300"
+                          title="Delete"
+                          className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                         >
-                          <MdDelete size={25} />
+                          <MdDelete size={18} />
                         </button>
                         <button
                           onClick={() => addToSlider(product._id)}
-                          className="text-red-600 hover:text-red-300"
+                          className={`px-3 py-1.5 border border-black rounded-[5px]  text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all ${
+                            !product?.isBestProduct
+                              ? "bg-blue-500 text-white"
+                              : "bg-white text-black"
+                          }`}
                         >
                           {!product?.isBestProduct
-                            ? "ADD TO SLIDER"
-                            : "REMOVE FROM SLIDER"}
+                            ? "Add Slider"
+                            : "Rem Slider"}
                         </button>
                       </div>
-
-                      {productArray.length > 0 && enableMultiDel && (
+                    </td>
+                    {productArray.length > 0 && enableMultiDel && (
+                      <td className="p-4 text-center">
                         <input
                           type="checkbox"
-                          id="wdwadwk"
                           checked={selectedIds.includes(product._id)}
                           onChange={() => pushMultipleProd(product._id)}
+                          className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
                         />
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
-                <p className="px-1">no products</p>
+                <tr>
+                  <td
+                    colSpan="10"
+                    className="p-8 text-center  text-[16px] uppercase text-gray-400 tracking-widest"
+                  >
+                    no products found
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -311,18 +362,18 @@ export default function AdminProductsTable({ enableMultiDel }) {
       </div>
 
       {selectedIds && selectedIds.length > 0 && (
-        <div className=" w-full flex gap-2 justify-end p-3">
+        <div className="w-full flex gap-3 justify-end p-4 border-t border-black bg-gray-50">
           <button
             onClick={cancelMultiDel}
-            className="border bg-green-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="px-6 py-2 border border-black bg-white font-black text-[16px] uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
-            Cancel Detete
+            Cancel
           </button>
           <button
             onClick={() => handleMultiDelete()}
-            className="border bg-red-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="px-6 py-2 border border-black bg-red-600 text-white font-black text-[16px] uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
-            Confirm Detete
+            Delete Selected ({selectedIds.length})
           </button>
         </div>
       )}

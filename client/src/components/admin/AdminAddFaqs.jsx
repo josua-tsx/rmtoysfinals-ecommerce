@@ -42,12 +42,20 @@ export default function AdminAddFaqs() {
   return (
     <form
       onSubmit={handdleSubmit}
-      className="border font-main border-black w-full p-4 relative rounded-[5px] bg-card"
+      className="border font-main border-black w-full relative rounded-[5px] bg-card p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-10"
     >
-      <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-      <div className="flex gap-2 p-2 flex-col">
-        <div className="flex gap-2 flex-col">
-          <label htmlFor="">Faqs Title: </label>
+      <div className="absolute -top-6 -left-4 bg-primary border border-black text-white px-6 py-2 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs transform -rotate-1">
+        Add New FAQ
+      </div>
+
+      <div className="flex gap-4 p-2 flex-col">
+        <div className="flex gap-3 flex-col">
+          <label
+            htmlFor="title"
+            className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+          >
+            Faqs Title:{" "}
+          </label>
           <input
             name="title"
             id="title"
@@ -55,31 +63,39 @@ export default function AdminAddFaqs() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
-            className="border border-black w-full rounded-[5px] p-1 outline-none"
+            placeholder="Enter the question/title..."
+            className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
+            required
           />
         </div>
-        <div className="flex gap-2 flex-col">
-          <label htmlFor="">Faqs Answer: </label>
-          <input
+        <div className="flex gap-3 flex-col mt-2">
+          <label
+            htmlFor="answer"
+            className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+          >
+            Faqs Answer:{" "}
+          </label>
+          <textarea
             name="answer"
             id="answer"
-            type="text"
             value={answer}
             maxLength={500}
             onChange={(e) => setAnswer(e.target.value)}
-            className="border border-black w-full rounded-[5px] p-1 outline-none"
-          />
+            placeholder="Enter the answer/description..."
+            className="border border-black w-full rounded-[5px] p-3 h-[150px] outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
+            required
+          ></textarea>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-2 p-2">
-        <button className="border flex-1 border-black p-2 rounded-[5px] bg-primary text-white">
-          Add Faqs
+      <div className="flex flex-col md:flex-row gap-4 p-2 mt-2">
+        <button className="border flex-1 border-black py-3 rounded-[5px] bg-primary text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95">
+          ADD FAQ
         </button>
         <button
           type="button"
           onClick={() => clearButton()}
-          className="border w-full  border-black p-2 rounded-[5px] md:w-[20%] bg-red-600 text-white"
+          className="bg-red-600 text-white md:w-[25%] border border-black rounded-[5px] py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95"
         >
           Clear
         </button>

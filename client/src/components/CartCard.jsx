@@ -168,12 +168,11 @@ export default function CartCard({ productCart }) {
       </div>
       <div className="flex absolute bottom-1 right-0 md:relative  gap-3">
         <button
-          // onClick={() => handleRemoveCart(productCart.productId._id)}
           onClick={() => handleDeleteClick(productCart?.productId._id)}
           type="button"
-          className=" flex items-center bottom-0 gap-1  relative right-2 text-red-600"
+          className="p-1.5 bg-red-600 text-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
         >
-          <MdDelete size={25} />
+          <MdDelete size={22} />
         </button>
       </div>
       <div>

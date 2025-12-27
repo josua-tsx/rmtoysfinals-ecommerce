@@ -1,51 +1,66 @@
 import { IoIosClose } from "react-icons/io";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import Buttons from "./Buttons";
 
 export default function FormModal({
   isOpen,
-  title,
   onClose,
-  onSubmit,
+  title,
   children,
+  isSubmitting,
+  onSubmit,
   submitLabel = "Submit",
-  cancelLabel = "Cancel",
-  isSubmitting = false,
 }) {
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 backdrop-blur-sm p-3 flex items-center justify-center">
-      <div className="bg-card border border-black rounded-[5px] w-full md:w-[500px] relative">
-        <div className="absolute -top-10 bg-primary border border-black left-0 rounded-[5px] text-card px-5 py-1">
-          <h1>{title}</h1>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute border border-black text-card bg-red-700 rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-        >
-          <IoIosClose size={25} />
-        </button>
+  const content = (
+    <>
+      <div className="absolute -top-5 -left-4 bg-primary text-white border border-black px-6 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] font-black uppercase tracking-widest text-xs transform -rotate-1 z-20">
+        {title}
+      </div>
+      <button
+        onClick={onClose}
+        type="button"
+        disabled={isSubmitting}
+        className="absolute -top-3 -right-3 bg-red-600 text-white border border-black size-8 flex items-center justify-center rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all z-30 group"
+      >
+        <IoIosClose
+          size={24}
+          className="group-hover:rotate-90 transition-transform"
+        />
+      </button>
 
-        <form onSubmit={onSubmit} className="p-4">
-          {children}
+      <div className="flex flex-col gap-6">
+        {children}
 
-          <div className="flex gap-2 mt-4">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 border border-black bg-primary text-card rounded-[5px] uppercase p-2 disabled:opacity-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            >
-              {isSubmitting ? `${submitLabel}...` : submitLabel}
-            </button>
-            <button
-              type="button"
+        {onSubmit && (
+          <div className="flex flex-col md:flex-row gap-4 mt-2">
+            <Buttons
+              buttonType="submit"
+              buttonName={submitLabel}
+              isLoading={isSubmitting}
+              icon={<FaCheck size={18} />}
+              animateIcon={true}
+              className="flex-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            />
+            <Buttons
+              buttonName="Cancel"
               onClick={onClose}
-              className="bg-red-600 px-4 border border-black rounded-[5px] text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            >
-              {cancelLabel}
-            </button>
+              icon={<FaTimes size={18} />}
+              animateIcon={true}
+              className="bg-red-600 !text-white md:w-[30%] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              disabled={isSubmitting}
+            />
           </div>
-        </form>
+        )}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 backdrop-blur-md p-3 flex items-center justify-center font-main overflow-y-auto bg-black/50">
+      <div className="bg-white border border-black rounded-lg w-full md:w-[500px] relative  mt-10 animate-in zoom-in duration-200 p-6 pt-10">
+        {onSubmit ? <form onSubmit={onSubmit}>{content}</form> : content}
       </div>
     </div>
   );

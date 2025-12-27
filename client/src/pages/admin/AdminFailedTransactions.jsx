@@ -74,7 +74,14 @@ export default function AdminFailedTransactions({
   if (isFailedCancelledError) return <p>Error.</p>;
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-8 overflow-visible">
+      {/* Red Sticker Header for Failed Transactions */}
+      <div className="absolute -top-4 -left-3 bg-[#dc2626] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black uppercase tracking-widest text-sm ">
+          Failed Transactions
+        </h1>
+      </div>
+
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -82,45 +89,65 @@ export default function AdminFailedTransactions({
         />
       )}
 
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>FAILED ONLINE TRANSACTIONS</h1>
-        <div className="flex items-center relative">
+      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4 pt-8 bg-gray-50/50">
+        <div className="hidden md:block">
+          <p className="text-[11px] font-black uppercase text-gray-500 tracking-widest pl-1">
+            Viewing history of failed or cancelled payments
+          </p>
+        </div>
+        <div className="flex items-center relative group w-full md:w-auto">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search failed transact.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            placeholder="SEARCH BY ID, EMAIL, METHOD..."
+            className="border border-black w-full md:w-[350px] rounded-[5px] py-2 pl-4 pr-10 focus:outline-none font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all placeholder:text-gray-300"
           />
-          <IoSearch className="absolute right-0" size={25} />
+          <IoSearch
+            className="absolute right-3 text-black group-focus-within:scale-110 transition-transform"
+            size={20}
+          />
         </div>
       </div>
-      <div className="overflow-y-auto  h-[600px] py-3">
+      <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
         {isFailedCancelledPending ? (
-          <div className="flex justify-center items-center h-full">
+          <div className="flex justify-center items-center h-[400px]">
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead>
-              <tr className="">
-                <th className="font-normal p-2 pb-5">ORDER ID</th>
-                <th className="font-normal p-2 pb-5">CUSTOMER EMAIL</th>
-                <th className="font-normal p-2 pb-5">GUEST NAME</th>
-                <th className="font-normal p-2 pb-5">ORDER DATE</th>
-                <th className="font-normal p-2 pb-5">ORDER FAILED DATE</th>
-                <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
-                <th className="font-normal p-2 pb-5">PHONE NUMBER</th>
-                <th className="font-normal p-2 pb-5">GCASH NUMBER</th>
-                <th className="font-normal p-2 pb-5">TOTAL ITEMS</th>
-                <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
-                <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
-                <th className="font-normal p-2 pb-5">STATUS</th>
-                <th className="font-normal p-2 pb-5">REASON</th>
-                <th className="font-normal p-2 pb-5">ACTION</th>
+          <table className="w-full border-collapse">
+            <thead className="sticky top-0 bg-white z-10">
+              <tr className="border-b border-black">
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  ORDER ID
+                </th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  CUSTOMER
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  ORDER DATE
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  FAILED DATE
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  AMOUNT
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  INFO
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  METHOD
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  REASON
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest text-black">
+                  ACTION
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
+            <tbody className="divide-y divide-black text-[16px]">
               {filteredFailedOrder?.length > 0 ? (
                 filteredFailedOrder.map((failed) => {
                   const totalItems =
@@ -130,72 +157,83 @@ export default function AdminFailedTransactions({
                     ) || 0;
 
                   return (
-                    <tr key={failed._id}>
-                      <td className="px-4">{failed._id}</td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2">
-                      {failed?.userId
-                          ? failed?.userId?.email
-                          : failed?.guestUser?.email}
+                    <tr
+                      key={failed._id}
+                      className="hover:bg-gray-50 transition-colors group"
+                    >
+                      <td className="px-4 py-4 border-r border-black font-mono text-black">
+                        #{failed._id.slice(-6)}...
                       </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium  gap-2">
-                        {failed.userId
-                          ? failed.userId?.email
-                          : failed.guestUser.name}
+                      <td className="px-4 py-4 border-r border-black">
+                        <div className="flex flex-col">
+                          <span className="uppercase text-black truncate max-w-[150px]">
+                            {failed?.userId
+                              ? failed?.userId?.email
+                              : failed?.guestUser?.email}
+                          </span>
+                          <span className="text-[9px] font-bold text-gray-500 italic">
+                            {failed.userId ? "MEMBER" : "GUEST"}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {new Date(failed.createdAt).toLocaleString()}
+                      <td className="px-4 py-4 border-r border-black text-center text-black">
+                        <span className="text-gray-600">
+                          {new Date(failed.createdAt).toLocaleDateString()}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                        {failed.updatedAt}
+                      <td className="px-4 py-4 border-r border-black text-center text-black">
+                        <span className="text-gray-600">
+                          {new Date(failed.updatedAt).toLocaleDateString()}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {formatPrice(failed.totalPrice)} PHP
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <span className="font-black text-xs text-indigo-700">
+                          {formatPrice(failed.totalPrice)} PHP
+                        </span>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {failed.userId
-                          ? failed.userId?.phoneNumber
-                          : failed.guestUser.phone}
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <div className="flex flex-col items-center">
+                          <span className="font-black uppercase bg-indigo-50 px-2 rounded-full border border-indigo-200 text-black">
+                            {totalItems} ITEMS
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-gray-500 mt-1">
+                            {failed.userId
+                              ? failed.userId?.phoneNumber
+                              : failed.guestUser.phone}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {failed.gcashQRmethod
-                          ? failed.gcashQRmethod.gcashPhoneNumber
-                          : failed?.userId?.phoneNumber}
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <span className="font-black uppercase px-2 py-1 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                          {failed.paymentMethod}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {totalItems}
+                      <td className="px-4 py-4 border-r border-black text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="font-black uppercase text-red-600">
+                            {failed.paymentStatus}
+                          </span>
+                          <p className="text-[10px] font-bold text-red-800 leading-tight max-w-[120px]">
+                            {failed.reason}
+                          </p>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {failed.paymentMethod}
-                      </td>
-                      <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                        {failed.paymentStatus}
-                      </td>
-                      <td className="py-6 px-6 uppercase whitespace-nowrap text-center text-sm">
-                        {failed.status}
-                      </td>
-                      <td className="py-6 px-6 text-red-700 uppercase whitespace-nowrap text-center text-sm">
-                        {failed.reason}
-                      </td>
-                      <td className=" whitespace-nowrap px-4 text-center text-sm">
-                        <div className="flex gap-2">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleOpenSingleOrder(failed)}
-                              type="button"
-                              className="text-green-700"
-                            >
-                              VIEW
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleCancelSuccessTransact(failed._id)
-                              }
-                              type="button"
-                              className="text-red-700"
-                            >
-                              CANCEL
-                            </button>
-                          </div>
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => handleOpenSingleOrder(failed)}
+                            className="bg-green-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                          >
+                            VIEW
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleCancelSuccessTransact(failed._id)
+                            }
+                            className="bg-red-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                          >
+                            CANCEL
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -203,8 +241,12 @@ export default function AdminFailedTransactions({
                 })
               ) : (
                 <tr>
-                  <td colSpan="11" className="text-center py-4">
-                    No failed transactions.
+                  <td colSpan="9" className="p-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-gray-400 font-black uppercase tracking-widest text-xs">
+                        No failed transactions found
+                      </span>
+                    </div>
                   </td>
                 </tr>
               )}

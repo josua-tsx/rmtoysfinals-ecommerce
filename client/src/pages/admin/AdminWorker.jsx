@@ -8,6 +8,8 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
+import PasswordInput from "../../reusable/PasswordInput";
+
 export default function AdminWorker() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
@@ -19,7 +21,6 @@ export default function AdminWorker() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [role, setRole] = useState("validatorStaff"); // Default role
-  const [showPassword, setShowPassword] = useState(false);
 
   const { mutate: addWorkerMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -61,30 +62,30 @@ export default function AdminWorker() {
     setShowAdd(!showAdd);
   };
 
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <section className="bg-yellow h-screen">
+    <section className="bg-[#fffdf6] min-h-screen pb-20">
       <AdminHeader title={"WORKER TABLE"} />
-      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-16 flex-col">
-        {/* main */}
-        <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-          {/* <AdminStatCard title={"TOTAL PRODUCTS"} value={98}/>
-          <AdminStatCard title={"TOTAL CATEGORIES"} value={5}/>
-          <AdminStatCard title={"STOCKS"} value={98}/>
-          <AdminStatCard title={"SUPPLIERS"} value={5}/> */}
-        </div>
-
-        <div className="w-full  flex justify-end">
-          <button
-            onClick={toggleAddCategory}
-            className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px]"
-          >
-            {showAdd ? "Cancel" : "Add Worker"}
-            <IoMdAdd />
-          </button>
+      <div className="max-w-[95%] pt-10 mx-auto flex gap-10 flex-col px-4">
+        {/* Actions Area */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-dashed border-gray-300 pb-8">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-black uppercase text-[11px] tracking-[0.3em] text-gray-500 pl-1">
+              Data Management
+            </h2>
+            <div className="flex gap-4">
+              <button
+                onClick={toggleAddCategory}
+                className="flex items-center gap-3 bg-indigo-600 text-white border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group"
+              >
+                {showAdd ? "CANCEL ADD" : "ADD WORKER"}
+                <IoMdAdd
+                  className={`text-xl transition-transform ${
+                    showAdd ? "rotate-45" : "group-hover:scale-125"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         <FormModal
@@ -92,31 +93,39 @@ export default function AdminWorker() {
           title="Add Worker"
           onClose={() => setShowAdd(false)}
           onSubmit={handleAddSubmit}
-          submitLabel="Add Worker"
+          submitLabel="ADD WORKER"
           isSubmitting={isPending}
         >
-          <div className="flex gap-2 p-2 flex-col">
-            <div className="flex justify-between flex-col">
-              <label htmlFor="email" className="uppercase mb-2">
-                WORKER EMAIL:{" "}
+          <div className="flex gap-4 p-2 flex-col">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="email"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                WORKER EMAIL
               </label>
               <input
-                type="text"
+                type="email"
                 name="email"
                 id="email"
                 value={email}
                 maxLength={254}
                 onChange={handleInputChange(setEmail)}
-                className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+                placeholder="Ex: worker@example.com"
+                className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
-              <p className="text-sm pt-1 text-green-700">
-                (Enter a valid email.)
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+                (Enter a valid email address)
               </p>
             </div>
-            <div className="flex justify-between flex-col">
-              <label htmlFor="username" className="uppercase mb-2 ">
-                Username:{" "}
+
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="username"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                Username
               </label>
               <input
                 type="text"
@@ -125,86 +134,58 @@ export default function AdminWorker() {
                 value={username}
                 maxLength={50}
                 onChange={handleInputChange(setUsername)}
-                className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+                placeholder="Ex: JuanDelaCruz"
+                className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
-              <p className="text-sm pt-1 text-green-700">
-                (Username must be 5-50 letters and contain no numbers or special
-                characters.)
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+                (5-50 letters, no numbers or special characters)
               </p>
             </div>
 
-            <div className="flex justify-between flex-col">
-              <label htmlFor="password" className="uppercase mb-2 ">
-                Password:{" "}
-              </label>
-              <div className="flex flex-col  gap-2 relative w-full">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  id="password"
-                  value={password}
-                  maxLength={128}
-                  onChange={handleInputChange(setPassword)}
-                  className=" outline-none p-2 w-full border-[#313031] border rounded-[5px]"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={togglePassword}
-                  className="absolute right-2 top-3 flex items-center gap-2 cursor-pointer"
-                >
-                  <p className="text-xs">Show Password</p>
-                  <input
-                    type="checkbox"
-                    checked={showPassword}
-                    readOnly
-                    className="border size-[20px] border-black cursor-pointer"
-                  />
-                </button>
-                <p className="text-sm text-green-700">
-                  (Password must be at least 8 characters, include one uppercase
-                  letter, one number, and one special character.)
-                </p>
-              </div>
-            </div>
+            <PasswordInput
+              label="Password"
+              name="password"
+              value={password}
+              onChange={handleInputChange(setPassword)}
+              errorText="(Min 8 chars, 1 uppercase, 1 number, 1 special char)"
+              required
+            />
 
-            <div className="flex justify-between flex-col">
-              <label htmlFor="confirmPassword" className="uppercase mb-2 ">
-                Confirm password:{" "}
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                id="confirmPassword"
-                value={confirmPassword}
-                maxLength={128}
-                onChange={handleInputChange(setConfirmPassword)}
-                className=" outline-none p-1 border-[#313031] border rounded-[5px]"
-                required
-              />
-            </div>
+            <PasswordInput
+              label="Confirm password"
+              name="confirmPassword"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={handleInputChange(setConfirmPassword)}
+              required
+            />
 
-            <div className="flex justify-between flex-col">
-              <label htmlFor="role" className="uppercase mb-2 ">
-                ROLE:{" "}
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="role"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                ROLE
               </label>
               <select
                 name="role"
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="border outline-none border-black rounded-[5px] py-1"
+                className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
                 required
               >
                 <option value="validatorStaff">Validator Staff</option>
-                {/* Add other roles if needed */}
               </select>
             </div>
 
-            <div className="flex justify-between flex-col">
-              <label htmlFor="jobDescription" className="uppercase mb-2 ">
-                Job Description:{" "}
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="jobDescription"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                Job Description
               </label>
               <input
                 type="text"
@@ -213,7 +194,8 @@ export default function AdminWorker() {
                 value={jobDescription}
                 maxLength={200}
                 onChange={handleInputChange(setJobDescription)}
-                className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+                placeholder="Ex: Customer Support & Verification"
+                className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
             </div>

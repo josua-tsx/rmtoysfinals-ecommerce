@@ -34,36 +34,58 @@ export default function AdminAddReasonModal({ singleOrderData, onClose }) {
   };
 
   return (
-    <section className="inset-0 z-50 fixed overflow-y-auto md:overflow-y-hidden  p-3">
-      <div className="h-screen relative flex flex-col justify-center items-center">
-        <form
-          onSubmit={handleSubmitReason}
-          className="border flex flex-col justify-between relative border-black w-[300px] h-[300px] bg-card rounded-[5px]"
+    <div className="inset-0 z-50 fixed flex flex-col p-5 justify-center items-center backdrop-blur-md font-main overflow-y-auto">
+      <div className="bg-card border border-black rounded-[5px] w-full md:w-[400px] relative shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-10">
+        <div className="absolute -top-6 -left-4 bg-primary border border-black text-white px-6 py-2 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs transform -rotate-2">
+          Adding Reason
+        </div>
+        <button
+          onClick={onClose}
+          type="button"
+          className="absolute -top-10 right-0 bg-red-600 text-white border border-black px-4 py-1.5 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all z-50 active:scale-95 group font-black"
         >
-          <button
-            onClick={onClose}
-            type="button"
-            className="absolute border border-black text-card bg-primary rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            <IoIosClose size={25} />
-          </button>
-          <div className="p-2 flex flex-col gap-2 h-full">
-            <label htmlFor="reason">Reason: </label>
+          <IoIosClose
+            size={28}
+            className="group-hover:rotate-90 transition-transform"
+          />
+        </button>
 
+        <form onSubmit={handleSubmitReason} className="p-8 pt-10">
+          <div className="flex flex-col gap-4">
+            <label
+              htmlFor="reason"
+              className="font-black uppercase text-xs tracking-wider"
+            >
+              Reason / Feedback:
+            </label>
             <textarea
               onChange={(e) => setReason(e.target.value)}
               value={reason}
               name="reason"
               id="reason"
-              className="h-full outline-none p-2 border border-black rounded-[5px]"
+              placeholder="Enter rejection/cancel reason..."
+              className="h-[150px] outline-none p-4 border border-black rounded-[5px] bg-gray-50 focus:bg-white transition-colors resize-none"
+              required
             ></textarea>
           </div>
 
-          <button className="rounded-b-[5px] bg-primary py-1 text-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
-            SUBMIT
-          </button>
+          <div className="flex flex-col md:flex-row gap-4 mt-8">
+            <button
+              className="flex-1 bg-primary text-white border border-black py-3 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95"
+              type="submit"
+            >
+              SUBMIT REASON
+            </button>
+            <button
+              onClick={onClose}
+              type="button"
+              className="md:w-[35%] bg-red-600 text-white border border-black py-3 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
-    </section>
+    </div>
   );
 }

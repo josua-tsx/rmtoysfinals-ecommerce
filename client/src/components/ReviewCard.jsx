@@ -114,7 +114,7 @@ export default function ReviewCard({ review }) {
   const isCurrentUserReview = currentUser?._id === review?.userId?._id;
 
   return (
-    <div className="relative mb-4 rounded-xl border  border-black max-w-full  bg-yellow p-5 shadow-sm">
+    <div className="relative mb-6 rounded-[5px] border border-black max-w-full bg-card p-6  transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
       {openEditModal && singleReview && !isPending && !isError && (
         <EditReviewComponent
           singleReview={singleReview}
@@ -132,28 +132,31 @@ export default function ReviewCard({ review }) {
         onCancel={handleCancel}
       />
 
-      <div className="absolute -top-3 right-2 text-yellow-500">
-        <TbPinnedFilled size={25} />
+      <div className="absolute -top-3 right-4 text-black transform rotate-12">
+        <TbPinnedFilled size={28} />
       </div>
 
       {/* Review header */}
-      <div className="flex items-start gap-5">
-        <img
-          src={review?.userId?.avatar || "/default-avatar.png"}
-          alt={review?.userId?.username}
-          className="h-10 w-10 rounded-full border border-black object-cover"
-        />
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start gap-4">
+        <div className="relative group">
+          <img
+            src={review?.userId?.avatar || "/default-avatar.png"}
+            alt={review?.userId?.username}
+            className="h-12 w-12 rounded-full border border-black object-cover shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-[1px] group-hover:translate-y-[1px] transition-all"
+          />
+        </div>
+
+        <div className="flex-1 w-full">
+          <di v className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="font-medium text-gray-900">
+              <h3 className=" font-black uppercase text-sm tracking-widest text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 inline-block">
                 {hideName(review?.userId?.username)}
               </h3>
-              <div className="flex items-center gap-1">
-                <StarsRating rating={review.rating} size={16} />
-                {/* <span className="text-sm text-gray-500">
-                  {format(new Date(review.createdAt), "MMM d, yyyy")}
-                </span> */}
+              <div className="mt-2 flex items-center gap-3 bg-yellow/20 border border-black/10 p-1.5 rounded-sm w-fit">
+                <StarsRating rating={review.rating} size={14} />
+                <span className=" font-black text-[10px] text-gray-400 uppercase">
+                  RATING: {review.rating}/5
+                </span>
               </div>
             </div>
 
@@ -163,30 +166,30 @@ export default function ReviewCard({ review }) {
                 {isCurrentUserReview && (
                   <button
                     onClick={() => handleOpenReviewEditModal(review)}
-                    className="text-blue-600"
+                    className="bg-white border border-black p-2 rounded-[5px] shadow-[3px_3px_0px_0px_rgba(59,130,246,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95 text-blue-600"
                     aria-label="Edit review"
                   >
-                    <MdEdit size={20} />
+                    <MdEdit size={18} />
                   </button>
                 )}
                 <button
                   onClick={() => handleDeleteClick(review._id)}
-                  className="text-red-600"
+                  className="bg-white border border-black p-2 rounded-[5px] shadow-[3px_3px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95 text-red-600"
                   aria-label="Delete review"
                 >
-                  <MdDelete size={20} />
+                  <MdDelete size={18} />
                 </button>
               </div>
             )}
-          </div>
+          </di>
 
-          {/* Review content */}
+          <div className="mt-4 p-4 bg-gray-50 border border-black rounded-[5px] shadow-inner relative overflow-hidden group/text">
+            {/* Decorative corner element */}
+            <div className="absolute top-0 right-0 w-8 h-8 bg-black/5 rounded-bl-full group-hover/text:w-10 group-hover/text:h-10 transition-all"></div>
 
-          {/* Review content */}
-          <div className="mt-3 break-all">
-            {" "}
-            {/* Forces text to wrap */}
-            <p className="text-gray-700">{review?.commentReview}</p>
+            <p className="text-gray-800  text-sm leading-relaxed relative z-10 break-words">
+              {review?.commentReview}
+            </p>
           </div>
         </div>
       </div>

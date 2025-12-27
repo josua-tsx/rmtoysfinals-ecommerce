@@ -90,7 +90,14 @@ export default function AdminDraftProductsTable() {
   }
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible">
+      {/* Green Sticker Header */}
+      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black uppercase tracking-widest text-sm ">
+          Drafts Table
+        </h1>
+      </div>
+
       {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
@@ -100,17 +107,21 @@ export default function AdminDraftProductsTable() {
         onCancel={cancelDelete}
       />
 
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>DRAFTS TABLE</h1>
-        <div className="flex items-center relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search products.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-          />
-          <IoSearch className="absolute right-0" size={25} />
+      <div className="flex-col border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
+        <div className="flex items-center gap-1 flex-col md:flex-row">
+          <label className="font-black uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
+            Search Drafts
+          </label>
+          <div className="flex items-center relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="search products.."
+              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
+            />
+            <IoSearch className="absolute right-3" size={20} />
+          </div>
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
@@ -119,63 +130,91 @@ export default function AdminDraftProductsTable() {
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead>
-              <tr className="">
-                <th className="font-normal p-2 pb-5">ID</th>
-                <th className="font-normal p-2 pb-5">PRODUCT NAME</th>
-                <th className="font-normal p-2 pb-5">CATEGORY</th>
-                <th className="font-normal p-2 pb-5">PRICE</th>
-                <th className="font-normal p-2 pb-5">STATUS</th>
-                {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
-                <th className="font-normal p-2 pb-5">ACTIONS</th>
+          <table className="w-full">
+            <thead className="border-b border-black sticky top-0 bg-[#fffdf6] z-10">
+              <tr>
+                <th className="font-black uppercase text-[13px] tracking-widest text-black p-4 pb-2 text-left bg-[#fffdf6]">
+                  ID
+                </th>
+                <th className="font-black uppercase text-[13px] tracking-widest text-black p-4 pb-2 text-left bg-[#fffdf6]">
+                  Product Name
+                </th>
+                <th className="font-black uppercase text-[13px] tracking-widest text-black p-4 pb-2 text-center bg-[#fffdf6]">
+                  Category
+                </th>
+                <th className="font-black uppercase text-[13px] tracking-widest text-black p-4 pb-2 text-center bg-[#fffdf6]">
+                  Price
+                </th>
+                <th className="font-black uppercase text-[13px] tracking-widest text-black p-4 pb-2 text-center bg-[#fffdf6]">
+                  Status
+                </th>
+                <th className="font-black uppercase text-[13px] tracking-widest text-black p-4 pb-2 text-center bg-[#fffdf6]">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
+            <tbody className="divide-y divide-black text-[13px]">
               {filteredArrayDrafts.length > 0 ? (
                 filteredArrayDrafts.map((draft) => (
-                  <tr key={draft._id}>
-                    <td className="px-4 ">{draft._id}</td>
-                    <td className="px-2 uppercase py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
-                      <img
-                        src={
-                          draft.productImages.length > 0 &&
-                          draft.productImages[0]
-                        }
-                        alt="Product img"
-                        className="size-10 rounded-full"
-                      />
-                      {draft.productName}
+                  <tr
+                    key={draft._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-4 whitespace-nowrap font-mono font-black uppercase text-black">
+                      {draft._id}
+                    </td>
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={
+                            draft.productImages.length > 0
+                              ? draft.productImages[0]
+                              : "fallback-image-url"
+                          }
+                          className="size-10 rounded-[3px] border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] object-cover bg-white"
+                          alt={draft.productName}
+                        />
+                        <span className="font-black tracking-tight max-w-[200px] truncate text-black">
+                          {draft.productName}
+                        </span>
+                      </div>
                     </td>
 
-                    <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {draft.category.categoryName}
+                    <td className="p-4 whitespace-nowrap text-center">
+                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                        {draft.category.categoryName}
+                      </span>
                     </td>
 
-                    <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                    <td className="p-4 whitespace-nowrap text-center font-black text-black">
                       {draft.price} PHP
                     </td>
 
-                    <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
-                      {draft.status}
+                    <td className="p-4 whitespace-nowrap text-center">
+                      <span className="px-2 py-0.5 border border-black bg-yellow-400 rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                        {draft.status}
+                      </span>
                     </td>
                     {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
               {product.stocks}
             </td> */}
-                    <td className=" whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button
-                        onClick={() => handleDeleteClick(draft._id)}
-                        type="button"
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        <MdDelete size={25} />
-                      </button>
-                      <button
-                        onClick={() => publishDraftMutation(draft._id)}
-                        className="text-green-600 hover:text-indigo-300 mr-2"
-                      >
-                        SEND TO PENDING STOCKS
-                      </button>
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-3">
+                        <button
+                          onClick={() => handleDeleteClick(draft._id)}
+                          type="button"
+                          className="border border-black p-1.5 rounded-[5px] bg-red-500 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                          title="Delete Draft"
+                        >
+                          <MdDelete size={20} />
+                        </button>
+                        <button
+                          onClick={() => publishDraftMutation(draft._id)}
+                          className="border border-black py-1.5 px-3 rounded-[5px] bg-[#22c55e] text-black font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                        >
+                          Send to Pending
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -8,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import formatPrice from "../reusable/formatPrice";
 import { IoIosClose } from "react-icons/io";
 import LoadingSpinner from "../reusable/LoadingSpinner";
+import Buttons from "../reusable/Buttons";
+import { FaCheck, FaTimes } from "react-icons/fa";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -15,7 +17,7 @@ export default function OrderSummaryModal({ onClose }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [notes, setNotes] = useState("");
-  const [shippingFee, setShippingFee] = useState(35);
+  const [shippingFee] = useState(35);
   const [cartItems, setCartItems] = useState({});
   const [useCredits, setUseCredits] = useState("no");
 
@@ -308,9 +310,12 @@ export default function OrderSummaryModal({ onClose }) {
 
             <button
               onClick={onClose}
-              className="border  border-black  text-card bg-red-700 rounded-[5px] px-5 right-0 -top-8"
+              className="group border border-black text-white bg-red-700 rounded-[5px] p-0.5 hover:bg-red-800 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
-              <IoIosClose size={25} />
+              <IoIosClose
+                size={28}
+                className="group-hover:rotate-180 transition-all"
+              />
             </button>
           </div>
 
@@ -515,20 +520,22 @@ export default function OrderSummaryModal({ onClose }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-row-reverse w-full  gap-2">
-              <button
-                type="button"
+            <div className="flex flex-row-reverse w-full gap-4 mt-4">
+              <Buttons
+                buttonType="submit"
+                buttonName="Place Order"
+                icon={<FaCheck size={18} />}
+                animateIcon={true}
+                className="flex-1 bg-[#10b981] !text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] py-4"
+              />
+              <Buttons
+                buttonType="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-black bg-red-700 text-white rounded-md shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 flex-1 border border-black bg-primary text-white rounded-md hover:bg-primary-dark shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              >
-                Place Order
-              </button>
+                buttonName="Cancel"
+                icon={<FaTimes size={18} />}
+                animateIcon={true}
+                className="px-8 bg-[#b91c1c] !text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] py-4"
+              />
             </div>
           </form>
         </div>

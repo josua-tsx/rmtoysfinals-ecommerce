@@ -47,10 +47,16 @@ export default function AdminOrderStockHistoryTable() {
   if (isStockHistoryError) return <p>Error.</p>;
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible">
+      {/* Green Sticker Header */}
+      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border-2 border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black uppercase tracking-widest text-sm ">
+          Stock History
+        </h1>
+      </div>
+
       <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-      <div className="border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4">
-        <h1>ORDER / REORDER STOCK HISTORY</h1>
+      <div className="border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-6">
         <div className="flex items-center relative">
           <input
             type="text"
@@ -69,24 +75,47 @@ export default function AdminOrderStockHistoryTable() {
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">
-            <thead>
-              <tr>
-                {/* <th className="font-normal p-2 pb-5">ID</th> */}
-                <th className="font-normal p-2 pb-5">Delivery ID</th>
-                <th className="font-normal p-2 pb-5">User</th>
-                <th className="font-normal p-2 pb-5">Action</th>
-                <th className="font-normal p-2 pb-5">Quantity Ordered</th>
-                <th className="font-normal p-2 pb-5">Supplier Name</th>
-                <th className="font-normal p-2 pb-5">Supplier Price</th>
-                <th className="font-normal p-2 pb-5">Shipping Price</th>
-                <th className="font-normal p-2 pb-5">Shop Price</th>
-                <th className="font-normal p-2 pb-5">Vat Applied</th>
-                <th className="font-normal p-2 pb-5">Recieved Date</th>
-                <th className="font-normal p-2 pb-5">Recieved Quantity</th>
-                <th className="font-normal p-2 pb-5">Total Cost</th>
+            <thead className="bg-[#fffdf6] sticky top-0 z-10">
+              <tr className="border-b border-black">
+                <th className="px-4 py-4 text-left font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Delivery ID
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  User
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Action
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Qty Ordered
+                </th>
+                <th className="px-4 py-4 text-left font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Supplier Name
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Supplier Price
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Shipping
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Shop Price
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Vat Applied
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Received Date
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest border-r border-black text-black">
+                  Received Qty
+                </th>
+                <th className="px-4 py-4 text-center font-black uppercase text-[13px] tracking-widest text-black">
+                  Total Cost
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
+            <tbody className="divide-y divide-black text-[13px] font-bold">
               {filteredArrayStocks.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="text-center">

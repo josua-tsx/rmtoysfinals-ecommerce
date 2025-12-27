@@ -7,7 +7,7 @@ import OrderSummaryModal from "../components/OrderSummaryModal";
 import formatPrice from "../reusable/formatPrice";
 import CreditPointsAuto from "../components/CreditPointsAuto";
 import { useNavigate } from "react-router-dom";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaArrowRight, FaSearch } from "react-icons/fa";
 import useOrderStore from "../stores/useOrderStore";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 
@@ -84,30 +84,33 @@ export default function CartPage() {
                 </h3>
                 <p className="text-gray-500 mb-4">
                   {" "}
-                  Add items to your cart by clicking "Add to Cart" on products.
-                  They'll appear here ready for purchase.
+                  Add items to your cart by clicking &quot;Add to Cart&quot; on
+                  products. They&apos;ll appear here ready for purchase.
                 </p>
-                <button
+                <Buttons
+                  buttonName="Browse products"
                   onClick={() => navigate("/shop")}
-                  className="bg-primary border border-black p-2 rounded-[5px] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                >
-                  Browse products
-                </button>
+                  icon={<FaSearch size={18} />}
+                  animateIcon={true}
+                  className="w-fit mx-auto px-6 py-2"
+                />
               </div>
             )}
           </div>
 
           {cart?.items?.length > 0 && (
-            <div className="border md:w-[270px] gap-2 flex flex-col bg-card rounded-[5px] p-6 border-black">
-              <h1 className=" text-xl mb-3">Order Summary</h1>
-              <div className="bg-yellow-50 border-l-4 my-2  rounded border-red-700 p-3  text-red-700">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+            <div className="border md:w-[320px] gap-4 flex flex-col bg-card rounded-lg p-6 border-black ">
+              <h1 className="text-2xl font-black uppercase tracking-widest border-b-2 border-black pb-2">
+                Order Summary
+              </h1>
+
+              <div className="bg-red-50 border border-black rounded-[5px] p-3 text-red-700 shadow-[4px_4px_0px_0px_rgba(239,68,68,0.2)]">
+                <div className="flex gap-2">
+                  <div className="flex-shrink-0 mt-0.5">
                     <svg
-                      className="h-5 w-5 text-yellow-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
+                      className="h-4 w-4 text-red-600"
                       fill="currentColor"
+                      viewBox="0 0 20 20"
                     >
                       <path
                         fillRule="evenodd"
@@ -116,32 +119,51 @@ export default function CartPage() {
                       />
                     </svg>
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-yellow-700">
-                      <strong>Note:</strong>
-                      You can only order 5 items per product at a time.
-                    </p>
+                  <p className="text-[11px] font-bold leading-tight">
+                    <span className="uppercase font-black">Limit:</span> Max 5
+                    items per product per order.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 my-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black uppercase text-gray-400">
+                    Total Items
+                  </span>
+                  <span className="font-bold">{cart?.items?.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black uppercase text-blue-600">
+                    Points Earned
+                  </span>
+                  <span className="font-black text-blue-600">
+                    +{totalPoints}
+                  </span>
+                </div>
+                <div className="h-px bg-dashed border-b-2 border-dashed border-gray-100 my-1" />
+                <div className="flex justify-between items-end">
+                  <span className="text-sm font-black uppercase tracking-tighter">
+                    Subtotal
+                  </span>
+                  <div className="text-right">
+                    <span className="text-2xl font-black block leading-none text-indigo-600">
+                      {cart?.items ? formatPrice(totalPrice) : "0.00"}
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-gray-400">
+                      Philippine Peso
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-1 flex-col gap-2">
-                <p>
-                  Total Items: <span>{cart?.items?.length}</span>
-                </p>
-                <p>
-                  Total Points: <span>+{totalPoints}</span>
-                </p>
-                <p>
-                  Total Price:{" "}
-                  <span className="text-indigo-500">
-                    {" "}
-                    {cart?.items ? formatPrice(totalPrice) : 0} PHP
-                  </span>
-                </p>
-              </div>
-              <div onClick={() => setOrderModal(true)}>
-                <Buttons buttonName={"Checkout"} />
-              </div>
+
+              <Buttons
+                buttonName="Proceed to Checkout"
+                onClick={() => setOrderModal(true)}
+                icon={<FaArrowRight size={18} />}
+                animateIcon={true}
+                className="w-full py-4 text-base shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+              />
             </div>
           )}
         </form>

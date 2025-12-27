@@ -63,7 +63,6 @@ export default function PlayGameModal({ user, closeModal }) {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["users", "user"] });
-      console.log(data);
       setComputerChoice(data.computerChoice);
       setRenderResult(data.result);
       setRenderWinCount(data.winCount);
@@ -111,10 +110,10 @@ export default function PlayGameModal({ user, closeModal }) {
   };
 
   return (
-    <div className="fixed font-mono inset-0 flex items-center justify-center backdrop-blur-sm px-5 z-50">
+    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm px-5 z-50">
       {lockedUntil ? (
-        <div className="bg-white relative justify-between w-full max-w-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-300">
-          <div className="bg-primary p-6 text-center border-b-4 border-black">
+        <div className="bg-white relative rounded-[5px] overflow-hidden justify-between w-full max-w-lg border border-black  animate-in fade-in zoom-in duration-300">
+          <div className="bg-primary p-6 text-center border-b border-black">
             <h1 className="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
               Cooldown Active
             </h1>
@@ -146,7 +145,7 @@ export default function PlayGameModal({ user, closeModal }) {
           </div>
         </div>
       ) : (
-        <div className="bg-white relative w-full max-w-4xl border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="bg-white relative w-full max-w-4xl border rounded-[5px] overflow-hidden border-black flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-300">
           <button
             onClick={() => {
               closeModal();

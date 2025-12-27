@@ -10,7 +10,7 @@ export default function GuestCart() {
     useEffect(() => {
       const checkCartChanges = () => {
         const cart = getGuestCart();
-        const count = cart?.items?.length
+        const count = cart?.items?.length;
         setItemCount(count);
       };
 
@@ -19,7 +19,7 @@ export default function GuestCart() {
 
       // Set up storage event listener
       const handleStorageChange = (e) => {
-        if (e.key === 'guestCart') {
+        if (e.key === "guestCart") {
           checkCartChanges();
         }
       };
@@ -27,10 +27,10 @@ export default function GuestCart() {
       // Set up interval as fallback
       const intervalId = setInterval(checkCartChanges, 1000);
 
-      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener("storage", handleStorageChange);
 
       return () => {
-        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener("storage", handleStorageChange);
         clearInterval(intervalId);
       };
     }, []);
@@ -40,12 +40,14 @@ export default function GuestCart() {
 
   return (
     <div className="font-main">
-      <Link to="/guest" className="relative">
+      <Link to="/guest-cart" className="relative">
         <FaShoppingCart size={25} />
-        
+
         {itemCount > 0 && (
-          <span className="absolute bg-red-600 p-2 h-[20px] min-w-[20px] flex text-sm text-white 
-                        items-center justify-center -bottom-2 -right-[9.5px] rounded-full">
+          <span
+            className="absolute bg-red-600 p-2 h-[20px] min-w-[20px] flex text-sm text-white 
+                        items-center justify-center -bottom-2 -right-[9.5px] rounded-full"
+          >
             {itemCount}
           </span>
         )}

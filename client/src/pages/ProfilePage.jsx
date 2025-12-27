@@ -58,8 +58,6 @@ export default function ProfilePage() {
           </main>
         </div>
       </div>
-
-      <FooterSection />
     </section>
   );
 }

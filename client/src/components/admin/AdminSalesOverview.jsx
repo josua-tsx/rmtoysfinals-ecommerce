@@ -238,30 +238,37 @@ export default function AdminSalesOverview() {
         )}
       </div>
 
-      <div className="flex w-full flex-col md:flex-row  gap-20 md:gap-4">
-        <div className="flex flex-col w-full md:w-[70%] gap-8">
+      <div className="flex w-full flex-col md:flex-row gap-20 md:gap-4">
+        <div className="flex flex-col  w-full md:w-[70%] gap-8 relative overflow-visible">
+          {/* Sales Overview Header */}
+          <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+            <h2 className="font-black uppercase tracking-widest text-sm  flex items-center gap-2">
+              <span className="text-lg">📈</span> Sales Overview
+            </h2>
+          </div>
+
           {/* Sales Chart with Toggle */}
-          <div className=" p-2 w-full h-[500px] relative bg-card border border-black rounded-[5px]">
-            <div className="absolute -top-14 left-0 flex gap-2">
+          <div className="p-6 pt-10 w-full h-[500px] relative bg-card border border-black rounded-[5px]">
+            <div className="flex absolute top-2 right-2  gap-2 mb-4">
               <button
                 onClick={() => setChartView("monthly")}
-                className={`border rounded-[5px] p-2  transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
+                className={`border rounded-[5px] px-4 py-2 font-bold text-xs uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
                   chartView === "monthly"
-                    ? "bg-primary text-card border-black"
+                    ? "bg-primary text-white border-black"
                     : "bg-white text-black border-black hover:bg-gray-100"
                 }`}
               >
-                MONTHLY SALES
+                Monthly Sales
               </button>
               <button
                 onClick={() => setChartView("yearly")}
-                className={`border rounded-[5px] p-2  transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
+                className={`border rounded-[5px] px-4 py-2 font-bold text-xs uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
                   chartView === "yearly"
-                    ? "bg-primary text-card border-black"
+                    ? "bg-primary text-white border-black"
                     : "bg-white text-black border-black hover:bg-gray-100"
                 }`}
               >
-                YEARLY SALES
+                Yearly Sales
               </button>
             </div>
 
@@ -274,27 +281,46 @@ export default function AdminSalesOverview() {
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
-                  <XAxis dataKey="_id" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" domain={[0, "auto"]} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#e5e7eb"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="_id"
+                    stroke="#000"
+                    tick={{ fill: "#000", fontSize: 12, fontWeight: "bold" }}
+                    axisLine={{ stroke: "#000", strokeWidth: 2 }}
+                    tickLine={{ stroke: "#000", strokeWidth: 2 }}
+                  />
+                  <YAxis
+                    stroke="#000"
+                    domain={[0, "auto"]}
+                    tick={{ fill: "#000", fontSize: 12, fontWeight: "bold" }}
+                    axisLine={{ stroke: "#000", strokeWidth: 2 }}
+                    tickLine={{ stroke: "#000", strokeWidth: 2 }}
+                  />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(31, 41, 55, 0.8)",
-                      borderColor: "#4B5563",
+                      backgroundColor: "#fff",
+                      border: "2px solid #000",
+                      boxShadow: "4px 4px 0px 0px rgba(0,0,0,1)",
+                      borderRadius: "5px",
                     }}
-                    itemStyle={{ color: "#E5E7EB" }}
+                    itemStyle={{ color: "#000", fontWeight: "bold" }}
                   />
                   <Line
                     type="monotone"
                     dataKey="totalSales"
-                    stroke={chartView === "monthly" ? "#6366F1" : "#10B981"}
+                    stroke={chartView === "monthly" ? "#22c55e" : "#3b82f6"}
                     strokeWidth={3}
                     dot={{
-                      fill: chartView === "monthly" ? "#6366F1" : "#10B981",
+                      fill: chartView === "monthly" ? "#22c55e" : "#3b82f6",
+                      stroke: "#000",
                       strokeWidth: 2,
                       r: 6,
                     }}
-                    activeDot={{ r: 8, strokeWidth: 2 }}
+                    activeDot={{ r: 8, stroke: "#000", strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -302,11 +328,19 @@ export default function AdminSalesOverview() {
           </div>
         </div>
 
-        <div className="w-full md:w-[30%] flex flex-col gap-14  rounded-[5px] relative ">
-          <AdminRecentSuccessOrder />
-          <AdminRecentFailedOrder />
-          <AdminRecentRefundedOrder />
-          <AdminRecentCancelledOrder />
+        <div className="w-full md:w-[30%] flex flex-col gap-6 relative overflow-visible">
+          {/* Recent Activity Header */}
+          <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+            <h2 className="font-black uppercase tracking-widest text-sm  flex items-center gap-2">
+              <span className="text-lg">🕒</span> Recent Activity
+            </h2>
+          </div>
+          <div className="bg-card border h-full border-black rounded-[5px] p-6 pt-10 flex flex-col gap-4">
+            <AdminRecentSuccessOrder />
+            <AdminRecentFailedOrder />
+            <AdminRecentRefundedOrder />
+            <AdminRecentCancelledOrder />
+          </div>
         </div>
       </div>
     </div>

@@ -1,3 +1,7 @@
+import { createPortal } from "react-dom";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import Buttons from "./Buttons";
+
 export const ConfirmModal = ({
   isOpen,
   title,
@@ -5,30 +9,39 @@ export const ConfirmModal = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!isOpen) return null; // Do not render if modal is not open
+  if (!isOpen) return null;
 
-  return (
-    <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-sm px-5 z-50">
-      <div className="bg-card border flex flex-col justify-between border-black h-[210px] p-5 rounded-[5px] w-[400px]">
-        <div className="flex flex-col gap-5">
-          <h2 className="text-lg">{title}</h2>
-          <p className="">{message}</p>
+  return createPortal(
+    <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-md px-5 z-[100] overflow-y-auto">
+      <div className="bg-card border border-black p-8 rounded-[5px] w-full md:w-[450px] relative ">
+        <div className="absolute -top-6 -left-4 bg-[#22c55e] border border-black text-white px-6 py-2 rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs transform -rotate-1">
+          {title}
         </div>
-        <div className="flex justify-end gap-2 w-[200px] ml-auto">
-          <button
+
+        <div className="flex flex-col gap-6 mt-4">
+          <p className="text-gray-700 leading-relaxed font-main-text">
+            {message}
+          </p>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4 mt-8">
+          <Buttons
+            buttonName="Confirm Action"
             onClick={onConfirm}
-            className="px-4 py-2 bg-green-600 border border-black text-white flex-1 rounded hover:bg-red-600"
-          >
-            Confirm
-          </button>
-          <button
+            icon={<FaCheck size={18} />}
+            animateIcon={true}
+            className="flex-1 bg-[#22c55e] !text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          />
+          <Buttons
+            buttonName="Cancel"
             onClick={onCancel}
-            className="border border-black bg-red-500 flex-1 text-card rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            Cancel
-          </button>
+            icon={<FaTimes size={18} />}
+            animateIcon={true}
+            className="md:w-[35%] bg-red-600 !text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -135,7 +135,14 @@ export default function AdminWorkersTable() {
   }
 
   return (
-    <div className="font-main border rounded-[5px] text-sm md:text-normal border-black bg-card relative ">
+    <div className="font-main border rounded-[5px] text-sm md:text-normal border-black bg-card relative mt-6 overflow-visible">
+      {/* Green Sticker Header */}
+      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
+          Worker Table
+        </h1>
+      </div>
+
       <ConfirmModal
         isOpen={isModalOpen}
         title={"Confirm delete"}
@@ -152,31 +159,39 @@ export default function AdminWorkersTable() {
         title="Edit Worker"
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={handleEditSubmit}
-        submitLabel="Update Worker"
+        submitLabel="UPDATE WORKER"
         isSubmitting={isUpdating}
       >
-        <div className="flex gap-2 p-2 flex-col">
-          <div className="flex justify-between flex-col">
-            <label htmlFor="editEmail" className="uppercase mb-2">
-              WORKER EMAIL:{" "}
+        <div className="flex gap-4 p-2 flex-col">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editEmail"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              WORKER EMAIL
             </label>
             <input
-              type="text"
+              type="email"
               name="email"
               id="editEmail"
               value={email}
               maxLength={254}
               onChange={(e) => setEmail(e.target.value)}
-              className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+              placeholder="Ex: worker@example.com"
+              className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
-            <p className="text-sm pt-1 text-green-700">
-              (Enter a valid email.)
+            <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+              (Enter a valid email address)
             </p>
           </div>
-          <div className="flex justify-between flex-col">
-            <label htmlFor="editUsername" className="uppercase mb-2 ">
-              Username:{" "}
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editUsername"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              Username
             </label>
             <input
               type="text"
@@ -185,20 +200,23 @@ export default function AdminWorkersTable() {
               value={username}
               maxLength={50}
               onChange={(e) => setUsername(e.target.value)}
-              className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+              placeholder="Ex: JuanDelaCruz"
+              className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
-            <p className="text-sm pt-1 text-green-700">
-              (Username must be 5-50 letters and contain no numbers or special
-              characters.)
+            <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+              (5-50 letters, no numbers or special characters)
             </p>
           </div>
 
-          <div className="flex justify-between flex-col">
-            <label htmlFor="editPassword" className="uppercase mb-2 ">
-              Password:{" "}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editPassword"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              Password (leave blank to keep current)
             </label>
-            <div className="flex flex-col  gap-2 relative w-full">
+            <div className="flex flex-col gap-2 relative w-full">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -206,43 +224,41 @@ export default function AdminWorkersTable() {
                 value={password}
                 maxLength={128}
                 onChange={(e) => setPassword(e.target.value)}
-                className=" outline-none p-2 w-full border-[#313031] border rounded-[5px]"
-                // Password is optional during edit usually, but keeping consistency with existing logic.
-                // If backend requires it, keep required. AdminEditWorker did not have required explicitly but had validation text.
-                // Assuming optional to keep current password if empty, or required to change.
-                // The original AdminEditWorker code had it as an input, suggesting you can change it.
-                // Let's leave it as controllable input.
+                placeholder="••••••••"
+                className="border border-black rounded-[5px] p-3 w-full outline-none bg-gray-50 focus:bg-white transition-colors"
               />
               <button
                 type="button"
                 onClick={togglePassword}
-                className="absolute right-2 top-3 flex items-center gap-2 cursor-pointer"
+                className="absolute right-3 top-3.5 flex items-center gap-2 cursor-pointer bg-white border border-black px-2 py-0.5 rounded-[3px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
               >
-                <p className="text-xs">SHOW PASSWORD</p>
+                <p className="text-[8px] font-black uppercase">Show</p>
                 <input
                   type="checkbox"
                   checked={showPassword}
                   readOnly
-                  className="border size-[20px] border-black cursor-pointer"
+                  className="size-[10px] border border-black cursor-pointer"
                 />
               </button>
-              <p className="text-sm text-green-700">
-                (Password must be at least 8 characters, include one uppercase
-                letter, one number, and one special character.)
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+                (Min 8 chars, 1 uppercase, 1 number, 1 special char)
               </p>
             </div>
           </div>
 
-          <div className="flex justify-between flex-col">
-            <label htmlFor="editRole" className="uppercase mb-2 ">
-              ROLE:{" "}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editRole"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              ROLE
             </label>
             <select
               name="role"
               id="editRole"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="border outline-none border-black rounded-[5px] py-1"
+              className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
               required
             >
               <option value="staff">Staff</option>
@@ -250,9 +266,12 @@ export default function AdminWorkersTable() {
             </select>
           </div>
 
-          <div className="flex justify-between flex-col">
-            <label htmlFor="editJobDescription" className="uppercase mb-2 ">
-              Job Description:{" "}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editJobDescription"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              Job Description
             </label>
             <input
               type="text"
@@ -261,25 +280,29 @@ export default function AdminWorkersTable() {
               value={jobDescription}
               maxLength={200}
               onChange={(e) => setJobDescription(e.target.value)}
-              className=" outline-none p-1  border-[#313031] border rounded-[5px]"
+              placeholder="Ex: Customer Support & Verification"
+              className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
           </div>
         </div>
       </FormModal>
 
-      <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>WORKER TABLE</h1>
-        <div className="flex items-center relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search worker.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-          />
-          <IoSearch className="absolute right-0" size={25} />
+      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
+        <div className="flex items-center gap-1 flex-col md:flex-row">
+          <label className="font-black uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
+            Search Workers
+          </label>
+          <div className="flex items-center relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="search worker.."
+              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-all font-bold"
+            />
+            <IoSearch className="absolute right-3" size={20} />
+          </div>
         </div>
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
@@ -288,71 +311,98 @@ export default function AdminWorkersTable() {
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead>
-              <tr className="">
-                <th className="font-normal p-2 pb-5">ID</th>
-                <th className="font-normal p-2 pb-5">Email</th>
-                <th className="font-normal p-2 pb-5">Username</th>
-                <th className="font-normal p-2 pb-5">Phone Number</th>
-                <th className="font-normal p-2 pb-5">Active Address</th>
-                <th className="font-normal p-2 pb-5">Role</th>
-
-                <th className="font-normal p-2 pb-5">Job Description</th>
-                <th className="font-normal p-2 pb-5">ACTIONS</th>
+          <table className="w-full">
+            <thead className="border-b border-black relative">
+              <tr>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
+                  ID
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
+                  Email
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Username
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Phone
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
+                  Address
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Role
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Job Description
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  ACTIONS
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
+            <tbody className="divide-y divide-black text-[16px]">
               {filteredArrayWorkers?.length > 0 ? (
                 filteredArrayWorkers?.map((worker) => (
-                  <tr key={worker._id}>
-                    <td className="px-4 ">{worker._id}</td>
+                  <tr
+                    key={worker._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-4 whitespace-nowrap font-mono text-gray-400">
+                      {worker._id.slice(-6)}
+                    </td>
 
-                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
+                    <td className="p-4 whitespace-nowrap text-black">
                       {worker.email}
                     </td>
 
-                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                      {worker.username}
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                        {worker.username}
+                      </span>
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-center text-gray-600">
                       {!worker.phoneNumber ? (
-                        <span className="text-red-700">not updated yet</span>
+                        <span className="text-red-500/70 italic">Pending</span>
                       ) : (
                         worker.phoneNumber
                       )}
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-gray-600 max-w-[200px] truncate">
                       {!worker?.address[0]?.fullAddress ? (
-                        <span className="text-red-700">not updated yet</span>
+                        <span className="text-red-500/70 italic">Pending</span>
                       ) : (
                         worker?.address[0]?.fullAddress
                       )}
                     </td>
-                    <td className="px-6 uppercase py-4 whitespace-nowrap text-center text-sm">
-                      {worker.role}
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        {worker.role}
+                      </span>
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-center text-gray-600">
                       {worker.jobDescription}
                     </td>
 
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
-                      <button
-                        onClick={() => handleEditClick(worker)}
-                        className="text-green-600 hover:text-indigo-300 mr-2"
-                      >
-                        <CiEdit size={25} />
-                      </button>
-                      <button
-                        onClick={() => handleClickDelete(worker._id)}
-                        type="button"
-                        className="text-red-600 hover:text-red-300"
-                      >
-                        <MdDelete size={25} />
-                      </button>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEditClick(worker)}
+                          title="Edit"
+                          className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                        >
+                          <CiEdit size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleClickDelete(worker._id)}
+                          title="Delete"
+                          className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                        >
+                          <MdDelete size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

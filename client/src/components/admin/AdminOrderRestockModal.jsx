@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../lib/axios";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import formatPrice from "../../reusable/formatPrice";
 import FormModal from "../../reusable/FormModal";
 
@@ -20,8 +20,6 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
 
   const queryClient = useQueryClient();
 
-  console.log(singleStock);
-
   useEffect(() => {
     if (singleStock) {
       setProductId(singleStock?.product?._id);
@@ -39,7 +37,6 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
     }
   }, [singleStock]);
 
-  // calculate total expenses (SUPPLIER PRICE + SHIPPING PRICE MULTIPLY BY QUANTITY)
   const calculateTotalExpenses =
     Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
 
@@ -97,57 +94,70 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       onClose={onClose}
       onSubmit={hanldeFormSubmit}
       isSubmitting={isSubmitting}
-      submitLabel="Re-order"
+      submitLabel="RE-ORDER"
     >
-      <div className="flex gap-2 p-2 flex-col">
-        <div className="flex gap-4 flex-col">
-          <label className="font-medium">Product Name: </label>
+      <div className="flex gap-4 p-2 flex-col">
+        <div className="flex gap-2 flex-col">
+          <label className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1">
+            Product Name
+          </label>
           <input
             type="text"
             value={singleStock?.product?.productName || ""}
             disabled
-            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+            className="border border-black rounded-[5px] p-2 bg-gray-100 font-bold opacity-70"
           />
         </div>
 
-        <div className="flex gap-4 flex-col">
-          <label className="font-medium">Delivery ID: </label>
-          <input
-            value={deliveryId || ""}
-            type="text"
-            disabled
-            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex gap-2 flex-col">
+            <label className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1">
+              Delivery ID
+            </label>
+            <input
+              value={deliveryId || ""}
+              type="text"
+              disabled
+              className="border border-black rounded-[5px] p-2 bg-gray-100 font-mono font-bold opacity-70"
+            />
+          </div>
+
+          <div className="flex gap-2 flex-col">
+            <label className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1">
+              VAT Percent
+            </label>
+            <input
+              type="text"
+              disabled
+              value={selectedVatValue ? `${selectedVatValue}%` : "0%"}
+              className="border border-black rounded-[5px] p-2 bg-gray-100 font-mono font-bold opacity-70"
+            />
+          </div>
         </div>
 
-        <div className="flex gap-4 flex-col">
-          <label className="font-medium">VAT Percent: </label>
-          <input
-            type="text"
-            disabled
-            value={selectedVatValue ? `${selectedVatValue}%` : "Exempt (0%)"}
-            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
-          />
-        </div>
-
-        <div className="flex gap-4 flex-col">
-          <label className="font-medium">Supplier: </label>
+        <div className="flex gap-2 flex-col">
+          <label className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1">
+            Supplier
+          </label>
           <input
             type="text"
             value={singleStock?.supplier?.supplierName || ""}
             disabled
-            className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+            className="border border-black rounded-[5px] p-2 bg-gray-100 font-bold opacity-70"
           />
         </div>
 
-        <div className="flex gap-4 flex-col">
-          <label htmlFor="deliveryDate" className="font-medium">
-            Date Delivery:{" "}
+        <div className="flex gap-2 flex-col">
+          <label
+            htmlFor="deliveryDate"
+            className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1"
+          >
+            Date Delivery
           </label>
           <input
             type="date"
             id="deliveryDate"
-            className="border border-black rounded-[5px] p-2"
+            className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
             max={new Date().toISOString().split("T")[0]}
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
@@ -157,11 +167,14 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <label htmlFor="supplierPrice" className="font-medium">
-              Supplier Price:{" "}
+            <label
+              htmlFor="supplierPrice"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1"
+            >
+              Supplier Price (PHP)
             </label>
             <input
-              className="border border-black rounded-[5px] p-2"
+              className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-mono font-bold"
               type="number"
               min={0}
               id="supplierPrice"
@@ -171,11 +184,14 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="shopPrice" className="font-medium">
-              Shop Price:{" "}
+            <label
+              htmlFor="shopPrice"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1"
+            >
+              Shop Price (PHP)
             </label>
             <input
-              className="border border-black rounded-[5px] p-2"
+              className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-mono font-bold"
               type="number"
               min={0}
               id="shopPrice"
@@ -187,19 +203,27 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
           </div>
         </div>
 
-        {selectedVatValue?.vatPercent > 0 && (
-          <p className="text-sm text-green-700">
-            Shop price with VAT = ₱{formatPrice(roundedPrice)}
-          </p>
+        {selectedVatValue > 0 && (
+          <div className="p-3 bg-green-50 border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <p className="text-[10px] font-black uppercase text-green-700 tracking-widest mb-1">
+              Price with VAT
+            </p>
+            <p className="text-lg font-black font-mono">
+              ₱{formatPrice(roundedPrice)}
+            </p>
+          </div>
         )}
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <label htmlFor="shippingPrice" className="font-medium">
-              Shipping Price:{" "}
+            <label
+              htmlFor="shippingPrice"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1"
+            >
+              Shipping Price (PHP)
             </label>
             <input
-              className="border border-black rounded-[5px] p-2"
+              className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-mono font-bold"
               type="number"
               min={0}
               id="shippingPrice"
@@ -209,11 +233,14 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="quantity" className="font-medium">
-              Quantity:{" "}
+            <label
+              htmlFor="quantity"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500 ml-1"
+            >
+              Quantity
             </label>
             <input
-              className="border border-black rounded-[5px] p-2"
+              className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-mono font-bold"
               type="number"
               id="quantity"
               value={quantity}
@@ -224,10 +251,16 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
           </div>
         </div>
 
-        <div className="flex items-center flex-wrap gap-2 bg-gray-100 p-2 rounded">
-          <span className="font-bold">Total Cost: </span>
-          <span>{formatPrice(totalCost)} PHP</span>
-          <p className="text-xs text-red-700 ml-auto">
+        <div className="flex flex-col gap-2 bg-indigo-50 p-4 rounded-[5px] border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-2">
+          <div className="flex justify-between items-center">
+            <span className="font-black uppercase text-[10px] tracking-widest text-indigo-700">
+              Total Cost Estimate
+            </span>
+            <span className="font-mono font-black text-xl text-indigo-900">
+              ₱{formatPrice(totalCost)}
+            </span>
+          </div>
+          <p className="text-[8px] text-indigo-400 font-bold uppercase tracking-widest mt-1 border-t border-indigo-200 pt-1">
             (SUPPLIER PRICE * QUANTITY) + SHIPPING
           </p>
         </div>

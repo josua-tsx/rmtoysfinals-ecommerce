@@ -4,6 +4,7 @@ import axiosInstance from "../../lib/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FiSave, FiPlus, FiTrash2, FiSettings } from "react-icons/fi";
 import { RiRobot2Line } from "react-icons/ri";
+import Buttons from "../../reusable/Buttons";
 
 /**
  * =============================================================================
@@ -402,13 +403,12 @@ export default function AdminStoreSettings() {
               className="border border-black flex-1 rounded-[5px] p-2 outline-none"
               placeholder="Add payment method (e.g., Maya)"
             />
-            <button
-              type="button"
+            <Buttons
+              buttonName="Add"
               onClick={addPaymentMethod}
-              className="px-4 py-2 bg-primary text-white rounded-[5px] flex items-center gap-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            >
-              <FiPlus /> Add
-            </button>
+              icon={<FiPlus />}
+              className="w-fit px-4 py-2"
+            />
           </div>
         </div>
 
@@ -491,13 +491,12 @@ export default function AdminStoreSettings() {
               className="border border-black flex-1 rounded-[5px] p-2 outline-none"
               placeholder="e.g., Always mention our holiday sale - 15% off!"
             />
-            <button
-              type="button"
+            <Buttons
+              buttonName="Add Rule"
               onClick={addCustomRule}
-              className="px-4 py-2 bg-blue-500 text-white rounded-[5px] flex items-center gap-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            >
-              <FiPlus /> Add Rule
-            </button>
+              icon={<FiPlus />}
+              className="w-fit px-4 py-2 bg-blue-500"
+            />
           </div>
         </div>
 
@@ -561,25 +560,24 @@ export default function AdminStoreSettings() {
               placeholder="Response (e.g., That would be Girlie Marie! 💕)"
             />
           </div>
-          <button
-            type="button"
+          <Buttons
+            buttonName="Add Special Response"
             onClick={addSpecialResponse}
-            className="px-4 py-2 bg-purple-500 text-white rounded-[5px] flex items-center gap-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            <FiPlus /> Add Special Response
-          </button>
+            icon={<FiPlus />}
+            className="w-fit px-4 py-2 bg-purple-500"
+          />
         </div>
 
         {/* Submit Button */}
         <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 bg-primary text-white py-3 rounded-[5px] font-semibold flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            <FiSave />
-            {isPending ? "Saving..." : "Save Settings"}
-          </button>
+          <Buttons
+            buttonType="submit"
+            isLoading={isPending}
+            loadingText="Saving..."
+            buttonName="Save Settings"
+            icon={<FiSave />}
+            className="flex-1 py-3"
+          />
         </div>
       </form>
     </div>

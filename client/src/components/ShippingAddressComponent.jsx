@@ -1,4 +1,5 @@
 import { FaCheckCircle } from "react-icons/fa";
+import Buttons from "../reusable/Buttons";
 
 import {
   regions,
@@ -319,10 +320,13 @@ export default function ShippingAddressComponent() {
           </div>
 
           <div className="flex justify-end pt-4">
-            <button className="inline-flex items-center gap-2 bg-primary border border-black text-white hover:bg-primary/90 px-8 py-2.5 rounded-lg font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all transform active:scale-95">
-              <span>Save Address</span>
-              <FaCheckCircle className="text-lg" />
-            </button>
+            <Buttons
+              buttonType="submit"
+              buttonName="Save Address"
+              icon={<FaCheckCircle className="text-lg" />}
+              animateIcon={true}
+              className="w-fit px-10 "
+            />
           </div>
         </form>
 
@@ -341,16 +345,16 @@ export default function ShippingAddressComponent() {
                     <p className="text-gray-700 leading-relaxed font-medium">
                       {add.fullAddress}
                     </p>
-                    <div className="flex gap-3 shrink-0">
+                    <div className="flex gap-4 shrink-0">
                       <button
                         onClick={() => handleOpenEdit(add)}
-                        className="text-sm text-green-600 hover:text-green-700 font-medium px-3 py-1 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
+                        className="text-xs font-black uppercase tracking-widest border border-black px-4 py-2 bg-white rounded-[5px] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteclick(add._id)}
-                        className="text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+                        className="text-xs font-black uppercase tracking-widest border border-black px-4 py-2 bg-red-700 text-white rounded-[5px] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                       >
                         Delete
                       </button>

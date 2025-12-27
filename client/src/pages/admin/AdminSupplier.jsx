@@ -55,30 +55,43 @@ export default function AdminSupplier() {
   };
 
   return (
-    <section className="bg-yellow h-screen">
+    <section className="bg-[#fffdf6] min-h-screen pb-20">
       <AdminHeader title={"SUPPLIER"} />
-      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-16 flex-col">
-        {/* main */}
-        <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-          {/* CARD */}
-        </div>
+      <div className="max-w-[95%] pt-10 mx-auto flex gap-10 flex-col px-4">
+        {/* Actions Area */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-dashed border-gray-300 pb-8">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-black uppercase text-[11px] tracking-[0.3em] text-gray-500 pl-1">
+              Data Management
+            </h2>
+            <div className="flex gap-4">
+              <button
+                onClick={toggleAddCategory}
+                className="flex items-center gap-3 bg-indigo-600 text-white border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group"
+              >
+                {showAdd ? "CANCEL ADD" : "ADD SUPPLIER"}
+                <IoMdAdd
+                  className={`text-xl transition-transform ${
+                    showAdd ? "rotate-45" : "group-hover:scale-125"
+                  }`}
+                />
+              </button>
 
-        <div className="w-full  flex gap-2">
-          <button
-            onClick={toggleAddCategory}
-            className="border flex items-center justify-between gap-4 bg-primary text-white border-black p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            Add Supplier
-            <IoMdAdd />
-          </button>
-
-          <button
-            onClick={() => setEnableMultiDel(!enableMultiDel)}
-            className="border flex items-center justify-between gap-4 bg-red-700 text-white border-black p-2 rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            {enableMultiDel ? "Cancel Delete" : "Multiple Delete"}
-            <MdDelete />
-          </button>
+              <button
+                onClick={() => setEnableMultiDel(!enableMultiDel)}
+                className={`flex items-center gap-3 border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group ${
+                  enableMultiDel
+                    ? "bg-red-500 text-white"
+                    : "bg-white text-black"
+                }`}
+              >
+                {enableMultiDel ? "STOP DELETE" : "BATCH DELETE"}
+                <MdDelete
+                  className={`text-xl ${enableMultiDel ? "" : "text-red-600"}`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         <FormModal
@@ -86,13 +99,16 @@ export default function AdminSupplier() {
           title="Add Supplier"
           onClose={() => setShowAdd(false)}
           onSubmit={handleAddSubmit}
-          submitLabel="Add Supplier"
+          submitLabel="ADD SUPPLIER"
           isSubmitting={isSupplierPending}
         >
-          <div className="flex gap-2 p-2 flex-col">
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="supplierName" className="uppercase">
-                Supplier Name:{" "}
+          <div className="flex gap-4 p-2 flex-col">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="supplierName"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                Supplier Name
               </label>
               <input
                 type="text"
@@ -101,17 +117,21 @@ export default function AdminSupplier() {
                 value={supplierName}
                 maxLength={50}
                 onChange={handleInputChange(setSupplierName)}
-                className="border border-black w-full rounded-[5px] p-1  outline-none"
+                placeholder="Ex: Toy Kingdom"
+                className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
-              <p className="text-sm pt-1 lowercase text-green-700">
-                (Supplier name do not allow double spaces, and number. it should
-                be between 3 and 50 characters.)
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+                (3-50 chars, no double spaces or numbers)
               </p>
             </div>
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="contactPerson" className="uppercase">
-                Contact Person Fulllname :{" "}
+
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="contactPerson"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                Contact Person Full Name
               </label>
               <input
                 type="text"
@@ -120,17 +140,21 @@ export default function AdminSupplier() {
                 value={contactPerson}
                 maxLength={100}
                 onChange={handleInputChange(setContactPerson)}
-                className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+                placeholder="Ex: Juan Dela Cruz"
+                className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
-              <p className="text-sm pt-1 lowercase text-green-700">
-                (Contact person full name does not allow double spaces.)
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+                (No double spaces allowed)
               </p>
             </div>
 
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="contactNumber" className="uppercase">
-                Contact Number:{" "}
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="contactNumber"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                Contact Number
               </label>
               <input
                 type="tel"
@@ -139,34 +163,36 @@ export default function AdminSupplier() {
                 value={contactNumber}
                 maxLength={11}
                 onChange={handleInputChange(setContactNumber)}
-                className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+                placeholder="Ex: 09123456789"
+                className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
-              <p className="text-sm pt-1 lowercase text-green-700">
-                (Phone number should be valid number. It should start with 09
-                and exact 11 numbers)
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+                (Starts with 09, exactly 11 digits)
               </p>
             </div>
 
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="supplierAddress" className="uppercase">
-                Supplier Address:{" "}
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="supplierAddress"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+              >
+                Supplier Address
               </label>
-              <input
-                type="text"
+              <textarea
                 name="supplierAddress"
                 id="supplierAddress"
                 value={supplierAddress}
                 maxLength={200}
                 onChange={handleInputChange(setSupplierAddress)}
-                className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+                placeholder="Ex: 123 Toy St., Manila City"
+                className="border border-black w-full rounded-[5px] p-3 h-[100px] outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
                 required
               />
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+                (5-200 chars, no double spaces)
+              </p>
             </div>
-            <p className="text-sm pt-1 lowercase text-green-700">
-              (Supplier address do not allow double spaces and is between 5 and
-              200 max characters long.)
-            </p>
           </div>
         </FormModal>
 

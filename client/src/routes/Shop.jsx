@@ -151,7 +151,7 @@ export default function Shop() {
 
                   {!hasNextPage && filteredArrayProducts.length > 0 && (
                     <p className="text-center pt-5 text-gray-500">
-                      You've reached the end of products.
+                      You&apos;ve reached the end of products.
                     </p>
                   )}
                 </>

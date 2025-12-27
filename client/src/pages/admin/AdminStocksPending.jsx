@@ -207,10 +207,17 @@ export default function AdminStocksPending() {
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
         {/* Table Container */}
-        <div className="relative border border-black flex flex-col rounded-[5px] w-full h-full mx-auto bg-card">
+        <div className="relative border border-black flex flex-col rounded-[5px] w-full h-full mx-auto bg-card mt-6 overflow-visible">
+          {/* Green Sticker Header */}
+          <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border-2 border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+            <h1 className="font-black uppercase tracking-widest text-sm ">
+              Pending Stocks
+            </h1>
+          </div>
+
           <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
 
-          <div className=" flex flex-col overflow-x-auto gap-4 h-[600px] overflow-y-auto">
+          <div className=" flex flex-col overflow-x-auto gap-4 h-[600px] overflow-y-auto pt-6">
             {isProductsPending ? (
               <div className="flex justify-center items-center h-full">
                 <LoadingSpinner />

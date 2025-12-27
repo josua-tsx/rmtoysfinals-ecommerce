@@ -204,10 +204,12 @@ export default function AdminProductOverview() {
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row  justify-between gap-16 md:gap-4">
-        <div className="border border-black w-full flex-1 bg-card relative rounded-[5px] h-[400px]">
-          <div className="absolute -top-11 -left-1 border rounded-[5px]   bg-primary text-card border-black p-1">
-            <h1 className="">CATEGORIES DISTRIBUTION</h1>
+      <div className="flex flex-col md:flex-row justify-between gap-16 md:gap-4">
+        <div className="w-full flex-1 border border-black bg-white relative rounded-lg h-[400px] overflow-visible ">
+          <div className="absolute -top-5 -left-4 bg-[#22c55e] text-white border border-black px-6 py-2.5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-lg transform -rotate-1 z-30">
+            <h1 className="font-black uppercase tracking-widest text-sm italic">
+              Categories Distribution
+            </h1>
           </div>
           <ResponsiveContainer width="100%" height="100%">
             {isCategoriesPending ? (
@@ -232,6 +234,8 @@ export default function AdminProductOverview() {
                   cy="50%"
                   outerRadius={120}
                   fill="#8884d8"
+                  stroke="#000"
+                  strokeWidth={2}
                   label={({ name, percent }) =>
                     `${name} ${(percent * 100).toFixed(0)}%`
                   }
@@ -252,7 +256,9 @@ export default function AdminProductOverview() {
               value2={`${
                 topSingleBestProduct ? topSingleBestProduct?.sold : 0
               } sold`}
-              onClick={() => navigate(`/product/${topSingleBestProduct._id}`)}
+              onClick={() =>
+                navigate(`/product/details/${topSingleBestProduct._id}`)
+              }
             />
           ) : (
             <p className="bg-card border border-black text-center rounded-[5px] flex flex-col relative justify-center">
@@ -277,7 +283,7 @@ export default function AdminProductOverview() {
               value1={"TOP 1 IN RATING"}
               value2={<StarsRating rating={averageRating} />}
               onClick={() =>
-                navigate(`/product/${topSingleBestRatingProduct._id}`)
+                navigate(`/product/details/${topSingleBestRatingProduct._id}`)
               }
             />
           ) : (
@@ -307,7 +313,7 @@ export default function AdminProductOverview() {
                   : 0
               } reviews`}
               onClick={() =>
-                navigate(`/product/${topSingleMostReviewsProduct._id}`)
+                navigate(`/product/details/${topSingleMostReviewsProduct._id}`)
               }
             />
           ) : (
@@ -328,34 +334,49 @@ export default function AdminProductOverview() {
               <LoadingSpinner />
             </div>
           ) : latestReview && Object.keys(latestReview).length > 0 ? (
-            <div className="border border-black flex justify-center items-center rounded-[5px] relative bg-card">
-              <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
-                <div className="w-[15px] h-[15px] rounded-full">
-                  <div className="absolute -top-6 right-[-65%]">
-                    <TbPinnedFilled size={30} />
-                  </div>
+            <div className="border border-black flex justify-center items-center rounded-lg relative bg-white hover:translate-x-[2px] hover:translate-y-[2px] transition-all mt-6">
+              {/* Floating Sticker Header */}
+              <div className="absolute -top-4 -left-3 bg-primary text-white border border-black px-4 py-1.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-30">
+                <p className="font-black uppercase tracking-widest text-[10px] leading-none">
+                  LATEST REVIEW
+                </p>
+              </div>
+
+              <div className="border border-black w-[20px] h-[20px] bg-yellow-400 absolute right-3 top-3 rounded-full flex items-center justify-center ">
+                <div className="absolute -top-5 -right-3 rotate-45 text-black">
+                  <TbPinnedFilled size={24} />
                 </div>
               </div>
 
-              <div className="p-4 text-sm flex flex-col gap-3 items-center">
-                <p className="">LATEST REVIEW</p>
-                <p className="text-xs">
-                  {new Date(latestReview.createdAt).toLocaleString()}
-                </p>
-                <img
-                  src={latestReview?.userId?.avatar}
-                  alt="avatar"
-                  className="h-[70px] w-auto rounded-full border border-black"
-                />
-                <div className="w-[200px] truncate flex flex-col justify-center items-center gap-3">
-                  <p>{latestReview.commentReview}</p>
-                  <p>
-                    <StarsRating rating={latestReview.rating} />
+              <div className="p-4 pt-8 text-sm flex flex-col gap-3 items-center w-full">
+                <div className="flex flex-col items-center">
+                  <p className="text-[10px] text-gray-400 font-mono">
+                    {new Date(latestReview.createdAt).toLocaleString()}
                   </p>
+                </div>
+
+                <div className="border-2 border-black p-1 bg-white rounded-full overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                  <img
+                    src={latestReview?.userId?.avatar}
+                    alt="avatar"
+                    className="h-[60px] w-[60px] object-cover rounded-full"
+                  />
+                </div>
+
+                <div className="w-full flex flex-col justify-center items-center gap-2">
+                  <div className="text-center">
+                    <p className="font-black text-black">
+                      {latestReview?.userId?.fullName || "Anonymous"}
+                    </p>
+                    <p className="text-xs text-gray-600 italic line-clamp-2 max-w-[180px]">
+                      &quot;{latestReview.commentReview}&quot;
+                    </p>
+                  </div>
+                  <StarsRating rating={latestReview.rating} />
                   <button
-                    className="border text-xs border-black bg-primary text-card p-1 rounded-[5px]"
+                    className="w-full border border-black py-2 bg-primary text-white font-black text-xs uppercase tracking-widest rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all mt-1"
                     onClick={() =>
-                      navigate(`/product/${latestReview.productId}`)
+                      navigate(`/product/details/${latestReview.productId}`)
                     }
                   >
                     GO TO PRODUCT

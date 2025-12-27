@@ -29,7 +29,6 @@ export default function GuestSummaryModal({ onClose }) {
     totalVatAmount,
     totalPoints,
     totalPrice,
-    shippingVat,
   } = useMemo(() => {
     // Convert shipping to number safely
     const shippingGross = Number(shippingFee || 0);
@@ -253,9 +252,9 @@ export default function GuestSummaryModal({ onClose }) {
 
             <button
               onClick={onClose}
-              className="border  border-black  text-card bg-red-700 rounded-[5px] px-5 right-0 -top-8"
+              className="group border-2 border-black text-white bg-red-700 rounded-[5px] p-0.5 hover:bg-red-800 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
-              <IoIosClose size={25} />
+              <IoIosClose size={28} />
             </button>
           </div>
 
@@ -389,19 +388,19 @@ export default function GuestSummaryModal({ onClose }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-row-reverse w-full  gap-2">
+            <div className="flex flex-row-reverse w-full gap-4 mt-4">
+              <button
+                type="submit"
+                className="flex-1 py-4 border-2 border-black bg-[#10b981] text-white rounded-[5px] font-black uppercase tracking-widest text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] active:scale-95 transition-all outline-none"
+              >
+                Place Order
+              </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-black bg-red-700 text-white rounded-md shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                className="px-8 py-4 border-2 border-black bg-[#b91c1c] text-white rounded-[5px] font-black uppercase tracking-widest text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] active:scale-95 transition-all outline-none"
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 flex-1 border border-black bg-primary text-white rounded-md hover:bg-primary-dark shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              >
-                Place Order
               </button>
             </div>
           </form>

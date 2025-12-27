@@ -1,9 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { FaPhone } from "react-icons/fa";
-import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import { FaPhone, FaFacebook, FaPaperPlane } from "react-icons/fa";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+
+import Buttons from "../reusable/Buttons";
 
 export default function Contact() {
   const [senderEmail, setSenderEmail] = useState("");
@@ -23,9 +24,6 @@ export default function Contact() {
       toast.error(err.response.data.message || "something went wrong!");
     },
   });
-
-  console.log(senderEmail);
-  console.log(message);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -96,13 +94,15 @@ export default function Contact() {
               {/*  Honeypot (hidden from humans) */}
               <input type="text" name="website" className="hidden" />
 
-              <button
-                type="submit"
-                disabled={isPending}
-                className="bg-primary border border-black hover:bg-blue-700 text-white font-medium py-3 px-6 rounded transition duration-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
-              >
-                {isPending ? "Loading..." : "Send"}
-              </button>
+              <Buttons
+                buttonType="submit"
+                isLoading={isPending}
+                loadingText="Sending..."
+                buttonName="Send"
+                icon={<FaPaperPlane size={18} />}
+                animateIcon={true}
+                className="w-full py-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+              />
             </form>
           </div>
         </div>

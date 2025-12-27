@@ -59,10 +59,11 @@ export default function FreeCredits() {
       <div className="relative">
         <button
           onClick={() => {
-            if (
-              currentUser.isSubscribed === false ||
-              currentUser.isEmailVerified === false
-            ) {
+            if (!currentUser) {
+              return toast.error("You need to login first to play.");
+            }
+
+            if (!currentUser.isSubscribed || !currentUser.isEmailVerified) {
               return toast.error(
                 "You need to subscribe your email first to play."
               );

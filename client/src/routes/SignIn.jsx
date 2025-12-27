@@ -1,4 +1,3 @@
-import ArrowLine from "../reusable/ArrowLine";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -7,22 +6,18 @@ import { useUserStore } from "../stores/useUserStore";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
+import Buttons from "../reusable/Buttons";
+import { FaSignInAlt } from "react-icons/fa";
+
+import PasswordInput from "../reusable/PasswordInput";
 
 export default function SignIn() {
   const navigate = useNavigate();
 
   const { setCurrentUser } = useUserStore();
 
-  // State to manage password visibility
-  const [showPassword, setShowPassword] = useState(false);
-
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
-
-  // Toggle the password visibility
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
 
   const { data: isAdminExist, isLoading } = useQuery({
     queryKey: ["checkAdminExist"],
@@ -60,24 +55,24 @@ export default function SignIn() {
   };
 
   return (
-    <section className="pt-[180px] md:pb-32 h-full bg-yellow p-4 font-main ">
-      <div className="max-w-[600px]  mx-auto overflow-hidden">
-        <div className="relative px-2  mb-4 flex justify-end w-full">
-          <div className="relative flex-1">
-            <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
-          </div>
-          <span className="border bg-[#313031] opacity-80 text-white  py-1 rounded-[5px] px-3">
-            SIGN IN
-          </span>
-        </div>
-
+    <section className=" h-screen p-4 font-main ">
+      <div className="max-w-[600px] h-full  flex flex-col justify-center   mx-auto ">
         {/* FORM */}
         <form
           onSubmit={handleFormSubmit}
-          className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg"
+          className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg mt-8"
         >
+          {/* Sticker Header */}
+          <div className="absolute -top-5 -left-4 bg-[#22c55e] text-white border border-black px-6 py-2.5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-30">
+            <h1 className="font-black uppercase tracking-widest text-sm italic">
+              SIGN IN
+            </h1>
+          </div>
           <div className="flex justify-between flex-col">
-            <label htmlFor="email" className=" mb-2">
+            <label
+              htmlFor="email"
+              className=" mb-2 uppercase text-[10px] font-black tracking-widest text-gray-500"
+            >
               Email or Username :{" "}
             </label>
             <input
@@ -88,45 +83,28 @@ export default function SignIn() {
               value={loginId}
               onChange={handleInputChange(setLoginId)}
               maxLength={246}
-              className="outline-none p-2 bg-white border-black border rounded-[5px]"
+              className="outline-none p-3 bg-white border-black border rounded-[5px]"
             />
           </div>
-          <div className="flex justify-between flex-col">
-            <label htmlFor="password" className=" mb-2">
-              Password:{" "}
-            </label>
-            <div className="flex relative w-full">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                id="password"
-                value={password}
-                maxLength={128}
-                onChange={handleInputChange(setPassword)}
-                className=" outline-none p-2 bg-white w-full border-[#313031] border rounded-[5px]"
-              />
-              <label
-                htmlFor=""
-                className="absolute right-2 top-4 flex items-center gap-2"
-              >
-                <p className="text-xs">Show Password</p>
-                <input
-                  type="checkbox"
-                  onChange={togglePassword}
-                  checked={showPassword}
-                  className="border  size-[20px]  border-black"
-                />
-              </label>
-            </div>
-          </div>
+
+          <PasswordInput
+            label="Password:"
+            name="password"
+            value={password}
+            onChange={handleInputChange(setPassword)}
+            autoComplete="current-password"
+          />
 
           <div className="flex justify-center items-center relative  gap-2">
-            <button
-              disabled={isPending}
-              className="border w-[100px] p-2 px-5 mt-4 bg-primary border-black hover:opacity-95 font-medium text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            >
-              {isPending ? "Loading.." : "Sign In"}
-            </button>
+            <Buttons
+              buttonName="Sign In"
+              isLoading={isPending}
+              loadingText="Signing In..."
+              icon={<FaSignInAlt size={20} />}
+              animateIcon={true}
+              className="mt-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+              buttonType="submit"
+            />
 
             <div className="text-sm absolute -bottom-8 right-0 md:top-[50%] md:bottom-[50%]  items-center gap-2">
               <Link
@@ -144,12 +122,9 @@ export default function SignIn() {
           </div>
         </form>
 
-        <div className="mt-4 flex justify-between">
-          <div className="relative flex-1">
-            <ArrowLine arrowWidth={"90%"} bottomNeg={"50%"} arrowLeft={"0px"} />
-          </div>
-          <div className="text-sm  flex items-center gap-2">
-            No account yet?{" "}
+        <div className="mt-8 flex justify-end">
+          <div className="text-sm flex items-center gap-2">
+            No account yet?
             <Link
               to={`/sign-up`}
               className="text-indigo-500 hover:underline  text-[18px]"

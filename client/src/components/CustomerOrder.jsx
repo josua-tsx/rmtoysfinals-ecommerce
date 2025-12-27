@@ -2,6 +2,7 @@ import { MdLocalShipping } from "react-icons/md";
 import CustomerOrderStatus from "./CustomerOrderStatus";
 import { useState } from "react";
 import CustomerDeliveredStatus from "./CustomerDeliveredStatus";
+import PropTypes from "prop-types";
 
 export default function CustomerOrder({ toggle, openCustomer }) {
   const [orderStatus, setOrderStatus] = useState("pending");
@@ -18,17 +19,20 @@ export default function CustomerOrder({ toggle, openCustomer }) {
       </button>
 
       {openCustomer && (
-        <div className="border border-black text-sm md:w-[550px] w-[90%] fixed top-20 right-0 left-0 mx-auto  bg-card rounded-[5px] p-4 md:absolute md:right-0 md:left-auto  md:top-10 ">
-          <div className="flex items-center mb-2 justify-center gap-2">
-            <h1 className="text-lg">Your Order Status</h1>
-            <MdLocalShipping size={28} />
+        <div className="border border-black text-sm md:w-[550px] w-[95%] fixed top-24 right-0 left-0 mx-auto bg-card rounded-[5px] p-6 md:absolute md:right-0 md:left-auto md:top-12  z-[100] font-main overflow-y-auto max-h-[90vh]">
+          <div className="flex items-center mb-6 justify-center gap-3">
+            <h1 className=" font-black uppercase tracking-widest text-xl">
+              Order Status
+            </h1>
+            <MdLocalShipping size={32} className="text-black" />
           </div>
 
-          <div className="bg-yellow-50 border-l-4 border-red-700 text-red-700 p-2 mb-2">
-            <div className="flex">
-              <div className="flex-shrink-0">
+          {/* Retro Note Sticker */}
+          <div className="bg-[#ef4444] text-white border border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform rotate-1 mb-8">
+            <div className="flex items-start gap-4">
+              <div className="bg-white p-1 rounded-sm border border-black rotate-[-10deg] shrink-0 mt-1">
                 <svg
-                  className="h-5 w-5 text-yellow-400"
+                  className="h-5 w-5 text-red-600"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -40,35 +44,46 @@ export default function CustomerOrder({ toggle, openCustomer }) {
                   />
                 </svg>
               </div>
-              <div className="ml-3 flex flex-col gap-2">
-                <p className="text-sm ">
-                  <strong>Important:</strong> Once your order status changes to
-                  Shipped, or Out for Delivery, it can no longer be cancelled.
-                  Only orders with a Pending and Processing status are eligible
-                  for cancellation. Thank you for understanding!
-                </p>
-              </div>
+              <p className=" font-black uppercase text-[11px] leading-tight tracking-wide">
+                <span className="bg-white text-red-600 px-1 mr-1">
+                  Important:
+                </span>
+                Once status is Shipped/Delivering, it cannot be cancelled. Only
+                Pending/Processing are eligible.
+              </p>
             </div>
           </div>
 
-          <select
-            name=""
-            id=""
-            value={orderStatus}
-            onChange={(e) => handleOrderChange(e)}
-            className="border border-black outline-none p-1 px-4 rounded-[5px]  my-2"
-          >
-            <option value="pending">Pending</option>
-            <option value="delivered">Delivered</option>
-          </select>
+          <div className="flex flex-col gap-2 mb-4">
+            <label className=" font-black uppercase text-[10px] text-gray-400 tracking-widest pl-1">
+              Filter View
+            </label>
+            <select
+              name=""
+              id=""
+              value={orderStatus}
+              onChange={(e) => handleOrderChange(e)}
+              className="border border-black outline-none p-3 px-4 rounded-[5px] bg-white  font-black uppercase text-xs tracking-wider cursor-pointer hover:bg-gray-50 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+            >
+              <option value="pending">Pending Orders</option>
+              <option value="delivered">Delivered History</option>
+            </select>
+          </div>
 
-          {orderStatus === "pending" ? (
-            <CustomerOrderStatus />
-          ) : (
-            <CustomerDeliveredStatus />
-          )}
+          <div className="mt-4">
+            {orderStatus === "pending" ? (
+              <CustomerOrderStatus />
+            ) : (
+              <CustomerDeliveredStatus />
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+CustomerOrder.propTypes = {
+  toggle: PropTypes.func.isRequired,
+  openCustomer: PropTypes.bool.isRequired,
+};

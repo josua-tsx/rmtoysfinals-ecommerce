@@ -1,15 +1,20 @@
-export default function AdminStatCard({title, value, value2}) {
+export default function AdminStatCard({ title, value, value2 }) {
   return (
-    <div className='bg-card border-black border rounded-[5px] '>
-        <div className='px-4 py-3 md:py-5 flex flex-col gap-2'>
-				<span className=' text-sm  md:text-xl'>
-					{title}
-				</span>
-				<div className="flex flex-row md:flex-col gap-2 justify-between  ">
-        <p className='text-2xl md:text-3xl'>{value}</p>
-				<p className='text-sm flex justify-end'>{value2}</p>
+    <div className="bg-white border border-black rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] transition-all relative mt-6">
+      {/* Sticker Header */}
+      <div className="absolute -top-4 -left-2 bg-indigo-600 text-white border border-black px-4 py-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-10">
+        <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+          {title}
+        </span>
+      </div>
+      <div className="px-4 py-6 flex flex-col gap-2">
+        <div className="flex flex-row md:flex-col gap-1 justify-between items-baseline md:items-start mt-1">
+          <p className="text-4xl font-black text-black leading-none">{value}</p>
+          <p className="text-[10px] font-black uppercase text-gray-400 mt-1">
+            {value2}
+          </p>
         </div>
-			</div>
+      </div>
     </div>
-  )
+  );
 }

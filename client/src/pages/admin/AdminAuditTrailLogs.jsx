@@ -13,20 +13,23 @@ export default function AdminAuditTrailLogs() {
   };
 
   return (
-    <section className="bg-yellow h-screen">
-      <AdminHeader title={"LOGS"} />
-      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
-        {/* main */}
-        <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-          <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-          {/* CARD */}
-
+    <section className="bg-[#fffdf6] min-h-screen">
+      <AdminHeader title={"AUDIT TRAIL LOGS"} />
+      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-6 flex-col">
+        {/* Selection Area */}
+        <div className="relative font-main max-w-sm">
+          <label
+            htmlFor="audit"
+            className="font-black uppercase text-[10px] tracking-widest text-gray-500 mb-1 block ml-1"
+          >
+            SELECT LOG CATEGORY
+          </label>
           <select
             name="audit"
             id="audit"
             value={componenent}
             onChange={handleSelectChange}
-            className="border border-black outline-none p-2 rounded-[5px] bg-card w-full  "
+            className="border border-black outline-none p-3 rounded-[5px] bg-white w-full font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-none transition-all cursor-pointer appearance-none"
           >
             <option value="admin">Admin logs</option>
             <option value="customer">Customer logs</option>
@@ -36,7 +39,7 @@ export default function AdminAuditTrailLogs() {
 
         {componenent === "admin" && <AdminAdminLogs />}
         {componenent === "customer" && <AdminCustomerLogs />}
-        {componenent === "validator" && <AdminValidatorStaffLogs/>}
+        {componenent === "validator" && <AdminValidatorStaffLogs />}
       </div>
     </section>
   );

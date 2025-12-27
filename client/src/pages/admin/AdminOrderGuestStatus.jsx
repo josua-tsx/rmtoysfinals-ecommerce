@@ -32,7 +32,7 @@ export default function AdminOrderGuestStatus() {
     },
   });
 
-  console.log(allOrders)
+  console.log(allOrders);
 
   const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
 
@@ -74,13 +74,6 @@ export default function AdminOrderGuestStatus() {
     },
   });
 
-  const selectOrderRiderId = (riderId) => {
-    const orderWithRider = allOrders.find((order) => order.riderId === riderId);
-    const riderIdValue = orderWithRider ? orderWithRider.riderId : null;
-
-    return riderIdValue;
-  };
-
   // const handleChangeStatus = (id, e) => {
   //   const newStatus = e.target.value;
 
@@ -104,14 +97,15 @@ export default function AdminOrderGuestStatus() {
 
   // New signature:
   const handleOpenConfirmModal = (id, e) => {
-    setOpenConfirmModal(true);
-    setSelectedId(id); // selectOrderRiderId(riderId); // <-- DELETE THIS LINE
+    setSelectedId(id);
     setNewStatus(e.target.value);
 
     if (e.target.value === "Shipped") {
+      // For Shipped, only open rider selection modal first
       setOpenToShipModal(true);
     } else {
-      setOpenToShipModal(false);
+      // For other statuses, open confirm modal directly
+      setOpenConfirmModal(true);
     }
   };
 
@@ -134,12 +128,20 @@ export default function AdminOrderGuestStatus() {
 
   const handleConfirmToShipModal = () => {
     setOpenToShipModal(false);
+    // After rider is selected, NOW open the confirmation modal
+    setOpenConfirmModal(true);
   };
 
   if (isOrdersError) return <p>error.</p>;
 
   return (
-    <div className="font-main border rounded-[5px] text-sm md:text-normal border-black bg-card relative ">
+    <div className="font-main border rounded-[5px] text-sm md:text-normal border-black bg-card relative mt-8 overflow-visible">
+      {/* Amber Sticker Header */}
+      <div className="absolute -top-4 -left-3 bg-[#f59e0b] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black uppercase tracking-widest text-sm ">
+          Guest Orders
+        </h1>
+      </div>
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -163,97 +165,138 @@ export default function AdminOrderGuestStatus() {
         onCancel={handleCancelOpenShipModal}
       />
 
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>GUEST ORDER TABLE</h1>
-        <div className="flex items-center relative">
+      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4 pt-8 bg-gray-50/50">
+        <div className="hidden md:block">
+          <p className="text-[11px] font-black uppercase text-gray-500 tracking-widest pl-1">
+            Tracking orders from guest users and managing status updates
+          </p>
+        </div>
+        <div className="flex items-center relative group w-full md:w-auto">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search order.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
+            placeholder="SEARCH BY ID, EMAIL..."
+            className="border border-black w-full md:w-[350px] rounded-[5px] py-2 pl-4 pr-10 focus:outline-none font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all placeholder:text-gray-300"
           />
-          <IoSearch className="absolute right-0" size={25} />
+          <IoSearch
+            className="absolute right-3 text-black group-focus-within:scale-110 transition-transform"
+            size={20}
+          />
         </div>
       </div>
-      <div className="overflow-y-auto  h-[600px] py-3">
+      <div className="overflow-y-auto  h-[600px] ">
         {isOrdersPending ? (
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead>
+          <table className="w-full border-collapse">
+            <thead className="border-b border-black sticky top-0 bg-white z-10">
               <tr className="">
-                <th className="font-normal p-2 pb-5">ORDER ID</th>
-                <th className="font-normal p-2 pb-5">CUSTOMER GUEST EMAIL</th>
-                <th className="font-normal p-2 pb-5">CUSTOMER GUEST NAME</th>
-                <th className="font-normal p-2 pb-5">CUSTOMER GUEST PHONE</th>
-                <th className="font-normal p-2 pb-5">CUSTOMER GUEST ADDRESS</th>
-                <th className="font-normal p-2 pb-5">ORDER DATE</th>
-                <th className="font-normal p-2 pb-5">TOTAL AMOUNT</th>
-
-                <th className="font-normal p-2 pb-5">PAYMENT METHOD</th>
-                {/* <th className="font-normal p-2 pb-5">PAYMENT STATUS</th> */}
-                {/* <th className="font-normal p-2 pb-5">SHIPPING STATUS</th> */}
-                <th className="font-normal p-2 pb-5">PAYMENT STATUS</th>
-                <th className="font-normal p-2 pb-5">ORDER STATUS</th>
-                {/* <th className="font-normal p-2 pb-5">Stocks</th> */}
-                <th className="font-normal p-2 pb-5">ACTIONS</th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  ORDER ID
+                </th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  EMAIL
+                </th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  NAME
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  PHONE
+                </th>
+                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  ADDRESS
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  DATE
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  AMOUNT
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  METHOD
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  PAYMENT
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
+                  STATUS
+                </th>
+                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest text-black">
+                  ACTIONS
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
+            <tbody className="divide-y divide-black text-[16px]">
               {filteredArrayAllOrders?.length > 0 ? (
                 filteredArrayAllOrders?.map((data) => (
-                  <tr key={data._id}>
-                    <td className="px-4 ">{data._id}</td>
-
-                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                      {data?.guestUser?.email}
-                    </td>
-                   
-                    <td className="px-2 py-4 whitespace-nowrap text-sm truncate font-medium flex items-center gap-2	">
-                      {data?.guestUser?.name}
+                  <tr
+                    key={data._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-4 py-4 border-r border-black font-mono text-black">
+                      #{data._id.slice(-6)}
                     </td>
 
-                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
+                    <td className="px-4 py-4 border-r border-black">
+                      <span className="text-black truncate max-w-[150px] block">
+                        {data?.guestUser?.email}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-4 border-r border-black">
+                      <span className="text-black truncate max-w-[150px] block">
+                        {data?.guestUser?.name}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-4 border-r border-black text-center text-black font-mono">
                       {data?.guestUser?.phone}
                     </td>
-                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                      {data?.shippingAddress}
+                    <td className="px-4 py-4 border-r border-black text-black">
+                      <span className="truncate max-w-[150px] block text-[10px]">
+                        {data?.shippingAddress}
+                      </span>
                     </td>
-                    <td className="px-4 py-4  whitespace-nowrap text-center text-sm">
-                      {new Date(data?.createdAt).toLocaleString()}
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                      {formatPrice(data?.totalPrice)} PHP
+                    <td className="px-4 py-4 border-r border-black text-center text-black">
+                      {new Date(data?.createdAt).toLocaleDateString()}
                     </td>
 
-                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {data?.paymentMethod}
+                    <td className="px-4 py-4 border-r border-black text-center font-mono font-black text-indigo-700">
+                      {formatPrice(data?.totalPrice)}
                     </td>
 
-                    <td className="px-6 py-4 uppercase  whitespace-nowrap text-center text-sm">
-                      {(data?.paymentStatus &&
-                        data?.paymentStatus === "Failed") ||
-                      data?.paymentStatus === "Refunded" ? (
-                        <span className="text-red-700">
-                          {data?.paymentStatus}
-                        </span>
-                      ) : (
-                        <span className="text-blue-700">
-                          {data?.paymentStatus}
-                        </span>
-                      )}
+                    <td className="px-4 py-4 border-r border-black text-center">
+                      <span className="px-2 py-1 border border-black bg-white rounded-[5px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                        {data?.paymentMethod}
+                      </span>
                     </td>
 
-                    <td className="px-6 py-4 uppercase whitespace-nowrap text-center text-sm">
-                      {data?.status && data?.status === "Cancelled" ? (
-                        <span className="text-red-700">{data?.status}</span>
-                      ) : (
-                        <span className="text-blue-700">{data?.status}</span>
-                      )}
+                    <td className="px-4 py-4 border-r border-black text-center">
+                      <span
+                        className={`px-2 py-1 border border-black rounded-[5px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+                          data?.paymentStatus === "Failed" ||
+                          data?.paymentStatus === "Refunded"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {data?.paymentStatus}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-4 border-r border-black text-center">
+                      <span
+                        className={`px-2 py-1 border border-black rounded-[5px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+                          data?.status === "Cancelled"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {data?.status}
+                      </span>
                     </td>
                     {/* 
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm">{data.status}</td> */}
@@ -262,10 +305,10 @@ export default function AdminOrderGuestStatus() {
                     {/* <td className="px-4 py-4 whitespace-nowrap text-cener text-sm">
                 {product.stocks}
               </td> */}
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-center">
+                    <td className="px-4 py-4 flex justify-center items-center gap-2">
                       <button
                         onClick={() => handleOpenSingleOrder(data)}
-                        type="button"
+                        className="px-3 py-1.5 border border-black bg-white text-black font-black uppercase rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                       >
                         VIEW
                       </button>
@@ -274,19 +317,16 @@ export default function AdminOrderGuestStatus() {
                         <select
                           name="status"
                           id="status"
-                          // onChange={(e) => handleChangeStatus(data._id, e)}
                           onChange={(e) => handleOpenConfirmModal(data._id, e)}
                           value={data.status}
-                          className="outline-none border border-black text-center uppercase py-1 rounded-[5px]"
+                          className="border border-black p-1 font-black uppercase outline-none rounded-[5px] bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all cursor-pointer"
                         >
-                          <option value="Pending">Pending</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Out for Delivery">
-                            Out for Delivery
-                          </option>
-                          <option value="Delivered">Delivered</option>
-                          <option value="Cancelled">Cancelled</option>
+                          <option value="Pending">🕒 Pending</option>
+                          <option value="Processing">⚙️ Processing</option>
+                          <option value="Shipped">📦 Shipped</option>
+                          <option value="Out for Delivery">🚚 Delivery</option>
+                          <option value="Delivered">✔️ Delivered</option>
+                          <option value="Cancelled">❌ Cancelled</option>
                         </select>
                       </div>
                     </td>

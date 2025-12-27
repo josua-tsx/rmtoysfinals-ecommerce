@@ -127,7 +127,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     setIsModalOpen(true);
   };
 
-  const handleSelectAll = (e) => {
+  const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds([]);
     } else {
@@ -189,7 +189,14 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     <p>loading....</p>;
   }
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative ">
+    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible">
+      {/* Green Sticker Header */}
+      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
+          Supplier Table
+        </h1>
+      </div>
+
       <ConfirmModal
         isOpen={isModalOpen}
         title={"Confirm delete"}
@@ -206,13 +213,16 @@ export default function AdminSupplierTable({ enableMultiDel }) {
         title="Edit Supplier"
         onClose={() => setIsOpenEditModal(false)}
         onSubmit={handleEditSubmit}
-        submitLabel="Update Supplier"
+        submitLabel="UPDATE SUPPLIER"
         isSubmitting={isEditPending}
       >
-        <div className="flex gap-2 p-2 flex-col">
-          <div className="flex gap-2 flex-col">
-            <label htmlFor="editSupplierName" className="uppercase">
-              Supplier Name:{" "}
+        <div className="flex gap-4 p-2 flex-col">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editSupplierName"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              Supplier Name
             </label>
             <input
               type="text"
@@ -221,17 +231,21 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               value={supplierName}
               maxLength={50}
               onChange={handleInputChange(setSupplierName)}
-              className="border border-black w-full rounded-[5px] p-1  outline-none"
+              placeholder="Ex: Toy Kingdom"
+              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
-            <p className="text-sm pt-1 lowercase text-green-700">
-              (Supplier name do not allow double spaces, and number. it should
-              be between 3 and 50 characters.)
+            <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+              (3-50 chars, no double spaces or numbers)
             </p>
           </div>
-          <div className="flex gap-2 flex-col">
-            <label htmlFor="editContactPerson" className="uppercase">
-              Contact Person Fulllname :{" "}
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editContactPerson"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              Contact Person Full Name
             </label>
             <input
               type="text"
@@ -240,17 +254,21 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               value={contactPerson}
               maxLength={100}
               onChange={handleInputChange(setContactPerson)}
-              className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+              placeholder="Ex: Juan Dela Cruz"
+              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
-            <p className="text-sm pt-1 lowercase text-green-700">
-              (Contact person full name does not allow double spaces.)
+            <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+              (No double spaces allowed)
             </p>
           </div>
 
-          <div className="flex gap-2 flex-col">
-            <label htmlFor="editContactNumber" className="uppercase">
-              Contact Number:{" "}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editContactNumber"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              Contact Number
             </label>
             <input
               type="tel"
@@ -259,150 +277,188 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               value={contactNumber}
               maxLength={11}
               onChange={handleInputChange(setContactNumber)}
-              className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+              placeholder="Ex: 09123456789"
+              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
-            <p className="text-sm pt-1 lowercase text-green-700">
-              (Phone number should be valid number. It should start with 09 and
-              exact 11 numbers)
+            <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+              (Starts with 09, exactly 11 digits)
             </p>
           </div>
 
-          <div className="flex gap-2 flex-col">
-            <label htmlFor="editSupplierAddress" className="uppercase">
-              Supplier Address:{" "}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="editSupplierAddress"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+            >
+              Supplier Address
             </label>
-            <input
-              type="text"
+            <textarea
               name="supplierAddress"
               id="editSupplierAddress"
               value={supplierAddress}
               maxLength={200}
               onChange={handleInputChange(setSupplierAddress)}
-              className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+              placeholder="Ex: 123 Toy St., Manila City"
+              className="border border-black w-full rounded-[5px] p-3 h-[100px] outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
               required
             />
+            <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
+              (5-200 chars, no double spaces)
+            </p>
           </div>
-          <p className="text-sm pt-1 lowercase text-green-700">
-            (Supplier address do not allow double spaces and is between 5 and
-            200 max characters long.)
-          </p>
         </div>
       </FormModal>
 
-      <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-      <div className=" border flex-col border-b-black rounded-t-[5px] flex md:flex-row items-center justify-between  p-4">
-        <h1>SUPPLIER TABLE</h1>
-        <div className="flex items-center relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="search supplier.."
-            className="border w-[130px] md:w-[300px] border-black rounded-[5px] p-1 focus:outline-none"
-          />
-          <IoSearch className="absolute right-0" size={25} />
+      <div className="flex-col border-b-2 border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
+        <div className="flex items-center gap-1 flex-col md:flex-row">
+          <label className="font-black uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
+            Search Suppliers
+          </label>
+          <div className="flex items-center relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Ex: Toy Kingdom..."
+              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
+            />
+            <IoSearch className="absolute right-3" size={20} />
+          </div>
         </div>
       </div>
-      <div className="overflow-y-auto  h-[600px] py-3">
+
+      <div className="overflow-y-auto h-[600px] py-3">
         {isSupplierPending ? (
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
         ) : (
-          <table className="w-full divide-y divide-gray-700">
-            <thead className="relative">
-              <tr className="">
-                {/* <th className="font-normal p-2 pb-5">ID</th> */}
-                <th className="font-normal p-2 pb-5">Supplier Name</th>
-                <th className="font-normal p-2 pb-5">
-                  Contact Person Fullname
+          <table className="w-full">
+            <thead className="border-b border-black relative">
+              <tr>
+                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-left">
+                  Supplier Name
                 </th>
-                <th className="font-normal p-2 pb-5">Contact Number</th>
-                <th className="font-normal p-2 pb-5">Supplier Address</th>
-                <th className="font-normal p-2 pb-5">
-                  Supplied Products Count
+                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
+                  Contact Person
                 </th>
-                <th className="font-normal p-2 pb-5">ACTIONS</th>
+                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
+                  Phone
+                </th>
+                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-left">
+                  Address
+                </th>
+                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
+                  Products
+                </th>
+                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
+                  Actions
+                </th>
                 {arraySuppliers.length > 0 && enableMultiDel && (
-                  <input
-                    type="checkbox"
-                    // onChange={() => pushMultipleProd(product._id)}
-                    checked={allSelected}
-                    onChange={handleSelectAll}
-                    className="absolute right-4 top-2"
-                  />
+                  <th className="p-4 pb-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
+                    />
+                  </th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 ">
-              {filteredArraySuppliers.length > 0 &&
+            <tbody className="divide-y divide-black text-[11px]">
+              {filteredArraySuppliers.length > 0 ? (
                 filteredArraySuppliers.map((supplier) => (
-                  <tr key={supplier._id}>
-                    {/* <td className="px-4 ">{supplier._id}</td> */}
-                    <td className="px-2 py-4 whitespace-nowrap text-sm uppercase truncate font-medium flex items-center gap-2	">
-                      {supplier.supplierName}
+                  <tr
+                    key={supplier._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-black uppercase tracking-tight text-black">
+                          {supplier.supplierName}
+                        </span>
+                        <span className="text-[9px] font-mono text-gray-400">
+                          ID: {supplier._id.slice(-6)}
+                        </span>
+                      </div>
                     </td>
 
-                    <td className="px-4 py-4 uppercase whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-center font-black text-gray-600">
                       {supplier.contactPerson}
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                    <td className="p-4 text-center font-mono font-black text-gray-600">
                       {supplier.contactNumber}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
+                    <td className="p-4 font-black text-gray-600 max-w-[250px] truncate">
                       {supplier?.supplierAddress}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center uppercase text-sm">
-                      {supplier?.product ? supplier?.product.length : 0}
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        {supplier?.product ? supplier?.product.length : 0}
+                      </span>
                     </td>
 
-                    <td className="px-4 py-4 whitespace-nowrap gap-3 text-sm flex justify-between">
-                      <div className="flex items-center">
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleOpenEditModal(supplier)}
-                          className="text-green-600 hover:text-indigo-300 mr-2"
+                          title="Edit"
+                          className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                         >
-                          <CiEdit size={25} />
+                          <CiEdit size={18} />
                         </button>
                         <button
                           onClick={() => handleClickDelete(supplier._id)}
-                          className="text-red-600 hover:text-red-300"
+                          title="Delete"
+                          className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                         >
-                          <MdDelete size={25} />
+                          <MdDelete size={18} />
                         </button>
                       </div>
-
-                      {arraySuppliers.length > 0 && enableMultiDel && (
+                    </td>
+                    {enableMultiDel && (
+                      <td className="p-4 text-center">
                         <input
                           type="checkbox"
-                          id="wdwadwk"
                           checked={selectedIds.includes(supplier._id)}
                           onChange={() => pushMultipleSup(supplier._id)}
+                          className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
                         />
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
-                ))}
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="7"
+                    className="p-8 text-center font-black uppercase text-gray-400 tracking-widest"
+                  >
+                    no suppliers found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         )}
       </div>
 
       {selectedIds && selectedIds.length > 0 && (
-        <div className=" w-full flex gap-2 justify-end p-3">
+        <div className="w-full flex gap-3 justify-end p-4 border-t border-black bg-gray-50">
           <button
             onClick={cancelMultiDel}
-            className="border bg-green-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="px-6 py-2 border border-black bg-white font-black uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
-            Cancel Detete
+            Cancel
           </button>
           <button
             onClick={() => handleMultiDelete()}
-            className="border bg-red-700 text-white rounded-[5px] border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="px-6 py-2 border border-black bg-red-600 text-white font-black uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
-            Confirm Detete
+            Delete Selected ({selectedIds.length})
           </button>
         </div>
       )}
