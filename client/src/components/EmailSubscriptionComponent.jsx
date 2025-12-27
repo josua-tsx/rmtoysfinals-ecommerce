@@ -82,7 +82,7 @@ export default function EmailSubscriptionComponent() {
 
       <div className="max-w-[1280px] mx-auto p-4 relative">
         <div className="absolute -top-4 -left-2 bg-[#22c55e] text-white border border-black px-8 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest ">
+          <h1 className="text-xl md:text-2xl font-black uppercase tracking-widest ">
             Subscribe
           </h1>
         </div>

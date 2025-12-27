@@ -55,8 +55,8 @@ export default function Faq() {
     <section className=" bg-yellow p-3 font-main pt-28 ">
       <div className="max-w-[800px] mx-auto relative">
         <div className="flex flex-col justify-center items-center h-full relative">
-          <div className="absolute -top-10 -left-4 bg-[#22c55e] text-white border border-black px-8 py-2 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform rotate-1 z-20">
-            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest ">
+          <div className="absolute -top-10 -left-2 bg-[#22c55e] text-white border border-black px-8 py-2 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform rotate-1 z-20">
+            <h1 className="text-xl md:text-2xl font-black uppercase tracking-widest ">
               FAQs
             </h1>
           </div>
