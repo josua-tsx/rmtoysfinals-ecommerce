@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import Buttons from "../reusable/Buttons";
+import { FaCheck, FaTimes } from "react-icons/fa";
 
 export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
   const queryClient = useQueryClient();
@@ -39,9 +41,9 @@ export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
 
   return (
     <section className="fixed inset-0 z-[60] backdrop-blur-sm bg-black/50 flex items-center justify-center p-5 font-main">
-      <div className="bg-white border-2 border-black rounded-lg w-full md:w-[450px] relative shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200 p-8 pt-12">
+      <div className="bg-white border border-black rounded-lg w-full md:w-[450px] relative animate-in fade-in zoom-in duration-200 p-8 pt-12">
         {/* Red Sticker Header */}
-        <div className="absolute -top-5 -left-4 bg-red-600 text-white border-2 border-black px-6 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <div className="absolute -top-5 -left-4 bg-red-600 text-white border border-black px-6 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
           <h1 className="font-black uppercase tracking-widest text-sm italic">
             Reduce Stock
           </h1>
@@ -85,20 +87,22 @@ export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 mt-4">
-            <button
-              type="submit"
-              disabled={isReducingPending}
-              className="flex-1 bg-green-500 text-white border-2 border-black py-4 rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95 disabled:opacity-50"
-            >
-              {isReducingPending ? "Updating..." : "Update Quantity"}
-            </button>
-            <button
+            <Buttons
+              buttonType="submit"
+              isLoading={isReducingPending}
+              loadingText="Updating..."
+              buttonName="Update Quantity"
+              icon={<FaCheck size={18} />}
+              animateIcon={true}
+              className="flex-1 bg-green-500 !text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            />
+            <Buttons
               onClick={onClose}
-              type="button"
-              className="md:w-[90px] bg-white text-black border-2 border-black py-4 rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase tracking-widest text-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95"
-            >
-              Close
-            </button>
+              buttonName="Close"
+              icon={<FaTimes size={18} />}
+              animateIcon={true}
+              className="md:w-[120px] bg-white !text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            />
           </div>
         </form>
       </div>
