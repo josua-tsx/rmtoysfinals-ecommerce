@@ -43,7 +43,7 @@ export default function SignUp() {
     signUpMutation({ username, email, password, confirmPassword });
   };
   return (
-    <section className="h-screen bg-yellow p-4 font-main">
+    <section className="h-screen pt-28 bg-yellow p-4 font-main">
       <div className="max-w-[600px] h-full flex flex-col justify-center   mx-auto ">
         <form
           onSubmit={handleFormSubmit}
