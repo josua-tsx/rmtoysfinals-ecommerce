@@ -34,9 +34,9 @@ export default function ToShipModal({
 
   return (
     <div className="fixed font-main inset-0 flex items-center justify-center backdrop-blur-sm bg-black/40 px-5 z-50 animate-in fade-in duration-200">
-      <div className="bg-white border-2 border-black rounded-lg w-full md:w-[700px] relative shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] animate-in zoom-in duration-200 p-8 pt-12">
+      <div className="bg-white border border-black rounded-lg w-full md:w-[700px] relative  animate-in zoom-in duration-200 p-8 pt-12">
         {/* Floating Sticker Header */}
-        <div className="absolute -top-5 -left-4 bg-primary text-white border-2 border-black px-6 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
+        <div className="absolute -top-5 -left-4 bg-primary text-white border border-black px-6 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
           <h1 className="font-black uppercase tracking-widest text-sm italic">
             Assign Delivery Rider
           </h1>

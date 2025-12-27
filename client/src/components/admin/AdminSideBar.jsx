@@ -212,11 +212,12 @@ export default function AdminSideBar() {
     >
       <div className="flex h-full flex-col gap-8">
         <div className="flex items-center pb-5 justify-between">
-          <button
+          <Link
+            to="/"
             className={`text-xl py-2 ${toggleSideBar ? "block" : "hidden"}`}
           >
             <img src={RMTOYSLOGO} className="w-[90px]" alt="" />
-          </button>
+          </Link>
           <button onClick={() => setToggleSideBar(!toggleSideBar)}>
             {toggleSideBar ? (
               <IoMdArrowDropright size={30} />

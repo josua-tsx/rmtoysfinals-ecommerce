@@ -129,7 +129,7 @@ export default function ChatWidget() {
       {/* CHAT WINDOW */}
       {/* ================================================================== */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[90%] h-[500px] bg-card border-2 border-black rounded-[10px] shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-50 w-[90%] md:w-[350px] h-[500px] bg-card border-2 border-black rounded-[10px] shadow-2xl flex flex-col overflow-hidden">
           {/* ============================================================ */}
           {/* HEADER */}
           {/* ============================================================ */}
