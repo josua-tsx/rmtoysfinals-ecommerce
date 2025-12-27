@@ -228,8 +228,3 @@ export default function ProfileComponent({ setActiveComponent }) {
     </div>
   );
 }
-
-import PropTypes from "prop-types";
-ProfileComponent.propTypes = {
-  setActiveComponent: PropTypes.func.isRequired,
-};

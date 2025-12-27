@@ -2,7 +2,6 @@ import { MdLocalShipping } from "react-icons/md";
 import CustomerOrderStatus from "./CustomerOrderStatus";
 import { useState } from "react";
 import CustomerDeliveredStatus from "./CustomerDeliveredStatus";
-import PropTypes from "prop-types";
 
 export default function CustomerOrder({ toggle, openCustomer }) {
   const [orderStatus, setOrderStatus] = useState("pending");
@@ -82,8 +81,3 @@ export default function CustomerOrder({ toggle, openCustomer }) {
     </div>
   );
 }
-
-CustomerOrder.propTypes = {
-  toggle: PropTypes.func.isRequired,
-  openCustomer: PropTypes.bool.isRequired,
-};
