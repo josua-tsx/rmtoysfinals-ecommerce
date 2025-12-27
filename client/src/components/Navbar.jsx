@@ -115,7 +115,11 @@ export default function Navbar() {
             </div>
 
             <Link to="/">
-              <img src={RMTOYSLOGO} className="w-[75px] md:w-[100px] " alt="" />
+              <img
+                src={RMTOYSLOGO}
+                className="w-[100px] md:w-[120px] "
+                alt=""
+              />
             </Link>
 
             {currentUser ? (

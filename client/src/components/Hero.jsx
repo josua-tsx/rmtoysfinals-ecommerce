@@ -14,11 +14,15 @@ export default function Hero() {
               <CreditPointsAuto className="flex justify-center" />
             </div>
             <div className="flex justify-center ">
-              <img src={RMTOYSLOGO} className="w-[90px] md:w-[150px] " alt="" />
+              <img
+                src={RMTOYSLOGO}
+                className="w-[120px] md:w-[150px] "
+                alt=""
+              />
             </div>
 
             <div className="relative mt-4 z-10 md:w-[600px] lg:w-[850px]">
-              <h1 className="font-main text-center text-xl md:text-5xl mx-auto leading-snug md:leading-tight lg:leading-snug ">
+              <h1 className="font-main text-center text-2xl md:text-5xl mx-auto leading-snug md:leading-tight lg:leading-snug ">
                 <span className=" text-green-600  transform -rotate-1 inline-block mr-1">
                   Discover
                 </span>{" "}
@@ -45,7 +49,7 @@ export default function Hero() {
                     className="group-hover:rotate-12 transition-transform"
                   />
                 }
-                className="px-8 py-4 text-base"
+                className="px-8 !py-2 md:!py-3 text-base"
               />
             </Link>
           </div>
