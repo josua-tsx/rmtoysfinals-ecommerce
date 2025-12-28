@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
@@ -14,6 +14,14 @@ import {
 import { useUserStore } from "../../stores/useUserStore";
 import Buttons from "../../reusable/Buttons";
 import { FaPaperPlane } from "react-icons/fa";
+import { IoClose, IoAttach } from "react-icons/io5";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import app from "../../firebase/firebase";
 
 const ISSUE_TYPES = [
   {
@@ -55,6 +63,10 @@ export default function TicketModal({ isOpen, onClose }) {
     priority: "Medium",
   });
 
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
   const { mutate: createTicket, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post("/ticket/create", data);
@@ -75,6 +87,7 @@ export default function TicketModal({ isOpen, onClose }) {
         message: "",
         priority: "Medium",
       });
+      setSelectedImages([]);
 
       queryClient.invalidateQueries({
         queryKey: ["userTickets"],
@@ -93,7 +106,7 @@ export default function TicketModal({ isOpen, onClose }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.issueType) {
@@ -111,7 +124,79 @@ export default function TicketModal({ isOpen, onClose }) {
       return;
     }
 
-    createTicket(formData);
+    // Upload images first
+    const imageUrls = await uploadImages();
+    createTicket({ ...formData, images: imageUrls });
+  };
+
+  // Image handlers
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const maxFiles = 5;
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+    const validFiles = files.filter((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`${file.name} is not a supported image type`);
+        return false;
+      }
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is too large (max 5MB)`);
+        return false;
+      }
+      return true;
+    });
+
+    if (selectedImages.length + validFiles.length > maxFiles) {
+      toast.error(`You can only attach up to ${maxFiles} images`);
+      return;
+    }
+
+    setSelectedImages((prev) => [...prev, ...validFiles]);
+    e.target.value = "";
+  };
+
+  const removeImage = (index) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async () => {
+    if (selectedImages.length === 0) return [];
+
+    setIsUploading(true);
+    const uploadedUrls = [];
+
+    try {
+      const storage = getStorage(app);
+
+      for (const file of selectedImages) {
+        const fileName = `ticket-images/${Date.now()}-${file.name}`;
+        const storageRef = ref(storage, fileName);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        // Wait for upload to complete
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            null,
+            (error) => reject(error),
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              uploadedUrls.push(downloadURL);
+              resolve();
+            }
+          );
+        });
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload images");
+    } finally {
+      setIsUploading(false);
+    }
+
+    return uploadedUrls;
   };
 
   if (!isOpen) return null;
@@ -264,6 +349,56 @@ export default function TicketModal({ isOpen, onClose }) {
                 />
               </div>
 
+              {/* Image Attachments */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Attach Images (optional)
+                </label>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageSelect}
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  multiple
+                  className="hidden"
+                />
+
+                {/* Image Preview */}
+                {selectedImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedImages.map((file, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`Preview ${index + 1}`}
+                          className="w-16 h-16 object-cover rounded border border-black"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"
+                        >
+                          <IoClose size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={selectedImages.length >= 5}
+                  className="flex items-center gap-2 px-3 py-2 border border-black rounded-[5px] text-sm bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <IoAttach size={18} />
+                  {selectedImages.length > 0
+                    ? `${selectedImages.length}/5 images attached`
+                    : "Add images (max 5)"}
+                </button>
+              </div>
+
               {/* Priority (optional) */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -284,8 +419,10 @@ export default function TicketModal({ isOpen, onClose }) {
               {/* Submit Button */}
               <Buttons
                 buttonType="submit"
-                isLoading={isPending}
-                loadingText="Submitting..."
+                isLoading={isPending || isUploading}
+                loadingText={
+                  isUploading ? "Uploading images..." : "Submitting..."
+                }
                 buttonName="Submit Ticket"
                 icon={<FaPaperPlane size={18} />}
                 animateIcon={true}

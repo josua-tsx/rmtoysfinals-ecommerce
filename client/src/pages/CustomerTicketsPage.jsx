@@ -13,9 +13,18 @@ import {
   IoCheckmarkCircleOutline,
   IoCloseCircleOutline,
   IoAlertCircleOutline,
+  IoAttach,
+  IoClose,
 } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import app from "../firebase/firebase";
 
 const STATUS_CONFIG = {
   Pending: {
@@ -43,6 +52,9 @@ export default function CustomerTicketsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const {
@@ -59,16 +71,17 @@ export default function CustomerTicketsPage() {
   });
 
   const { mutate: sendReply, isPending: isSendingReply } = useMutation({
-    mutationFn: async ({ ticketId, message }) => {
+    mutationFn: async ({ ticketId, message, images }) => {
       const res = await axiosInstance.post(
         `/ticket/${ticketId}/customer-reply`,
-        { message }
+        { message, images }
       );
       return res.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["userTickets"] });
       setReplyMessage("");
+      setSelectedImages([]);
       if (data.ticket) {
         setSelectedTicket(data.ticket);
       }
@@ -89,12 +102,89 @@ export default function CustomerTicketsPage() {
   const handleViewTicket = (ticket) => {
     setSelectedTicket(ticket);
     setReplyMessage("");
+    setSelectedImages([]);
   };
 
-  const handleSendReply = (e) => {
+  // Image upload handlers
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const maxFiles = 5;
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+    const validFiles = files.filter((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`${file.name} is not a supported image type`);
+        return false;
+      }
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is too large (max 5MB)`);
+        return false;
+      }
+      return true;
+    });
+
+    if (selectedImages.length + validFiles.length > maxFiles) {
+      toast.error(`You can only attach up to ${maxFiles} images`);
+      return;
+    }
+
+    setSelectedImages((prev) => [...prev, ...validFiles]);
+    e.target.value = ""; // Reset input
+  };
+
+  const removeImage = (index) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async () => {
+    if (selectedImages.length === 0) return [];
+
+    setIsUploading(true);
+    const uploadedUrls = [];
+
+    try {
+      const storage = getStorage(app);
+
+      for (const file of selectedImages) {
+        const fileName = `ticket-images/${Date.now()}-${file.name}`;
+        const storageRef = ref(storage, fileName);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        // Wait for upload to complete
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            null,
+            (error) => reject(error),
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              uploadedUrls.push(downloadURL);
+              resolve();
+            }
+          );
+        });
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload images");
+    } finally {
+      setIsUploading(false);
+    }
+
+    return uploadedUrls;
+  };
+
+  const handleSendReply = async (e) => {
     e.preventDefault();
-    if (!replyMessage.trim()) return;
-    sendReply({ ticketId: selectedTicket._id, message: replyMessage });
+    if (!replyMessage.trim() && selectedImages.length === 0) return;
+
+    const imageUrls = await uploadImages();
+    sendReply({
+      ticketId: selectedTicket._id,
+      message: replyMessage || "(Image attachment)",
+      images: imageUrls,
+    });
   };
 
   if (isError)
@@ -332,6 +422,27 @@ export default function CustomerTicketsPage() {
                           }`}
                         >
                           {message.message}
+
+                          {/* Display Images */}
+                          {message.images && message.images.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {message.images.map((img, imgIdx) => (
+                                <a
+                                  key={imgIdx}
+                                  href={img}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block"
+                                >
+                                  <img
+                                    src={img}
+                                    alt={`Attachment ${imgIdx + 1}`}
+                                    className="w-20 h-20 object-cover rounded border border-white/30 hover:opacity-80 transition-opacity"
+                                  />
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -345,33 +456,79 @@ export default function CustomerTicketsPage() {
                 {selectedTicket.status !== "Closed" ? (
                   <form
                     onSubmit={handleSendReply}
-                    className="flex gap-2 items-end max-w-4xl mx-auto"
+                    className="flex flex-col gap-2 max-w-4xl mx-auto"
                   >
-                    <textarea
-                      value={replyMessage}
-                      onChange={(e) => setReplyMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendReply(e);
+                    {/* Image Preview */}
+                    {selectedImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2 p-2 bg-gray-100 rounded-[5px] border border-gray-300">
+                        {selectedImages.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-16 h-16 object-cover rounded border border-black"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <IoClose size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 items-end">
+                      {/* Attachment Button */}
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageSelect}
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        multiple
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-3 border border-black rounded-[5px] bg-gray-100 hover:bg-gray-200 transition-colors"
+                        title="Attach images (max 5)"
+                      >
+                        <IoAttach size={20} />
+                      </button>
+
+                      <textarea
+                        value={replyMessage}
+                        onChange={(e) => setReplyMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendReply(e);
+                          }
+                        }}
+                        placeholder="Type your reply here..."
+                        rows={1}
+                        className="flex-1 bg-gray-200 border border-black rounded-[5px] px-4 py-3 focus:bg-white transition-all resize-none max-h-32 min-h-[46px] outline-none placeholder:text-gray-500"
+                        style={{ height: "auto", minHeight: "46px" }}
+                      />
+                      <button
+                        type="submit"
+                        disabled={
+                          isSendingReply ||
+                          isUploading ||
+                          (!replyMessage.trim() && selectedImages.length === 0)
                         }
-                      }}
-                      placeholder="Type your reply here..."
-                      rows={1}
-                      className="flex-1 bg-gray-200 border border-black rounded-[5px] px-4 py-3 focus:bg-white transition-all resize-none max-h-32 min-h-[46px] outline-none placeholder:text-gray-500"
-                      style={{ height: "auto", minHeight: "46px" }}
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSendingReply || !replyMessage.trim()}
-                      className="bg-primary text-card border border-black p-3 rounded-[5px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
-                    >
-                      {isSendingReply ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <IoSend size={20} className="ml-0.5" />
-                      )}
-                    </button>
+                        className="bg-primary text-card border border-black p-3 rounded-[5px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                      >
+                        {isSendingReply || isUploading ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <IoSend size={20} className="ml-0.5" />
+                        )}
+                      </button>
+                    </div>
                   </form>
                 ) : (
                   <div className="bg-gray-100 rounded-[5px] p-4 text-center border border-black border-dashed">

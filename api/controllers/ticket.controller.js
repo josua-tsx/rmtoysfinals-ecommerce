@@ -20,6 +20,7 @@ export const createTicket = async (req, res, next) => {
       subject,
       message,
       priority,
+      images,
     } = req.body;
 
     // Validation
@@ -51,6 +52,7 @@ export const createTicket = async (req, res, next) => {
           sender: "customer",
           senderName: name,
           message,
+          images: images || [],
           timestamp: new Date(),
           isRead: false,
         },
@@ -336,7 +338,7 @@ export const addReplyToTicket = async (req, res, next) => {
 export const customerReplyToTicket = async (req, res, next) => {
   try {
     const { ticketId } = req.params;
-    const { message } = req.body;
+    const { message, images } = req.body;
     const userId = req.user?._id;
     const customerName = req.user?.name || "Customer";
 
@@ -365,6 +367,7 @@ export const customerReplyToTicket = async (req, res, next) => {
       sender: "customer",
       senderName: customerName,
       message,
+      images: images || [],
       timestamp: new Date(),
       isRead: false,
     });

@@ -99,11 +99,10 @@ export default function CartPage() {
           </div>
 
           {cart?.items?.length > 0 && (
-            <div className="border md:w-[320px] gap-4 flex flex-col bg-card rounded-lg p-6 border-black ">
-              <h1 className="text-2xl font-black uppercase tracking-widest border-b-2 border-black pb-2">
+            <div className="border w-full md:w-[320px] gap-4 flex flex-col bg-card rounded-lg p-6 border-black ">
+              <h1 className="text-2xl font-black uppercase tracking-widest border-b border-black pb-2">
                 Order Summary
               </h1>
-
               <div className="bg-red-50 border border-black rounded-[5px] p-3 text-red-700 shadow-[4px_4px_0px_0px_rgba(239,68,68,0.2)]">
                 <div className="flex gap-2">
                   <div className="flex-shrink-0 mt-0.5">
@@ -125,7 +124,6 @@ export default function CartPage() {
                   </p>
                 </div>
               </div>
-
               <div className="flex flex-col gap-3 my-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-black uppercase text-gray-400">
@@ -156,7 +154,6 @@ export default function CartPage() {
                   </div>
                 </div>
               </div>
-
               <Buttons
                 buttonName="Proceed to Checkout"
                 onClick={() => setOrderModal(true)}

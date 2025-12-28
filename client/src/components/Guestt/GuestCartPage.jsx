@@ -87,8 +87,8 @@ export default function GuestCartPage() {
           </div>
 
           {cart?.items?.length > 0 && (
-            <div className="border-2 md:w-[320px] gap-4 flex flex-col bg-white rounded-lg p-6 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] self-start sticky top-[140px]">
-              <h1 className="text-2xl font-black uppercase tracking-widest border-b-2 border-black pb-2">
+            <div className="border w-full md:w-[320px] gap-4 flex flex-col bg-white rounded-lg p-6 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] self-start sticky top-[140px]">
+              <h1 className="text-2xl font-black uppercase tracking-widest border-b border-black pb-2">
                 Order Summary
               </h1>
 

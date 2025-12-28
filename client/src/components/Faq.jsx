@@ -65,21 +65,27 @@ export default function Faq() {
             {faqsComponent && faqsComponent.length > 0
               ? faqsComponent.map((faq) => (
                   <li
-                    className="border flex flex-col gap-4 w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                    className="border flex flex-col w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     key={faq._id}
                     onClick={() => handleToggleList(faq._id)}
                   >
-                    <h3 className=" text-lg tracking-tight pr-4">
+                    <h3 className=" text-normal tracking-tight pr-4">
                       {faq.title}
                     </h3>
 
-                    {openAnswer && openAnswer === faq._id && (
-                      <div className="mt-2 border-t-2 border-black/5 pt-4">
+                    <div
+                      className={`grid transition-all duration-300 ease-in-out ${
+                        openAnswer && openAnswer === faq._id
+                          ? "grid-rows-[1fr] opacity-100 mt-4"
+                          : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+                      }`}
+                    >
+                      <div className="overflow-hidden border-t-2 border-black/5 pt-4">
                         <p className="text-gray-700 leading-relaxed font-main">
                           {faq.answer}
                         </p>
                       </div>
-                    )}
+                    </div>
 
                     <div className="absolute right-4 top-5">
                       <IoMdAdd
@@ -94,34 +100,42 @@ export default function Faq() {
                   </li>
                 ))
               : List.map((faq) => (
-                  <li
-                    className="border flex flex-col gap-4 w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
-                    key={faq._id}
-                    onClick={() => handleToggleList(faq._id)}
-                  >
-                    <h3 className="text-lg md:text-xl  tracking-tight pr-4">
-                      {faq.title}
-                    </h3>
+                  <>
+                    <li
+                      className="border flex flex-col w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                      key={faq._id}
+                      onClick={() => handleToggleList(faq._id)}
+                    >
+                      <h3 className="text-normal md:text-lg  tracking-tight pr-4">
+                        {faq.title}
+                      </h3>
 
-                    {openAnswer && openAnswer === faq._id && (
-                      <div className="mt-2 border-t-2 border-black/5 pt-4">
-                        <p className="text-gray-700 leading-relaxed font-main">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="absolute right-4 top-5">
-                      <IoMdAdd
-                        size={24}
-                        className={`${
+                      <div
+                        className={`grid transition-all duration-300 ease-in-out ${
                           openAnswer && openAnswer === faq._id
-                            ? "rotate-45 text-red-600"
-                            : "rotate-0 text-black"
-                        } transition-all duration-300 transform scale-125`}
-                      />
-                    </div>
-                  </li>
+                            ? "grid-rows-[1fr] opacity-100 mt-4"
+                            : "grid-rows-[0fr] opacity-0 mt-0  pointer-events-none"
+                        }`}
+                      >
+                        <div className="overflow-hidden border-t-2 border-black/5 pt-4">
+                          <p className="text-gray-700 leading-relaxed font-main">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="absolute right-4 top-5">
+                        <IoMdAdd
+                          size={24}
+                          className={`${
+                            openAnswer && openAnswer === faq._id
+                              ? "rotate-45 text-red-600"
+                              : "rotate-0 text-black"
+                          } transition-all duration-300 transform scale-125`}
+                        />
+                      </div>
+                    </li>
+                  </>
                 ))}
           </div>
         </div>

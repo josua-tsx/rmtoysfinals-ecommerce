@@ -76,6 +76,11 @@ const TicketModelSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        images: [
+          {
+            type: String, // Cloudinary URLs
+          },
+        ],
         timestamp: {
           type: Date,
           default: Date.now,

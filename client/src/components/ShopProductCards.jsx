@@ -65,7 +65,7 @@ export default function ShopProductCards({ product }) {
   }
 
   return (
-    <div className="w-72 md:w-full h-[250px] md:h-[350px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group bg-card border-black  hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all relative mt-4 overflow-visible rounded-[5px]">
+    <div className="w-72 md:w-full h-[320px] md:h-[350px] text-sm md:text-normal border mx-auto font-main items-center flex flex-col justify-center group bg-card border-black  hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all relative mt-4 overflow-visible rounded-[5px]">
       {/* Green Sticker Header - Category */}
       <div className="absolute -top-3 text-[10px] -right-2 bg-blue-600 text-white border border-black px-3 py-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform rotate-2 z-20">
         <span className=" uppercase tracking-wide ">
@@ -84,7 +84,7 @@ export default function ShopProductCards({ product }) {
         ""
       )}
 
-      <div className="w-full flex-grow flex justify-center relative overflow-hidden group-hover:bg-primary/5 rounded-t-[5px] bg-card pt-4">
+      <div className="w-full flex-grow  flex justify-center relative overflow-hidden group-hover:bg-primary/5 rounded-t-[5px] bg-card pt-4">
         <img
           src={product?.productImages}
           className="w-auto h-full object-contain mix-blend-multiply"

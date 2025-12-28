@@ -48,12 +48,13 @@ export default function Navbar() {
     <header className=" bg-yellow fixed p-4 py-4 top-0 left-0 right-0 z-40">
       <nav className="flex justify-between max-w-[1280px] mx-auto relative">
         {/* MOBILE NAVBAR */}
+        {/*  */}
         <div
-          className={` absolute flex flex-col h-screen  w-[80%] transition-all ${
+          className={` fixed flex flex-col h-screen w-[80%] transition-all duration-500 ease-in-out ${
             isExpanded
               ? "opacity-100 translate-x-0"
-              : "opacity-0 translate-x-[-900px] hidden"
-          } left-[-15px] top-[-15px] shadow-gray-500  shadow-xl backdrop-blur-sm z-50`}
+              : "opacity-0 translate-x-[-100%] pointer-events-none"
+          } left-0 top-0 shadow-gray-500 bg-[#fffdf6] shadow-xl backdrop-blur-sm z-50`}
         >
           <div>
             {!currentUser ? (
@@ -102,7 +103,11 @@ export default function Navbar() {
 
             <div className="border-t border-gray-400"></div>
 
-            <SettingsMobile toggle={() => setIsExpanded(false)} />
+            {currentUser ? (
+              <SettingsMobile toggle={() => setIsExpanded(false)} />
+            ) : (
+              ""
+            )}
           </ul>
         </div>
         {/* DESKTOP NAVBAR */}
@@ -142,9 +147,6 @@ export default function Navbar() {
                 <div className="md:hidden">
                   <GuestCart />
                 </div>
-                <Link className=" md:hidden text-lg" to={`/sign-in`}>
-                  Sign In
-                </Link>
               </div>
             )}
           </div>
@@ -201,9 +203,14 @@ export default function Navbar() {
           bottomNeg={"-25px"}
         />{" "}
         {/* Reduced z-index */}
-        {isExpanded && (
-          <div className="fixed inset-0" onClick={() => setIsExpanded(false)} />
-        )}
+        <div
+          className={`fixed inset-0 bg-black/20 backdrop-blur-[2px] transition-opacity duration-500 ease-in-out z-40 ${
+            isExpanded
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }`}
+          onClick={() => setIsExpanded(false)}
+        />
       </nav>
     </header>
   );

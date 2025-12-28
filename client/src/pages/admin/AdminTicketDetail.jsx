@@ -16,6 +16,7 @@ import {
   IoCloseCircleOutline,
   IoSend,
 } from "react-icons/io5";
+import { SiGooglegemini } from "react-icons/si";
 import Buttons from "../../reusable/Buttons";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
@@ -87,6 +88,34 @@ export default function AdminTicketDetail() {
       toast.error(err.response?.data?.message || "Failed to send reply");
     },
   });
+
+  // AI Suggestion Mutation
+  const { mutate: suggestReply, isPending: isGeneratingSuggestion } =
+    useMutation({
+      mutationFn: async () => {
+        const res = await axiosInstance.post("/gemini/generate-ticket-reply", {
+          ticketId: ticket._id,
+          subject: ticket.subject,
+          issueType: ticket.issueType,
+          customerName: ticket.name,
+          messages: ticket.messages,
+        });
+        return res.data;
+      },
+      onSuccess: (data) => {
+        if (data.suggestedReply) {
+          setReplyMessage(data.suggestedReply);
+          toast.success(
+            "AI suggestion generated! Feel free to edit before sending."
+          );
+        }
+      },
+      onError: (err) => {
+        const message =
+          err.response?.data?.message || "Failed to generate suggestion";
+        toast.error(message);
+      },
+    });
 
   const ticket = ticketData?.ticket;
 
@@ -198,6 +227,31 @@ export default function AdminTicketDetail() {
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{message.message}</p>
+
+                      {/* Display Images */}
+                      {message.images && message.images.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {message.images.map((img, imgIdx) => (
+                            <a
+                              key={imgIdx}
+                              href={img}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <img
+                                src={img}
+                                alt={`Attachment ${imgIdx + 1}`}
+                                className={`w-20 h-20 object-cover rounded border hover:opacity-80 transition-opacity ${
+                                  isAdmin
+                                    ? "border-white/30"
+                                    : "border-gray-300"
+                                }`}
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -209,7 +263,7 @@ export default function AdminTicketDetail() {
           {/* Reply Form */}
           <div className="p-4 bg-white border-t border-black shrink-0">
             {ticket.status !== "Closed" ? (
-              <form onSubmit={handleSendReply} className="flex gap-3 items-end">
+              <form onSubmit={handleSendReply} className="space-y-3">
                 <textarea
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
@@ -220,20 +274,48 @@ export default function AdminTicketDetail() {
                     }
                   }}
                   placeholder="Type your reply..."
-                  className="flex-1 bg-gray-100 border border-black rounded-[5px] px-4 py-3 focus:bg-white transition-all resize-none min-h-[50px] max-h-32 outline-none placeholder:text-gray-500 focus:shadow-inner"
-                  style={{ height: "auto" }}
+                  className="w-full bg-gray-100 border border-black rounded-[5px] px-4 py-3 focus:bg-white transition-all resize-none min-h-[80px] max-h-40 outline-none placeholder:text-gray-500 focus:shadow-inner"
                 />
-                <button
-                  type="submit"
-                  disabled={isSendingReply || !replyMessage.trim()}
-                  className="bg-primary text-card border border-black p-3 rounded-[5px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:translate-y-0.5 active:shadow-none h-[50px] w-[50px] flex items-center justify-center"
-                >
-                  {isSendingReply ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <IoSend size={20} className="ml-0.5" />
-                  )}
-                </button>
+                <div className="flex gap-3 items-center justify-between">
+                  {/* AI Suggest Button */}
+                  <button
+                    type="button"
+                    onClick={() => suggestReply()}
+                    disabled={isGeneratingSuggestion}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white border border-black rounded-[5px] hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:translate-y-0.5 active:shadow-none font-medium text-sm"
+                  >
+                    {isGeneratingSuggestion ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <SiGooglegemini size={16} />
+                        <span>Suggest Reply</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Send Button */}
+                  <button
+                    type="submit"
+                    disabled={isSendingReply || !replyMessage.trim()}
+                    className="flex items-center gap-2 bg-primary text-card border border-black px-5 py-2.5 rounded-[5px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:translate-y-0.5 active:shadow-none font-medium text-sm"
+                  >
+                    {isSendingReply ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <IoSend size={16} />
+                        <span>Send Reply</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
             ) : (
               <div className="bg-gray-100 rounded-[5px] p-4 text-center border border-black border-dashed">

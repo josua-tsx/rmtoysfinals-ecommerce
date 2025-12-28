@@ -13,6 +13,7 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [aiSearchResults, setAiSearchResults] = useState(null); // AI search results
 
   // Fetch products using useInfiniteQuery
   const {
@@ -51,8 +52,14 @@ export default function Shop() {
     [data]
   );
 
-  // Filter products based on search term
+  // Filter products based on search term OR use AI search results
   const filteredArrayProducts = useMemo(() => {
+    // If AI search results are available, use them
+    if (aiSearchResults && aiSearchResults.length > 0) {
+      return aiSearchResults;
+    }
+
+    // Otherwise, use regular text search
     return products.filter(
       (product) =>
         product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -62,7 +69,7 @@ export default function Shop() {
         (product.discount &&
           product.discount.toString().includes(searchTerm.toLowerCase()))
     );
-  }, [products, searchTerm]);
+  }, [products, searchTerm, aiSearchResults]);
 
   // Throttled scroll handler
   const handleScroll = useCallback(() => {
@@ -127,6 +134,7 @@ export default function Shop() {
               setSelectedCategory={setSelectedCategory}
               setSortBy={setSortBy}
               setSortOrder={setSortOrder}
+              setAiSearchResults={setAiSearchResults}
             />
 
             {/* Products/Cards */}

@@ -58,7 +58,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
               singleProduct?.reviews
                 ? "md:w-[35%]"
                 : "w-[100%] md:w-[50%] mx-auto"
-            } flex flex-col gap-4 relative`}
+            } flex flex-col relative`}
           >
             {/* close button */}
             <button
@@ -111,89 +111,97 @@ export default function ReviewModal({ singleProduct, closeModal }) {
             </div>
 
             {/* add review goes here */}
-            <form
-              onSubmit={handleSubmitReview}
-              className={`${
-                showReview ? "flex" : "hidden"
-              } flex-col gap-6 bg-card border border-black rounded-[5px] p-6  mt-2`}
+            <div
+              className={`grid transition-all duration-500 ease-in-out ${
+                showReview
+                  ? "grid-rows-[1fr] opacity-100 mt-4"
+                  : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+              }`}
             >
-              <div className="flex gap-4 flex-col">
-                <h1 className="font-black uppercase text-xs tracking-wider text-center flex items-center justify-center gap-2">
-                  <span className="w-10 h-[2px] bg-black/10"></span>
-                  Satisfaction Level
-                  <span className="w-10 h-[2px] bg-black/10"></span>
-                </h1>
+              <div className="overflow-hidden">
+                <form
+                  onSubmit={handleSubmitReview}
+                  className="flex flex-col gap-6 bg-card border border-black rounded-[5px] p-6 mb-2 mt-2"
+                >
+                  <div className="flex gap-4 flex-col">
+                    <h1 className="font-black uppercase text-xs tracking-wider text-center flex items-center justify-center gap-2">
+                      <span className="w-10 h-[2px] bg-black/10"></span>
+                      Satisfaction Level
+                      <span className="w-10 h-[2px] bg-black/10"></span>
+                    </h1>
 
-                <div className="flex items-center border border-black rounded-[5px] bg-yellow p-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                  <button
-                    className="flex-1 text-[24px] font-black text-red-700 bg-white border-r border-black hover:bg-red-50 transition-colors py-1 disabled:opacity-30"
-                    type="button"
-                    onClick={() => {
-                      setRating(rating - 1);
-                      if (rating === 1) {
-                        setRating(1);
-                        return toast.error("Minimum rating is 1");
-                      }
-                    }}
-                    disabled={rating === 1}
-                  >
-                    -
-                  </button>
-                  <div className="px-8 font-black text-2xl flex flex-col items-center">
-                    <span className="text-[10px] text-gray-400 -mb-1">
-                      RATING
-                    </span>
-                    {rating}
+                    <div className="flex items-center border border-black rounded-[5px] bg-yellow p-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                      <button
+                        className="flex-1 text-[24px] font-black text-red-700 bg-white border-r border-black hover:bg-red-50 transition-colors py-1 disabled:opacity-30"
+                        type="button"
+                        onClick={() => {
+                          setRating(rating - 1);
+                          if (rating === 1) {
+                            setRating(1);
+                            return toast.error("Minimum rating is 1");
+                          }
+                        }}
+                        disabled={rating === 1}
+                      >
+                        -
+                      </button>
+                      <div className="px-8 font-black text-2xl flex flex-col items-center">
+                        <span className="text-[10px] text-gray-400 -mb-1">
+                          RATING
+                        </span>
+                        {rating}
+                      </div>
+                      <button
+                        className="flex-1 text-[24px] font-black text-green-700 bg-white border-l border-black hover:bg-green-50 transition-colors py-1 disabled:opacity-30"
+                        type="button"
+                        onClick={() => {
+                          setRating(rating + 1);
+                          if (rating === 5) {
+                            setRating(5);
+                            return toast.error("Maximum rating is 5");
+                          }
+                        }}
+                        disabled={rating === 5}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    className="flex-1 text-[24px] font-black text-green-700 bg-white border-l border-black hover:bg-green-50 transition-colors py-1 disabled:opacity-30"
-                    type="button"
-                    onClick={() => {
-                      setRating(rating + 1);
-                      if (rating === 5) {
-                        setRating(5);
-                        return toast.error("Maximum rating is 5");
-                      }
-                    }}
-                    disabled={rating === 5}
-                  >
-                    +
-                  </button>
-                </div>
+
+                  <div className="flex flex-col gap-3">
+                    <h1 className="font-black uppercase text-xs tracking-wider">
+                      Your Comments
+                    </h1>
+
+                    <div className="flex flex-col items-center gap-4">
+                      <textarea
+                        name="review"
+                        id="review"
+                        value={commentReview}
+                        placeholder="Type your feedback here..."
+                        onChange={(e) => setCommentReview(e.target.value)}
+                        className="border h-[150px] p-4 border-black rounded-[5px] w-full resize-none outline-none shadow-inner bg-gray-50 focus:bg-white transition-colors"
+                      ></textarea>
+
+                      <Buttons
+                        buttonType="submit"
+                        disabled={isSubmitting}
+                        isLoading={isSubmitting}
+                        loadingText="TRANSMITTING..."
+                        buttonName="SUBMIT FEEDBACK"
+                        icon={<FaPaperPlane size={18} />}
+                        animateIcon={true}
+                        className="w-full py-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                      />
+                    </div>
+                  </div>
+                </form>
               </div>
-
-              <div className="flex flex-col gap-3">
-                <h1 className="font-black uppercase text-xs tracking-wider">
-                  Your Comments
-                </h1>
-
-                <div className="flex flex-col items-center gap-4">
-                  <textarea
-                    name="review"
-                    id="review"
-                    value={commentReview}
-                    placeholder="Type your feedback here..."
-                    onChange={(e) => setCommentReview(e.target.value)}
-                    className="border h-[150px] p-4 border-black rounded-[5px] w-full resize-none outline-none shadow-inner bg-gray-50 focus:bg-white transition-colors"
-                  ></textarea>
-
-                  <Buttons
-                    buttonType="submit"
-                    disabled={isSubmitting}
-                    isLoading={isSubmitting}
-                    loadingText="TRANSMITTING..."
-                    buttonName="SUBMIT FEEDBACK"
-                    icon={<FaPaperPlane size={18} />}
-                    animateIcon={true}
-                    className="w-full py-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-                  />
-                </div>
-              </div>
-            </form>
+            </div>
           </div>
 
           {singleProduct?.reviews && (
-            <div className="bg-card h-[650px] w-full md:w-[65%] p-6 mx-auto overflow-y-auto flex flex-col gap-6 border border-black rounded-[5px] ">
+            <div className="bg-card max-h-[650px] w-full md:w-[65%] p-6 mx-auto overflow-y-auto flex flex-col gap-6 border border-black rounded-[5px] ">
               {" "}
               {/* shadow-[8px_8px_0px_0px_rgba(34,197,94,1)] green shadow*/}
               <div className="flex items-center justify-between mb-2">

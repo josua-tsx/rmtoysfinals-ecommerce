@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { IoFilter } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
+import { SiGooglegemini } from "react-icons/si";
 import FilterSection from "./FilterSection";
 import axiosInstance from "../lib/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 export default function ShopSide({
   setSearchTerm,
   setSelectedCategory,
   setSortBy,
   setSortOrder,
+  setAiSearchResults, // New prop for AI search results
 }) {
   const [showFilter, setShowFilter] = useState(false);
-  // const [priceRangeState, setPriceRangeState] = useState([0, 30000]);
   const [sortOption, setSortOption] = useState("latest");
   const [filterCategory, setFilterCategory] = useState([]);
   const [filterColor, setFilterColor] = useState("");
+  const [isAiMode, setIsAiMode] = useState(false); // AI search toggle
+  const [aiQuery, setAiQuery] = useState(""); // AI search input
 
   const {
     data: categories = [],
@@ -57,7 +61,52 @@ export default function ShopSide({
   ];
 
   const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+    if (!isAiMode) {
+      setSearchTerm(event.target.value);
+    } else {
+      setAiQuery(event.target.value);
+    }
+  };
+
+  // AI Search Mutation
+  const { mutate: performAiSearch, isPending: isAiSearching } = useMutation({
+    mutationFn: async (query) => {
+      const res = await axiosInstance.post("/gemini/search-products", {
+        query,
+      });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.success && data.products.length > 0) {
+        setAiSearchResults?.(data.products);
+        toast.success(
+          `Found ${data.products.length} products matching your query!`
+        );
+      } else {
+        setAiSearchResults?.([]);
+        toast.error("No products found. Try a different search.");
+      }
+    },
+    onError: (err) => {
+      toast.error(
+        err.response?.data?.message || "AI search failed. Try again."
+      );
+    },
+  });
+
+  const handleAiSearch = () => {
+    if (aiQuery.trim().length < 2) {
+      toast.error("Please enter at least 2 characters to search.");
+      return;
+    }
+    performAiSearch(aiQuery.trim());
+  };
+
+  const handleToggleAiMode = () => {
+    setIsAiMode((prev) => !prev);
+    setAiQuery("");
+    setSearchTerm("");
+    setAiSearchResults?.(null); // Clear AI results when toggling
   };
 
   const handleSubmitFilter = (e) => {
@@ -77,6 +126,9 @@ export default function ShopSide({
     setSortBy("createdAt");
     setSortOrder("desc");
     setSortOption("latest");
+    setIsAiMode(false);
+    setAiQuery("");
+    setAiSearchResults?.(null);
   };
 
   if (isPending || isCategoryPending) {
@@ -101,7 +153,19 @@ export default function ShopSide({
       </div>
 
       <div className="flex justify-between pb-2 pt-6">
-        <div className="w-1"></div> {/* Spacer for header */}
+        {/* AI Mode Toggle */}
+        <button
+          type="button"
+          onClick={handleToggleAiMode}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-[5px] border border-black text-xs font-bold transition-all ${
+            isAiMode
+              ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              : "bg-white text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <SiGooglegemini size={14} />
+          AI Search
+        </button>
         <button
           type="button"
           onClick={() => setShowFilter((prev) => !prev)}
@@ -111,15 +175,58 @@ export default function ShopSide({
         </button>
       </div>
 
-      <div className="flex items-center relative gap-2">
-        <input
-          type="text"
-          placeholder="search for products name"
-          onChange={handleSearchChange}
-          className="border w-full outline-none rounded-[5px] border-black p-2 bg-white shadow-inner font-main focus:ring-2 focus:ring-primary/20 transition-all"
-        />
-        <IoSearch size={22} className="absolute right-3" />
+      {/* Search Input */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={isAiMode ? aiQuery : undefined}
+            placeholder={
+              isAiMode
+                ? "Try: 'toys for 5 year olds under ₱500'"
+                : "Search for product name..."
+            }
+            onChange={handleSearchChange}
+            onKeyDown={(e) => {
+              if (isAiMode && e.key === "Enter") {
+                e.preventDefault();
+                handleAiSearch();
+              }
+            }}
+            className={`border w-full outline-none rounded-[5px] border-black p-2 pr-10 bg-white shadow-inner font-main focus:ring-2 transition-all ${
+              isAiMode ? "focus:ring-purple-500/30" : "focus:ring-primary/20"
+            }`}
+          />
+          <IoSearch
+            size={20}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+        </div>
+
+        {/* AI Search Button (only shown in AI mode) */}
+        {isAiMode && (
+          <button
+            type="button"
+            onClick={handleAiSearch}
+            disabled={isAiSearching || aiQuery.trim().length < 2}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3 py-2 rounded-[5px] border border-black font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+          >
+            {isAiSearching ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <SiGooglegemini size={18} />
+            )}
+          </button>
+        )}
       </div>
+
+      {/* AI Mode Hint */}
+      {isAiMode && (
+        <p className="text-xs text-purple-600 font-medium -mt-2">
+          🤖 Ask naturally! e.g., &quot;educational toys&quot; or &quot;gifts
+          for boys&quot;
+        </p>
+      )}
       <form onSubmit={handleSubmitFilter} className="flex flex-col gap-5">
         <div
           className={`${
