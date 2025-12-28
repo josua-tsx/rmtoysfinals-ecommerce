@@ -59,7 +59,7 @@ const RootLayout = () => {
       {/* Main Content */}
       <main className="bg-yellow">
         <Outlet />
-        <ChatWidget />
+        {/* <ChatWidget /> */}
       </main>
       <footer className="bg-yellow">
         <FooterSection />

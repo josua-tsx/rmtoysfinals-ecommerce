@@ -10,7 +10,7 @@ export default function ReviewCardTwo({ review }) {
 
   return (
     <div className="relative mb-6 rounded-[5px] border border-black bg-card p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-      <div className="absolute -top-3 -right-2 text-red-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] z-10">
+      <div className="absolute top-0 right-0 text-red-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] z-10">
         <TbPinnedFilled size={28} />
       </div>
 
