@@ -189,22 +189,22 @@ export const signin = async (req, res, next) => {
         { new: true }
       );
 
-      await sendEmail(
-        ADMIN_EMAIL,
-        "attendance"`${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
-          "en-US",
-          {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            timeZoneName: "short",
-          }
-        )}`
-      );
+      // await sendEmail(
+      //   ADMIN_EMAIL,
+      //   "attendance"`${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
+      //     "en-US",
+      //     {
+      //       weekday: "long",
+      //       year: "numeric",
+      //       month: "long",
+      //       day: "numeric",
+      //       hour: "2-digit",
+      //       minute: "2-digit",
+      //       second: "2-digit",
+      //       timeZoneName: "short",
+      //     }
+      //   )}`
+      // );
     }
   } catch (error) {
     next(error);
