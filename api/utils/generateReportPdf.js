@@ -23,29 +23,42 @@ export const generateReportPdf = async (templateName, data) => {
   const html = template(data);
 
   // Launch Puppeteer and generate PDF
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: puppeteer.executablePath(),
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu'
-    ],
-  });
+  console.log('Using Puppeteer executable path:', puppeteer.executablePath());
+  
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: true,
+      executablePath: puppeteer.executablePath(),
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ],
+    });
+  } catch (launchError) {
+    console.error('Puppeteer Launch ERROR:', launchError);
+    throw new Error(`Failed to launch browser: ${launchError.message}`);
+  }
 
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
 
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
-  });
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
+    });
 
-  await browser.close();
-
-  return pdfBuffer;
+    await browser.close();
+    return pdfBuffer;
+  } catch (error) {
+    if (browser) await browser.close();
+    console.error('PDF Generation ERROR:', error);
+    throw error;
+  }
 };
 
 // Register Handlebars helpers for formatting
