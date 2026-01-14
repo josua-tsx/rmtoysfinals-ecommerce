@@ -23,13 +23,35 @@ export const generateReportPdf = async (templateName, data) => {
   const html = template(data);
 
   // Launch Puppeteer and generate PDF
-  console.log('Using Puppeteer executable path:', puppeteer.executablePath());
+  const exePath = puppeteer.executablePath();
+  console.log('Using Puppeteer executable path:', exePath);
   
+  // Diagnostic: Check if path exists
+  if (!fs.existsSync(exePath)) {
+    console.error('CRITICAL: Chrome executable NOT FOUND at', exePath);
+    try {
+      const cacheBase = path.join('/opt/render/.cache/puppeteer', 'chrome');
+      if (fs.existsSync(cacheBase)) {
+        console.log('Contents of Chrome cache folder:', fs.readdirSync(cacheBase));
+        // Check deeper
+        const linuxFolder = fs.readdirSync(cacheBase)[0];
+        if (linuxFolder) {
+           const subFolder = path.join(cacheBase, linuxFolder);
+           console.log(`Contents of ${subFolder}:`, fs.readdirSync(subFolder));
+        }
+      } else {
+        console.log('Chrome cache folder does not exist at /opt/render/.cache/puppeteer/chrome');
+      }
+    } catch (diagError) {
+      console.error('Diagnostic failed:', diagError);
+    }
+  }
+
   let browser;
   try {
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: puppeteer.executablePath(),
+      executablePath: exePath,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
