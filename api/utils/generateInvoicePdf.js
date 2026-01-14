@@ -1,8 +1,8 @@
-import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
+import { launchBrowser } from './browserLauncher.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,22 +81,25 @@ export const generateInvoicePdf = async (order, storeInfo) => {
   // Render HTML with data
   const html = template(templateData);
 
-  // Launch Puppeteer and generate PDF
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  let browser;
+  try {
+    const result = await launchBrowser();
+    browser = result.browser;
 
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
 
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
-  });
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
+    });
 
-  await browser.close();
-
-  return pdfBuffer;
+    await browser.close();
+    return pdfBuffer;
+  } catch (error) {
+    if (browser) await browser.close();
+    console.error('Invoice PDF Generation ERROR:', error);
+    throw error;
+  }
 };

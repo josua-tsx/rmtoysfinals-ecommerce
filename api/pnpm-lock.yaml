@@ -11,6 +11,9 @@ importers:
       '@sendgrid/mail':
         specifier: ^8.1.6
         version: 8.1.6
+      '@sparticuz/chromium':
+        specifier: ^131.0.0
+        version: 131.0.1
       axios:
         specifier: ^1.8.4
         version: 1.12.2
@@ -53,8 +56,8 @@ importers:
       paymongo-node:
         specifier: ^10.17.0
         version: 10.17.0
-      puppeteer:
-        specifier: ^24.29.1
+      puppeteer-core:
+        specifier: ^24.0.0
         version: 24.29.1
       stripe:
         specifier: ^18.0.0
@@ -72,6 +75,9 @@ importers:
       mongodb-memory-server:
         specifier: ^11.0.1
         version: 11.0.1(socks@2.8.7)
+      puppeteer:
+        specifier: ^24.0.0
+        version: 24.35.0
       supertest:
         specifier: ^7.2.2
         version: 7.2.2
@@ -391,6 +397,11 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  '@puppeteer/browsers@2.11.1':
+    resolution: {integrity: sha512-YmhAxs7XPuxN0j7LJloHpfD1ylhDuFmmwMvfy/+6nBSrETT2ycL53LrhgPtR+f+GcPSybQVuQ5inWWu5MrWCpA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   '@sendgrid/client@8.1.6':
     resolution: {integrity: sha512-/BHu0hqwXNHr2aLhcXU7RmmlVqrdfrbY9KpaNj00KZHlVOVoRxRVrpOCabIB+91ISXJ6+mLM9vpaVUhK6TwBWA==}
     engines: {node: '>=12.*'}
@@ -411,6 +422,10 @@ packages:
 
   '@sinonjs/fake-timers@13.0.5':
     resolution: {integrity: sha512-36/hTbH2uaWuGVERyC6da9YwGWnzUZXuPro/F2LfsdOsLnCojz/iSH8MxUt/FD2S5XBSVPhmArFUXcpCQ2Hkiw==}
+
+  '@sparticuz/chromium@131.0.1':
+    resolution: {integrity: sha512-VfmHkQmb/Px0zjwdSQwjRMwFw63Qfj+g4Giumz4jiAGEpXHgIZk6xEwlUz6yiUHVDveK2TEgMR2MR6I3okOE7w==}
+    engines: {node: '>= 16'}
 
   '@tootallnate/quickjs-emscripten@0.23.0':
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
@@ -791,6 +806,11 @@ packages:
     peerDependencies:
       devtools-protocol: '*'
 
+  chromium-bidi@12.0.1:
+    resolution: {integrity: sha512-fGg+6jr0xjQhzpy5N4ErZxQ4wF7KLEvhGZXD6EgvZKDhu7iOhZXnZhcDxPJDcwTcrD48NPzOCo84RP2lv3Z+Cg==}
+    peerDependencies:
+      devtools-protocol: '*'
+
   ci-info@4.3.1:
     resolution: {integrity: sha512-Wdy2Igu8OcBpI2pZePZ5oWjPC38tmDVx5WKUXKwlLYkA0ozo85sLsLvkBbBn/sZaSCMFOGZJ14fvW9t5/d7kdA==}
     engines: {node: '>=8'}
@@ -923,6 +943,9 @@ packages:
 
   devtools-protocol@0.0.1521046:
     resolution: {integrity: sha512-vhE6eymDQSKWUXwwA37NtTTVEzjtGVfDr3pRbsWEQ5onH/Snp2c+2xZHWJJawG/0hCCJLRGt4xVtEVUVILol4w==}
+
+  devtools-protocol@0.0.1534754:
+    resolution: {integrity: sha512-26T91cV5dbOYnXdJi5qQHoTtUoNEqwkHcAyu/IKtjIAxiEqPMrDiRkDOPWVsGfNZGmlQVHQbZRSjD8sxagWVsQ==}
 
   dezalgo@1.0.4:
     resolution: {integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==}
@@ -1452,8 +1475,8 @@ packages:
     resolution: {integrity: sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg==}
     hasBin: true
 
-  js-yaml@4.1.0:
-    resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+  js-yaml@4.1.1:
+    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
     hasBin: true
 
   jsesc@3.1.0:
@@ -1870,8 +1893,12 @@ packages:
     resolution: {integrity: sha512-ErJ9qKCK+bdLvBa7QVSQTBSPm8KZbl1yC/WvhrZ0ut27hDf2QBzjDsn1IukzE1i1KtZ7NYGETOV4W1beoo9izA==}
     engines: {node: '>=18'}
 
-  puppeteer@24.29.1:
-    resolution: {integrity: sha512-pX05JV1mMP+1N0vP3I4DOVwjMdpihv2LxQTtSfw6CUm5F0ZFLUFE/LSZ4yUWHYaM3C11Hdu+sgn7uY7teq5MYw==}
+  puppeteer-core@24.35.0:
+    resolution: {integrity: sha512-vt1zc2ME0kHBn7ZDOqLvgvrYD5bqNv5y2ZNXzYnCv8DEtZGw/zKhljlrGuImxptZ4rq+QI9dFGrUIYqG4/IQzA==}
+    engines: {node: '>=18'}
+
+  puppeteer@24.35.0:
+    resolution: {integrity: sha512-sbjB5JnJ+3nwgSdRM/bqkFXqLxRz/vsz0GRIeTlCk+j+fGpqaF2dId9Qp25rXz9zfhqnN9s0krek1M/C2GDKtA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -2179,6 +2206,9 @@ packages:
   walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
 
+  webdriver-bidi-protocol@0.3.10:
+    resolution: {integrity: sha512-5LAE43jAVLOhB/QqX4bwSiv0Hg1HBfMmOuwBSXHdvg4GMGu9Y0lIq7p4R/yySu6w74WmaR4GM4H9t2IwLW7hgw==}
+
   webdriver-bidi-protocol@0.3.8:
     resolution: {integrity: sha512-21Yi2GhGntMc671vNBCjiAeEVknXjVRoyu+k+9xOMShu+ZQfpGQwnBqbNz/Sv4GXZ6JmutlPAi2nIJcrymAWuQ==}
 
@@ -2215,6 +2245,18 @@ packages:
 
   ws@8.18.3:
     resolution: {integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
+  ws@8.19.0:
+    resolution: {integrity: sha512-blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -2720,6 +2762,21 @@ snapshots:
       - react-native-b4a
       - supports-color
 
+  '@puppeteer/browsers@2.11.1':
+    dependencies:
+      debug: 4.4.3(supports-color@5.5.0)
+      extract-zip: 2.0.1
+      progress: 2.0.3
+      proxy-agent: 6.5.0
+      semver: 7.7.3
+      tar-fs: 3.1.1
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - react-native-b4a
+      - supports-color
+
   '@sendgrid/client@8.1.6':
     dependencies:
       '@sendgrid/helpers': 8.0.0
@@ -2747,6 +2804,16 @@ snapshots:
   '@sinonjs/fake-timers@13.0.5':
     dependencies:
       '@sinonjs/commons': 3.0.1
+
+  '@sparticuz/chromium@131.0.1':
+    dependencies:
+      follow-redirects: 1.15.11(debug@4.4.3)
+      tar-fs: 3.1.1
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - debug
+      - react-native-b4a
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
@@ -3123,6 +3190,12 @@ snapshots:
       mitt: 3.0.1
       zod: 3.25.76
 
+  chromium-bidi@12.0.1(devtools-protocol@0.0.1534754):
+    dependencies:
+      devtools-protocol: 0.0.1534754
+      mitt: 3.0.1
+      zod: 3.25.76
+
   ci-info@4.3.1: {}
 
   cjs-module-lexer@2.2.0: {}
@@ -3183,7 +3256,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.1.0
+      js-yaml: 4.1.1
       parse-json: 5.2.0
 
   cross-env@10.1.0:
@@ -3222,6 +3295,8 @@ snapshots:
   detect-newline@3.1.0: {}
 
   devtools-protocol@0.0.1521046: {}
+
+  devtools-protocol@0.0.1534754: {}
 
   dezalgo@1.0.4:
     dependencies:
@@ -3981,7 +4056,7 @@ snapshots:
       argparse: 1.0.10
       esprima: 4.0.1
 
-  js-yaml@4.1.0:
+  js-yaml@4.1.1:
     dependencies:
       argparse: 2.0.1
 
@@ -4395,13 +4470,30 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  puppeteer@24.29.1:
+  puppeteer-core@24.35.0:
     dependencies:
-      '@puppeteer/browsers': 2.10.13
-      chromium-bidi: 10.5.1(devtools-protocol@0.0.1521046)
+      '@puppeteer/browsers': 2.11.1
+      chromium-bidi: 12.0.1(devtools-protocol@0.0.1534754)
+      debug: 4.4.3(supports-color@5.5.0)
+      devtools-protocol: 0.0.1534754
+      typed-query-selector: 2.12.0
+      webdriver-bidi-protocol: 0.3.10
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - bufferutil
+      - react-native-b4a
+      - supports-color
+      - utf-8-validate
+
+  puppeteer@24.35.0:
+    dependencies:
+      '@puppeteer/browsers': 2.11.1
+      chromium-bidi: 12.0.1(devtools-protocol@0.0.1534754)
       cosmiconfig: 9.0.0
-      devtools-protocol: 0.0.1521046
-      puppeteer-core: 24.29.1
+      devtools-protocol: 0.0.1534754
+      puppeteer-core: 24.35.0
       typed-query-selector: 2.12.0
     transitivePeerDependencies:
       - bare-abort-controller
@@ -4770,6 +4862,8 @@ snapshots:
     dependencies:
       makeerror: 1.0.12
 
+  webdriver-bidi-protocol@0.3.10: {}
+
   webdriver-bidi-protocol@0.3.8: {}
 
   webidl-conversions@7.0.0: {}
@@ -4805,6 +4899,8 @@ snapshots:
       signal-exit: 4.1.0
 
   ws@8.18.3: {}
+
+  ws@8.19.0: {}
 
   y18n@5.0.8: {}
 
