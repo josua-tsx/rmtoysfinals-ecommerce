@@ -17,7 +17,7 @@ export const placeOrderSchema = z.object({
   body: z.object({
     orderItems: z.array(orderItemSchema).min(1, "Order must contain products"),
     shippingAddress: z.string({ required_error: "Shipping address is required" }).trim().min(5, "Address must be at least 5 characters"),
-    paymentMethod: z.enum(["Cash on Delivery", "Online Payment", "GcashQR"]),
+    paymentMethod: z.enum(["Cod", "Online Payment", "GcashQR"]),
     shippingPrice: z.coerce.number().nonnegative().default(0),
     subtotal: z.coerce.number().nonnegative(),
     totalPrice: z.coerce.number().nonnegative(),
