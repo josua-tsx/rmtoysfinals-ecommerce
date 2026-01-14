@@ -4,15 +4,13 @@ import ProfileComponent from "../components/ProfileComponent";
 // import SettingComponent from "../components/SettingComponent";
 import ChangeInfoComponent from "../components/ChangeInfoComponent";
 import ShippingAddressComponent from "../components/ShippingAddressComponent";
-// import WishListComponent from "../components/WishListComponent";
+// import ChangeInfoComponent from "../components/ChangeInfoComponent";
 import OrderHistory from "../components/OrderHistory";
-import FooterSection from "../components/FooterSection";
 
 const MENU_ITEMS = [
   { name: "profile", label: "Profile", component: ProfileComponent },
 
   { name: "orderhistory", label: "Order History", component: OrderHistory },
-  // { name: "mywishlist", label: "My Wishlist", component: WishListComponent },
   {
     name: "shippingaddress",
     label: "Shipping Address",

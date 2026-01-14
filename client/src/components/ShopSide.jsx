@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IoFilter } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { SiGooglegemini } from "react-icons/si";
+import { FaSparkles } from "react-icons/fa";
 import FilterSection from "./FilterSection";
 import axiosInstance from "../lib/axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -157,19 +158,25 @@ export default function ShopSide({
         <button
           type="button"
           onClick={handleToggleAiMode}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-[5px] border border-black text-xs font-bold transition-all ${
+          className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-black text-xs font-black tracking-wide transition-all ${
             isAiMode
-              ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
               : "bg-white text-gray-700 hover:bg-gray-50"
           }`}
         >
+          {isAiMode && (
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-violet-500"></span>
+            </span>
+          )}
           <SiGooglegemini size={14} />
           AI Search
         </button>
         <button
           type="button"
           onClick={() => setShowFilter((prev) => !prev)}
-          className="border border-black p-1 rounded-[5px] bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+          className="border border-black p-1.5 rounded-[5px] bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
         >
           <IoFilter size={20} />
         </button>
@@ -183,7 +190,7 @@ export default function ShopSide({
             value={isAiMode ? aiQuery : undefined}
             placeholder={
               isAiMode
-                ? "Try: 'toys for 5 year olds under ₱500'"
+                ? "Describe what you need..."
                 : "Search for product name..."
             }
             onChange={handleSearchChange}
@@ -193,13 +200,17 @@ export default function ShopSide({
                 handleAiSearch();
               }
             }}
-            className={`border w-full outline-none rounded-[5px] border-black p-2 pr-10 bg-white shadow-inner font-main focus:ring-2 transition-all ${
-              isAiMode ? "focus:ring-purple-500/30" : "focus:ring-primary/20"
+            className={`border-2 w-full outline-none rounded-[8px] border-black p-2.5 pr-10 bg-white shadow-sm font-main focus:ring-2 transition-all text-sm ${
+              isAiMode
+                ? "focus:ring-violet-500/50 focus:border-violet-600"
+                : "focus:ring-primary/20"
             }`}
           />
           <IoSearch
             size={20}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
+              isAiMode ? "text-violet-600" : "text-gray-400"
+            }`}
           />
         </div>
 
@@ -209,12 +220,12 @@ export default function ShopSide({
             type="button"
             onClick={handleAiSearch}
             disabled={isAiSearching || aiQuery.trim().length < 2}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3 py-2 rounded-[5px] border border-black font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-2.5 rounded-[8px] border-2 border-black font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             {isAiSearching ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <SiGooglegemini size={18} />
+              <SiGooglegemini size={20} />
             )}
           </button>
         )}
@@ -222,10 +233,13 @@ export default function ShopSide({
 
       {/* AI Mode Hint */}
       {isAiMode && (
-        <p className="text-xs text-purple-600 font-medium -mt-2">
-          🤖 Ask naturally! e.g., &quot;educational toys&quot; or &quot;gifts
-          for boys&quot;
-        </p>
+        <div className="bg-violet-50 border border-violet-100 p-2 rounded-md -mt-2">
+          <p className="text-[10px] text-violet-700 font-medium leading-tight flex items-center gap-1">
+            <FaSparkles size={12} /> <span className="font-bold">Tip:</span> Try
+            &quot;educational toys under ₱500&quot; or &quot;pink dolls for
+            beginners&quot;
+          </p>
+        </div>
       )}
       <form onSubmit={handleSubmitFilter} className="flex flex-col gap-5">
         <div

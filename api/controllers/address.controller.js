@@ -1,7 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Address from "../models/address.models.js";
 import User from "../models/user.models.js";
-// import { validateNoDoubleSpaces } from "../utils/validations.js";
 
 export const addAddress = async (req, res, next) => {
   const userId = req.user.id;

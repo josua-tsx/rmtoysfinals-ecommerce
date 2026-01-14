@@ -3,6 +3,13 @@ import { FaCheckCircle, FaCamera, FaExclamationTriangle } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
 import Buttons from "../reusable/Buttons";
 import PasswordInput from "../reusable/PasswordInput";
+import ValidatedInput from "../reusable/ValidatedInput";
+import {
+  emailSchema,
+  usernameSchema,
+  phMobileSchema,
+  fullNameSchema,
+} from "../schemas/common.schema";
 
 import app from "../firebase/firebase";
 
@@ -23,10 +30,15 @@ export default function ChangeInfoComponent() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [changePassword, setChangePassword] = useState(false);
 
-  const [email, setEmail] = useState("");
-
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
+
+  // Local states for inputs to support ValidatedInput
+  const [username, setUsername] = useState(currentUser.username || "");
+  const [email, setEmail] = useState(currentUser.email || "");
+  const [fullName, setFullName] = useState(currentUser.fullName || "");
+  const [phoneNumber, setPhoneNumber] = useState(currentUser.phoneNumber || "");
+  const [password, setPassword] = useState("");
 
   const fileRef = useRef(null);
 
@@ -42,6 +54,7 @@ export default function ChangeInfoComponent() {
       setCurrentUser(data);
       toast.success("Profile Updated Successfully");
       setChangePassword(false);
+      setPassword("");
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "An error occurred");
@@ -68,19 +81,32 @@ export default function ChangeInfoComponent() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const inputs = Object.fromEntries(formData);
-
-    const { username, email, password, phoneNumber, fullName } = inputs;
-
-    updateProfile({
+    const data = {
       username,
       email,
+      fullName,
+      phoneNumber,
       password,
       avatar: imageUrl ? imageUrl : currentUser.avatar,
-      phoneNumber,
-      fullName,
-    });
+    };
+
+    // Note: On frontend we validate the body part of updateUserSchema or just individual fields
+    // Using a simple check for required fields or specific schemas
+    const usernameResult = usernameSchema.safeParse(username);
+    const emailResult = emailSchema.safeParse(email);
+    const phoneResult = phMobileSchema.safeParse(phoneNumber);
+    const nameResult = fullNameSchema.safeParse(fullName);
+
+    if (!usernameResult.success)
+      return toast.error(usernameResult.error.issues[0].message);
+    if (!emailResult.success)
+      return toast.error(emailResult.error.issues[0].message);
+    if (fullName && !nameResult.success)
+      return toast.error(nameResult.error.issues[0].message);
+    if (phoneNumber && !phoneResult.success)
+      return toast.error(phoneResult.error.issues[0].message);
+
+    updateProfile(data);
   };
 
   const handleFileChange = (e) => {
@@ -220,89 +246,64 @@ export default function ChangeInfoComponent() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Email Field */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      name="email"
-                      defaultValue={currentUser.email || email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      placeholder="name@example.com"
-                      maxLength={128}
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                      {currentUser?.isEmailVerified ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                          Verified
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          disabled={isVerifying}
-                          onClick={() => handleVerifyEmail(currentUser.email)}
-                          className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-md font-medium transition-colors"
-                        >
-                          {isVerifying ? "Sending..." : "Verify Now"}
-                        </button>
-                      )}
-                    </div>
+                <div className="space-y-2 relative">
+                  <ValidatedInput
+                    label="Email Address"
+                    name="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    schema={emailSchema}
+                    placeholder="name@example.com"
+                  />
+                  <div className="absolute right-8 top-8">
+                    {currentUser?.isEmailVerified ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                        Verified
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isVerifying}
+                        onClick={() => handleVerifyEmail(currentUser.email)}
+                        className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-md font-medium transition-colors"
+                      >
+                        {isVerifying ? "Sending..." : "Verify Now"}
+                      </button>
+                    )}
                   </div>
                 </div>
 
                 {/* Username Field */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    name="username"
-                    defaultValue={currentUser.username}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="johndoe123"
-                    maxLength={30}
-                  />
-                  <p className="text-xs text-gray-500">
-                    3-30 characters, no special characters
-                  </p>
-                </div>
+                <ValidatedInput
+                  label="Username"
+                  name="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  schema={usernameSchema}
+                  placeholder="johndoe123"
+                  errorText="3-30 characters, no special characters"
+                />
 
                 {/* Full Name Field */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    defaultValue={currentUser.fullName}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="John Doe"
-                    maxLength={100}
-                  />
-                </div>
+                <ValidatedInput
+                  label="Full Name"
+                  name="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  schema={fullNameSchema}
+                  placeholder="John Doe"
+                />
 
                 {/* Phone Number Field */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    defaultValue={currentUser.phoneNumber}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="09xxxxxxxxx"
-                    maxLength={11}
-                  />
-                  <p className="text-xs text-gray-500">
-                    Must be a valid 11-digit number starting with 09
-                  </p>
-                </div>
+                <ValidatedInput
+                  label="Phone Number"
+                  name="phoneNumber"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  schema={phMobileSchema}
+                  placeholder="09xxxxxxxxx"
+                  errorText="Must be a valid 11-digit number starting with 09"
+                />
               </div>
             </div>
 
@@ -327,6 +328,8 @@ export default function ChangeInfoComponent() {
                   <PasswordInput
                     label="New Password"
                     name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter new password"
                     className="!bg-white"
                     errorText="Must be at least 8 characters with 1 lowercase, 1 uppercase, 1 symbol, and 1 number"

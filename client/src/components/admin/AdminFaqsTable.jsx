@@ -29,7 +29,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
   } = useQuery({
     queryKey: ["faqs"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/faqs/get-faqs`);
+      const res = await axiosInstance.get(`/faqs/get-all-faqs`);
       return res.data;
     },
   });

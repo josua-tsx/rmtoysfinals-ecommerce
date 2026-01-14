@@ -68,7 +68,6 @@ export default function AdminProductsTable({ enableMultiDel }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success("Successfully Deleted");
       setSelectedIds([]);
@@ -88,7 +87,6 @@ export default function AdminProductsTable({ enableMultiDel }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success("Products are deleted successfully!");
       setSelectedIds([]);

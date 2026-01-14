@@ -1,10 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  orderStockSchema,
+  supplierPriceSchema,
+  shopPriceSchema,
+  shippingPriceSchema,
+  quantitySchema,
+  dateDeliverySchema,
+} from "../../schemas/stock.schema";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import axiosInstance from "../../lib/axios";
 import { useState, useEffect } from "react";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useUserStore } from "../../stores/useUserStore";
 import FormModal from "../../reusable/FormModal";
+import ValidatedInput from "../../reusable/ValidatedInput";
 import toast from "react-hot-toast";
 import formatPrice from "../../reusable/formatPrice";
 import { MdToggleOff, MdToggleOn } from "react-icons/md";
@@ -103,12 +112,10 @@ export default function AdminStocksPending() {
     );
   };
 
-  console.log(selectedProduct);
-
   // Mutations
   const { mutate: addNewDeliver, isPending: isSubmitting } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/stocks/new-deliver`, data);
+      const res = await axiosInstance.post(`/stocks/order-stock`, data);
       return res.data;
     },
     onSuccess: () => {
@@ -166,13 +173,7 @@ export default function AdminStocksPending() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    if (!supplier) return toast.error("Please select a supplier");
-    if (!selectedDate) return toast.error("Please select a delivery date");
-
-    // We send the explicitly selected VAT, or fallback to the product's original VAT (though the UI forces selection if we want)
-    const vatToSend = selectedVat || selectedProduct?.vat?._id;
-
-    addNewDeliver({
+    const formData = {
       product: selectedProduct._id,
       supplier,
       supplierPrice,
@@ -182,10 +183,20 @@ export default function AdminStocksPending() {
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-      vat: vatToSend,
+      vat: selectedVat || selectedProduct?.vat?._id || "",
       vatShopPrice: roundedPrice,
       notifySubscribedUser: toggleNotify,
-    });
+    };
+
+    const result = orderStockSchema.safeParse(formData);
+
+    if (!result.success) {
+      // Show the first error message
+      const error = result.error.issues[0];
+      return toast.error(error.message);
+    }
+
+    addNewDeliver(result.data);
   };
 
   const toggleNotification = () => {
@@ -202,7 +213,7 @@ export default function AdminStocksPending() {
   }
 
   return (
-    <section className="bg-yellow text-sm md:text-normal h-screen font-main">
+    <section className="bg-yellow text-sm md:text-normal h-screen font-main pb-20 overflow-y-auto">
       <AdminHeader title={"PENDING STOCKS"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
@@ -309,64 +320,79 @@ export default function AdminStocksPending() {
         submitLabel="Order"
         isSubmitting={isSubmitting}
       >
-        <div className="flex gap-2 p-2 flex-col">
-          <div className="flex gap-4 flex-col">
-            <label className="font-medium">Product Name: </label>
+        <div className="flex gap-4 p-2 flex-col">
+          <div className="flex gap-2 flex-col">
+            <label className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1">
+              Product Name
+            </label>
             <input
               type="text"
               value={selectedProduct?.productName || ""}
               disabled
-              className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+              className="border border-black rounded-[5px] p-2 bg-gray-100 font-bold"
             />
           </div>
 
-          <div className="flex gap-4 flex-col">
-            <label className="font-medium">Delivery ID: </label>
+          <div className="flex gap-2 flex-col">
+            <label className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1">
+              Delivery ID
+            </label>
             <input
               value={deliveryId}
               type="text"
               disabled
-              className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+              className="border border-black rounded-[5px] p-2 bg-gray-100 font-mono"
             />
           </div>
 
-          {/* NEW: VAT Selection */}
-          <div className="flex gap-4 flex-col">
-            <label htmlFor="vat" className="font-medium">
-              VAT:
+          <div className="flex gap-2 flex-col">
+            <label
+              htmlFor="vat"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+            >
+              VAT (%)
             </label>
             <input
               type="text"
               disabled
-              value={selectedProduct?.vat?.vatPercent || "N/A"}
-              className="border border-gray-300 rounded-[5px] p-2 bg-gray-100"
+              value={
+                selectedProduct?.vat?.vatPercent
+                  ? `${selectedProduct.vat.vatPercent}%`
+                  : "N/A"
+              }
+              className="border border-black rounded-[5px] p-2 bg-gray-100 font-bold"
             />
           </div>
 
-          <div className="flex gap-4 flex-col">
-            <label htmlFor="deliveryDate" className="font-medium">
-              Date Delivery:{" "}
+          <div className="flex gap-2 flex-col">
+            <label
+              htmlFor="deliveryDate"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+            >
+              Date Delivery
             </label>
-            <input
+            <ValidatedInput
               type="date"
-              id="deliveryDate"
-              className="border border-black rounded-[5px] p-2"
-              max={new Date().toISOString().split("T")[0]}
+              name="dateDelivery"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
+              schema={dateDeliverySchema}
               required
             />
           </div>
 
-          <div className="flex gap-4 flex-col">
-            <label htmlFor="supplier" className="font-medium">
-              Supplier:{" "}
+          <div className="flex gap-2 flex-col">
+            <label
+              htmlFor="supplier"
+              className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+            >
+              Supplier
             </label>
             <select
               id="supplier"
               value={supplier}
               onChange={(e) => setSupplier(e.target.value)}
-              className="rounded-[5px] border border-black p-2 outline-none"
+              className="rounded-[5px] border border-black p-2 outline-none font-bold"
               required
             >
               <option value="">Select Supplier</option>
@@ -381,82 +407,96 @@ export default function AdminStocksPending() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <label htmlFor="supplierPrice" className="font-medium">
-                Supplier Price:{" "}
+              <label
+                htmlFor="supplierPrice"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Supplier Price
               </label>
-              <input
-                className="border border-black rounded-[5px] p-2"
+              <ValidatedInput
                 type="number"
-                min={0}
-                id="supplierPrice"
+                name="supplierPrice"
                 value={supplierPrice}
                 onChange={(e) => setSupplierPrice(e.target.value)}
+                schema={supplierPriceSchema}
                 required
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="shopPrice" className="font-medium">
-                Shop Price:{" "}
+              <label
+                htmlFor="shopPrice"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Shop Price
               </label>
-              <input
-                className="border border-black rounded-[5px] p-2"
+              <ValidatedInput
                 type="number"
-                min={0}
-                id="shopPrice"
+                name="shopPrice"
                 value={shopPrice}
                 onChange={(e) => setShopPrice(e.target.value)}
+                schema={shopPriceSchema}
                 required
               />
             </div>
           </div>
 
           {productVatPercent > 0 && (
-            <p className="text-sm text-green-700">
+            <p className="text-[11px] font-black text-green-700 uppercase tracking-tight italic">
               Shop price with VAT ({productVatPercent}%) = ₱{roundedPrice}
             </p>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <label htmlFor="shippingPrice" className="font-medium">
-                Shipping Price:{" "}
+              <label
+                htmlFor="shippingPrice"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Shipping Price
               </label>
-              <input
-                className="border border-black rounded-[5px] p-2"
+              <ValidatedInput
                 type="number"
-                min={0}
-                id="shippingPrice"
+                name="shippingPrice"
                 value={shippingPrice}
                 onChange={(e) => setShippingPrice(e.target.value)}
+                schema={shippingPriceSchema}
                 required
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="quantity" className="font-medium">
-                Quantity:{" "}
+              <label
+                htmlFor="quantity"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Quantity
               </label>
-              <input
-                className="border border-black rounded-[5px] p-2"
+              <ValidatedInput
                 type="number"
-                id="quantity"
+                name="quantity"
                 value={quantity}
-                min={0}
                 onChange={(e) => setQuantity(e.target.value)}
+                schema={quantitySchema}
                 required
               />
             </div>
           </div>
 
-          <div className="flex items-center flex-wrap gap-2 bg-gray-100 p-2 rounded">
-            <span className="font-bold">Total Cost: </span>
-            <span>{formatPrice(totalCost)} PHP</span>
-            <p className="text-xs text-red-700 ml-auto">
+          <div className="flex items-center flex-wrap gap-2 bg-gray-100 p-3 rounded-[5px] border-l-4 border-primary">
+            <span className="font-black uppercase text-xs tracking-widest">
+              Total Cost:{" "}
+            </span>
+            <span className="font-bold text-lg">
+              {formatPrice(totalCost)} PHP
+            </span>
+            <p className="text-[9px] text-gray-500 uppercase font-bold italic ml-auto">
               (SUPPLIER PRICE * QUANTITY) + SHIPPING
             </p>
           </div>
 
           <div className="flex items-center gap-4 mt-2">
-            <label>Notify subscribed users?</label>
+            <label className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1">
+              Notify subscribed users?
+            </label>
             <button
               type="button"
               className={`${!toggleNotify ? "text-red-700" : "text-blue-700"}`}

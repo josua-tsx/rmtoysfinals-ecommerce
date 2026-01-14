@@ -1,6 +1,5 @@
- import express from "express";
+import express from "express";
 import {
-  // confirmDelivery,
   getPendingDeliveries,
   getSingleStock,
   getStockLevels,
@@ -9,29 +8,21 @@ import {
   reorderStock,
   updateStockQuantity,
 } from "../controllers/stocks.controller.js";
+
+import { validateResource } from "../middleware/validateResource.js";
+import { orderStockSchema, reorderStockSchema, updateStockQuantitySchema } from "../schema/stock.schema.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post(`/new-deliver`, requireAuth, requireAdmin, OrderStocks);
 
-router.get(
-  "/get-processingStocks",
-  requireAuth,
-  requireAdmin,
-  getPendingDeliveries
-);
-// router.put(`/set-as-delivered/:deliveryId`, requireAuth, requireAdmin, confirmDelivery);
 
-router.get("/get-stocks", getStocks);
-// router.delete("/delete-stock/:stockId", deleteStock)
-
-router.get(`/get-stocks-levels`, getStockLevels);
-
-router.get(`/get-stock/:stockId`, getSingleStock);
-
-router.put(`/update-quantity/:stockId`, updateStockQuantity)
-
-router.put(`/reOrder-stock/:stockId`, requireAuth, requireAdmin, reorderStock)
+router.post("/order-stock", requireAuth, requireAdmin, validateResource(orderStockSchema), OrderStocks);
+router.get("/get-stock", requireAuth, requireAdmin, getStocks);
+router.get("/get-stock-levels", requireAuth, requireAdmin, getStockLevels);
+router.get("/get-pending", requireAuth, requireAdmin, getPendingDeliveries);
+router.get("/get-single-stock/:stockId", requireAuth, requireAdmin, getSingleStock);
+router.post("/reorder-stock/:stockId", requireAuth, requireAdmin, validateResource(reorderStockSchema), reorderStock);
+router.put("/update-stock-quantity/:stockId", requireAuth, requireAdmin, validateResource(updateStockQuantitySchema), updateStockQuantity);
 
 export default router;

@@ -6,13 +6,6 @@ import { logAuditTrail } from "./audit.controller.js";
 
 import Address from "../models/address.models.js";
 import Review from "../models/review.model.js";
-import {
-  validateEmail,
-  validateFullName,
-  validatePassword,
-  validatePHMobile,
-  validateUsername,
-} from "../utils/validations.js";
 
 import crypto from "crypto";
 import Subscribe from "../models/subscribe.model.js";
@@ -139,51 +132,26 @@ export const updateProfile = async (req, res, next) => {
   let isEmailChanged = false;
   let previousEmail = user.email;
 
-  // Validate fields if they exist
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for username, email, fullName, phoneNumber, and password 
+    have been removed. These are now handled by Zod middleware in routes/user.route.js
+  */
+
   if (username !== undefined) {
-    if (!username.trim()) {
-      return next(handleMakeError(400, "Username cannot be empty!"));
-    }
-    const userNameCheck = validateUsername(username);
-    if (!userNameCheck.valid) {
-      return next(handleMakeError(400, userNameCheck.message));
-    }
     const usernameExist = await User.findOne({ username, _id: { $ne: id } });
     if (usernameExist) {
-      return next(handleMakeError(400, "Username already exists"));
+        return next(handleMakeError(400, "Username already exists"));
     }
   }
 
   if (email !== undefined) {
-    if (!email.trim()) {
-      return next(handleMakeError(400, "Email cannot be empty!"));
-    }
-
     if (email !== user.email) {
       isEmailChanged = true;
-    }
-
-    const userEmailCheck = validateEmail(email);
-    if (!userEmailCheck.valid) {
-      return next(handleMakeError(400, userEmailCheck.message));
     }
     const userExists = await User.findOne({ email, _id: { $ne: id } });
     if (userExists) {
       return next(handleMakeError(400, "Email already exists"));
-    }
-  }
-
-  if (fullName !== undefined && fullName) {
-    const fullNameCheck = validateFullName(fullName);
-    if (!fullNameCheck.valid) {
-      return next(handleMakeError(400, fullNameCheck.message));
-    }
-  }
-
-  if (phoneNumber !== undefined && phoneNumber) {
-    const phoneNumberCheck = validatePHMobile(phoneNumber);
-    if (!phoneNumberCheck.valid) {
-      return next(handleMakeError(400, phoneNumberCheck.message));
     }
   }
 
@@ -345,30 +313,13 @@ export const editWorker = async (req, res, next) => {
   const { email, username, password, role, jobDescription } = req.body;
   const userId = req.user.id;
 
-  if (!role) {
-    return next(handleMakeError(400, "Please select role"));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for email, username, and password have been removed.
+    These are now handled by Zod middleware in routes/user.route.js
+  */
 
-  if (!jobDescription) {
-    return next(handleMakeError(400, "Please input job description"));
-  }
-
-  const userEmailCheck = validateEmail(email);
-  if (!userEmailCheck.valid) {
-    return next(handleMakeError(400, userEmailCheck.message));
-  }
-
-  const userNameCheck = validateUsername(username);
-  if (!userNameCheck.valid) {
-    return next(handleMakeError(400, userNameCheck.message));
-  }
-
-  const passwordCheck = validatePassword(password);
-  if (!passwordCheck.valid) {
-    return next(handleMakeError(400, passwordCheck.message));
-  }
-
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ email, _id: { $ne: workerId } });
   if (userExists) {
     return next(handleMakeError(400, "User already exists"));
   }

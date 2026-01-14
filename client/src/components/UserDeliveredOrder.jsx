@@ -7,6 +7,7 @@ import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
 export default function UserDeliveredOrder() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   const {
     data: userDelivered = [],
@@ -19,6 +20,8 @@ export default function UserDeliveredOrder() {
       return res.data;
     },
   });
+
+  console.log(userDelivered);
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -34,12 +37,34 @@ export default function UserDeliveredOrder() {
     setOpenModal(true);
   };
 
-  if (isError) return <p>error</p>;
+  const handleDownloadInvoice = async (e, orderId) => {
+    e.stopPropagation();
+    try {
+      setDownloadingId(orderId);
+      const res = await axiosInstance.get(`/invoice/${orderId}`, {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Invoice-${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error(error);
+      // toast.error("Failed to download invoice");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  if (isError) return <p>Shown error here...</p>;
 
   return (
-    <div className=" my-5 p-2 flex flex-col h-[600px] overflow-y-auto gap-2">
-      {/* CARD GOES HERE */}
-
+    <div className="flex flex-col h-full gap-4">
+      {/* MODAL */}
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -47,84 +72,83 @@ export default function UserDeliveredOrder() {
         />
       )}
 
-      <div className=" my-5 p-2 flex flex-col h-full gap-2">
-        {/* CARD GOES HERE */}
-
-        {isPending ? (
-          <div className="w-full flex justify-center items-center  h-full">
-            <LoadingSpinner />
-          </div>
-        ) : userDelivered && userDelivered.length > 0 ? (
-          userDelivered.map((order) => (
+      {isPending ? (
+        <div className="w-full flex justify-center items-center h-[300px]">
+          <LoadingSpinner />
+        </div>
+      ) : userDelivered && userDelivered.length > 0 ? (
+        <div className="grid gap-4">
+          {userDelivered.map((order) => (
             <div
               key={order._id}
-              className="border flex p-2 gap-5 items-center border-black rounded-[5px]"
+              className="bg-white border border-black rounded-[5px] p-4 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
-              {/* Display the image */}
-              <img
-                src={order.imageUrl} // Handle missing image
-                alt="box image"
-                className="w-16"
-              />
-              <div className="flex w-full gap-10 md:gap-0 overflow-x-auto justify-between text-sm">
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-2">
-                    <p>Order Id: </p>
-                    <span className="text-blue-600">{order._id}</span>
+              <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                {/* Product Info */}
+                <div className="flex gap-4 items-center flex-1">
+                  <div className="w-20 h-20 bg-gray-100 border border-black rounded-[5px] flex items-center justify-center p-2 shrink-0">
+                    <img
+                      src={order?.imageUrl || "/placeholder.png"}
+                      alt="Product"
+                      className="w-full h-full object-contain mix-blend-multiply"
+                    />
                   </div>
-                  <div className="flex gap-2">
-                    <p>Status: </p>
-                    <span className="text-blue-600">{order.status}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <p>Total Items: </p>
-                    <span className="text-blue-600">
-                      {order.orderItems?.length}
-                    </span>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-lg">
+                        {order?.orderItems?.length} ITEM
+                        {order?.orderItems?.length > 1 ? "S" : ""}
+                      </span>
+                      <span className="bg-green-100 text-green-700 border border-green-600 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full">
+                        Delivered
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 font-mono">
+                      ORDER ID: {order._id}
+                    </p>
+                    <p className="text-xs text-black font-bold">
+                      {new Date(order.createdAt).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-2">
-                    <p>Date Ordered:</p>
-                    <span className="text-blue-600">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <p>Estimated Delivery Date:</p>
-                    <span className="text-blue-600">1 - 3 days</span>
-                  </div>
-                </div>
-
-                {/* ACTIONS */}
-                <div className="flex flex-row md:flex-col gap-2">
-                  {/* <button>Cancel</button> */}
+                {/* Actions */}
+                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                   <button
-                    className="flex-1"
+                    onClick={(e) => handleDownloadInvoice(e, order._id)}
+                    disabled={downloadingId === order._id}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-yellow-400 border border-black rounded-[5px] font-bold text-xs uppercase hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {downloadingId === order._id ? (
+                      <div className="animate-spin h-3 w-3 border-2 border-black border-t-transparent rounded-full" />
+                    ) : (
+                      <>
+                        <span>📄</span> Invoice
+                      </>
+                    )}
+                  </button>
+
+                  <button
                     onClick={() => handleOpenSingleOrder(order)}
+                    className="px-6 py-2 bg-black text-white border border-transparent rounded-[5px] font-bold text-xs uppercase hover:bg-gray-800 transition-colors"
                   >
                     View Details
                   </button>
-
-                  {order.status === "Delivered" ? (
-                    <button
-                      onClick={() => handleOpenSingleOrder(order)}
-                      className="flex-1 text-indigo-700"
-                    >
-                      Write a review
-                    </button>
-                  ) : (
-                    ""
-                  )}
                 </div>
               </div>
             </div>
-          ))
-        ) : (
-          <span>no delivered order.</span>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed border-gray-300 rounded-[5px] bg-gray-50 text-gray-400">
+          <p className="font-bold text-lg">No delivered orders yet</p>
+        </div>
+      )}
     </div>
   );
 }

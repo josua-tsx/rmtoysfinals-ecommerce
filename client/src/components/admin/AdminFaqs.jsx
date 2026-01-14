@@ -17,7 +17,7 @@ export default function AdminFaqs() {
 
   const { mutate: addFaqsMutation, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/faqs/add-faqs`, data);
+      const res = await axiosInstance.post(`/faqs/add-new-faqs`, data);
       return res.data;
     },
     onSuccess: () => {

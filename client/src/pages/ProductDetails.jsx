@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import formatPrice from "../reusable/formatPrice.js";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
 import { useUserStore } from "../stores/useUserStore.js";
-import { FaCartPlus } from "react-icons/fa";
+import { FaCartPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { MdRateReview } from "react-icons/md";
 import { SiGooglegemini } from "react-icons/si";
 
@@ -188,8 +188,8 @@ export default function ProductDetails() {
                         {/* Pros */}
                         {reviewSummary.pros?.length > 0 && (
                           <div>
-                            <p className="text-xs font-bold text-green-700 uppercase mb-1">
-                              ✅ What customers love
+                            <p className="text-xs font-bold text-green-700 uppercase mb-1 flex items-center gap-1">
+                              <FaCheckCircle /> What customers love
                             </p>
                             <div className="flex flex-wrap gap-2">
                               {reviewSummary.pros.map((pro, i) => (
@@ -207,8 +207,8 @@ export default function ProductDetails() {
                         {/* Cons */}
                         {reviewSummary.cons?.length > 0 && (
                           <div>
-                            <p className="text-xs font-bold text-red-700 uppercase mb-1">
-                              ❌ Common concerns
+                            <p className="text-xs font-bold text-red-700 uppercase mb-1 flex items-center gap-1">
+                              <FaTimesCircle /> Common concerns
                             </p>
                             <div className="flex flex-wrap gap-2">
                               {reviewSummary.cons.map((con, i) => (

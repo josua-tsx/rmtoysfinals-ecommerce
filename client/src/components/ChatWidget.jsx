@@ -118,10 +118,13 @@ export default function ChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-primary text-card p-4 rounded-full border-2 border-black transition-all duration-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-4 rounded-full border-2 border-black transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] group"
           aria-label="Open chat"
         >
-          <IoChatbubbleEllipsesOutline size={28} />
+          <IoChatbubbleEllipsesOutline
+            size={28}
+            className="group-hover:animate-pulse"
+          />
         </button>
       )}
 
@@ -129,33 +132,37 @@ export default function ChatWidget() {
       {/* CHAT WINDOW */}
       {/* ================================================================== */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[90%] md:w-[350px] h-[500px] bg-card border-2 border-black rounded-[10px] shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-50 w-[90%] md:w-[350px] h-[500px] bg-card border-2 border-black rounded-[15px] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-300">
           {/* ============================================================ */}
           {/* HEADER */}
           {/* ============================================================ */}
-          <div className="bg-primary text-card p-4 flex justify-between items-center border-b-2 border-black">
-            <div className="flex items-center gap-2">
-              <IoChatbubbleEllipsesOutline size={24} />
+          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-4 flex justify-between items-center border-b-2 border-black">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
+                <IoChatbubbleEllipsesOutline size={20} />
+              </div>
               <div>
-                <h3 className="font-bold text-lg">RM Toys Assistant</h3>
-                <p className="text-xs opacity-80">
-                  Ask me anything about the shop!
+                <h3 className="font-black tracking-wide text-md uppercase">
+                  RM Toys AI
+                </h3>
+                <p className="text-[10px] opacity-90 font-medium">
+                  Assistant Online
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="hover:bg-black/20 p-1 rounded-full transition-colors"
+              className="hover:bg-black/20 p-1.5 rounded-full transition-colors"
               aria-label="Close chat"
             >
-              <IoClose size={24} />
+              <IoClose size={20} />
             </button>
           </div>
 
           {/* ============================================================ */}
           {/* MESSAGES AREA */}
           {/* ============================================================ */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -164,13 +171,13 @@ export default function ChatWidget() {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] p-3 rounded-[10px] ${
+                  className={`max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed ${
                     msg.role === "user"
-                      ? "bg-primary text-card border-2 border-black"
-                      : "bg-white border-2 border-black"
+                      ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white border border-black rounded-tr-none"
+                      : "bg-white border border-black rounded-tl-none text-gray-800"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
                 </div>
               </div>
             ))}
@@ -178,16 +185,16 @@ export default function ChatWidget() {
             {/* Loading indicator */}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white border-2 border-black p-3 rounded-[10px]">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                <div className="bg-white border border-black p-4 rounded-2xl rounded-tl-none shadow-sm">
+                  <div className="flex gap-1.5">
+                    <span className="w-2 h-2 bg-violet-600 rounded-full animate-bounce"></span>
                     <span
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
+                      className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.15s" }}
                     ></span>
                     <span
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
+                      className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.3s" }}
                     ></span>
                   </div>
                 </div>
@@ -202,25 +209,28 @@ export default function ChatWidget() {
           {/* INPUT AREA */}
           {/* ============================================================ */}
           <div className="p-3 border-t-2 border-black bg-white">
-            <div className="flex gap-2">
+            <div className="flex gap-2 relative">
               <input
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                className="flex-1 p-2 border-2 border-black rounded-[5px] focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Ask about toys..."
+                className="flex-1 p-3 pr-12 border-2 border-black rounded-[10px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all font-medium placeholder:text-gray-400 text-sm"
                 disabled={isLoading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading || !inputMessage.trim()}
-                className="bg-primary text-card p-2 rounded-[5px] border-2 border-black hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-1.5 rounded-[6px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 aria-label="Send message"
               >
-                <IoSend size={20} />
+                <IoSend size={16} />
               </button>
             </div>
+            <p className="text-[10px] text-center text-gray-400 mt-2 font-medium">
+              Powered by Google Gemini AI
+            </p>
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { vatSchema, vatPercentSchema } from "../../schemas/vat.schema";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
@@ -7,6 +8,7 @@ import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
+import ValidatedInput from "../../reusable/ValidatedInput";
 
 export default function AdminVatTable() {
   const queryClient = useQueryClient();
@@ -104,12 +106,26 @@ export default function AdminVatTable() {
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    addVatMutation({ vatPercent, vatValue });
+    const data = { vatPercent, vatValue };
+    const result = vatSchema.safeParse(data);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    addVatMutation(result.data);
   };
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-    updateVatMutation({ vatPercent, vatValue });
+    const data = { vatPercent, vatValue };
+    const result = vatSchema.safeParse(data);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    updateVatMutation(result.data);
   };
 
   const handleClickDelete = (vatId) => {
@@ -170,16 +186,14 @@ export default function AdminVatTable() {
             >
               VAT %:
             </label>
-            <input
+            <ValidatedInput
               type="number"
               value={vatPercent}
               onChange={handleConvertedToPercent}
               step={"any"}
-              id="vat"
-              name="vat"
-              min={0}
+              name="vatPercent"
+              schema={vatPercentSchema}
               placeholder="Ex: 12"
-              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
           </div>
@@ -220,16 +234,14 @@ export default function AdminVatTable() {
             >
               VAT %:
             </label>
-            <input
+            <ValidatedInput
               type="number"
               value={vatPercent}
               onChange={handleConvertedToPercent}
               step={"any"}
-              id="edit-vat"
-              name="vat"
-              min={0}
+              name="vatPercent"
+              schema={vatPercentSchema}
               placeholder="Ex: 12"
-              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
           </div>

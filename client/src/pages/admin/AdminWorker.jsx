@@ -6,9 +6,16 @@ import FormModal from "../../reusable/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
-
-import PasswordInput from "../../reusable/PasswordInput";
+import ValidatedInput from "../../reusable/ValidatedInput";
+import {
+  addWorkerSchema,
+  jobDescriptionSchema,
+} from "../../schemas/worker.schema";
+import {
+  emailSchema,
+  usernameSchema,
+  passwordSchema,
+} from "../../schemas/auth.schema";
 
 export default function AdminWorker() {
   const queryClient = useQueryClient();
@@ -44,11 +51,8 @@ export default function AdminWorker() {
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      return toast.error("Passwords do not match");
-    }
 
-    addWorkerMutation({
+    const result = addWorkerSchema.safeParse({
       email,
       username,
       password,
@@ -56,6 +60,12 @@ export default function AdminWorker() {
       role,
       jobDescription,
     });
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    addWorkerMutation(result.data);
   };
 
   const toggleAddCategory = () => {
@@ -100,71 +110,82 @@ export default function AdminWorker() {
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="email"
-                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
               >
                 WORKER EMAIL
               </label>
-              <input
+              <ValidatedInput
                 type="email"
                 name="email"
                 id="email"
                 value={email}
-                maxLength={254}
-                onChange={handleInputChange(setEmail)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Ex: worker@example.com"
-                className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
+                schema={emailSchema}
                 required
               />
-              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
-                (Enter a valid email address)
-              </p>
             </div>
 
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="username"
-                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
               >
                 Username
               </label>
-              <input
+              <ValidatedInput
                 type="text"
                 name="username"
                 id="username"
                 value={username}
-                maxLength={50}
-                onChange={handleInputChange(setUsername)}
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Ex: JuanDelaCruz"
-                className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
+                schema={usernameSchema}
                 required
               />
-              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
-                (5-50 letters, no numbers or special characters)
-              </p>
             </div>
 
-            <PasswordInput
-              label="Password"
-              name="password"
-              value={password}
-              onChange={handleInputChange(setPassword)}
-              errorText="(Min 8 chars, 1 uppercase, 1 number, 1 special char)"
-              required
-            />
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="password"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Password
+              </label>
+              <ValidatedInput
+                type="password"
+                name="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                schema={passwordSchema}
+                required
+              />
+            </div>
 
-            <PasswordInput
-              label="Confirm password"
-              name="confirmPassword"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={handleInputChange(setConfirmPassword)}
-              required
-            />
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="confirmPassword"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Confirm password
+              </label>
+              <ValidatedInput
+                type="password"
+                name="confirmPassword"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="role"
-                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
               >
                 ROLE
               </label>
@@ -183,19 +204,18 @@ export default function AdminWorker() {
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="jobDescription"
-                className="font-black uppercase text-[10px] tracking-widest text-gray-500"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
               >
                 Job Description
               </label>
-              <input
+              <ValidatedInput
                 type="text"
                 name="jobDescription"
                 id="jobDescription"
                 value={jobDescription}
-                maxLength={200}
-                onChange={handleInputChange(setJobDescription)}
+                onChange={(e) => setJobDescription(e.target.value)}
                 placeholder="Ex: Customer Support & Verification"
-                className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
+                schema={jobDescriptionSchema}
                 required
               />
             </div>

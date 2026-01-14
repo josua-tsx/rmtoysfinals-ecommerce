@@ -7,10 +7,6 @@ import Review from "../models/review.model.js";
 import Category from "../models/category.model.js";
 import Order from "../models/order.model.js";
 
-import {
-  validateProductDescription,
-  validateProductName,
-} from "../utils/validations.js";
 import Supplier from "../models/supplier.model.js";
 import Vat from "../models/vat.models.js";
 
@@ -28,62 +24,24 @@ export const addProduct = async (req, res, next) => {
     vat,
   } = req.body;
 
-  if (!productName) {
-    return next(handleMakeError(400, "Please input product name"));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for productName, description, category, images, vat,
+    and productDetails have been removed. These are now handled by 
+    Zod middleware located in routes/product.route.js
+  */
 
-  if (!productDescription) {
-    return next(handleMakeError(400, "Please input product description"));
-  }
-
-  if (!category) {
-    return next(handleMakeError(400, "Please select category"));
-  }
-
-  if (
-    !productImages ||
-    !Array.isArray(productImages) ||
-    productImages.length === 0
-  ) {
-    return next(handleMakeError(400, "At least one product image is required"));
-  }
-
-  // Validate VAT requirement for vatable products
-  if (taxStatus === "vatable" && !vat) {
-    return next(handleMakeError(400, "VAT is required for vatable products"));
-  }
-
-  const productNameCheck = validateProductName(productName);
-  if (!productNameCheck.valid) {
-    return next(handleMakeError(400, productNameCheck.message));
-  }
-
-  const productDescriptionCheck =
-    validateProductDescription(productDescription);
-  if (!productDescriptionCheck.valid) {
-    return next(handleMakeError(400, productDescriptionCheck.message));
-  }
-
-  // Lowercasing all labels and values in the productDetails array
+  // Lowercase labels/values logic is KEPT as it is a transformation (sanitization),
+  // not just pure validation, although Zod could handle this too. 
+  // For now, let's keep the transformation logic here or move to Zod transform later.
   if (productDetails && Array.isArray(productDetails)) {
-    if (productDetails.length > 10) {
-      return next(handleMakeError(400, "Maximum 10 product details allowed"));
-    }
-
     for (let i = 0; i < productDetails.length; i++) {
-      // Ensure productDetails[i] is an object and has both 'label' and 'value' properties
-      if (
-        productDetails[i].hasOwnProperty("label") &&
-        productDetails[i].hasOwnProperty("value")
-      ) {
-        // Lowercase both 'label' and 'value' if they are strings
         if (typeof productDetails[i].label === "string") {
           productDetails[i].label = productDetails[i].label.toLowerCase();
         }
         if (typeof productDetails[i].value === "string") {
           productDetails[i].value = productDetails[i].value.toLowerCase();
         }
-      }
     }
   }
 
@@ -269,7 +227,7 @@ export const getBestSoldProducts = async (req, res, next) => {
         select: "commentReview rating",
       })
       .sort(sortOptions)
-      .limit(4); // Limit to the top 4 most sold products
+      .limit(5); // Limit to the top 5 most sold products
 
     // Send response with best sold products
     res.status(200).json(bestSoldProducts);
@@ -507,67 +465,21 @@ export const editProduct = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!productName) {
-      return next(handleMakeError(400, "Please input product name"));
-    }
-
-    if (!productDescription) {
-      return next(handleMakeError(400, "Please input product description"));
-    }
-
-    if (!category) {
-      return next(handleMakeError(400, "Please select category"));
-    }
-
-    if (
-      !productImages ||
-      !Array.isArray(productImages) ||
-      productImages.length === 0
-    ) {
-      return next(
-        handleMakeError(400, "At least one product image is required")
-      );
-    }
-
-    if (price <= 0) {
-      return next(handleMakeError(400, "Price cannot be 0 or negative!"));
-    }
-
-    // Validate VAT requirement for vatable products
-    if (taxStatus === "vatable" && !vat) {
-      return next(handleMakeError(400, "VAT is required for vatable products"));
-    }
-
-    const productNameCheck = validateProductName(productName);
-    if (!productNameCheck.valid) {
-      return next(handleMakeError(400, productNameCheck.message));
-    }
-
-    const productDescriptionCheck =
-      validateProductDescription(productDescription);
-    if (!productDescriptionCheck.valid) {
-      return next(handleMakeError(400, productDescriptionCheck.message));
-    }
+    /* 
+      VALIDATION REFACTOR NOTE:
+      Manual validations for productName, description, category, images, price, vat,
+      and productDetails have been removed. These are now handled by 
+      Zod middleware in routes/product.route.js
+    */
 
     // Lowercasing all labels and values in the productDetails array
     if (productDetails && Array.isArray(productDetails)) {
-      if (productDetails.length > 10) {
-        return next(handleMakeError(400, "Maximum 10 product details allowed"));
-      }
-
       for (let i = 0; i < productDetails.length; i++) {
-        // Ensure productDetails[i] is an object and has both 'label' and 'value' properties
-        if (
-          productDetails[i].hasOwnProperty("label") &&
-          productDetails[i].hasOwnProperty("value")
-        ) {
-          // Lowercase both 'label' and 'value' if they are strings
-          if (typeof productDetails[i].label === "string") {
-            productDetails[i].label = productDetails[i].label.toLowerCase();
-          }
-          if (typeof productDetails[i].value === "string") {
-            productDetails[i].value = productDetails[i].value.toLowerCase();
-          }
+        if (typeof productDetails[i].label === "string") {
+          productDetails[i].label = productDetails[i].label.toLowerCase();
+        }
+        if (typeof productDetails[i].value === "string") {
+          productDetails[i].value = productDetails[i].value.toLowerCase();
         }
       }
     }

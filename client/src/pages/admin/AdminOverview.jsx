@@ -6,9 +6,12 @@ import AdminMediumStock from "../../components/admin/AdminMediumStock";
 import AdminOutOfStocks from "../../components/admin/AdminOutOfStocks";
 import AdminProductOverview from "../../components/admin/AdminProductOverview";
 import AdminSalesOverview from "../../components/admin/AdminSalesOverview";
+import AdminTopSellingProducts from "../../components/admin/AdminTopSellingProducts";
+import AdminReports from "../../components/admin/AdminReports";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import axiosInstance from "../../lib/axios";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
+import AdminAISummaryModal from "../../components/admin/AdminAISummaryModal";
 import { SiGooglegemini } from "react-icons/si";
 
 export default function AdminOverview() {
@@ -24,7 +27,7 @@ export default function AdminOverview() {
   } = useQuery({
     queryKey: ["stockLevels"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stocks-levels`);
+      const res = await axiosInstance.get(`/stocks/get-stock-levels`);
       return res.data;
     },
   });
@@ -60,40 +63,22 @@ export default function AdminOverview() {
       <button
         onClick={handleGeminiClick}
         disabled={summaryLoading}
-        className="fixed top-20 right-6 z-50 bg-primary text-card p-3 rounded-full border-2 border-black shadow-lg hover:bg-opacity-90 transition-all disabled:opacity-50"
+        className="fixed top-20 right-6 z-50 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-3 rounded-full border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 group"
         title="Generate AI Dashboard Summary"
       >
         {summaryLoading ? (
-          <div className="animate-spin h-6 w-6 border-2 border-card border-t-transparent rounded-full" />
+          <div className="animate-spin h-6 w-6 border-2 border-white/30 border-t-white rounded-full" />
         ) : (
-          <SiGooglegemini size={24} />
+          <SiGooglegemini size={24} className="group-hover:animate-pulse" />
         )}
       </button>
 
       {/* Summary Modal */}
-      {showSummaryModal && summaryData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-          <div className="bg-card border-2 border-black rounded-[5px] max-w-3xl w-full max-h-[80vh] overflow-auto p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <SiGooglegemini size={28} className="text-primary" />
-                AI Dashboard Summary
-              </h2>
-              <button
-                onClick={() => setShowSummaryModal(false)}
-                className="text-2xl font-bold hover:text-primary transition-colors"
-              >
-                ×
-              </button>
-            </div>
-            <div className="prose max-w-none">
-              <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                {summaryData.summary}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AdminAISummaryModal
+        show={showSummaryModal}
+        onClose={() => setShowSummaryModal(false)}
+        data={summaryData?.summary}
+      />
 
       {/* Error Display */}
       {summaryError && (
@@ -109,6 +94,9 @@ export default function AdminOverview() {
         </div>
       )}
       <div className="max-w-[90%] py-14 mx-auto flex gap-10 flex-col">
+        {/* Download Reports */}
+        <AdminReports />
+
         {/* Inventory Status Panel */}
         <div className="relative mt-6">
           <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
@@ -133,6 +121,7 @@ export default function AdminOverview() {
         </div>
 
         <AdminSalesOverview />
+        <AdminTopSellingProducts />
         <AdminProductOverview />
       </div>
     </section>

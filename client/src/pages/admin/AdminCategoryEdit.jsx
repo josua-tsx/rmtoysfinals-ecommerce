@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  createCategorySchema,
+  categoryNameSchema,
+  categoryDescriptionSchema,
+} from "../../schemas/category.schema";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
+import ValidatedInput from "../../reusable/ValidatedInput";
 import axiosInstance from "../../lib/axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -63,11 +69,14 @@ export default function AdminCategoryEdit() {
   const handleEditSubmit = (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const inputs = Object.fromEntries(formData);
+    const data = { categoryName, categoryDescription };
+    const result = createCategorySchema.safeParse(data);
 
-    const { categoryName, categoryDescription } = inputs;
-    editCategoryMutation({ categoryName, categoryDescription });
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    editCategoryMutation(result.data);
   };
 
   const handleCancel = () => {
@@ -75,66 +84,90 @@ export default function AdminCategoryEdit() {
   };
 
   if (isSinglePending || isEditPending) {
-    <p>loading...</p>;
+    return (
+      <div className="bg-yellow h-screen flex items-center justify-center font-main">
+        <p className="font-black uppercase tracking-widest animate-pulse">
+          Loading Category...
+        </p>
+      </div>
+    );
   }
   if (isSingleError || isEditError) {
-    <p>loading...</p>;
+    return (
+      <div className="bg-yellow h-screen flex items-center justify-center font-main">
+        <p className="font-black uppercase tracking-widest text-red-600">
+          Error loading category.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <section className="bg-yellow h-screen text-sm md:text-normal font-main">
+    <section className="bg-yellow min-h-screen text-sm md:text-normal font-main pb-20">
       <AdminHeader title={"EDIT CATEGORY"} />
 
-      <div className="max-w-[90%]  pt-14 pb-5 mx-auto flex gap-5 flex-col relative">
+      <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col relative">
         <form
           onSubmit={handleEditSubmit}
-          className="border flex flex-col gap-5  rounded-[5px] relative border-black bg-card"
+          className="border flex flex-col gap-6 p-6 rounded-[5px] relative border-black bg-card shadow-lg"
         >
-          <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
+          <div className="absolute bg-[#22c55e] -top-3 -left-3 px-4 py-1 border border-black rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <h2 className="text-white font-black uppercase text-[10px] tracking-widest italic">
+              CATEGORY DETAILS
+            </h2>
+          </div>
 
-          <div className="flex gap-2 p-2 flex-col">
+          <div className="flex gap-6 flex-col">
             <div className="flex gap-2 flex-col">
-              <label htmlFor="" className="">
-                CATEGORY NAME:{" "}
-                <p className="text-sm pt-1  text-green-700">
-                  (Category name do not allow spaces and number. It should be
-                  between 3 to 50 max characters.)
-                </p>
+              <label
+                htmlFor="categoryName"
+                className="font-black uppercase text-xs tracking-widest pl-1"
+              >
+                CATEGORY NAME
               </label>
-              <input
-                type="text"
+              <ValidatedInput
                 name="categoryName"
-                id="categoryName"
                 value={categoryName}
-                maxLength={50}
                 onChange={handleInputChange(setCategoryName)}
-                className="border border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
+                schema={categoryNameSchema}
+                placeholder="Enter category name"
+                required
               />
+              <p className="text-[10px] pt-1 text-gray-500 uppercase tracking-tight">
+                (Name should be 3-50 chars. Only letters, numbers and single
+                spaces allowed.)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
-              <label htmlFor="" className="">
-                CATEGORY DESCRIPTION :{" "}
+              <label
+                htmlFor="categoryDescription"
+                className="font-black uppercase text-xs tracking-widest pl-1"
+              >
+                CATEGORY DESCRIPTION
               </label>
-              <textarea
-                type="text"
+              <ValidatedInput
+                type="textarea"
                 name="categoryDescription"
-                id="categoryDescription"
                 value={categoryDescription}
-                maxLength={200}
                 onChange={handleInputChange(setCategoryDescription)}
-                className="border resize-none border-black w-full rounded-[5px] p-1 h-[50px] outline-none"
+                schema={categoryDescriptionSchema}
+                className="h-[120px] leading-relaxed"
+                placeholder="Enter category description"
               />
+              <p className="text-[10px] pt-1 text-gray-500 uppercase tracking-tight">
+                (Max 200 characters allowed.)
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-col p-2 gap-2 md:flex-row">
-            <button className="flex-1 border border-black bg-primary text-card rounded-[5px]  p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+          <div className="flex flex-col gap-4 md:flex-row mt-2">
+            <button className="flex-1 bg-[#22c55e] text-white p-4 flex justify-center items-center rounded-[5px] border border-black font-black uppercase tracking-[0.1em] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
               Update Category
             </button>
             <button
-              onClick={() => handleCancel()}
+              onClick={handleCancel}
               type="button"
-              className="bg-red-600 w-full p-2 md:w-[20%] border border-black rounded-[5px] text-card "
+              className="bg-[#ef4444] text-white p-4 md:w-[20%] border border-black rounded-[5px] font-black uppercase tracking-[0.1em] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               Cancel
             </button>

@@ -220,42 +220,33 @@ export const getDashboardSummary = async (req, res, next) => {
     const currentYearSales = yearlySales[0]?.totalSales || 0;
     const currentYearOrders = yearlySales[0]?.orderCount || 0;
 
-    const prompt = `Analyze this e-commerce dashboard data and provide a concise business summary.
+    const prompt = `Analyze this e-commerce dashboard data and provide a structured business intelligence summary in JSON format.
+    
+    Sales Summary:
+    - Today: ${todaySales} PHP (${todayOrders} orders)
+    - This Month: ${currentMonthSales} PHP (${currentMonthOrders} orders)
+    - This Year: ${currentYearSales} PHP (${currentYearOrders} orders)
 
-      Sales Summary:
-      - Today: ${todaySales} PHP (${todayOrders} orders)
-      - This Month: ${currentMonthSales} PHP (${currentMonthOrders} orders)
-      - This Year: ${currentYearSales} PHP (${currentYearOrders} orders)
+    Top Products by Purchases:
+    Today: ${topProductsDaily.map((p) => `${p.name} (${p.quantity})`).join(", ")}
+    Month: ${topProductsMonthly.map((p) => `${p.name} (${p.quantity})`).join(", ")}
+    Year: ${topProductsYearly.map((p) => `${p.name} (${p.quantity})`).join(", ")}
 
-      Top Products by Purchases:
-
-      Today's Top Products:
-      ${
-        topProductsDaily.length > 0
-          ? topProductsDaily
-              .map((p, i) => `${i + 1}. ${p.name} - ${p.quantity} units`)
-              .join("\n")
-          : "No sales today"
-      }
-
-      This Month's Top Products:
-      ${
-        topProductsMonthly.length > 0
-          ? topProductsMonthly
-              .map((p, i) => `${i + 1}. ${p.name} - ${p.quantity} units`)
-              .join("\n")
-          : "No sales this month"
-      }
-
-      This Year's Top Products:
-      ${
-        topProductsYearly.length > 0
-          ? topProductsYearly
-              .map((p, i) => `${i + 1}. ${p.name} - ${p.quantity} units`)
-              .join("\n")
-          : "No sales this year"
-      }
-`;
+    Returns the response in this exact JSON structure:
+    {
+      "overview": "One clear, professional sentence summarizing the overall performance status.",
+      "keyMetrics": [
+        { "label": "Metric Name", "value": "Value", "status": "positive|neutral|negative", "insight": "Brief insight" }
+      ],
+      "trends": "A short paragraph analyzing sales trends (e.g., comparing daily vs monthly pace).",
+      "recommendations": [
+        "Actionable recommendation 1 (e.g. regarding stock or marketing)",
+        "Actionable recommendation 2",
+        "Actionable recommendation 3"
+      ]
+    }
+    
+    Keep insights professional, actionable, and concise. Ensure valid JSON output only.`;
 
     // Call Gemini API
     const response = await axios.post(GEMINI_API_URL, {
@@ -268,25 +259,21 @@ export const getDashboardSummary = async (req, res, next) => {
           ],
         },
       ],
+      generationConfig: {
+        temperature: 0.4, // Lower temperature for more consistent JSON
+        maxOutputTokens: 1024,
+      },
     });
 
-    const aiSummary = response.data.candidates[0].content.parts[0].text;
+    const aiResponseText = response.data.candidates[0].content.parts[0].text;
+    
+    // Clean and parse JSON
+    const cleanJson = aiResponseText.replace(/```json\n?|```/g, "").trim();
+    const aiSummaryData = JSON.parse(cleanJson);
 
     const responseData = {
       success: true,
-      summary: aiSummary,
-      data: {
-        sales: {
-          today: todaySales,
-          month: currentMonthSales,
-          year: currentYearSales,
-        },
-        topProducts: {
-          daily: topProductsDaily,
-          monthly: topProductsMonthly,
-          yearly: topProductsYearly,
-        },
-      },
+      summary: aiSummaryData, // Now a structured object
     };
 
     // Update cache

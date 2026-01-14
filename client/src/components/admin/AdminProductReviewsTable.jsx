@@ -50,7 +50,7 @@ export default function AdminProductReviewsTable() {
   );
 
   const handleNavigateToProduct = (productId) => {
-    navigate(`/product/${productId}`);
+    navigate(`/product/details/${productId}`);
   };
 
   if (isError) return <p>Error.</p>;

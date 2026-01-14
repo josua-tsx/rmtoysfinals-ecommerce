@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaChartLine, FaClock } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import AdminStatCard from "./AdminStatCard";
 import axiosInstance from "../../lib/axios";
@@ -88,7 +89,7 @@ export default function AdminSalesOverview() {
   } = useQuery({
     queryKey: ["stocks"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stocks`);
+      const res = await axiosInstance.get(`/stocks/get-stock`);
       return res.data;
     },
   });
@@ -243,7 +244,10 @@ export default function AdminSalesOverview() {
           {/* Sales Overview Header */}
           <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
             <h2 className="font-black uppercase tracking-widest text-sm  flex items-center gap-2">
-              <span className="text-lg">📈</span> Sales Overview
+              <span className="text-lg">
+                <FaChartLine />
+              </span>{" "}
+              Sales Overview
             </h2>
           </div>
 
@@ -332,7 +336,10 @@ export default function AdminSalesOverview() {
           {/* Recent Activity Header */}
           <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
             <h2 className="font-black uppercase tracking-widest text-sm  flex items-center gap-2">
-              <span className="text-lg">🕒</span> Recent Activity
+              <span className="text-lg">
+                <FaClock />
+              </span>{" "}
+              Recent Activity
             </h2>
           </div>
           <div className="bg-card border h-full border-black rounded-[5px] p-6 pt-10 flex flex-col gap-4">

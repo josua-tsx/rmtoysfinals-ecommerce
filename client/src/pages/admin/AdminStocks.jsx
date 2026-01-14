@@ -7,9 +7,6 @@ import formatPrice from "../../reusable/formatPrice";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function AdminStocks() {
-
- 
-
   const {
     data: stocks = [],
     isLoading: isStocksPending,
@@ -17,7 +14,7 @@ export default function AdminStocks() {
   } = useQuery({
     queryKey: ["stocks"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stocks`);
+      const res = await axiosInstance.get(`/stocks/get-stock`);
       return res.data;
     },
   });
@@ -25,7 +22,7 @@ export default function AdminStocks() {
   const totalExpectedRevenue = Array.isArray(stocks)
     ? stocks.reduce((total, item) => {
         return total + item?.shopPrice * item?.quantity;
-      }, 0) 
+      }, 0)
     : 0;
 
   const totalExpectedExpenses = Array.isArray(stocks)

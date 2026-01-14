@@ -1,5 +1,5 @@
 import { IoIosClose } from "react-icons/io";
-
+import { HiDownload } from "react-icons/hi";
 import { useUserStore } from "../stores/useUserStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
@@ -18,10 +18,38 @@ export default function SingleOrderList({ order, onClose }) {
   const [reasonModal, setReasonModal] = useState(false);
   const [openReviewModal, setOpenReviewModal] = useState(false);
   const [singleProduct, setSingleProduct] = useState({});
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const queryClient = useQueryClient();
 
   const navigate = useNavigate();
+
+  // Download Invoice PDF
+  const handleDownloadInvoice = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await axiosInstance.get(`/invoice/${order._id}`, {
+        responseType: "blob",
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Invoice-${order._id.slice(-8)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Invoice downloaded!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download invoice");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const { mutate: updatePaymentStatusMutation } = useMutation({
     mutationFn: async ({ id, paymentStatus }) => {
@@ -83,19 +111,41 @@ export default function SingleOrderList({ order, onClose }) {
               </h1>
               <p className="font-mono text-[10px] opacity-80">#{order._id}</p>
             </div>
-            <button
-              onClick={onClose}
-              type="button"
-              className="bg-red-600 text-white border border-black size-8 flex items-center justify-center rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all group"
-            >
-              <IoIosClose
-                size={24}
-                className="group-hover:rotate-90 transition-transform"
-              />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Download Invoice Button - Only for Delivered orders */}
+              {order.status === "Delivered" && (
+                <button
+                  onClick={handleDownloadInvoice}
+                  disabled={isDownloading}
+                  type="button"
+                  title="Download Invoice"
+                  className="bg-green-500 text-white border border-black size-8 flex items-center justify-center rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDownloading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <HiDownload size={16} />
+                  )}
+                </button>
+              )}
+              {/* Close Button */}
+              <button
+                onClick={onClose}
+                type="button"
+                className="bg-red-600 text-white border border-black size-8 flex items-center justify-center rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all group"
+              >
+                <IoIosClose
+                  size={24}
+                  className="group-hover:rotate-90 transition-transform"
+                />
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col h-full overflow-y-auto p-6 gap-6">
+            {/* Real-Time Order Tracking */}
+            {/* <OrderTracking status={order.status} /> */}
+
             {/* General Info Section */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
@@ -185,7 +235,7 @@ export default function SingleOrderList({ order, onClose }) {
             )}
 
             {/* Financials */}
-            <div className="flex flex-col border border-black rounded-[5px] bg-white divide-y-2 divide-black overflow-hidden ">
+            <div className="flex flex-col border border-black rounded-[5px] bg-white divide-y-2 divide-black">
               <div className="p-3 flex justify-between items-center text-xs">
                 <span className="font-black uppercase tracking-widest text-gray-500">
                   Subtotal
@@ -202,7 +252,7 @@ export default function SingleOrderList({ order, onClose }) {
                   {formatPrice(order.shippingPrice)} PHP
                 </span>
               </div>
-              <div className="p-3 bg-indigo-50 border-t border-black flex justify-between items-center">
+              <div className="p-3 bg-indigo-50 flex justify-between items-center rounded-b-[5px]">
                 <div className="flex flex-col">
                   <span className="font-black uppercase text-[10px] tracking-widest text-indigo-600">
                     Total Price
@@ -350,10 +400,10 @@ export default function SingleOrderList({ order, onClose }) {
                         id="paymentStatus"
                         className="flex-1 border border-black p-2 rounded-[5px] outline-none font-black uppercase text-xs bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all cursor-pointer"
                       >
-                        <option value="Pending">🕒 PENDING</option>
-                        <option value="Paid">✔️ PAID</option>
-                        <option value="Failed">❌ FAILED</option>
-                        <option value="Refunded">🔄 REFUNDED</option>
+                        <option value="Pending">PENDING</option>
+                        <option value="Paid">PAID</option>
+                        <option value="Failed">FAILED</option>
+                        <option value="Refunded">REFUNDED</option>
                       </select>
 
                       {(order?.paymentStatus === "Failed" ||

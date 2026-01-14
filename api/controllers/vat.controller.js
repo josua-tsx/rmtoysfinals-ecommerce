@@ -7,25 +7,9 @@ export const addVat = async (req, res, next) => {
 
   try {
 
-   // Check that vatPercent is a number and does not exceed 10000
-   if (vatPercent !== undefined && vatPercent !== null) {
-    const percent = Number(vatPercent);
-
-    if (isNaN(percent)) {
-      return next(
-        handleMakeError(400, "VAT percent must be a valid number.")
-      );
-    }
-
-    if (percent > 10000) {
-      return next(
-        handleMakeError(
-          400,
-          "VAT percent cannot exceed 10000."
-        )
-      );
-    }
-  }
+    /* 
+       Manual validation for vatPercent replaced by Zod schema
+    */
    
     const findVat = await Vat.find();
 

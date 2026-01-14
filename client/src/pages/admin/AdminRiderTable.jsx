@@ -30,7 +30,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
   } = useQuery({
     queryKey: ["riders"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/rider/get-riders`);
+      const res = await axiosInstance.get(`/rider/get-all-rider`);
       return res.data;
     },
   });

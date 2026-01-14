@@ -47,22 +47,6 @@ export default function AdminProductOverview() {
     },
   });
 
-  //   GET BEST SINGLE SOLD PRODUCT
-
-  const {
-    data: singleBestSoldProduct = [],
-    isPending: isSoldPending,
-    isError: isSoldError,
-  } = useQuery({
-    queryKey: ["singleBestProduct"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/product/best-sold-product`);
-      return res.data;
-    },
-  });
-
-  const topSingleBestProduct = singleBestSoldProduct[0];
-
   const {
     data: singleBestRatingProduct = [],
     isPending: isRatingPending,
@@ -144,7 +128,6 @@ export default function AdminProductOverview() {
     isCategoriesError ||
     isProductError ||
     isSupplierError ||
-    isSoldError ||
     isRatingError ||
     isSingleReviewError ||
     isReviewsError ||
@@ -245,34 +228,6 @@ export default function AdminProductOverview() {
           </ResponsiveContainer>
         </div>
         <div className="w-full md:w-[50%] grid grid-cols-1 md:grid-cols-2 gap-5 relative">
-          {isSoldPending ? (
-            <div className="flex justify-center flex-col items-center">
-              <LoadingSpinner />
-            </div>
-          ) : topSingleBestProduct ? (
-            <AdminProductOverviewCard
-              singleBestSoldProduct={topSingleBestProduct}
-              value1={"TOP 1 PRODUCT"}
-              value2={`${
-                topSingleBestProduct ? topSingleBestProduct?.sold : 0
-              } sold`}
-              onClick={() =>
-                navigate(`/product/details/${topSingleBestProduct._id}`)
-              }
-            />
-          ) : (
-            <p className="bg-card border border-black text-center rounded-[5px] flex flex-col relative justify-center">
-              <div className="border-black border w-[15px] bg-yellow absolute h-[15px] right-2 top-1 rounded-full">
-                <div className="  w-[15px] h-[15px] rounded-full">
-                  <div className="absolute -top-6 right-[-65%]">
-                    <TbPinnedFilled size={30} />
-                  </div>
-                </div>
-              </div>
-              no product yet.
-            </p>
-          )}
-
           {isRatingPending ? (
             <div className="flex justify-center flex-col items-center">
               <LoadingSpinner />

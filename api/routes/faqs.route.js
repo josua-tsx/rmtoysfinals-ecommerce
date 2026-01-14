@@ -1,5 +1,4 @@
-import expres from "express";
-import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import express from "express";
 import {
   addNewFaqs,
   deleteFaq,
@@ -8,14 +7,17 @@ import {
   getSingleFaq,
   updateFaq,
 } from "../controllers/faqs.controller.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import { validateResource } from "../middleware/validateResource.js";
+import { deleteMultiFaqsSchema, faqsSchema, updateFaqSchema } from "../schema/faqs.schema.js";
 
-const router = expres.Router();
+const router = express.Router();
 
-router.post("/add-faqs", requireAuth, requireAdmin, addNewFaqs);
-router.get("/get-faqs", getAllFaqs);
-router.get(`/get-faq/:faqSingleId`, requireAuth, requireAdmin, getSingleFaq);
-router.put(`/update-faq/:faqSingleId`, requireAuth, requireAdmin, updateFaq);
+router.post("/add-new-faqs", requireAuth, requireAdmin, validateResource(faqsSchema), addNewFaqs);
+router.get("/get-all-faqs", getAllFaqs);
 router.delete("/delete-faq/:id", requireAuth, requireAdmin, deleteFaq);
-router.post(`/delete-multi-faqs`, requireAuth, requireAdmin, deleteMultiFaq);
+router.post("/delete-multi-faqs", requireAuth, requireAdmin, validateResource(deleteMultiFaqsSchema), deleteMultiFaq);
+router.get("/get-single-faq/:faqSingleId", getSingleFaq);
+router.put("/update-faq/:faqSingleId", requireAuth, requireAdmin, validateResource(updateFaqSchema), updateFaq);
 
 export default router;

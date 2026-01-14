@@ -17,7 +17,7 @@ export default function ToShipModal({
   } = useQuery({
     queryKey: ["riders", "riderId"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/rider/get-riders`);
+      const res = await axiosInstance.get(`/rider/get-all-rider`);
       return res.data;
     },
   });
@@ -67,13 +67,13 @@ export default function ToShipModal({
                     rider.riderStatus !== "unavailable" &&
                     handleSelectRider(rider._id)
                   }
-                  className={`flex justify-between items-center p-5 rounded-lg border-2 transition-all cursor-pointer group shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
+                  className={`flex justify-between items-center p-5 rounded-lg border-2 transition-all cursor-pointer group hover:translate-x-[2px] hover:translate-y-[2px] ${
                     selectedRiderId === rider._id
-                      ? "bg-indigo-50 border-indigo-600 shadow-[4px_4px_0px_0px_rgba(79,70,229,1)] translate-x-[2px] translate-y-[2px] !shadow-none"
-                      : "bg-white border-black"
+                      ? "bg-indigo-50 border-indigo-600 translate-x-[2px] translate-y-[2px]"
+                      : "bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none"
                   } ${
                     rider.riderStatus === "unavailable"
-                      ? "opacity-50 grayscale cursor-not-allowed border-dashed bg-gray-50 shadow-none translate-none"
+                      ? "opacity-50 grayscale cursor-not-allowed border-dashed bg-gray-50 !shadow-none !translate-none"
                       : ""
                   }`}
                 >

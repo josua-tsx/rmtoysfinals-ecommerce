@@ -100,6 +100,8 @@ const CustomerTicketsPage = lazy(() =>
   import("./pages/CustomerTicketsPage.jsx")
 );
 
+import GlobalErrorBoundary from "./reusable/GlobalErrorBoundary.jsx";
+
 import LoadingSpinner from "./reusable/LoadingSpinner.jsx";
 
 const queryClient = new QueryClient();
@@ -392,11 +394,13 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<LoadingSpinner fullScreen={true} />}>
-        <RouterProvider router={router} />
-      </Suspense>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Suspense fallback={<LoadingSpinner fullScreen={true} />}>
+          <RouterProvider router={router} />
+        </Suspense>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   </StrictMode>
 );

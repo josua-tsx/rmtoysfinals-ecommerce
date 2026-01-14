@@ -5,6 +5,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FiSave, FiPlus, FiTrash2, FiSettings } from "react-icons/fi";
 import { RiRobot2Line } from "react-icons/ri";
 import Buttons from "../../reusable/Buttons";
+import ValidatedInput from "../../reusable/ValidatedInput";
+import {
+  storeInfoSchema,
+  storeNameSchema,
+  taglineSchema,
+  aboutUsSchema,
+  shortTextSchema,
+} from "../../schemas/store.schema";
+import { emailSchema, phMobileSchema } from "../../schemas/auth.schema";
 
 /**
  * =============================================================================
@@ -121,7 +130,13 @@ export default function AdminStoreSettings() {
   // Handle form submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateStoreInfo(formData);
+
+    const result = storeInfoSchema.safeParse(formData);
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    updateStoreInfo(result.data);
   };
 
   // Array handlers
@@ -210,40 +225,45 @@ export default function AdminStoreSettings() {
             📍 Basic Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
                 Store Name
               </label>
-              <input
+              <ValidatedInput
                 type="text"
                 name="storeName"
                 value={formData.storeName}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
                 placeholder="RM Toys"
+                schema={storeNameSchema}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Tagline</label>
-              <input
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
+                Tagline
+              </label>
+              <ValidatedInput
                 type="text"
                 name="tagline"
                 value={formData.tagline}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
                 placeholder="Your Trusted Online Toy Store"
+                schema={taglineSchema}
               />
             </div>
           </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">About Us</label>
-            <textarea
+          <div className="mt-4 flex flex-col gap-1">
+            <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
+              About Us
+            </label>
+            <ValidatedInput
+              type="textarea"
               name="aboutUs"
               value={formData.aboutUs}
               onChange={handleChange}
               rows={3}
-              className="border border-black w-full rounded-[5px] p-2 outline-none resize-none"
               placeholder="Tell customers about your store..."
+              schema={aboutUsSchema}
             />
           </div>
         </div>
@@ -254,22 +274,22 @@ export default function AdminStoreSettings() {
             👤 Owner Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
                 Owner Name
               </label>
-              <input
+              <ValidatedInput
                 type="text"
                 name="ownerName"
                 value={formData.ownerName}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
                 placeholder="Juan Dela Cruz"
+                schema={shortTextSchema}
               />
             </div>
           </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">
+          <div className="mt-4 flex flex-col gap-1">
+            <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
               Owner Story
             </label>
             <textarea
@@ -277,7 +297,7 @@ export default function AdminStoreSettings() {
               value={formData.ownerStory}
               onChange={handleChange}
               rows={3}
-              className="border border-black w-full rounded-[5px] p-2 outline-none resize-none"
+              className="border border-black w-full rounded-[5px] p-2 outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Founded RM Toys in 2020 with a passion for bringing joy to children..."
             />
           </div>
@@ -289,50 +309,56 @@ export default function AdminStoreSettings() {
             📞 Contact Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <input
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
+                Email
+              </label>
+              <ValidatedInput
                 type="email"
                 name="contactEmail"
                 value={formData.contactEmail}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
                 placeholder="support@rmtoys.com"
+                schema={emailSchema}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Phone</label>
-              <input
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
+                Phone
+              </label>
+              <ValidatedInput
                 type="text"
                 name="contactPhone"
                 value={formData.contactPhone}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
-                placeholder="+63 XXX XXX XXXX"
+                placeholder="0917XXXXXXX"
+                schema={phMobileSchema}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Address</label>
-              <input
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
+                Address
+              </label>
+              <ValidatedInput
                 type="text"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
                 placeholder="Manila, Philippines"
+                schema={shortTextSchema}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
                 Business Hours
               </label>
-              <input
+              <ValidatedInput
                 type="text"
                 name="businessHours"
                 value={formData.businessHours}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
                 placeholder="Mon-Sat, 9AM-6PM"
+                schema={shortTextSchema}
               />
             </div>
           </div>
@@ -344,8 +370,8 @@ export default function AdminStoreSettings() {
             📋 Store Policies
           </h2>
           <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
                 Shipping Policy
               </label>
               <textarea
@@ -353,12 +379,12 @@ export default function AdminStoreSettings() {
                 value={formData.shippingPolicy}
                 onChange={handleChange}
                 rows={2}
-                className="border border-black w-full rounded-[5px] p-2 outline-none resize-none"
+                className="border border-black w-full rounded-[5px] p-2 outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="Free shipping for orders over ₱1,500. Metro Manila: 2-3 days."
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
                 Return Policy
               </label>
               <textarea
@@ -366,7 +392,7 @@ export default function AdminStoreSettings() {
                 value={formData.returnPolicy}
                 onChange={handleChange}
                 rows={2}
-                className="border border-black w-full rounded-[5px] p-2 outline-none resize-none"
+                className="border border-black w-full rounded-[5px] p-2 outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="7-day returns with original receipt and unopened packaging."
               />
             </div>
@@ -382,13 +408,13 @@ export default function AdminStoreSettings() {
             {formData.paymentMethods.map((method, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-green-100 text-green-800 rounded-full flex items-center gap-2"
+                className="px-3 py-1 bg-green-100 text-green-800 rounded-full flex items-center gap-2 border border-black text-xs font-bold"
               >
                 {method}
                 <button
                   type="button"
                   onClick={() => removePaymentMethod(index)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 hover:scale-125 transition-transform"
                 >
                   <FiTrash2 size={14} />
                 </button>
@@ -400,7 +426,7 @@ export default function AdminStoreSettings() {
               type="text"
               value={newPaymentMethod}
               onChange={(e) => setNewPaymentMethod(e.target.value)}
-              className="border border-black flex-1 rounded-[5px] p-2 outline-none"
+              className="border border-black flex-1 rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Add payment method (e.g., Maya)"
             />
             <Buttons
@@ -418,19 +444,21 @@ export default function AdminStoreSettings() {
             🌐 Social Media
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Facebook</label>
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
+                Facebook
+              </label>
               <input
                 type="text"
                 name="socialMedia.facebook"
                 value={formData.socialMedia.facebook}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
+                className="border border-black w-full rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="facebook.com/rmtoys"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
                 Instagram
               </label>
               <input
@@ -438,18 +466,20 @@ export default function AdminStoreSettings() {
                 name="socialMedia.instagram"
                 value={formData.socialMedia.instagram}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
+                className="border border-black w-full rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="@rmtoys"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">TikTok</label>
+            <div className="flex flex-col gap-1">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-1 pl-1">
+                TikTok
+              </label>
               <input
                 type="text"
                 name="socialMedia.tiktok"
                 value={formData.socialMedia.tiktok}
                 onChange={handleChange}
-                className="border border-black w-full rounded-[5px] p-2 outline-none"
+                className="border border-black w-full rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="@rmtoys"
               />
             </div>
@@ -470,13 +500,13 @@ export default function AdminStoreSettings() {
             {formData.customPromptRules.map((rule, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 bg-blue-50 p-2 rounded"
+                className="flex items-center gap-2 bg-blue-50 p-2 rounded border border-blue-200"
               >
-                <span className="flex-1 text-sm">{rule}</span>
+                <span className="flex-1 text-sm font-medium">{rule}</span>
                 <button
                   type="button"
                   onClick={() => removeCustomRule(index)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 hover:scale-125 transition-transform"
                 >
                   <FiTrash2 size={14} />
                 </button>
@@ -488,14 +518,14 @@ export default function AdminStoreSettings() {
               type="text"
               value={newCustomRule}
               onChange={(e) => setNewCustomRule(e.target.value)}
-              className="border border-black flex-1 rounded-[5px] p-2 outline-none"
+              className="border border-black flex-1 rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="e.g., Always mention our holiday sale - 15% off!"
             />
             <Buttons
               buttonName="Add Rule"
               onClick={addCustomRule}
               icon={<FiPlus />}
-              className="w-fit px-4 py-2 bg-blue-500"
+              className="w-fit px-4 py-2 bg-blue-500 hover:bg-blue-600"
             />
           </div>
         </div>
@@ -514,20 +544,26 @@ export default function AdminStoreSettings() {
             {formData.specialResponses.map((item, index) => (
               <div
                 key={index}
-                className="flex items-start gap-2 bg-purple-50 p-3 rounded"
+                className="flex items-start gap-2 bg-purple-50 p-3 rounded border border-purple-200"
               >
                 <div className="flex-1">
                   <p className="text-sm">
-                    <strong>Trigger:</strong> {`"${item.trigger}"`}
+                    <span className="font-black text-purple-700 uppercase text-[10px]">
+                      Trigger:
+                    </span>{" "}
+                    {`"${item.trigger}"`}
                   </p>
                   <p className="text-sm">
-                    <strong>Response:</strong> {`"${item.response}"`}
+                    <span className="font-black text-purple-700 uppercase text-[10px]">
+                      Response:
+                    </span>{" "}
+                    {`"${item.response}"`}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeSpecialResponse(index)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 hover:scale-125 transition-transform"
                 >
                   <FiTrash2 size={14} />
                 </button>
@@ -544,7 +580,7 @@ export default function AdminStoreSettings() {
                   trigger: e.target.value,
                 }))
               }
-              className="border border-black rounded-[5px] p-2 outline-none"
+              className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Trigger phrase (e.g., pinaka magandang babae)"
             />
             <input
@@ -556,7 +592,7 @@ export default function AdminStoreSettings() {
                   response: e.target.value,
                 }))
               }
-              className="border border-black rounded-[5px] p-2 outline-none"
+              className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Response (e.g., That would be Girlie Marie! 💕)"
             />
           </div>
@@ -564,7 +600,7 @@ export default function AdminStoreSettings() {
             buttonName="Add Special Response"
             onClick={addSpecialResponse}
             icon={<FiPlus />}
-            className="w-fit px-4 py-2 bg-purple-500"
+            className="w-fit px-4 py-2 bg-purple-500 hover:bg-purple-600"
           />
         </div>
 

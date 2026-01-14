@@ -10,6 +10,7 @@ import { IoIosClose } from "react-icons/io";
 import LoadingSpinner from "../reusable/LoadingSpinner";
 import Buttons from "../reusable/Buttons";
 import { FaCheck, FaTimes } from "react-icons/fa";
+import { fullNameSchema, phMobileSchema } from "../schemas/common.schema";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -230,10 +231,21 @@ export default function OrderSummaryModal({ onClose }) {
     const { fullName, phoneNumber, paymentMethod, notes, currentAddress } =
       inputs;
 
-    if (!fullName || !phoneNumber || !currentAddress)
+    // Validate using Zod schemas
+    const nameResult = fullNameSchema.safeParse(fullName);
+    const phoneResult = phMobileSchema.safeParse(phoneNumber);
+
+    if (!nameResult.success) {
+      return toast.error(nameResult.error.issues[0].message);
+    }
+    if (!phoneResult.success) {
+      return toast.error(phoneResult.error.issues[0].message);
+    }
+    if (!currentAddress) {
       return toast.error(
-        "Please update required fields first in Profile -> Change Information"
+        "Shipping address is required. Please set one in your profile."
       );
+    }
 
     // Before submitting
     if (useCredits === "yes" && currentUser?.credits <= 0) {
@@ -376,8 +388,8 @@ export default function OrderSummaryModal({ onClose }) {
                     />
                     {!currentUser?.fullName && (
                       <span className="text-sm text-red-700">
-                        You don't have a full name. Update it in your profile
-                        page.
+                        You don&apos;t have a full name. Update it in your
+                        profile page.
                       </span>
                     )}
                   </div>
@@ -399,8 +411,8 @@ export default function OrderSummaryModal({ onClose }) {
                     />
                     {!currentUser?.phoneNumber && (
                       <span className="text-sm text-red-700">
-                        You don't have a phone number. Update it in your profile
-                        page.
+                        You don&apos;t have a phone number. Update it in your
+                        profile page.
                       </span>
                     )}
                   </div>
@@ -423,7 +435,7 @@ export default function OrderSummaryModal({ onClose }) {
                   />
                   {!activeAddress?.fullAddress && (
                     <span className="text-sm text-red-700">
-                      You don't have a shipping adddress. Create a shipping
+                      You don&apos;t have a shipping adddress. Create a shipping
                       address in your profile page.
                     </span>
                   )}
@@ -474,7 +486,7 @@ export default function OrderSummaryModal({ onClose }) {
                       onChange={handleChangeCredits}
                       className="text-primary focus:ring-primary"
                     />
-                    <span className="ml-2">Don't Use</span>
+                    <span className="ml-2">Don&apos;t Use</span>
                   </label>
                 </div>
               </div>

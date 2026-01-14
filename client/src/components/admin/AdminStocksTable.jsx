@@ -28,7 +28,7 @@ export default function AdminStocksTable() {
   } = useQuery({
     queryKey: ["stocks"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stocks`);
+      const res = await axiosInstance.get(`/stocks/get-stock`);
       return res.data;
     },
   });
@@ -38,7 +38,9 @@ export default function AdminStocksTable() {
   useQuery({
     queryKey: ["singleDeliveredProduct", deliveryId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stocks/${deliveryId}`);
+      const res = await axiosInstance.get(
+        `/stocks/get-single-stock/${deliveryId}`
+      );
       return res.data;
     },
     enabled: !!deliveryId,

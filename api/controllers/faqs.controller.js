@@ -1,28 +1,13 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import Faqs from "../models/faqs.model.js";
-import { validateAnswer, validateFaqsTitle } from "../utils/validations.js";
 import { logAuditTrail } from "./audit.controller.js";
 
 export const addNewFaqs = async (req, res, next) => {
   const { title, answer } = req.body;
 
-  if (!title.trim()) {
-    return next(handleMakeError(400, "Title is required"));
-  }
-
-  const faqsTitle = validateFaqsTitle(title);
-  if (!faqsTitle.valid) {
-    return next(handleMakeError(400, faqsTitle.message));
-  }
-
-  if (!answer.trim()) {
-    return next(handleMakeError(400, "Answer is required"));
-  }
-
-  const faqsAnswer = validateAnswer(answer);
-  if (!faqsAnswer.valid) {
-    return next(handleMakeError(400, faqsAnswer.message));
-  }
+    /*
+       Manual validation handled by Zod
+    */
 
 
   try {
@@ -163,25 +148,9 @@ export const updateFaq = async (req, res, next) => {
   const { faqSingleId } = req.params;
   const { title: newTitle, answer: newAnswer } = req.body;
   // Validate inputs
-  if (!newTitle || !newTitle.trim()) {
-    return next(handleMakeError(400, "Title is required"));
-  }
-
-  const faqsTitle = validateFaqsTitle(newTitle);
-  if (!faqsTitle.valid) {
-    return next(handleMakeError(400, faqsTitle.message));
-  }
-
-  if (!newAnswer || !newAnswer.trim()) {
-    return next(handleMakeError(400, "Answer is required"));
-  }
-
-
-  
-  const faqsAnswer = validateAnswer(newAnswer);
-  if (!faqsAnswer.valid) {
-    return next(handleMakeError(400, faqsAnswer.message));
-  }
+  /*
+     Manual validation handled by Zod
+  */
 
   try {
     const existingTitle = await Faqs.findOne({

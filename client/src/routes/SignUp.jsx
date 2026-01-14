@@ -8,12 +8,12 @@ import { useState } from "react";
 import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 import { FaUserPlus } from "react-icons/fa";
 import PasswordInput from "../reusable/PasswordInput";
-// import { useUserStore } from "../stores/useUserStore";
+import ValidatedInput from "../reusable/ValidatedInput";
+import { signupSchema } from "../schemas/auth.schema";
+import { emailSchema, usernameSchema } from "../schemas/common.schema";
 
 export default function SignUp() {
   const navigate = useNavigate();
-
-  // const {setCurrentUser} = useUserStore()
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -40,8 +40,17 @@ export default function SignUp() {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    signUpMutation({ username, email, password, confirmPassword });
+
+    const formData = { username, email, password, confirmPassword };
+    const result = signupSchema.safeParse(formData);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    signUpMutation(result.data);
   };
+
   return (
     <section className="h-screen pt-28 bg-yellow p-4 font-main">
       <div className="max-w-[600px] h-full flex flex-col justify-center   mx-auto ">
@@ -55,56 +64,34 @@ export default function SignUp() {
               SIGN UP
             </h1>
           </div>
-          <div className="flex justify-between flex-col">
-            <label
-              htmlFor="email"
-              className=" mb-1 uppercase text-[10px] font-black tracking-widest text-gray-500"
-            >
-              Email:{" "}
-            </label>
-            <input
-              type="text"
-              name="email"
-              id="email"
-              value={email}
-              maxLength={254}
-              placeholder="Ex: example@domain.com"
-              onChange={handleInputChange(setEmail)}
-              className=" outline-none p-3 bg-white border-[#313031] border rounded-[5px]"
-            />
-            <p className="text-[10px] pt-1 text-green-700 font-bold uppercase tracking-tighter">
-              (Enter a valid email.)
-            </p>
-          </div>
-          <div className="flex justify-between flex-col">
-            <label
-              htmlFor="username"
-              className=" mb-1 uppercase text-[10px] font-black tracking-widest text-gray-500"
-            >
-              Username:{" "}
-            </label>
-            <input
-              type="text"
-              name="username"
-              id="username"
-              value={username}
-              maxLength={50}
-              placeholder="Ex: johndoe123"
-              onChange={handleInputChange(setUsername)}
-              className=" outline-none p-3 bg-white border-[#313031] border rounded-[5px]"
-            />
-            <p className="text-[10px] pt-1 text-green-700 font-bold uppercase tracking-tighter">
-              (Username must be 3-30 characters long and contain no special
-              characters.)
-            </p>
-          </div>
+
+          <ValidatedInput
+            label="Email:"
+            name="email"
+            value={email}
+            onChange={handleInputChange(setEmail)}
+            schema={emailSchema}
+            placeholder="Ex: example@domain.com"
+            required
+          />
+
+          <ValidatedInput
+            label="Username:"
+            name="username"
+            value={username}
+            onChange={handleInputChange(setUsername)}
+            schema={usernameSchema}
+            placeholder="Ex: johndoe123"
+            required
+            errorText="(3-30 chars, no special characters)"
+          />
 
           <PasswordInput
             label="Password:"
             name="password"
             value={password}
             onChange={handleInputChange(setPassword)}
-            errorText="(Password must be at least 8 characters and contain at least 1 uppercase letter, symbol, and number)"
+            errorText="(At least 8 chars, 1 uppercase, symbol, and number)"
           />
 
           <PasswordInput
@@ -128,7 +115,7 @@ export default function SignUp() {
           </div>
 
           <div className="absolute rounded-b-[5px] bottom-0 left-0 right-0 mx-auto bg-indigo-500 h-[40px]">
-            {/* white background */}
+            {/* blue accent */}
           </div>
         </form>
 

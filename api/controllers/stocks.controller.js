@@ -34,25 +34,10 @@ export const OrderStocks = async (req, res, next) => {
   } = req.body;
 
   try {
-    // ✅ Validate required fields first (Removed VAT from strict check)
-    if (
-      !product ||
-      !supplier ||
-      !deliveryId ||
-      !shippingPrice ||
-      !dateDelivery ||
-      !shopPrice
-    ) {
-      return res.status(400).json({ message: "Please input required fields!" });
-    }
+    // ✅ Validate required fields first (Validation handled by Zod)
+    // Removed manual required check
 
-    // ✅ Validate ObjectIds
-    if (!mongoose.Types.ObjectId.isValid(product)) {
-      return next(handleMakeError(400, "Invalid product ID"));
-    }
-    if (!mongoose.Types.ObjectId.isValid(supplier)) {
-      return next(handleMakeError(400, "Invalid supplier ID"));
-    }
+    // ✅ Validate ObjectIds (Validation handled by Zod)
 
     // ✅ Fetch Product FIRST to check Tax Status
     const productExists = await Product.findById(product);
@@ -79,46 +64,8 @@ export const OrderStocks = async (req, res, next) => {
       return next(handleMakeError(404, "Supplier not found"));
     }
 
-    // ✅ Additional validations
-    const MAX_SHOP_PRICE = 1000000; // $1 Million
-    const MAX_SHIPPING_PRICE = 10000; // $10k
-    const MAX_QUANTITY = 1000;
-    const MAX_SUPPLIER_PRICE = 1000000;
-
-    if (!supplierPrice) {
-      return next(handleMakeError(400, "Please input supplier price"));
-    }
-    
-    if (Number(supplierPrice) <= 0) {
-      return next(handleMakeError(400, "Supplier price must be a positive number"));
-    }
-
-    if (Number(supplierPrice) > MAX_SUPPLIER_PRICE) {
-      return next(handleMakeError(400, `Supplier price cannot exceed $${MAX_SUPPLIER_PRICE}`));
-    }
-
-    // Quantity specific validation
-    if (Number(quantity) <= 10) {
-      return next(handleMakeError(400, "Quantity must be at least 11"));
-    }
-    if (Number(quantity) > MAX_QUANTITY) {
-      return next(handleMakeError(400, `Quantity cannot exceed ${MAX_QUANTITY}`));
-    }
-
-    // Price validation
-    if (Number(shopPrice) < Number(supplierPrice)) {
-      return next(
-        handleMakeError(400, "Shop price cannot be lower than supplier price")
-      );
-    }
-    if (Number(shopPrice) > MAX_SHOP_PRICE) {
-      return next(handleMakeError(400, `Shop price cannot exceed ${MAX_SHOP_PRICE}`));
-    }
-    
-    // Shipping validation
-    if (Number(shippingPrice) > MAX_SHIPPING_PRICE) {
-       return next(handleMakeError(400, `Shipping price cannot exceed ${MAX_SHIPPING_PRICE}`));
-    }
+    // ✅ Additional validations (Handled by Zod)
+    // Removed manual price and quantity validation logic as it is now enforced by Zod schema
 
 
     // ✅ Get subscribed users (only email field for efficiency)
@@ -313,66 +260,12 @@ export const reorderStock = async (req, res, next) => {
 
     const productId = productIdFromBody || existingStock.product;
 
-    if (!dateDelivery) {
-      return next(handleMakeError(400, "Please input date delivery"));
-    }
-
-    // Commented out strict VAT check to allow fallback
-    // if (!newVatPercent) {
-    //   return next(handleMakeError(400, "Please select VAT"));
-    // }
-
-    if (!supplier) {
-      return next(handleMakeError(400, "Please select Supplier"));
-    }
-
-    if (!shopPrice) {
-      return next(handleMakeError(400, "Please input shop price"));
-    }
-
-    if (!shippingPrice) {
-      return next(handleMakeError(400, "Please input shipping Price"));
-    }
-
-    const MAX_SHOP_PRICE = 1000000; // $1 Million
-    const MAX_SHIPPING_PRICE = 10000; // $10k
-    const MAX_QUANTITY = 1000;
-    const MAX_SUPPLIER_PRICE = 1000000
-
-    if (!supplierPrice) {
-      return next(handleMakeError(400, "Please input supplier price"));
-    }
-    
-    if (Number(supplierPrice) <= 0) {
-      return next(handleMakeError(400, "Supplier price must be a positive number"));
-    }
-
-    if (Number(supplierPrice) > MAX_SUPPLIER_PRICE) {
-      return next(handleMakeError(400, `Supplier price cannot exceed $${MAX_SUPPLIER_PRICE}`));
-    }
-
-    // Quantity specific validation
-    if (Number(newQuantity) <= 0) { // Changed this to allow smaller re-orders if needed, or keep at 10? User generally wants > 0
-      return next(handleMakeError(400, "Quantity must be greater than 0"));
-    }
-    if (Number(newQuantity) > MAX_QUANTITY) {
-      return next(handleMakeError(400, `Quantity cannot exceed ${MAX_QUANTITY}`));
-    }
-
-    // Price validation
-    if (Number(shopPrice) < Number(supplierPrice)) {
-      return next(
-        handleMakeError(400, "Shop price cannot be lower than supplier price")
-      );
-    }
-    if (Number(shopPrice) > MAX_SHOP_PRICE) {
-      return next(handleMakeError(400, `Shop price cannot exceed ${MAX_SHOP_PRICE}`));
-    }
-    
-    // Shipping validation
-    if (Number(shippingPrice) > MAX_SHIPPING_PRICE) {
-       return next(handleMakeError(400, `Shipping price cannot exceed ${MAX_SHIPPING_PRICE}`));
-    }
+    /* 
+       Manual validation for reorder replaced by Zod schema
+       - Required fields
+       - Price limits
+       - Quantity checks
+    */
 
     // 2. Determine VAT to use
     let vatIdToUse = newVatPercent;
@@ -585,16 +478,16 @@ export const getStocks = async (req, res, next) => {
     };
 
     if (stockAlerts.low.length > 0) {
-      await sendSMS(
-        ADMIN_PHONENUMBER,
-        `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length}) \n
-        URGENT! The following items are critically low:\n\n${stockAlerts.low
-          .map(
-            (item) =>
-              `- ${item.product?.productName}: ${item.quantity} remaining`
-          )
-          .join("\n")}\n\nRestock immediately!`
-      );
+      // await sendSMS(
+      //   ADMIN_PHONENUMBER,
+      //   `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length}) \n
+      //   URGENT! The following items are critically low:\n\n${stockAlerts.low
+      //     .map(
+      //       (item) =>
+      //         `- ${item.product?.productName}: ${item.quantity} remaining`
+      //     )
+      //     .join("\n")}\n\nRestock immediately!`
+      // );
 
       // Group alerts by supplier to avoid sending multiple SMS
       const supplierAlerts = {};
@@ -625,7 +518,7 @@ export const getStocks = async (req, res, next) => {
               .join("\n") +
             `\n\nPlease arrange restocking soon. FROM: RM TOYS`;
 
-          await sendSMS(supplier.contactNumber, message);
+          // await sendSMS(supplier.contactNumber, message);
         })
       );
 
@@ -639,13 +532,13 @@ export const getStocks = async (req, res, next) => {
     }
 
     if (stockAlerts.out.length > 0) {
-      await sendSMS(
-        ADMIN_PHONENUMBER,
-        `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length}) \n
-        CRITICAL! The following items are completely out of stock:\n\n${stockAlerts.out
-          .map((item) => `- ${item.product?.productName}`)
-          .join("\n")}\n\nTake immediate action! FROM: RM TOYS`
-      );
+      // await sendSMS(
+      //   ADMIN_PHONENUMBER,
+      //   `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length}) \n
+      //   CRITICAL! The following items are completely out of stock:\n\n${stockAlerts.out
+      //     .map((item) => `- ${item.product?.productName}`)
+      //     .join("\n")}\n\nTake immediate action! FROM: RM TOYS`
+      // );
 
       // SMS to each supplier about their out-of-stock products
       const supplierAlerts = {};
@@ -671,7 +564,7 @@ export const getStocks = async (req, res, next) => {
             "\n"
           )}\n\nImmediate restocking is required to avoid business disruption.`;
 
-          await sendSMS(supplier.contactNumber, message);
+          // await sendSMS(supplier.contactNumber, message);
         })
       );
 

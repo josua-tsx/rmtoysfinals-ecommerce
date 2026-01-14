@@ -1,19 +1,7 @@
 import Supplier from "../models/supplier.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import {
-  validateFullName,
-  validatePHMobile,
-  validateSupplierAddress,
-  validateSupplierName,
-} from "../utils/validations.js";
-import Stocks from "../models/stocks.model.js";
-// import {
-//   isValidFullName,
-//   isValidPhoneNumber,
-//   isValidText1,
-//   isValidText2,
-// } from "../utils/validations.js";
+
 
 export const addSupplier = async (req, res, next) => {
   const userId = req.user.id;
@@ -21,43 +9,12 @@ export const addSupplier = async (req, res, next) => {
   const { contactNumber, supplierName, contactPerson, supplierAddress } =
     req.body;
 
-  if (!supplierName) {
-      return next(handleMakeError(400, "Please input supplier name"));
-  }
-
-  if (!contactNumber) {
-    return next(handleMakeError(400, "Please input contact number"));
-  }
-
- 
-
-  if (!contactPerson) {
-    return next(handleMakeError(400, "Please input contact person"));
-  }
-
-  if (!supplierAddress) {
-    return next(handleMakeError(400, "Please input supplier address"));
-  }
-
-  const supplierNameCheck = validateSupplierName(supplierName);
-  if (!supplierNameCheck.valid) {
-    return next(handleMakeError(400, supplierNameCheck.message));
-  }
-
-  const contactNumberCheck = validatePHMobile(contactNumber);
-  if (!contactNumberCheck.valid) {
-    return next(handleMakeError(400, contactNumberCheck.message));
-  }
-
-  const contactPersonCheck = validateFullName(contactPerson);
-  if (!contactPersonCheck.valid) {
-    return next(handleMakeError(400, contactPersonCheck.message));
-  }
-
-  const supplierAddressCheck = validateSupplierAddress(supplierAddress);
-  if (!supplierAddressCheck.valid) {
-    return next(handleMakeError(400, supplierAddressCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for supplierName, contactNumber, contactPerson, 
+    and supplierAddress have been removed.
+    These are now handled by Zod middleware in routes/supplier.route.js
+  */
 
   try {
     const newSupplier = new Supplier({
@@ -220,41 +177,11 @@ export const editSupplier = async (req, res, next) => {
   const { supplierName, contactPerson, contactNumber, supplierAddress } =
     req.body;
 
-  if (!contactNumber) {
-    return next(handleMakeError(400, "Please input contact number"));
-  }
-
-  if (!supplierName) {
-    return next(handleMakeError(400, "Please input supplier name"));
-  }
-
-  if (!contactPerson) {
-    return next(handleMakeError(400, "Please input contact person"));
-  }
-
-  if (!supplierAddress) {
-    return next(handleMakeError(400, "Please input supplier address"));
-  }
-
-  const supplierNameCheck = validateSupplierName(supplierName);
-  if (!supplierNameCheck.valid) {
-    return next(handleMakeError(400, supplierNameCheck.message));
-  }
-
-  const contactNumberCheck = validatePHMobile(contactNumber);
-  if (!contactNumberCheck.valid) {
-    return next(handleMakeError(400, contactNumberCheck.message));
-  }
-
-  const contactPersonCheck = validateFullName(contactPerson);
-  if (!contactPersonCheck.valid) {
-    return next(handleMakeError(400, contactPersonCheck.message));
-  }
-
-  const supplierAddressCheck = validateSupplierAddress(supplierAddress);
-  if (!supplierAddressCheck.valid) {
-    return next(handleMakeError(400, supplierAddressCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for contactNumber, supplierName, contactPerson, 
+    and supplierAddress have been removed.
+  */
 
   try {
     const updateSupplier = await Supplier.findByIdAndUpdate(supplierId, {

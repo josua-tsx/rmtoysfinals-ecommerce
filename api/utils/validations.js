@@ -1,570 +1,96 @@
-  export const validateEmail = (email) => {
-  if (!email) {
-    return { valid: false, message: "Email is required" };
-  }
-
-  const trimmedEmail = email.trim();
-  if (email !== trimmedEmail) {
-    return { valid: false, message: "Remove spaces before/after the email" };
-  }
-
-  // Split email into local and domain parts
-  const parts = trimmedEmail.split("@");
-
-  // Check if email has exactly one @
-  if (parts.length !== 2) {
-    return { valid: false, message: "Email must contain exactly one @" };
-  }
-
-  const [localPart, domain] = parts;
-
-  // Validate local part characters (only letters, numbers, dots, hyphens, underscores)
-  if (!/^[a-zA-Z0-9._-]+$/.test(localPart)) {
-    return {
-      valid: false,
-      message: "Local part can only contain letters, numbers, ., -, or _",
-    };
-  }
-
-  // Check for consecutive valid symbols in local part (., -, _)
-  if (/([._-])\1/.test(localPart)) {
-    return {
-      valid: false,
-      message: "Local part cannot have consecutive symbols (., -, _)",
-    };
-  }
-
-  // Check local part starts/ends correctly
-  if (
-    localPart.startsWith(".") ||
-    localPart.startsWith("-") ||
-    localPart.startsWith("_") ||
-    localPart.endsWith(".") ||
-    localPart.endsWith("-") ||
-    localPart.endsWith("_")
-  ) {
-    return {
-      valid: false,
-      message: "Local part cannot start or end with ., -, or _",
-    };
-  }
-
-  // Validate domain part characters (only letters, numbers, dots, hyphens)
-  if (!/^[a-zA-Z0-9.-]+$/.test(domain)) {
-    return {
-      valid: false,
-      message: "Domain can only contain letters, numbers, ., or -",
-    };
-  }
-
-  // Check for consecutive valid symbols in domain (., -)
-  if (/([.-])\1/.test(domain)) {
-    return {
-      valid: false,
-      message: "Domain cannot have consecutive symbols (., -)",
-    };
-  }
-
-  // Check domain starts/ends correctly
-  if (
-    domain.startsWith(".") ||
-    domain.startsWith("-") ||
-    domain.endsWith(".") ||
-    domain.endsWith("-")
-  ) {
-    return {
-      valid: false,
-      message: "Domain cannot start or end with . or -",
-    };
-  }
-
-  // Check for valid TLD (at least 2 letters, no numbers)
-  const domainParts = domain.split(".");
-  const tld = domainParts[domainParts.length - 1];
-  if (!/^[a-zA-Z]{2,}$/.test(tld)) {
-    return {
-      valid: false,
-      message: "TLD must be at least 2 letters and contain no numbers",
-    };
-  }
-
-  // Check for .com with no extra letters
-  if (
-    domain.toLowerCase().endsWith(".com") &&
-    domain !== domain.toLowerCase().split(".com")[0] + ".com"
-  ) {
-    return {
-      valid: false,
-      message: "Invalid domain (.com should not have extra letters)",
-    };
-  }
-
-  return { valid: true };
-};
-
-
-export const validateFullName = (fullName) => {
-  if (!fullName) {
-    return { valid: false, message: "Full name is required" };
-  }
-
-  // Trim and check for leading/trailing spaces
-  const trimmedName = fullName.trim();
-  if (fullName !== trimmedName) {
-    return { valid: false, message: "Remove spaces before/after the name" };
-  }
-
-  // Length check (2-100 chars)
-  if (trimmedName.length < 2 || trimmedName.length > 100) {
-    return { valid: false, message: "Full name must be 2-100 characters" };
-  }
-
-  // Allow letters, apostrophes, hyphens, spaces, and SINGLE dots
-  if (!/^[\p{L}' .-]+$/u.test(trimmedName) || /\.{2,}/.test(trimmedName)) {
-    return {
-      valid: false,
-      message:
-        "Use only letters, spaces, hyphens (-), apostrophes ('), or single dots at Full name",
-    };
-  }
-
-  // Check for double spaces or invalid punctuation placement
-  if (/\s{2,}/.test(trimmedName) || /[-']\s|[\s-']$/.test(trimmedName)) {
-    return { valid: false, message: "Fix spacing between full name" };
-  }
-
-  return { valid: true };
-};
-
-export const validateUsername = (username) => {
-  if (!username) {
-    return { valid: false, message: "Username is required" };
-  }
-
-  // Disallow any whitespace
-  if (/\s/.test(username)) {
-    return { valid: false, message: "Username cannot contain spaces" };
-  }
-
-  // Must start with a letter, followed by letters or numbers
-  const usernameRegex = /^[a-zA-Z]+[a-zA-Z0-9]*$/;
-
-  if (!usernameRegex.test(username)) {
-    return {
-      valid: false,
-      message:
-        "Username must start with a letter and can only contain letters and numbers (no symbols)",
-    };
-  }
-
-  // Length check (3-30 chars)
-  if (username.length < 3 || username.length > 30) {
-    return {
-      valid: false,
-      message: "Username must be 3-30 characters long",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validatePassword = (password) => {
-  if (!password) {
-    return { valid: false, message: "Password is required" };
-  }
-
-  // Check minimum length
-  if (password.length < 8) {
-    return {
-      valid: false,
-      message: "Password must be at least 8 characters",
-    };
-  }
-
-  // Disallow whitespace
-  if (/\s/.test(password)) {
-    return {
-      valid: false,
-      message: "Password cannot contain spaces",
-    };
-  }
-
-  // Require at least one uppercase letter
-  if (!/[A-Z]/.test(password)) {
-    return {
-      valid: false,
-      message: "Password must contain at least one uppercase letter (A-Z)",
-    };
-  }
-
-  // Require at least one symbol
-  if (!/[-!@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/.test(password)) {
-    return {
-      valid: false,
-      message: "Password must contain at least one symbol (!@#$% etc.)",
-    };
-  }
-
-  // Require at least one number
-  if (!/[0-9]/.test(password)) {
-    return {
-      valid: false,
-      message: "Password must contain at least one number (0-9)",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validatePHMobile = (phone) => {
-  if (!phone) {
-    return { valid: false, message: "Phone number is required" };
-  }
-
-  // Remove all non-digit characters
-  const digitsOnly = phone.replace(/\D/g, "");
-
-  if (digitsOnly.length !== 11) {
-    return {
-      valid: false,
-      message: "Phone number must be 11 digits (ex: 099987654123)",
-    };
-  }
-
-  if (!digitsOnly.startsWith("09")) {
-    return {
-      valid: false,
-      message: "Phone number must start with 09",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateProductName = (name) => {
-  if (!name) {
-    return { valid: false, message: "Product name is required" };
-  }
-
-  // Trim and check for leading/trailing spaces
-  if (name !== name.trim()) {
-    return {
-      valid: false,
-      message: "Remove spaces before/after the product name",
-    };
-  }
-
-  // Length check (5-50 chars)
-  if (name.length < 5 || name.length > 50) {
-    return {
-      valid: false,
-      message: "Product name must be 5-50 characters",
-    };
-  }
-
-  // Double spaces check
-  if (/\s{2,}/.test(name)) {
-    return {
-      valid: false,
-      message: "Double spaces are not allowed",
-    };
-  }
-
-  // Allow letters, numbers, spaces, hyphens (-), and apostrophes (')
-  if (!/^[a-zA-Z0-9 \-']+$/.test(name)) {
-    return {
-      valid: false,
-      message:
-        "Only letters, numbers, spaces, hyphens (-), and apostrophes (') are allowed",
-    };
-  }
-
-  // Prevent names starting with a number
-  if (/^[0-9]/.test(name)) {
-    return {
-      valid: false,
-      message: "Product name cannot start with a number",
-    };
-  }
-
-  // Prevent names starting/ending with hyphen/apostrophe
-  if (/^[-']|[-']$/.test(name)) {
-    return {
-      valid: false,
-      message:
-        "Product name cannot start or end with a hyphen (-) or apostrophe (')",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateFaqsTitle = (name) => {
-  if (!name) {
-    return { valid: false, message: "Faqs title is required" };
-  }
-
-  // Trim and check for leading/trailing spaces
-  if (name !== name.trim()) {
-    return {
-      valid: false,
-      message: "Remove spaces before/after the faqs title",
-    };
-  }
-
-  // Length check (5-50 chars)
-  if (name.length < 5 || name.length > 50) {
-    return {
-      valid: false,
-      message: "Faqs title must be 5-50 characters",
-    };
-  }
-
-  // Double spaces check
-  if (/\s{2,}/.test(name)) {
-    return {
-      valid: false,
-      message: "Double spaces are not allowed",
-    };
-  }
-
-  // Allow letters, numbers, spaces, hyphens (-), apostrophes ('), and question marks (?)
-  if (!/^[a-zA-Z0-9 \-'?]+$/.test(name)) {
-    return {
-      valid: false,
-      message:
-        "Title must contain only letters, numbers, spaces, hyphens (-), apostrophes ('), and question marks (?) are allowed",
-    };
-  }
-
-  // Prevent names starting with a number
-  if (/^[0-9]/.test(name)) {
-    return {
-      valid: false,
-      message: "Faqs title cannot start with a number",
-    };
-  }
-
-  // Prevent names starting/ending with hyphen/apostrophe
-  if (/^[-']|[-']$/.test(name)) {
-    return {
-      valid: false,
-      message:
-        "Faqs title cannot start or end with a hyphen (-) or apostrophe (')",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateAnswer = (desc) => {
-  if (!desc) {
-    return { valid: false, message: "Answer is required" };
-  }
-
-  // Trim and check for leading/trailing spaces
-  if (desc !== desc.trim()) {
-    return {
-      valid: false,
-      message: "Remove spaces before/after the Answer",
-    };
-  }
-
-  // Max length check (200 chars)
-  if (desc.length > 500) {
-    return {
-      valid: false,
-      message: "Answer cannot exceed 500 characters",
-    };
-  }
-
-  // Double spaces check
-  if (/\s{2,}/.test(desc)) {
-    return {
-      valid: false,
-      message: "Double spaces are not allowed",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateProductDescription = (desc) => {
-  if (!desc) {
-    return { valid: false, message: "Description is required" };
-  }
-
-  // Trim and check for leading/trailing spaces
-  if (desc !== desc.trim()) {
-    return {
-      valid: false,
-      message: "Remove spaces before/after the description",
-    };
-  }
-
-  // Max length check (200 chars)
-  if (desc.length > 200) {
-    return {
-      valid: false,
-      message: "Description cannot exceed 200 characters",
-    };
-  }
-
-  // Double spaces check
-  if (/\s{2,}/.test(desc)) {
-    return {
-      valid: false,
-      message: "Double spaces are not allowed",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateCategoryNamee = (name) => {
-  if (!name) {
-    return { valid: false, message: "Category name is required" };
-  }
-
-  // Trim and check for leading/trailing spaces
-  const trimmedName = name.trim();
-  if (name !== trimmedName) {
-    return { valid: false, message: "Remove spaces before/after the name" };
-  }
-
-  // Length check (3-50 chars)
-  if (trimmedName.length < 3 || trimmedName.length > 50) {
-    return {
-      valid: false,
-      message: "Category name must be 3-50 characters long",
-    };
-  }
-
-  // Allow letters and single spaces between words (no numbers or symbols)
-  if (!/^[A-Za-z]+(?:\s[A-Za-z]+)*$/.test(trimmedName)) {
-    return {
-      valid: false,
-      message:
-        "Category name must contain only letters and single spaces between words",
-    };
-  }
-
-  // Check for consecutive spaces (shouldn't happen due to trim, but just in case)
-  if (/\s{2,}/.test(trimmedName)) {
-    return {
-      valid: false,
-      message: "Use only single spaces between words",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateCategoryDescription = (desc) => {
-  if (!desc) return { valid: true }; // Optional field
-
-  const trimmedDesc = desc.trim();
-  if (desc !== trimmedDesc) {
-    return {
-      valid: false,
-      message: "Remove spaces before/after the description",
-    };
-  }
-
-  if (trimmedDesc.length > 200) {
-    return {
-      valid: false,
-      message: "Description cannot exceed 200 characters",
-    };
-  }
-
-  if (/\s{2,}/.test(trimmedDesc)) {
-    return { valid: false, message: "Remove double spaces" };
-  }
-
-  // Allows letters, numbers, spaces, and basic punctuation
-  if (!/^[A-Za-z0-9\s.,!?-]+$/.test(trimmedDesc)) {
-    return {
-      valid: false,
-      message: "Description contains invalid characters",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateSupplierName = (name) => {
-  if (!name) {
-    return { valid: false, message: "Supplier name is required" };
-  }
-
-  const trimmedName = name.trim();
-  if (name !== trimmedName) {
-    return { valid: false, message: "Remove spaces before/after the name" };
-  }
-
-  if (trimmedName.length < 3 || trimmedName.length > 50) {
-    return {
-      valid: false,
-      message: "Supplier name must be 3-50 characters long",
-    };
-  }
-
-  // Allow letters, numbers, spaces, and common punctuation (including . for abbreviations)
-  if (!/^[A-Za-z0-9\s\-',.&()]+$/.test(trimmedName)) {
-    return {
-      valid: false,
-      message:
-        "Supplier name contains invalid characters (only letters, numbers, spaces, and -',.&() allowed)",
-    };
-  }
-
-  // Prevent names starting/ending with HYPHENS/APOSTROPHES only (but allow trailing .)
-  if (/^[-']|[-']$/.test(trimmedName)) {
-    return {
-      valid: false,
-      message: "Supplier name cannot start or end with hyphens/apostrophes",
-    };
-  }
-
-  return { valid: true };
-};
-
-export const validateSupplierAddress = (address) => {
-  if (!address) {
-    return { valid: false, message: "Address is required" };
-  }
-
-  // Trim and check for leading/trailing spaces
-  const trimmedAddress = address.trim();
-  if (address !== trimmedAddress) {
-    return { valid: false, message: "Remove spaces before/after the address" };
-  }
-
-  // Length check (5-200 chars)
-  if (trimmedAddress.length < 5 || trimmedAddress.length > 200) {
-    return {
-      valid: false,
-      message: "Address must be 5-200 characters long",
-    };
-  }
-
-  // Double spaces check
-  if (/\s{2,}/.test(trimmedAddress)) {
-    return {
-      valid: false,
-      message: "Remove double spaces in the address",
-    };
-  }
-
-  // Allow letters, numbers, spaces, and basic punctuation (including #)
-  if (!/^[A-Za-z0-9\s.,'#-]+$/.test(trimmedAddress)) {
-    return {
-      valid: false,
-      message:
-        "Address contains invalid characters (only letters, numbers, spaces, and .,-'# allowed)",
-    };
-  }
-
-  return { valid: true };
-};
+import { z } from "zod";
+
+/**
+ * Shared Zod Schemas for the entire project.
+ * These replace the legacy manual regex functions in favor of a central Zod-based shield.
+ */
+
+export const USERNAME_REGEX = /^[a-zA-Z]+[a-zA-Z0-9]*$/;
+export const PASSWORD_SYMBOL_REGEX = /[-!@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/;
+
+/**
+ * Email validation schema with strict TLD and format rules.
+ */
+export const emailSchema = z
+  .string({ required_error: "Email is required" })
+  .trim()
+  .min(1, "Email is required")
+  .refine((val) => val.split("@").length === 2, "Email must contain exactly one @")
+  .superRefine((val, ctx) => {
+    const parts = val.split("@");
+    if (parts.length !== 2) return;
+
+    const [localPart, domain] = parts;
+
+    if (!/^[a-zA-Z0-9._-]+$/.test(localPart)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local part can only contain letters, numbers, ., -, or _" });
+    }
+
+    if (/([._-])\1/.test(localPart)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local part cannot have consecutive symbols (., -, _)" });
+    }
+
+    if (/^[-._]|[-._]$/.test(localPart)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local part cannot start or end with ., -, or _" });
+    }
+
+    if (!/^[a-zA-Z0-9.-]+$/.test(domain)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Domain can only contain letters, numbers, ., or -" });
+    }
+
+    if (/([.-])\1/.test(domain)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Domain cannot have consecutive symbols (., -)" });
+    }
+
+    if (/^[.-]|[.-]$/.test(domain)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Domain cannot start or end with . or -" });
+    }
+
+    const domainParts = domain.split(".");
+    const tld = domainParts[domainParts.length - 1];
+    if (!/^[a-zA-Z]{2,}$/.test(tld)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "TLD must be at least 2 letters and contain no numbers" });
+    }
+
+    if (domain.toLowerCase().endsWith(".com") && domain.toLowerCase() !== domain.toLowerCase().split(".com")[0] + ".com") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid domain (.com should not have extra letters)" });
+    }
+  });
+
+/**
+ * Username validation schema.
+ */
+export const usernameSchema = z
+  .string({ required_error: "Username is required" })
+  .trim()
+  .min(3, "Username must be 3-30 characters long")
+  .max(30, "Username must be 3-30 characters long")
+  .regex(USERNAME_REGEX, "Username must start with a letter and contain no symbols")
+  .toLowerCase();
+
+/**
+ * Password validation schema.
+ */
+export const passwordSchema = z
+  .string({ required_error: "Password is required" })
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter (A-Z)")
+  .regex(/[0-9]/, "Password must contain at least one number (0-9)")
+  .regex(PASSWORD_SYMBOL_REGEX, "Password must contain at least one symbol (!@#$% etc.)")
+  .refine((val) => !/\s/.test(val), "Password cannot contain spaces");
+
+/**
+ * PH Mobile Number validation.
+ */
+export const phMobileSchema = z
+  .string({ required_error: "Phone number is required" })
+  .regex(/^(09|\+639)\d{9}$/, "Invalid Philippine mobile number (must start with 09 or +639)");
+
+/**
+ * Full Name validation.
+ */
+export const fullNameSchema = z
+  .string({ required_error: "Full name is required" })
+  .trim()
+  .min(2, "Full name must be at least 2 characters")
+  .regex(/^[a-zA-Z\s'-]+$/, "Full name can only contain letters, spaces, hyphens, and apostrophes");

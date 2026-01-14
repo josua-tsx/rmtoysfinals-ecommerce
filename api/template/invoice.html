@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice #{{orderId}}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 12px;
+      color: #1a1a1a;
+      padding: 40px;
+      background: #fff;
+    }
+    .invoice-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid #000;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .store-info h1 {
+      font-size: 28px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+    .store-info p {
+      color: #666;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .invoice-meta {
+      text-align: right;
+    }
+    .invoice-meta h2 {
+      font-size: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #4f46e5;
+      margin-bottom: 10px;
+    }
+    .invoice-meta p {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 3px;
+    }
+    .invoice-meta .order-id {
+      font-family: monospace;
+      font-size: 10px;
+      background: #f3f4f6;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 5px;
+    }
+    /* Customer Info */
+    .customer-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      gap: 40px;
+    }
+    .customer-box {
+      flex: 1;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .customer-box h3 {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    .customer-box p {
+      font-size: 12px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+    /* Items Table */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    .items-table thead {
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .items-table th {
+      padding: 12px 15px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .items-table th:last-child,
+    .items-table td:last-child {
+      text-align: right;
+    }
+    .items-table td {
+      padding: 15px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+    .items-table tbody tr:hover {
+      background: #f9fafb;
+    }
+    .product-name {
+      font-weight: 600;
+    }
+    .product-category {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    /* Totals */
+    .totals-section {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .totals-box {
+      width: 300px;
+      border: 2px solid #1a1a1a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .totals-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .totals-row:last-child {
+      border-bottom: none;
+    }
+    .totals-row.grand-total {
+      background: #4f46e5;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .totals-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .totals-value {
+      font-family: monospace;
+      font-weight: 600;
+    }
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px dashed #d1d5db;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 10px;
+    }
+    .footer p {
+      margin-bottom: 3px;
+    }
+    .thank-you {
+      font-size: 14px;
+      font-weight: 700;
+      color: #4f46e5;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="store-info">
+        <h1>{{storeName}}</h1>
+        <p>{{storeAddress}}</p>
+        <p>{{storePhone}} | {{storeEmail}}</p>
+      </div>
+      <div class="invoice-meta">
+        <h2>Invoice</h2>
+        <p><strong>Date:</strong> {{orderDate}}</p>
+        <p><strong>Status:</strong> {{paymentStatus}}</p>
+        <span class="order-id">Order #{{orderId}}</span>
+      </div>
+    </div>
+
+    <!-- Customer Info -->
+    <div class="customer-section">
+      <div class="customer-box">
+        <h3>Billed To</h3>
+        <p><strong>{{customerName}}</strong></p>
+        <p>{{customerEmail}}</p>
+        <p>{{customerPhone}}</p>
+      </div>
+      <div class="customer-box">
+        <h3>Ship To</h3>
+        <p>{{shippingAddress}}</p>
+      </div>
+      <div class="customer-box">
+        <h3>Payment Method</h3>
+        <p>{{paymentMethod}}</p>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width: 50%;">Product</th>
+          <th style="width: 15%;">Qty</th>
+          <th style="width: 15%;">Unit Price</th>
+          <th style="width: 20%;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each orderItems}}
+        <tr>
+          <td>
+            <div class="product-name">{{this.productName}}</div>
+            <div class="product-category">{{this.category}}</div>
+          </td>
+          <td>{{this.quantity}}</td>
+          <td>₱{{this.unitPrice}}</td>
+          <td>₱{{this.totalPrice}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="totals-section">
+      <div class="totals-box">
+        <div class="totals-row">
+          <span class="totals-label">Subtotal</span>
+          <span class="totals-value">₱{{subtotal}}</span>
+        </div>
+        <div class="totals-row">
+          <span class="totals-label">Shipping</span>
+          <span class="totals-value">₱{{shippingPrice}}</span>
+        </div>
+        {{#if vatAmount}}
+        <div class="totals-row">
+          <span class="totals-label">VAT (12%)</span>
+          <span class="totals-value">₱{{vatAmount}}</span>
+        </div>
+        {{/if}}
+        {{#if usedCredits}}
+        <div class="totals-row">
+          <span class="totals-label">Credits Used</span>
+          <span class="totals-value" style="color: #dc2626;">-₱{{usedCredits}}</span>
+        </div>
+        {{/if}}
+        <div class="totals-row grand-total">
+          <span class="totals-label">Total</span>
+          <span class="totals-value">₱{{totalPrice}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p class="thank-you">Thank you for shopping with us!</p>
+      <p>This is a computer-generated invoice. No signature required.</p>
+      <p>For questions, contact us at {{storeEmail}}</p>
+    </div>
+  </div>
+</body>
+</html>

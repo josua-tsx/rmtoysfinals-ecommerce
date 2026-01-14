@@ -1,6 +1,12 @@
 import { useState } from "react";
+import {
+  createCategorySchema,
+  categoryNameSchema,
+  categoryDescriptionSchema,
+} from "../../schemas/category.schema";
 import AdminCategoryTable from "../../components/admin/AdminCategoryTable";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
+import ValidatedInput from "../../reusable/ValidatedInput";
 import { IoMdAdd } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
 import FormModal from "../../reusable/FormModal";
@@ -38,7 +44,15 @@ export default function AdminCategory() {
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    addCategoryMutation({ categoryName, categoryDescription });
+
+    const data = { categoryName, categoryDescription };
+    const result = createCategorySchema.safeParse(data);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    addCategoryMutation(result.data);
   };
 
   const toggleAddCategory = () => {
@@ -94,42 +108,46 @@ export default function AdminCategory() {
           submitLabel="Add Category"
           isSubmitting={isCategoryPending}
         >
-          <div className="flex gap-2 p-2 flex-col">
+          <div className="flex gap-4 p-2 flex-col">
             <div className="flex gap-2 flex-col">
-              <label htmlFor="categoryName" className="">
+              <label
+                htmlFor="categoryName"
+                className="font-black uppercase text-xs tracking-widest pl-1"
+              >
                 CATEGORY NAME
-                <p className="text-sm pt-1  text-green-700">
-                  (Category name do not allow spaces and number. It should be
-                  between 3 to 50 max characters.)
-                </p>
               </label>
-              <input
-                type="text"
+              <ValidatedInput
                 name="categoryName"
-                id="categoryName"
                 value={categoryName}
-                maxLength={50}
                 onChange={handleInputChange(setCategoryName)}
-                className="border border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+                schema={categoryNameSchema}
+                placeholder="Enter category name"
                 required
               />
+              <p className="text-[10px] pt-1 text-gray-500 uppercase tracking-tight">
+                (Name should be 3-50 chars. Only letters, numbers and single
+                spaces allowed.)
+              </p>
             </div>
             <div className="flex gap-2 flex-col">
-              <label htmlFor="categoryDescription" className="">
-                CATEGORY DESCRIPTION :{" "}
-                <p className="text-sm pt-1  text-green-700">
-                  (Category description must not exceed to 200.)
-                </p>
+              <label
+                htmlFor="categoryDescription"
+                className="font-black uppercase text-xs tracking-widest pl-1"
+              >
+                CATEGORY DESCRIPTION
               </label>
-              <textarea
-                type="text"
+              <ValidatedInput
+                type="textarea"
                 name="categoryDescription"
-                id="categoryDescription"
                 value={categoryDescription}
-                maxLength={200}
                 onChange={handleInputChange(setCategoryDescription)}
-                className="border resize-none border-black w-full rounded-[5px] p-1 h-[50p] outline-none"
+                schema={categoryDescriptionSchema}
+                className="h-[100px]"
+                placeholder="Enter category description"
               />
+              <p className="text-[10px] pt-1 text-gray-500 uppercase tracking-tight">
+                (Max 200 characters allowed.)
+              </p>
             </div>
           </div>
         </FormModal>

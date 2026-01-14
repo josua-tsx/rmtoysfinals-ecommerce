@@ -17,7 +17,6 @@ import {
   updateRiderStatus,
   validateStatus,
 } from "../services/orderService.js";
-import { validateEmail, validateFullName, validatePHMobile, validateSupplierAddress } from "../utils/validations.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -41,21 +40,12 @@ export const userPlaceOrder = async (req, res, next) => {
   session.startTransaction();
 
   try {
-    // Validate inputs
-    if (!shippingAddress) {
-      await session.abortTransaction();
-      return next(handleMakeError(400, "Shipping address is required"));
-    }
-
-    const shippingAddressCheck = validateSupplierAddress(shippingAddress);
-  if (!shippingAddressCheck.valid) {
-    return next(handleMakeError(400, shippingAddressCheck.message));
-  }
-
-    if (orderItems.length === 0) {
-      await session.abortTransaction();
-      return next(handleMakeError(400, "Order must contain products"));
-    }
+    /* 
+      VALIDATION REFACTOR NOTE:
+      Manual validations for shippingAddress, orderItems, and quantities 
+      have been removed. These are now handled by Zod middleware 
+      in routes/order.route.js
+    */
 
     // Process order items
     let orderItemsWithQuantity = orderItems.map((item) => ({
@@ -68,25 +58,8 @@ export const userPlaceOrder = async (req, res, next) => {
       0
     );
 
-    // IF STOCK OF SPECIFIC PRODUCT IN THE CARD IS 0 THEN YOU CAN NOT ORDER IT OR PROCEED TO CHECKOUT
+    // Business Logic: Check Stocks (Keep this as it's database-dependent)
     for (const item of orderItemsWithQuantity) {
-      if (item.quantity <= 0) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, "Item quantity must be greater than zero")
-        );
-      }
-
-      if (item.quantity > 5) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(
-            400,
-            "You can only order up to 5 items per product at a time"
-          )
-        );
-      }
-
       const productStock = await Stocks.findOne({ product: item.productId });
 
       if (!productStock || productStock.quantity < item.quantity) {
@@ -1214,9 +1187,10 @@ export const updateDeliveryStatus = async (req, res, next) => {
     const userId = req?.user?.id;
   
     try {
-      if (!validateStatus(status)) {
-        return next(handleMakeError(400, "Invalid delivery status."));
-      }
+      /* 
+        VALIDATION REFACTOR NOTE:
+        Status validation handled by Zod middleware.
+      */
   
       let order = await Order.findById(orderId).populate("userId");
       let rider = await Rider.findById(riderId);
@@ -1475,11 +1449,11 @@ export const updatePaymentStatus = async (req, res, next) => {
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
       Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      await sendSMS(
-        paymentStatusOrderPhoneNumber,
-        failedSubject,
-        failedMessage
-      );
+      // await sendSMS(
+      //   paymentStatusOrderPhoneNumber,
+      //   failedSubject,
+      //   failedMessage
+      // );
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {
@@ -1520,11 +1494,11 @@ export const updatePaymentStatus = async (req, res, next) => {
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
       Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      await sendSMS(
-        paymentStatusOrderPhoneNumber,
-        failedSubject,
-        failedMessage
-      );
+      // await sendSMS(
+      //   paymentStatusOrderPhoneNumber,
+      //   failedSubject,
+      //   failedMessage
+      // );
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {

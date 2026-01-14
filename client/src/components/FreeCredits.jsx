@@ -1,4 +1,15 @@
 import { useEffect, useState } from "react";
+import {
+  FaGamepad,
+  FaTrophy,
+  FaGift,
+  FaCoins,
+  FaCheckCircle,
+  FaLock,
+  FaHourglassHalf,
+  FaSync,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 import PlayGameModal from "./PlayGameModal";
 import { useUserStore } from "../stores/useUserStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -71,9 +82,9 @@ export default function FreeCredits() {
 
             setOpenModal(true);
           }}
-          className="border border-black p-2   rounded-[5px] bg-primary text-card shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] "
+          className="border border-black p-2   rounded-[5px] bg-primary text-card shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] flex items-center gap-2"
         >
-          Play to Claim Free Credits 🎮
+          Play to Claim Free Credits <FaGamepad />
         </button>
 
         {openModal && (
@@ -89,8 +100,8 @@ export default function FreeCredits() {
               </button>
 
               <div className="  flex flex-col justify-center items-center">
-                <h1 className="text-2xl w-full text-white text-center p-4 mb-5 bg-primary rounded-t-[5px]">
-                  🎮 Rock-Paper-Scissors Game Rules
+                <h1 className="text-2xl w-full text-white text-center p-4 mb-5 bg-primary rounded-t-[5px] flex items-center justify-center gap-2">
+                  <FaGamepad /> Rock-Paper-Scissors Game Rules
                 </h1>
                 <div>
                   <p className="text-black w-[80%] mx-auto  text-center">
@@ -103,35 +114,52 @@ export default function FreeCredits() {
 
               <div className="flex flex-col h-[350px] md:h-[500px] overflow-y-auto p-4 gap-4">
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="">⚔️ How to Play</label>
+                  <label htmlFor="" className="flex items-center gap-1">
+                    <FaGamepad /> How to Play
+                  </label>
                   <ul className="flex flex-col">
                     <li>Choose Rock, Paper, or Scissors</li>
-                    <li>Beat the computer's choice to win</li>
+                    <li>Beat the computer&apos;s choice to win</li>
                     <li>Win 3 times in a row to claim your reward</li>
                     <li>Come back after 24 hours to play again</li>
                   </ul>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="">🏆 Winning Streak System</label>
+                  <label htmlFor="" className="flex items-center gap-1">
+                    <FaTrophy /> Winning Streak System
+                  </label>
                   <ul>
                     <li>1st Win: +1 to your streak counte</li>
                     <li>2nd Win: +1 to your streak counter</li>
                     <li>
-                      3rd Win: 🎉 Congratulations! You earn random credits!
+                      3rd Win: <FaGift className="inline mb-1" />{" "}
+                      Congratulations! You earn random credits!
                     </li>
                   </ul>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="">💰 Reward Tiers</label>
+                  <label htmlFor="" className="flex items-center gap-1">
+                    <FaCoins /> Reward Tiers
+                  </label>
                   <ul>
-                    <li>✅ You receive your credit reward</li>
-                    <li>🔒 Your account gets a 24-hour play lock</li>
-                    <li>⏳ You must wait 24 hours to play again</li>
-                    <li>🔄 Your win streak resets to 0</li>
+                    <li className="flex items-center gap-2">
+                      <FaCheckCircle /> You receive your credit reward
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <FaLock /> Your account gets a 24-hour play lock
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <FaHourglassHalf /> You must wait 24 hours to play again
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <FaSync /> Your win streak resets to 0
+                    </li>
                   </ul>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="">☹️ Losing Consequences</label>
+                  <label htmlFor="" className="flex items-center gap-1">
+                    <FaExclamationTriangle /> Losing Consequences
+                  </label>
                   <ul>
                     <li>
                       If you lose at any point, your current win streak
@@ -139,8 +167,8 @@ export default function FreeCredits() {
                     </li>
                     <li>Your streak cannot go below 0</li>
                     <li>
-                      Losing doesn't trigger the 24-hour lock - only winning 3
-                      times does
+                      Losing doesn&apos;t trigger the 24-hour lock - only
+                      winning 3 times does
                     </li>
                   </ul>
                 </div>

@@ -2,34 +2,15 @@ import { handleMakeError } from "../middleware/handleError.js";
 import Order from "../models/order.model.js";
 import Rider from "../models/rider.models.js";
 import User from "../models/user.models.js";
-import { validateFullName, validatePHMobile } from "../utils/validations.js";
 import { logAuditTrail } from "./audit.controller.js";
 
 export const addRider = async (req, res, next) => {
   const userId = req.user.id;
   const { riderName, riderPhoneNumber } = req.body;
 
-  if (!riderName) {
-    return next(handleMakeError(400, "Rider name is required."));
-  }
-
-  if (!riderPhoneNumber) {
-    return next(handleMakeError(400, "Rider phone number is required."));
-  }
-
-  if (riderName !== undefined && riderName) {
-    const riderNameCheck = validateFullName(riderName);
-    if (!riderNameCheck.valid) {
-      return next(handleMakeError(400, riderNameCheck.message));
-    }
-  }
-
-  if (riderPhoneNumber !== undefined && riderPhoneNumber) {
-    const riderPhoneNumberCheck = validatePHMobile(riderPhoneNumber);
-    if (!riderPhoneNumberCheck.valid) {
-      return next(handleMakeError(400, riderPhoneNumberCheck.message));
-    }
-  }
+    /*
+       Manual validation handled by Zod
+    */
 
   try {
     const existingPhoneNumber = await Rider.findOne({
@@ -195,72 +176,54 @@ export const editRider = async (req, res, next) => {
   const { riderId } = req.params;
   const { riderName: newName, riderPhoneNumber: newNumber } = req.body;
 
-  if (!newName) {
-    return next(handleMakeError(400, "Rider name is required."));
-  }
+  /*
+     Manual validation handled by Zod
+  */
 
-  if (!newNumber) {
-    return next(handleMakeError(400, "Rider phone number is required."));
-  }
+  try {
+    const existingPhoneNumber = await Rider.findOne({
+      riderPhoneNumber: newNumber,
+      _id: { $ne: riderId },
+    });
 
-  if (newName !== undefined && newName) {
-    const riderNameCheck = validateFullName(newName);
-    if (!riderNameCheck.valid) {
-      return next(handleMakeError(400, riderNameCheck.message));
-    }
-  }
-
-  if (newNumber !== undefined && newNumber) {
-    const riderPhoneNumberCheck = validatePHMobile(newNumber);
-    if (!riderPhoneNumberCheck.valid) {
-      return next(handleMakeError(400, riderPhoneNumberCheck.message));
-    }
-
-    try {
-      const existingPhoneNumber = await Rider.findOne({
-        riderPhoneNumber: newNumber,
-        _id: { $ne: riderId },
-      });
-
-      if (existingPhoneNumber) {
-        return next(
-          handleMakeError(
-            400,
-            "This Phone number is already exist in the table. Try new one"
-          )
-        );
-      }
-
-        const existingUser = await User.findOne({ phoneNumber: newNumber });
-      if (existingUser) {
-        return next(handleMakeError(400, "This phone number is registered to an existing account."));
-      }
-
-      const existingGuestOrder = await Order.findOne({
-        "guestUser.phone": newNumber,
-        paymentStatus: "Pending",
-      });
-
-      if (existingGuestOrder) {
-        return next(handleMakeError(400, "A pending guest order already exists for this phone."));
-      }
-
-
-      const updateRider = await Rider.findByIdAndUpdate(
-        riderId,
-        {
-          riderName: newName,
-          riderPhoneNumber: newNumber,
-        },
-        { new: true }
+    if (existingPhoneNumber) {
+      return next(
+        handleMakeError(
+          400,
+          "This Phone number is already exist in the table. Try new one"
+        )
       );
-
-      if (!updateRider) return next(handleMakeError(400, "Update error"));
-
-      res.status(200).json({ message: "Rider updated", data: updateRider });
-    } catch (error) {
-      next(error);
     }
+
+    const existingUser = await User.findOne({ phoneNumber: newNumber });
+    if (existingUser) {
+      return next(handleMakeError(400, "This phone number is registered to an existing account."));
+    }
+
+    const existingGuestOrder = await Order.findOne({
+      "guestUser.phone": newNumber,
+      paymentStatus: "Pending",
+    });
+
+    if (existingGuestOrder) {
+      return next(handleMakeError(400, "A pending guest order already exists for this phone."));
+    }
+
+
+    const updateRider = await Rider.findByIdAndUpdate(
+      riderId,
+      {
+        riderName: newName,
+        riderPhoneNumber: newNumber,
+      },
+      { new: true }
+    );
+
+    if (!updateRider) return next(handleMakeError(400, "Update error"));
+
+    res.status(200).json({ message: "Rider updated", data: updateRider });
+  } catch (error) {
+    next(error);
   }
 };
 

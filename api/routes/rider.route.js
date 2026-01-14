@@ -1,5 +1,6 @@
-import expres from "express";
+import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import { validateResource } from "../middleware/validateResource.js";
 import {
   addRider,
   deleteMultiRider,
@@ -8,14 +9,15 @@ import {
   getRiders,
   getSingleRider,
 } from "../controllers/rider.controller.js";
+import { deleteMultiRiderSchema, editRiderSchema, riderSchema } from "../schema/rider.schema.js";
 
-const router = expres.Router();
+const router = express.Router();
 
-router.post(`/add-rider`, requireAuth, requireAdmin, addRider);
-router.get(`/get-riders`, requireAuth, requireAdmin, getRiders);
-router.get(`/get-rider/:riderId`, requireAuth, requireAdmin, getSingleRider);
-router.delete(`/delete-rider/:riderId`, requireAuth, requireAdmin, deleteRider);
-router.put(`/edit-rider/:riderId`, requireAuth, requireAdmin, editRider);
-router.post(`/delete-multi-rider`, requireAuth, requireAdmin, deleteMultiRider);
+router.post("/add-rider", requireAuth, requireAdmin, validateResource(riderSchema), addRider);
+router.get("/get-all-rider", getRiders);
+router.get("/get-single-rider/:riderId", getSingleRider);
+router.delete("/delete-rider/:riderId", requireAuth, requireAdmin, deleteRider);
+router.put("/edit-rider/:riderId", requireAuth, requireAdmin, validateResource(editRiderSchema), editRider);
+router.post("/delete-multi-rider", requireAuth, requireAdmin, validateResource(deleteMultiRiderSchema), deleteMultiRider);
 
 export default router;

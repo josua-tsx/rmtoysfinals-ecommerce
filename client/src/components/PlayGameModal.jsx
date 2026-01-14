@@ -3,7 +3,13 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import gameLoading from "../assets/gameLoading.gif";
-import { FaHandPaper, FaHandRock, FaHandScissors } from "react-icons/fa";
+import {
+  FaHandPaper,
+  FaHandRock,
+  FaHandScissors,
+  FaHourglassHalf,
+  FaTrophy,
+} from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
 import { formatLockedUntil } from "../lib/utils";
 
@@ -121,7 +127,9 @@ export default function PlayGameModal({ user, closeModal }) {
 
           <div className="p-8 flex flex-col items-center gap-6 text-center">
             <div className="w-20 h-20 bg-gray-100 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
-              <span className="text-4xl filter grayscale">⏳</span>
+              <span className="text-4xl text-gray-500">
+                <FaHourglassHalf />
+              </span>
             </div>
 
             <div className="space-y-4">
@@ -158,8 +166,11 @@ export default function PlayGameModal({ user, closeModal }) {
 
           {/* Game Header */}
           <div className="bg-primary border-b-4 border-black p-4 text-center">
-            <h1 className="text-2xl md:text-4xl font-black text-white italic uppercase tracking-widest drop-shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-              Free Credits Arena <span className="not-italic">🏆</span>
+            <h1 className="text-2xl md:text-4xl font-black text-white italic uppercase tracking-widest drop-shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2">
+              Free Credits Arena{" "}
+              <span className="not-italic">
+                <FaTrophy />
+              </span>
             </h1>
           </div>
 

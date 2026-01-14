@@ -38,10 +38,15 @@ export default function AdminOrderGuestStatus() {
 
   const filteredArrayAllOrders = arrayAllOrders.filter(
     (order) =>
-      order._id.includes(searchTerm) ||
-      order.userId.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase())
+      (order?._id && order._id.includes(searchTerm)) ||
+      (order?.guestUser?.email &&
+        order.guestUser.email
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (order?.paymentMethod &&
+        order.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (order?.paymentStatus &&
+        order.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const { data: singleUserOrder } = useQuery({
@@ -321,12 +326,12 @@ export default function AdminOrderGuestStatus() {
                           value={data.status}
                           className="border border-black p-1 font-black uppercase outline-none rounded-[5px] bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all cursor-pointer"
                         >
-                          <option value="Pending">🕒 Pending</option>
-                          <option value="Processing">⚙️ Processing</option>
-                          <option value="Shipped">📦 Shipped</option>
-                          <option value="Out for Delivery">🚚 Delivery</option>
-                          <option value="Delivered">✔️ Delivered</option>
-                          <option value="Cancelled">❌ Cancelled</option>
+                          <option value="Pending">Pending</option>
+                          <option value="Processing">Processing</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Out for Delivery">Delivery</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
                         </select>
                       </div>
                     </td>

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 import Buttons from "../reusable/Buttons";
 import { FaSignInAlt } from "react-icons/fa";
+import { signinSchema } from "../schemas/auth.schema";
 
 import PasswordInput from "../reusable/PasswordInput";
 
@@ -18,6 +19,7 @@ export default function SignIn() {
 
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const { data: isAdminExist, isLoading } = useQuery({
     queryKey: ["checkAdminExist"],
@@ -27,31 +29,36 @@ export default function SignIn() {
     },
   });
 
-  console.log(isAdminExist);
-
   const { mutate: loginMutation, isPending } = useMutation({
     mutationFn: async (userData) => {
       const res = await axiosInstance.post(`/auth/signin`, userData);
       return res.data;
     },
     onSuccess: (userData) => {
+      // Store rememberMe preference in localStorage for the store to use
+      localStorage.setItem("rememberMe", rememberMe);
+
       setCurrentUser(userData);
       setLoginId("");
       setPassword("");
       navigate(`/`);
     },
     onError: (err) => {
-      toast.error(err.response.data.message);
+      toast.error(err.response?.data?.message || "Login failed");
     },
   });
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    try {
-      loginMutation({ loginId, password });
-    } catch (error) {
-      console.log(error);
+
+    const formData = { loginId, password };
+    const result = signinSchema.safeParse(formData);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
     }
+
+    loginMutation(result.data);
   };
 
   return (
@@ -95,6 +102,22 @@ export default function SignIn() {
             autoComplete="current-password"
           />
 
+          <div className="flex items-center gap-2 mb-4">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <label
+              htmlFor="rememberMe"
+              className="text-sm font-medium text-gray-700"
+            >
+              Remember Me
+            </label>
+          </div>
+
           <div className="flex justify-center items-center relative  gap-2">
             <Buttons
               buttonName="Sign In"
@@ -118,7 +141,7 @@ export default function SignIn() {
           </div>
 
           <div className="absolute rounded-b-[5px] bottom-0 left-0 right-0 mx-auto bg-indigo-500 h-[40px]">
-            {/* white background */}
+            {/* blue accent */}
           </div>
         </form>
 

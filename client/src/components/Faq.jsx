@@ -35,14 +35,10 @@ You can use your collected points as a discount to reduce the total price of you
 export default function Faq() {
   const [openAnswer, setOpenAnswer] = useState(null);
 
-  const {
-    data: faqsComponent = [],
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: faqsComponent = [] } = useQuery({
     queryKey: ["faqs"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/faqs/get-faqs`);
+      const res = await axiosInstance.get(`/faqs/get-all-faqs`);
       return res.data;
     },
   });

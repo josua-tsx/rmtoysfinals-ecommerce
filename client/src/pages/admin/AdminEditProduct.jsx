@@ -1,5 +1,11 @@
 import AdminHeader from "../../reusable/Admin/AdminHeader";
+import {
+  createProductSchema,
+  productNameSchema,
+  productDescriptionSchema,
+} from "../../schemas/product.schema";
 import AdminUploadProductImage from "../../components/admin/AdminUploadProductImage";
+import ValidatedInput from "../../reusable/ValidatedInput";
 import { FiEdit3 } from "react-icons/fi";
 import { HiTrash } from "react-icons/hi";
 import { FaCheckCircle } from "react-icons/fa";
@@ -24,7 +30,6 @@ export default function AdminEditProducts() {
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productsDetailsArray, setProductsDetailsArray] = useState([]);
-  const [filters, setFilters] = useState({});
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("");
   const [points, setPoints] = useState(0);
@@ -50,7 +55,6 @@ export default function AdminEditProducts() {
 
   useEffect(() => {
     if (singleProduct) {
-      setFilters(singleProduct?.filters);
       setProductName(singleProduct?.productName || "");
       setProductDescription(singleProduct?.productDescription || "");
       setPrice(singleProduct?.price || 0);
@@ -115,20 +119,25 @@ export default function AdminEditProducts() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    editProductMutation({
+    const data = {
       productName,
       price,
       productDescription,
       productDetails: productsDetailsArray,
-
       productImages: images,
-      filters,
       category: category,
-      // supplier: supplier,
       points,
       taxStatus,
       vat: taxStatus === "vatable" ? vat : null,
-    });
+    };
+
+    const result = createProductSchema.safeParse(data);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    editProductMutation(result.data);
   };
 
   const handleSubmitLabelValueObject = () => {
@@ -258,25 +267,28 @@ export default function AdminEditProducts() {
                       !productName ||
                       productName.trim().length < 3
                     }
-                    className="flex items-center gap-2 px-4 py-2 bg-[#22c55e] text-card rounded-[5px] border border-black hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white flex items-center gap-2 px-4 py-2 rounded-[5px] border border-black hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] group"
                   >
                     {isGenerating ? (
-                      <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />
+                      <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
                     ) : (
-                      <SiGooglegemini size={16} />
+                      <SiGooglegemini
+                        size={16}
+                        className="group-hover:animate-pulse"
+                      />
                     )}
                     {isGenerating ? "Generating..." : "Generate with AI"}
                   </button>
                 </div>
 
-                <input
-                  type="text"
+                <ValidatedInput
                   name="productName"
-                  id="productName"
                   value={productName}
-                  maxLength={50}
                   onChange={handleInputChange(setProductName)}
-                  className="border border-black w-full rounded-[5px] p-3 outline-none focus:ring-0 text-lg font-bold"
+                  schema={productNameSchema}
+                  className="text-lg font-bold"
+                  placeholder="Enter product name"
+                  required
                 />
                 <p className="text-[11px] pt-2  uppercase tracking-tight">
                   (Product name must be 5-50 characters. Double spaces are not
@@ -294,14 +306,16 @@ export default function AdminEditProducts() {
                     spaces, uppercase letters allowed.)
                   </p>
                 </div>
-                <textarea
-                  className="border border-black w-full p-3 h-[120px] resize-none outline-none rounded-[5px] focus:ring-0 leading-relaxed"
+                <ValidatedInput
+                  type="textarea"
                   name="productDescription"
-                  id="productDescription"
-                  onChange={handleInputChange(setProductDescription)}
                   value={productDescription}
-                  maxLength={200}
-                ></textarea>
+                  onChange={handleInputChange(setProductDescription)}
+                  schema={productDescriptionSchema}
+                  className="h-[120px] leading-relaxed"
+                  placeholder="Enter product description"
+                  required
+                />
               </div>
 
               <div className="mb-6">

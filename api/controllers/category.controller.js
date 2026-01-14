@@ -1,34 +1,17 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
-import {
-  validateCategoryDescription,
-  validateCategoryNamee,
-} from "../utils/validations.js";
 import Stocks from "../models/stocks.model.js";
 
 export const addCategory = async (req, res, next) => {
   const { categoryName, categoryDescription } = req.body;
   const userId = req.user.id;
 
-  if (!categoryName) {
-    return next(handleMakeError(400, "Please input category name"));
-  }
-
-  if (!categoryDescription) {
-    return next(handleMakeError(400, "Please input category description"));
-  }
-
-  const categoryNameCheck = validateCategoryNamee(categoryName);
-  if (!categoryNameCheck.valid) {
-    return next(handleMakeError(400, categoryNameCheck.message));
-  }
-
-  const categoryDescriptionCheck =
-    validateCategoryDescription(categoryDescription);
-  if (!categoryDescriptionCheck.valid) {
-    return next(handleMakeError(400, categoryDescriptionCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for categoryName and categoryDescription have been removed.
+    These are now handled by Zod middleware in routes/category.route.js
+  */
 
   try {
     const newCategory = new Category({
@@ -195,24 +178,10 @@ export const editCategory = async (req, res, next) => {
   const { categoryId } = req.params;
   const { categoryName, categoryDescription } = req.body;
 
-  if (!categoryName) {
-    return next(handleMakeError(400, "Please input category name"));
-  }
-
-  if (!categoryDescription) {
-    return next(handleMakeError(400, "Please input category description"));
-  }
-
-  const categoryNameCheck = validateCategoryNamee(categoryName);
-  if (!categoryNameCheck.valid) {
-    return next(handleMakeError(400, categoryNameCheck.message));
-  }
-
-  const categoryDescriptionCheck =
-    validateCategoryDescription(categoryDescription);
-  if (!categoryDescriptionCheck.valid) {
-    return next(handleMakeError(400, categoryDescriptionCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for categoryName and categoryDescription have been removed.
+  */
 
   try {
     const updateCategory = await Category.findByIdAndUpdate(categoryId, {

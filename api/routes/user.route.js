@@ -13,16 +13,19 @@ import {
   updateProfile,
   verifyUserEmail,
 } from "../controllers/user.controller.js";
+import { editWorkerSchema, updateUserSchema } from "../schema/auth.schema.js";
+import { validateResource } from "../middleware/validateResource.js";
 
 const router = express.Router();
 
-router.post(`/update/:id`, requireAuth, updateProfile);
+router.post(`/update/:id`, requireAuth, validateResource(updateUserSchema), updateProfile);
 router.post(`/verify-email`, verifyUserEmail);
 router.post(`/confirm-email`, confirmVerifyEmail);
 router.get(`/getAll`, getAll);
 router.get(`/getAllCustomer`, getAllCustomer);
 router.get(`/getAllWorkers`, getAllWorkers);
 router.get(`/check-admin`, checkIfAdminExists);
+
 router.delete(
   `/delete-worker/:workerId`,
   requireAuth,
@@ -30,7 +33,7 @@ router.delete(
   deleteWorker
 );
 
-router.put(`/edit-worker/:workerId`, requireAuth, requireAdmin, editWorker);
+router.put(`/edit-worker/:workerId`, requireAuth, requireAdmin, validateResource(editWorkerSchema), editWorker);
 
 router.put(
   `/update-status/:customerId`,

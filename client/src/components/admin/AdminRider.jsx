@@ -7,7 +7,9 @@ import FormModal from "../../reusable/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import ValidatedInput from "../../reusable/ValidatedInput";
+import { addRiderSchema, riderNameSchema } from "../../schemas/rider.schema";
+import { phMobileSchema } from "../../schemas/auth.schema";
 
 export default function AdminRider() {
   const queryClient = useQueryClient();
@@ -31,26 +33,27 @@ export default function AdminRider() {
       toast.success("Succesfully Added new rider");
     },
     onError: (err) => {
-      toast.error(err.response.data.message);
+      toast.error(err.response.data.message || "Something went wrong!");
     },
   });
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    if (!riderName) {
-      return toast.error("Rider name is required");
+    const result = addRiderSchema.safeParse({
+      riderName,
+      riderPhoneNumber: riderPhoneNum,
+    });
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
     }
 
-    if (!riderPhoneNum) {
-      return toast.error("Rider phone number is required");
-    }
-
-    riderAddMutation({ riderName, riderPhoneNumber: riderPhoneNum });
+    riderAddMutation(result.data);
   };
 
   return (
-    <section className="bg-[#fffdf6] min-h-screen pb-20">
+    <section className="bg-[#fffdf6] min-h-screen pb-20 font-main">
       <AdminHeader title={"RIDER TABLE"} />
       <div className="max-w-[95%] pt-10 mx-auto flex gap-10 flex-col px-4">
         {/* Actions Area */}
@@ -97,29 +100,39 @@ export default function AdminRider() {
           submitLabel="Add Rider"
           isSubmitting={isPending}
         >
-          <div className="flex gap-2 p-2 flex-col w-full">
-            <div className="flex flex-col gap-2 w-full justify-between">
-              <label htmlFor="riderName">Rider Full Name: </label>
-              <input
+          <div className="flex gap-4 p-2 flex-col w-full">
+            <div className="flex flex-col gap-2 w-full">
+              <label
+                htmlFor="riderName"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Rider Full Name
+              </label>
+              <ValidatedInput
                 type="text"
                 id="riderName"
-                placeholder="Ex: Brendon Mae"
+                placeholder="Ex: Juan Dela Cruz"
                 value={riderName}
-                maxLength={100}
-                onChange={handleInputChange(setRiderName)}
-                className="border border-black p-1 outline-none  rounded-[5px]"
+                onChange={(e) => setRiderName(e.target.value)}
+                schema={riderNameSchema}
+                required
               />
             </div>
-            <div className="flex flex-col gap-2 w-full justify-between">
-              <label htmlFor="riderPhoneNum">Rider Phone Number: </label>
-              <input
+            <div className="flex flex-col gap-2 w-full">
+              <label
+                htmlFor="riderPhoneNum"
+                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
+              >
+                Rider Phone Number
+              </label>
+              <ValidatedInput
                 type="tel"
                 id="riderPhoneNum"
                 value={riderPhoneNum}
                 onChange={(e) => setRiderPhoneNum(e.target.value)}
-                placeholder="Ex: 09*******83"
-                maxLength={11}
-                className="border border-black p-1  outline-none rounded-[5px]"
+                placeholder="Ex: 0917XXXXXXX"
+                schema={phMobileSchema}
+                required
               />
             </div>
           </div>

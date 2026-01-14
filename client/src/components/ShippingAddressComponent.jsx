@@ -1,5 +1,7 @@
 import { FaCheckCircle } from "react-icons/fa";
 import Buttons from "../reusable/Buttons";
+import ValidatedInput from "../reusable/ValidatedInput";
+import { addressSchema } from "../schemas/address.schema";
 
 import {
   regions,
@@ -117,13 +119,21 @@ export default function ShippingAddressComponent() {
   const handleAddressSubmit = (e) => {
     e.preventDefault();
 
-    addAddressMutation({
-      region: selectedRegion.name,
-      stateProvince: selectedProvince.name,
+    const data = {
+      region: selectedRegion?.name || "",
+      stateProvince: selectedProvince?.name || "",
       city: selectedCity.toLocaleLowerCase(),
       barangay,
       streetBuildingHouseNum,
-    });
+    };
+
+    const result = addressSchema.safeParse(data);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    addAddressMutation(result.data);
   };
 
   const handleRegionChange = (e) => {
@@ -249,7 +259,7 @@ export default function ShippingAddressComponent() {
                 State / Province
               </label>
               <select
-                value={selectedProvince ? selectedRegion.prov_code : ""}
+                value={selectedProvince ? selectedProvince.prov_code : ""}
                 onChange={handleProvinceChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 name="stateProvince"
@@ -282,41 +292,23 @@ export default function ShippingAddressComponent() {
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Barangay
-              </label>
-              <input
-                type="text"
-                value={barangay}
-                onChange={handleInputChange(setBarangay)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                name="barangay"
-                id="barangay"
-                pattern="^[a-zA-Z\s'-]{2,100}$"
-                title="Use only letters, hyphens, or apostrophes."
-                placeholder="Ex: Lower bicutan"
-                required
-              />
-            </div>
+            <ValidatedInput
+              label="Barangay"
+              name="barangay"
+              value={barangay}
+              onChange={handleInputChange(setBarangay)}
+              placeholder="Ex: Lower bicutan"
+              required
+            />
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Street Name, Building, House No.
-              </label>
-              <input
-                value={streetBuildingHouseNum}
-                onChange={handleInputChange(setStreetBuildingHouseNum)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                placeholder="Ex: 14 St. #28"
-                type="text"
-                pattern="^[a-zA-Z0-9\s\.,#'-]{5,200}$"
-                title="Use letters, numbers, or symbols like .,-#"
-                id="streetBuildingHouseNum"
-                name="streetBuildingHouseNum"
-                required
-              />
-            </div>
+            <ValidatedInput
+              label="Street Name, Building, House No."
+              name="streetBuildingHouseNum"
+              value={streetBuildingHouseNum}
+              onChange={handleInputChange(setStreetBuildingHouseNum)}
+              placeholder="Ex: 14 St. #28"
+              required
+            />
           </div>
 
           <div className="flex justify-end pt-4">

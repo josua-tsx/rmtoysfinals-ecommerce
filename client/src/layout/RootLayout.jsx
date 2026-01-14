@@ -4,10 +4,11 @@ import AdminSideBar from "../components/admin/AdminSideBar";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
 import { useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import useOrderStore from "../stores/useOrderStore";
 import FooterSection from "../components/FooterSection";
+import TopProgressBar from "../reusable/TopProgressBar";
 import ChatWidget from "../components/ChatWidget";
 
 const RootLayout = () => {
@@ -30,7 +31,7 @@ const RootLayout = () => {
     if (currentOrder) {
       clearOrder();
     }
-  }, [currentOrder]);
+  }, [currentOrder, clearOrder]);
 
   // ❌ Mutation: sign-out user
   const { mutate: signOut } = useMutation({
@@ -52,6 +53,7 @@ const RootLayout = () => {
 
   return (
     <div className="font-main-text h-full flex flex-col justify-between bg-yellow">
+      <TopProgressBar />
       <header>
         <Navbar />
       </header>
@@ -59,7 +61,7 @@ const RootLayout = () => {
       {/* Main Content */}
       <main className="bg-yellow">
         <Outlet />
-        {/* <ChatWidget /> */}
+        <ChatWidget />
       </main>
       <footer className="bg-yellow">
         <FooterSection />
@@ -118,6 +120,7 @@ const RequiredAuthGcashPage = () => {
     <Navigate to={`/sign-in`} />
   ) : (
     <div className="font-main-text">
+      <TopProgressBar />
       {/* Main Content */}
       <main>
         <Outlet />
@@ -140,6 +143,7 @@ const RequiredAuthGcashPage = () => {
 const AdminLayout = () => {
   return (
     <div className="flex bg-yellow h-full">
+      <TopProgressBar />
       <div className="">
         <AdminSideBar />
       </div>
@@ -156,6 +160,7 @@ const AdminLayout = () => {
 const ValidatorStaffLayout = () => {
   return (
     <div className="flex h-screen bg-yellow">
+      <TopProgressBar />
       <div className="">
         <AdminSideBar />
       </div>

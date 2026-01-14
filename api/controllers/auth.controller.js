@@ -7,11 +7,6 @@ import { setCookies } from "../utils/setCookies.js";
 
 import jwt from "jsonwebtoken";
 import { logAuditTrail } from "./audit.controller.js";
-import {
-  validateEmail,
-  validatePassword,
-  validateUsername,
-} from "../utils/validations.js";
 import { sendEmail } from "../nodemailer/nodemailer.js";
 import bcrypt from "bcryptjs/dist/bcrypt.js";
 
@@ -28,39 +23,12 @@ export const signup = async (req, res, next) => {
   const email = req.body.email.toLowerCase();
   const username = req.body.username.toLowerCase();
 
-  if (!username) {
-    return next(handleMakeError(400, "Please input username"));
-  }
-
-  if (!email) {
-    return next(handleMakeError(400, "Please input email"));
-  }
-
-  if (!password) {
-    return next(handleMakeError(400, "Please input password"));
-  }
-
-  if (!confirmPassword) {
-    return next(handleMakeError(400, "Please input confirm password"));
-  }
-
-  if (password !== confirmPassword)
-    return next(handleMakeError(400, "Passwords are not equal "));
-
-  const userEmailCheck = validateEmail(email);
-  if (!userEmailCheck.valid) {
-    return next(handleMakeError(400, userEmailCheck.message));
-  }
-
-  const userNameCheck = validateUsername(username);
-  if (!userNameCheck.valid) {
-    return next(handleMakeError(400, userNameCheck.message));
-  }
-
-  const passwordCheck = validatePassword(password);
-  if (!passwordCheck.valid) {
-    return next(handleMakeError(400, passwordCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for username, email, password, and confirmPassword 
+    have been removed. These are now handled by Zod middleware 
+    in routes/auth.route.js
+  */
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -133,13 +101,10 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res, next) => {
   const { loginId, password } = req.body;
 
-  if (!loginId) {
-    return next(handleMakeError(400, "Please input email or username"));
-  }
-
-  if (!password) {
-    return next(handleMakeError(400, "Please input password"));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for loginId and password have been removed.
+  */
 
   try {
     const validUser = await User.findOne({
@@ -287,32 +252,11 @@ export const addWorker = async (req, res, next) => {
     req.body; // Extract confirmPassword
   const userId = req.user.id;
 
-  if (!role) {
-    return next(handleMakeError(400, "Please select role"));
-  }
-
-  if (!jobDescription) {
-    return next(handleMakeError(400, "Please input job description"));
-  }
-
-  if (password !== confirmPassword) {
-    return next(handleMakeError(400, "Passwords do not match"));
-  }
-
-  const userEmailCheck = validateEmail(email);
-  if (!userEmailCheck.valid) {
-    return next(handleMakeError(400, userEmailCheck.message));
-  }
-
-  const userNameCheck = validateUsername(username);
-  if (!userNameCheck.valid) {
-    return next(handleMakeError(400, userNameCheck.message));
-  }
-
-  const passwordCheck = validatePassword(password);
-  if (!passwordCheck.valid) {
-    return next(handleMakeError(400, passwordCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual validations for email, username, password, confirmPassword, role, 
+    and jobDescription have been removed.
+  */
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -367,14 +311,10 @@ const passwordResetAttempts = new Map(); // Stores { email: lastAttemptTimestamp
 export const forgetPassword = async (req, res, next) => {
   const { email } = req.body;
 
-  if (!email) {
-    return next(handleMakeError(400, "Please input email"));
-  }
-
-  const userEmailCheck = validateEmail(email);
-  if (!userEmailCheck.valid) {
-    return next(handleMakeError(400, userEmailCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual email validation removed.
+  */
 
   try {
     // Check if the email has a recent reset attempt
@@ -442,18 +382,10 @@ export const forgetPassword = async (req, res, next) => {
 export const resetPassword = async (req, res, next) => {
   const { token, newPassword } = req.body;
 
-  if (!token) {
-    return next(handleMakeError(400, "Token is required."));
-  }
-
-  if (!newPassword) {
-    return next(handleMakeError(400, "Please input new password"));
-  }
-
-  const passwordCheck = validatePassword(newPassword);
-  if (!passwordCheck.valid) {
-    return next(handleMakeError(400, passwordCheck.message));
-  }
+  /* 
+    VALIDATION REFACTOR NOTE:
+    Manual token and newPassword validation removed.
+  */
 
   try {
     // Find user by token and check expiry

@@ -1,6 +1,13 @@
 import { useState } from "react";
+import {
+  createSupplierSchema,
+  supplierNameSchema,
+  supplierAddressSchema,
+} from "../../schemas/supplier.schema";
+import { phMobileSchema, fullNameSchema } from "../../schemas/common.schema";
 import AdminSupplierTable from "../../components/admin/AdminSupplierTable";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
+import ValidatedInput from "../../reusable/ValidatedInput";
 import { IoMdAdd } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
 import FormModal from "../../reusable/FormModal";
@@ -42,12 +49,21 @@ export default function AdminSupplier() {
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    addSupplierMutation({
+
+    const data = {
       supplierName,
       contactPerson,
       contactNumber,
       supplierAddress,
-    });
+    };
+
+    const result = createSupplierSchema.safeParse(data);
+
+    if (!result.success) {
+      return toast.error(result.error.issues[0].message);
+    }
+
+    addSupplierMutation(result.data);
   };
 
   const toggleAddCategory = () => {
@@ -110,15 +126,12 @@ export default function AdminSupplier() {
               >
                 Supplier Name
               </label>
-              <input
-                type="text"
+              <ValidatedInput
                 name="supplierName"
-                id="supplierName"
                 value={supplierName}
-                maxLength={50}
                 onChange={handleInputChange(setSupplierName)}
+                schema={supplierNameSchema}
                 placeholder="Ex: Toy Kingdom"
-                className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
               <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -133,15 +146,12 @@ export default function AdminSupplier() {
               >
                 Contact Person Full Name
               </label>
-              <input
-                type="text"
+              <ValidatedInput
                 name="contactPerson"
-                id="contactPerson"
                 value={contactPerson}
-                maxLength={100}
                 onChange={handleInputChange(setContactPerson)}
+                schema={fullNameSchema}
                 placeholder="Ex: Juan Dela Cruz"
-                className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
               <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -156,15 +166,13 @@ export default function AdminSupplier() {
               >
                 Contact Number
               </label>
-              <input
+              <ValidatedInput
                 type="tel"
                 name="contactNumber"
-                id="contactNumber"
                 value={contactNumber}
-                maxLength={11}
                 onChange={handleInputChange(setContactNumber)}
+                schema={phMobileSchema}
                 placeholder="Ex: 09123456789"
-                className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
                 required
               />
               <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -179,14 +187,14 @@ export default function AdminSupplier() {
               >
                 Supplier Address
               </label>
-              <textarea
+              <ValidatedInput
+                type="textarea"
                 name="supplierAddress"
-                id="supplierAddress"
                 value={supplierAddress}
-                maxLength={200}
                 onChange={handleInputChange(setSupplierAddress)}
+                schema={supplierAddressSchema}
                 placeholder="Ex: 123 Toy St., Manila City"
-                className="border border-black w-full rounded-[5px] p-3 h-[100px] outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
+                className="h-[100px] resize-none"
                 required
               />
               <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">

@@ -1,4 +1,6 @@
 import express from "express";
+import { validateResource } from "../middleware/validateResource.js";
+import { placeOrderSchema, updateOrderStatusSchema } from "../schema/order.schema.js";
 import {
   optionalAuth,
   requireAdmin,
@@ -48,7 +50,7 @@ const router = express.Router();
 
 router.get("/analytics", requireAuth, requireAdmin, getSalesAnalytics);
 
-router.post(`/place-order`, requireAuth, userPlaceOrder);
+router.post(`/place-order`, requireAuth, validateResource(placeOrderSchema), userPlaceOrder);
 
 router.post(`/place-order-stripe`, optionalAuth, placeOrderStripe);
 
@@ -122,6 +124,7 @@ router.put(
   `/:orderId/status`, 
   optionalAuth,
   requireAdmin,
+  validateResource(updateOrderStatusSchema),
   updateDeliveryStatus
 ); 
 

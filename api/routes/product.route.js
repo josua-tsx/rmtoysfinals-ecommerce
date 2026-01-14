@@ -1,4 +1,6 @@
 import express from "express";
+import { validateResource } from "../middleware/validateResource.js";
+import { createProductSchema, updateProductSchema } from "../schema/product.schema.js";
 import {
   // addDraft,
   addProduct,
@@ -22,7 +24,7 @@ import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post(`/add-product`, requireAuth, requireAdmin, addProduct);
+router.post(`/add-product`, requireAuth, requireAdmin, validateResource(createProductSchema), addProduct);
 router.get(`/get-products`, getProducts);
 
 router.post(`/delete-multi-prod`, requireAuth, requireAdmin, deleteMultiProduct)
@@ -45,7 +47,7 @@ router.delete(
   deleteProduct
 );
 
-router.put(`/edit-product/:id`, requireAuth, requireAdmin, editProduct);
+router.put(`/edit-product/:id`, requireAuth, requireAdmin, validateResource(updateProductSchema), editProduct);
 router.get(`/get-product/:id`, getSingleProduct);
 
 router.put(`/add-to-slider/:productId`, toggleBestProduct)
