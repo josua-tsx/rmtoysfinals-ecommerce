@@ -2,7 +2,7 @@ import { useState } from "react";
 import { IoFilter } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { SiGooglegemini } from "react-icons/si";
-import { FaSparkles } from "react-icons/fa";
+import { IoSparkles } from "react-icons/io5";
 import FilterSection from "./FilterSection";
 import axiosInstance from "../lib/axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -235,7 +235,7 @@ export default function ShopSide({
       {isAiMode && (
         <div className="bg-violet-50 border border-violet-100 p-2 rounded-md -mt-2">
           <p className="text-[10px] text-violet-700 font-medium leading-tight flex items-center gap-1">
-            <FaSparkles size={12} /> <span className="font-bold">Tip:</span> Try
+            <IoSparkles size={12} /> <span className="font-bold">Tip:</span> Try
             &quot;educational toys under ₱500&quot; or &quot;pink dolls for
             beginners&quot;
           </p>
