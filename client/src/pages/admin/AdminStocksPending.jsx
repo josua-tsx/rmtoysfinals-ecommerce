@@ -174,8 +174,8 @@ export default function AdminStocksPending() {
     e.preventDefault();
 
     const formData = {
-      product: selectedProduct._id,
-      supplier,
+      product: selectedProduct?._id,
+      supplier: supplier || undefined,
       supplierPrice,
       shopPrice,
       quantity,
@@ -183,7 +183,7 @@ export default function AdminStocksPending() {
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-      vat: selectedVat || selectedProduct?.vat?._id || "",
+      vat: selectedVat || selectedProduct?.vat?._id || null, // Use null instead of ""
       vatShopPrice: roundedPrice,
       notifySubscribedUser: toggleNotify,
     };

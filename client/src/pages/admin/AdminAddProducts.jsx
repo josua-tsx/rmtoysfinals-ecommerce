@@ -18,6 +18,13 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 import { useNavigate } from "react-router-dom";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import app from "../../firebase/firebase";
 
 export default function AdminAddProducts() {
   const queryClient = useQueryClient();
@@ -37,6 +44,8 @@ export default function AdminAddProducts() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [taxStatus, setTaxStatus] = useState("vatable");
   const [vat, setVat] = useState("");
+  const [files, setFiles] = useState([]); // Raw files for upload
+  const [isUploading, setIsUploading] = useState(false);
 
   const {
     data: categories = [],
@@ -80,27 +89,82 @@ export default function AdminAddProducts() {
     },
   });
 
-  const handleFormSubmit = (e) => {
+  const storeImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + "_" + file.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        () => {
+          // Progress can be logged but we'll stick to a general "Uploading..." toast
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            resolve(downloadURL);
+          });
+        }
+      );
+    });
+  };
+
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    const data = {
+    // Validation first
+    const baseData = {
       productName,
       productDescription,
       productDetails: productsDetailsArray,
-      productImages: images,
+      productImages: images, // This might be empty if not uploaded yet
       category: category,
       points,
       taxStatus,
       vat: taxStatus === "vatable" ? vat : null,
     };
 
-    const result = createProductSchema.safeParse(data);
+    const result = createProductSchema.safeParse(baseData);
 
     if (!result.success) {
       return toast.error(result.error.issues[0].message);
     }
 
-    addProductMutation(result.data);
+    if (files.length === 0 && images.length === 0) {
+      return toast.error("Please add at least one image");
+    }
+
+    setIsUploading(true);
+    let uploadedUrls = [...images];
+
+    try {
+      if (files.length > 0) {
+        const uploadToast = toast.loading("Uploading images...");
+        const promises = files.map((file) => storeImage(file));
+        const newUrls = await Promise.all(promises);
+        uploadedUrls = [...uploadedUrls, ...newUrls];
+        toast.dismiss(uploadToast);
+      }
+
+      // Filter out any blob preview URLs and only keep the real Firebase URLs
+      const sanitizedUrls = uploadedUrls.filter((url) =>
+        url.startsWith("http")
+      );
+
+      // Proceed with mutation
+      addProductMutation({
+        ...result.data,
+        productImages: sanitizedUrls,
+      });
+    } catch (error) {
+      toast.error("Image upload failed: " + error.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmitLabelValueObject = () => {
@@ -455,7 +519,7 @@ export default function AdminAddProducts() {
                     onChange={(e) => setTaxStatus(e.target.value)}
                     className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
                   >
-                    <option value="vatable">Vatiable</option>
+                    <option value="vatable">Vatable</option>
                     <option value="exempt">Tax Exempt</option>
                   </select>
                 </div>
@@ -490,8 +554,11 @@ export default function AdminAddProducts() {
 
             {/* ACTION BUTTONS */}
             <div className="flex flex-col md:flex-row gap-4 mt-2">
-              <button className="flex-1 bg-[#22c55e] text-white p-4 flex justify-between items-center rounded-[5px] border border-black font-black uppercase tracking-[0.1em] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all active:scale-95">
-                Add This Product
+              <button
+                disabled={isUploading || isGenerating}
+                className="flex-1 bg-[#22c55e] text-white p-4 flex justify-between items-center rounded-[5px] border border-black font-black uppercase tracking-[0.1em] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all active:scale-95 disabled:opacity-50"
+              >
+                {isUploading ? "Uploading & Saving..." : "Add This Product"}
                 <FaCheckCircle size={20} />
               </button>
               <button
@@ -506,7 +573,12 @@ export default function AdminAddProducts() {
 
           {/* COLUMN 2 - IMAGE UPLOAD */}
           <div className="lg:w-[320px]">
-            <AdminUploadProductImage images={images} setImages={setImages} />
+            <AdminUploadProductImage
+              images={images}
+              setImages={setImages}
+              files={files}
+              setFiles={setFiles}
+            />
           </div>
         </form>
       </div>

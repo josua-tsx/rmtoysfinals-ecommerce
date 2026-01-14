@@ -17,6 +17,13 @@ import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 import { SiGooglegemini } from "react-icons/si";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import app from "../../firebase/firebase";
 
 export default function AdminEditProducts() {
   const params = useParams();
@@ -38,6 +45,8 @@ export default function AdminEditProducts() {
   const [taxStatus, setTaxStatus] = useState("vatable");
   const [vat, setVat] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [files, setFiles] = useState([]); // Raw files for upload
+  const [isUploading, setIsUploading] = useState(false);
 
   const {
     data: singleProduct,
@@ -116,28 +125,88 @@ export default function AdminEditProducts() {
     },
   });
 
-  const handleFormSubmit = (e) => {
+  const storeImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + "_" + file.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        () => {
+          // Progress can be logged but we'll stick to a general "Uploading..." toast
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            resolve(downloadURL);
+          });
+        }
+      );
+    });
+  };
+
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    const data = {
+    // Validation first
+    const baseData = {
       productName,
       price,
       productDescription,
       productDetails: productsDetailsArray,
-      productImages: images,
+      productImages: images, // Existing URLs
       category: category,
       points,
       taxStatus,
       vat: taxStatus === "vatable" ? vat : null,
     };
 
-    const result = createProductSchema.safeParse(data);
+    const result = createProductSchema.safeParse(baseData);
 
     if (!result.success) {
       return toast.error(result.error.issues[0].message);
     }
 
-    editProductMutation(result.data);
+    if (files.length === 0 && images.length === 0) {
+      return toast.error("Please add at least one image");
+    }
+
+    setIsUploading(true);
+    let finalUrls = [...images]; // Start with existing/remaining images
+
+    try {
+      if (files.length > 0) {
+        const uploadToast = toast.loading("Uploading new images...");
+        const promises = files.map((file) => storeImage(file));
+        const newUrls = await Promise.all(promises);
+        // Special case: In Edit mode, 'images' might already contain preview blobs
+        // if AdminUploadProductImage pushes them via setImages.
+        // We need to filter out blobs and use real Firebase URLs.
+
+        // Actually, the current AdminUploadProductImage pushes blobs to 'images' for preview.
+        // On Save, we should only keep the original URLs and add the new Firebase URLs.
+        const originalUrls = images.filter((url) => url.startsWith("http"));
+        finalUrls = [...originalUrls, ...newUrls];
+
+        toast.dismiss(uploadToast);
+      }
+
+      // Ensure we only save real URLs, never blobs
+      const sanitizedUrls = finalUrls.filter((url) => url.startsWith("http"));
+
+      editProductMutation({
+        ...result.data,
+        productImages: sanitizedUrls,
+      });
+    } catch (error) {
+      toast.error("Image upload failed: " + error.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmitLabelValueObject = () => {
@@ -511,7 +580,7 @@ export default function AdminEditProducts() {
                     onChange={(e) => setTaxStatus(e.target.value)}
                     className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
                   >
-                    <option value="vatable">Vatiable</option>
+                    <option value="vatable">Vatable</option>
                     <option value="exempt">Tax Exempt</option>
                   </select>
                 </div>
@@ -546,8 +615,11 @@ export default function AdminEditProducts() {
 
             {/* ACTION BUTTONS */}
             <div className="flex flex-col md:flex-row gap-4 mt-2">
-              <button className="flex-1 bg-[#22c55e] text-white p-4 flex justify-between items-center rounded-[5px] border border-black font-black uppercase tracking-[0.1em] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all active:scale-95">
-                UPDATE THIS PRODUCT
+              <button
+                disabled={isUploading || isGenerating}
+                className="flex-1 bg-[#22c55e] text-white p-4 flex justify-between items-center rounded-[5px] border border-black font-black uppercase tracking-[0.1em] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all active:scale-95 disabled:opacity-50"
+              >
+                {isUploading ? "UPDATING..." : "UPDATE THIS PRODUCT"}
                 <FaCheckCircle size={20} />
               </button>
               <button
@@ -562,7 +634,12 @@ export default function AdminEditProducts() {
 
           {/* COLUMN 2 - IMAGE UPLOAD */}
           <div className="lg:w-[320px]">
-            <AdminUploadProductImage images={images} setImages={setImages} />
+            <AdminUploadProductImage
+              images={images}
+              setImages={setImages}
+              files={files}
+              setFiles={setFiles}
+            />
           </div>
         </form>
       </div>

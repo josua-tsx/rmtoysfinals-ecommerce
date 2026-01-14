@@ -30,7 +30,7 @@ export default function FormModal({
         />
       </button>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col max-h-[85vh] overflow-y-auto gap-6 pr-2 custom-scrollbar">
         {children}
 
         {onSubmit && (

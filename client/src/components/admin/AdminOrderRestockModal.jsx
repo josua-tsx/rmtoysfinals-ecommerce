@@ -73,8 +73,8 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
     e.preventDefault();
 
     reOrderStockMutation({
-      productId,
-      supplier,
+      product: productId || undefined,
+      supplier: supplier || undefined,
       supplierPrice,
       shopPrice,
       shippingPrice,
@@ -82,7 +82,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
       totalCost,
       deliveryId,
       dateDelivery: selectedDate,
-      vatPercent: selectedVatValue?._id,
+      vatPercent: singleStock?.vat?._id || null,
       vatShopPrice: roundedPrice,
     });
   };
