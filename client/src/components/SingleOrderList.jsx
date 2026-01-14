@@ -234,6 +234,51 @@ export default function SingleOrderList({ order, onClose }) {
               </div>
             )}
 
+            {/* Admin Payment Override (For Non-GCash Orders) */}
+            {order.paymentMethod !== "GcashQR" &&
+              (currentUser?.role === "admin" ||
+                currentUser?.role === "validatorStaff") && (
+                <div className="p-4 bg-yellow-50 border border-yellow-500 rounded-[5px] flex flex-col gap-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="bg-yellow-500 text-white text-[10px] uppercase font-black px-2 py-0.5 rounded-sm">
+                      Admin Area
+                    </span>
+                    <label className="font-black uppercase text-[10px] tracking-widest text-yellow-700">
+                      Override Payment Status
+                    </label>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <select
+                      onChange={(e) => handleChangePaymentStatus(order._id, e)}
+                      value={order?.paymentStatus}
+                      name="paymentStatus"
+                      id="paymentStatus"
+                      className="flex-1 border border-yellow-500 p-2 rounded-[5px] outline-none font-black uppercase text-xs bg-white shadow-[2px_2px_0px_0px_rgba(234,179,8,1)] hover:shadow-none transition-all cursor-pointer"
+                    >
+                      <option value="Pending">PENDING</option>
+                      <option value="Paid">PAID</option>
+                      <option value="Failed">FAILED</option>
+                      <option value="Refunded">REFUNDED</option>
+                    </select>
+
+                    {(order?.paymentStatus === "Failed" ||
+                      order?.paymentStatus === "Refunded") && (
+                      <button
+                        onClick={() => setReasonModal(true)}
+                        className="px-4 py-2 border border-yellow-600 bg-red-500 text-white font-black uppercase text-xs rounded-[5px] shadow-[2px_2px_0px_0px_rgba(234,179,8,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                      >
+                        Reasons
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-yellow-700 italic">
+                    ⚠️ Changing this will update order status logic (e.g. Failed
+                    -&gt; Restock).
+                  </p>
+                </div>
+              )}
+
             {/* Financials */}
             <div className="flex flex-col border border-black rounded-[5px] bg-white divide-y-2 divide-black">
               <div className="p-3 flex justify-between items-center text-xs">

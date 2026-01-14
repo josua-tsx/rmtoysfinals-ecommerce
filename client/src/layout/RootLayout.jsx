@@ -3,13 +3,14 @@ import Navbar from "../components/Navbar";
 import AdminSideBar from "../components/admin/AdminSideBar";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import useOrderStore from "../stores/useOrderStore";
 import FooterSection from "../components/FooterSection";
 import TopProgressBar from "../reusable/TopProgressBar";
 import ChatWidget from "../components/ChatWidget";
+import LoadingSpinner from "../reusable/LoadingSpinner";
 
 const RootLayout = () => {
   // 🧠 User store
@@ -17,21 +18,10 @@ const RootLayout = () => {
   const currentUser = useUserStore((state) => state.currentUser);
   const clearUser = useUserStore((state) => state.clearUser);
 
-  // 📦 Order store
-  const currentOrder = useOrderStore((state) => state.currentOrder);
-  const clearOrder = useOrderStore((state) => state.clearOrder);
-
   // 🔍 Check auth on mount
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-
-  // 🧹 Clear order if exists
-  useEffect(() => {
-    if (currentOrder) {
-      clearOrder();
-    }
-  }, [currentOrder, clearOrder]);
 
   // ❌ Mutation: sign-out user
   const { mutate: signOut } = useMutation({
@@ -114,17 +104,37 @@ const RequiredAuth = () => {
   );
 };
 
-const RequiredAuthGcashPage = () => {
+const RequiredAuthGcashPage = ({ children }) => {
+  const { checkAuth } = useUserStore();
   const currentUser = useUserStore((state) => state.currentUser);
-  return !currentUser ? (
+  const currentOrder = useOrderStore((state) => state.currentOrder);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const authenticate = async () => {
+      await checkAuth();
+      setChecking(false);
+    };
+    authenticate();
+  }, [checkAuth]);
+
+  if (checking) {
+    return <LoadingSpinner fullScreen={true} />;
+  }
+
+  // Allow access if user is logged in OR if it's a guest order
+  // Check both store and localStorage fallback
+  const backupOrder = JSON.parse(localStorage.getItem("manual-order-backup"));
+  const canAccess =
+    currentUser || currentOrder?.isGuest || backupOrder?.isGuest;
+
+  return !canAccess ? (
     <Navigate to={`/sign-in`} />
   ) : (
     <div className="font-main-text">
       <TopProgressBar />
       {/* Main Content */}
-      <main>
-        <Outlet />
-      </main>
+      <main>{children}</main>
       <Toaster
         toastOptions={{
           style: {

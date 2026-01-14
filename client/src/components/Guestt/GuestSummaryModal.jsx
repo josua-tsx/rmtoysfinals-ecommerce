@@ -18,6 +18,47 @@ export default function GuestSummaryModal({ onClose }) {
   const [cartItems, setCartItems] = useState([]);
   const [cart, setCart] = useState(guestSelectedCarts());
 
+  const [guestDetails, setGuestDetails] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    currentAddress: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "phoneNumber") {
+      // Only allow numbers, max 11 digits
+      const numericValue = value.replace(/\D/g, "").slice(0, 11);
+      setGuestDetails((prev) => ({ ...prev, [name]: numericValue }));
+      return;
+    }
+
+    if (name === "fullName") {
+      // Limit length to 80
+      if (value.length > 80) return;
+      setGuestDetails((prev) => ({ ...prev, [name]: value }));
+      return;
+    }
+
+    if (name === "currentAddress") {
+      if (value.length > 200) return;
+      setGuestDetails((prev) => ({ ...prev, [name]: value }));
+      return;
+    }
+
+    if (name === "email") {
+      if (value.length > 254) return;
+      // Block spaces in email
+      if (value.includes(" ")) return;
+      setGuestDetails((prev) => ({ ...prev, [name]: value }));
+      return;
+    }
+
+    setGuestDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
   // console.log(cart);
 
   const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -131,7 +172,7 @@ export default function GuestSummaryModal({ onClose }) {
         // Proceed if no lock or lock expired
         localStorage.setItem("manual-order-backup", JSON.stringify(orderData));
         setCurrentOrder(orderData);
-        navigate("/guestQRpage");
+        navigate("/payment-gcash");
       }
     } catch (error) {
       toast.error(error?.response?.data?.message);
@@ -142,16 +183,9 @@ export default function GuestSummaryModal({ onClose }) {
     e.preventDefault();
 
     const formData = new FormData(e.target);
-    const inputs = Object.fromEntries(formData);
+    const { paymentMethod } = Object.fromEntries(formData);
 
-    const {
-      fullName,
-      email,
-      phoneNumber,
-      paymentMethod,
-      notes,
-      currentAddress,
-    } = inputs;
+    const { fullName, email, phoneNumber, currentAddress } = guestDetails;
 
     if (!fullName || !phoneNumber || !currentAddress || !email)
       return toast.error("Please input required fields!");
@@ -304,8 +338,9 @@ export default function GuestSummaryModal({ onClose }) {
                   <input
                     type="email"
                     name="email"
+                    value={guestDetails.email}
+                    onChange={handleInputChange}
                     className="p-2 border border-gray-300 rounded-[5px]"
-                    // disabled
                     maxLength={254}
                   />
                 </div>
@@ -320,8 +355,9 @@ export default function GuestSummaryModal({ onClose }) {
                     <input
                       type="text"
                       name="fullName"
+                      value={guestDetails.fullName}
+                      onChange={handleInputChange}
                       className="p-2 rounded-[5px] border border-gray-300"
-                      // disabled
                       maxLength={80}
                     />
                   </div>
@@ -335,9 +371,10 @@ export default function GuestSummaryModal({ onClose }) {
                     <input
                       type="tel"
                       name="phoneNumber"
+                      value={guestDetails.phoneNumber}
+                      onChange={handleInputChange}
                       className={`p-2 border border-gray-300 rounded-[5px]`}
                       maxLength={11}
-                      // disabled
                     />
                   </div>
                 </div>
@@ -351,8 +388,9 @@ export default function GuestSummaryModal({ onClose }) {
                   <input
                     type="text"
                     name="currentAddress"
+                    value={guestDetails.currentAddress}
+                    onChange={handleInputChange}
                     className="p-2 border border-gray-300 rounded-[5px]"
-                    // disabled
                     maxLength={200}
                   />
                 </div>
@@ -438,7 +476,7 @@ export default function GuestSummaryModal({ onClose }) {
 
                         {item?.taxStatus === "vatable" && (
                           <span className="text-blue-500">
-                            : {item.totalVat}%
+                            : {item?.vat?.vatPercent}%
                           </span>
                         )}
                       </div>

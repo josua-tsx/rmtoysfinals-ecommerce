@@ -2,9 +2,10 @@ import { useState } from "react";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import AdminOrderStatusTable from "./AdminOrderStatusTable";
 import AdminOrderGuestStatus from "./AdminOrderGuestStatus";
+import AdminPaymentValidation from "./AdminPaymentValidation";
 
 export default function AdminOrderStatus() {
-  const [selectedComponent, setSelectedComponent] = useState("user");
+  const [selectedComponent, setSelectedComponent] = useState("validation"); // Default to validation for visibility
 
   const handleChangeComponent = (e) => {
     const componentChange = e.target.value;
@@ -31,6 +32,7 @@ export default function AdminOrderStatus() {
             onChange={handleChangeComponent}
             className="relative border border-black outline-none py-3 px-6 rounded-[5px] bg-white w-full font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all cursor-pointer appearance-none pr-12"
           >
+            <option value="validation">VALIDATE PAYMENTS</option>
             <option value="user">User Order</option>
             <option value="guest">Guest Order</option>
           </select>
@@ -38,6 +40,8 @@ export default function AdminOrderStatus() {
             <div className="border-t-[6px] border-t-black border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent"></div>
           </div>
         </div>
+
+        {selectedComponent === "validation" && <AdminPaymentValidation />}
 
         {selectedComponent === "user" && <AdminOrderStatusTable />}
 

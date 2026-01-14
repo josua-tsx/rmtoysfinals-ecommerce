@@ -219,7 +219,7 @@ export default function OrderSummaryModal({ onClose }) {
 
     // Proceed if no lock or lock expired
     setCurrentOrder(orderData);
-    navigate("/gcashQRpayment");
+    navigate("/payment-gcash");
   };
 
   const handleOrderFormSubmit = (e) => {

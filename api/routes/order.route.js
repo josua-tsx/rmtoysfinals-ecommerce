@@ -25,6 +25,7 @@ import {
   getLatestRefundedOrder,
   getLatestSuccessOrder,
   // getMonthlySales,
+  getPendingPayments,
   getSalesAnalytics,
   getSingleUserOrder,
   getUserCancelled,
@@ -77,6 +78,9 @@ router.get(`/get-failedCancelled`, getAllFailed);
 router.get(`/get-refundedCancelled`, getAllRefunded);
 
 router.get(`/get-cancelled`, getAllCancelled);
+
+// Validator Dashboard - Orders needing payment validation
+router.get(`/get-pending-payments`, requireAuth, requireAdmin, getPendingPayments);
 
 // router.get(`/monthly/sales`, getMonthlySales);
 

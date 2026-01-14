@@ -94,3 +94,23 @@ export const fullNameSchema = z
   .trim()
   .min(2, "Full name must be at least 2 characters")
   .regex(/^[a-zA-Z\s'-]+$/, "Full name can only contain letters, spaces, hyphens, and apostrophes");
+
+/**
+ * Legacy-style validation wrapper functions.
+ * These return { valid: boolean, message?: string } for backward compatibility.
+ */
+export const validatePHMobile = (phone) => {
+  const result = phMobileSchema.safeParse(phone);
+  if (result.success) {
+    return { valid: true };
+  }
+  return { valid: false, message: result.error.issues[0]?.message || "Invalid phone number" };
+};
+
+export const validateFullName = (name) => {
+  const result = fullNameSchema.safeParse(name);
+  if (result.success) {
+    return { valid: true };
+  }
+  return { valid: false, message: result.error.issues[0]?.message || "Invalid name" };
+};

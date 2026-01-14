@@ -17,6 +17,15 @@ import {
   updateRiderStatus,
   validateStatus,
 } from "../services/orderService.js";
+import {
+  validatePHMobile,
+  validateFullName,
+  fullNameSchema,
+  phMobileSchema,
+  emailSchema,
+} from "../utils/validations.js";
+import { z } from "zod";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
 export const userPlaceOrder = async (req, res, next) => {
@@ -579,7 +588,7 @@ export const checkOutSuccess = async (req, res, next) => {
       })),
       shippingAddress,
       paymentMethod: "Online Payment",
-      paymentStatus: "Paid",
+      paymentStatus: "Pending", // Requires validator approval
       taxPrice: parseFloat(taxPrice) || 0,
       shippingPrice: parseFloat(shippingPrice) || 0,
       vatableSalesNet: parseFloat(vatableSalesNet) || 0,
@@ -1181,6 +1190,30 @@ export const getAllCancelled = async (req, res, next) => {
   }
 };
 
+// GET PENDING PAYMENTS FOR VALIDATOR STAFF
+// Returns orders paid via GcashQR or Online Payment that need manual validation
+export const getPendingPayments = async (req, res, next) => {
+  try {
+    const orders = await Order.find({
+      paymentMethod: { $in: ["GcashQR", "Online Payment"] },
+      paymentStatus: "Pending",
+    })
+      .populate({
+        path: "userId",
+        select: "fullName email phoneNumber",
+      })
+      .populate({
+        path: "orderItems.productId",
+        select: "productName productImages price",
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateDeliveryStatus = async (req, res, next) => {
     const { orderId } = req.params;
     const { status, isGuest, riderId } = req.body;
@@ -1202,8 +1235,24 @@ export const updateDeliveryStatus = async (req, res, next) => {
       // Store previous rider for status updates
       const previousRiderId = order.riderId;
   
-      // ====== HANDLE STATUS: SHIPPED ======
-      if (status === "Shipped") {
+      // ====== PAYMENT VALIDATION GUARD ======
+      // Block shipping-related statuses until payment is validated (except COD)
+      const shippingStatuses = ["Shipped", "Out for Delivery", "Delivered"];
+      if (
+        shippingStatuses.includes(status) &&
+        order.paymentStatus !== "Paid" &&
+        order.paymentMethod !== "Cod"
+      ) {
+        return next(
+          handleMakeError(
+            400,
+            "Cannot update to this status. Payment must be validated first."
+          )
+        );
+      }
+
+      // ====== HANDLE STATUS: SHIPPED ======
+      if (status === "Shipped") {
         if (!riderId)
           return next(
             handleMakeError(
@@ -1353,6 +1402,7 @@ export const getUserCancelled = async (req, res, next) => {
     const orders = await Order.find({
       userId,
       status: "Cancelled",
+      paymentStatus: { $ne: "Failed" },
     }).sort({ createdAt: -1 });
 
     if (!orders)
@@ -1368,7 +1418,7 @@ export const getUserCancelled = async (req, res, next) => {
 
 export const updatePaymentStatus = async (req, res, next) => {
   const { orderId } = req.params;
-  const { paymentStatus } = req.body;
+  const { paymentStatus, reason } = req.body;
   const userId = req.user.id;
 
   try {
@@ -1403,6 +1453,9 @@ export const updatePaymentStatus = async (req, res, next) => {
 
     if (paymentStatus === "Failed") {
       orderUpdate.status = "Cancelled";
+      if (reason) {
+        orderUpdate.reason = reason;
+      }
     }
 
     if (paymentStatus === "Refunded") {
@@ -1461,6 +1514,15 @@ export const updatePaymentStatus = async (req, res, next) => {
           { product: item.productId },
           { $inc: { quantity: item.quantity } },
           { new: true, runValidators: true }
+        );
+      }
+
+      // Refund credits if the user used any
+      if (order.userId && order.usedCredits > 0) {
+        await User.findByIdAndUpdate(
+          order.userId,
+          { $inc: { credits: order.usedCredits } },
+          { new: true }
         );
       }
 
@@ -2031,30 +2093,21 @@ export const validateGuestOrder = async (req, res, next) => {
   try {
     const { guestUser } = req.body;
 
-    if (!guestUser?.name || !guestUser?.phone || !guestUser?.email) {
-      return next(handleMakeError(400, "Guest orders require name, phone, and email"));
-    }
-    if (guestUser.name !== undefined && guestUser.name) {
-      const fullNameCheck = validateFullName(guestUser.name);
-      if (!fullNameCheck.valid) {
-        return next(handleMakeError(400, fullNameCheck.message));
-      }
-    }
+    // Define Zod schema for guest validation
+    const guestOrderSchema = z.object({
+      name: fullNameSchema,
+      phone: phMobileSchema,
+      email: emailSchema,
+    });
 
-    if (guestUser.email) {
-    const userEmailCheck = validateEmail(guestUser.email);
-    if (!userEmailCheck.valid) {
-      return next(handleMakeError(400, userEmailCheck.message));
-     }
+    // Validate request body
+    const validationResult = guestOrderSchema.safeParse(guestUser || {});
+
+    if (!validationResult.success) {
+      return next(
+        handleMakeError(400, validationResult.error.issues[0].message)
+      );
     }
-
-
-      if (guestUser.phone !== undefined && guestUser.phone) {
-        const phoneNumberCheck = validatePHMobile(guestUser.phone);
-        if (!phoneNumberCheck.valid) {
-          return next(handleMakeError(400, phoneNumberCheck.message));
-        }
-      }
 
     const existingUser = await User.findOne({ phoneNumber: guestUser.phone });
     if (existingUser) {
