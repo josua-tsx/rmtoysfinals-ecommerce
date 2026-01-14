@@ -1,6 +1,7 @@
 import Supplier from "../models/supplier.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
+import Stocks from "../models/stocks.model.js";
 
 
 export const addSupplier = async (req, res, next) => {
