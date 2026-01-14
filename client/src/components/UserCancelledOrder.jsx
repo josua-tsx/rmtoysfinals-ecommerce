@@ -62,10 +62,7 @@ export default function UserCancelledOrder() {
                 <div className="flex gap-4 items-center flex-1">
                   <div className="w-20 h-20 bg-gray-100 border border-black rounded-[5px] flex items-center justify-center p-2 shrink-0 grayscale">
                     <img
-                      src={
-                        order?.orderItems?.[0]?.productId?.productImages?.[0]
-                          ?.url || "/placeholder.png"
-                      }
+                      src={order?.imageUrl || "/placeholder.png"}
                       alt="Product"
                       className="w-full h-full object-contain mix-blend-multiply"
                     />

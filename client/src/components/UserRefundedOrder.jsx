@@ -62,10 +62,7 @@ export default function UserRefundedOrder() {
                 <div className="flex gap-4 items-center flex-1">
                   <div className="w-20 h-20 bg-orange-50 border border-black rounded-[5px] flex items-center justify-center p-2 shrink-0">
                     <img
-                      src={
-                        order?.orderItems?.[0]?.productId?.productImages?.[0]
-                          ?.url || "/placeholder.png"
-                      }
+                      src={order?.imageUrl || "/placeholder.png"}
                       alt="Product"
                       className="w-full h-full object-contain mix-blend-multiply"
                     />
