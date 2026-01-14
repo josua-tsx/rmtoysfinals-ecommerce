@@ -1,27 +1,32 @@
 import { z } from "zod";
 
+export const supplierPriceSchema = z.coerce.number({ required_error: "Supplier Price is required" })
+    .positive("Supplier price must be positive")
+    .max(1000000, "Supplier price cannot exceed 1 Million");
+
+export const shopPriceSchema = z.coerce.number({ required_error: "Shop Price is required" })
+    .positive("Shop price must be positive")
+    .max(1000000, "Shop price cannot exceed 1 Million");
+
+export const shippingPriceSchema = z.coerce.number({ required_error: "Shipping Price is required" })
+    .nonnegative("Shipping price cannot be negative")
+    .max(10000, "Shipping price cannot exceed 10k");
+
+export const quantitySchema = z.coerce.number({ required_error: "Quantity is required" })
+    .min(11, "Quantity must be at least 11")
+    .max(1000, "Quantity cannot exceed 1000");
+
+export const dateDeliverySchema = z.string().min(1, "Please select a delivery date");
+
 export const orderStockSchema = z.object({
   product: z.string().min(1, "Product ID is required"),
   supplier: z.string().min(1, "Please select a supplier"),
   deliveryId: z.string().min(1, "Delivery ID is required"),
-  dateDelivery: z.string().min(1, "Please select a delivery date"),
-  
-  supplierPrice: z.coerce.number({ required_error: "Supplier Price is required" })
-    .positive("Supplier price must be positive")
-    .max(1000000, "Supplier price cannot exceed 1 Million"),
-  
-  shopPrice: z.coerce.number({ required_error: "Shop Price is required" })
-    .positive("Shop price must be positive")
-    .max(1000000, "Shop price cannot exceed 1 Million"),
-  
-  shippingPrice: z.coerce.number({ required_error: "Shipping Price is required" })
-    .nonnegative("Shipping price cannot be negative")
-    .max(10000, "Shipping price cannot exceed 10k"),
-  
-  quantity: z.coerce.number({ required_error: "Quantity is required" })
-    .min(11, "Quantity must be at least 11")
-    .max(1000, "Quantity cannot exceed 1000"),
-  
+  dateDelivery: dateDeliverySchema,
+  supplierPrice: supplierPriceSchema,
+  shopPrice: shopPriceSchema,
+  shippingPrice: shippingPriceSchema,
+  quantity: quantitySchema,
   totalCost: z.coerce.number().optional(),
   vat: z.string().optional().nullable().or(z.literal("")),
   vatShopPrice: z.coerce.number().optional(),
