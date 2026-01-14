@@ -118,7 +118,7 @@ export default function ChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-4 rounded-full border-2 border-black transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] group"
+          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-4 rounded-full border-2 border-black transition-all duration-300 hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] group"
           aria-label="Open chat"
         >
           <IoChatbubbleEllipsesOutline
@@ -132,7 +132,7 @@ export default function ChatWidget() {
       {/* CHAT WINDOW */}
       {/* ================================================================== */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[90%] md:w-[350px] h-[500px] bg-card border-2 border-black rounded-[15px] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-300">
+        <div className="fixed bottom-6 right-6 z-50 w-[90%] md:w-[350px] h-[500px] bg-card border-2 border-black rounded-[15px]  flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-300">
           {/* ============================================================ */}
           {/* HEADER */}
           {/* ============================================================ */}
@@ -143,7 +143,7 @@ export default function ChatWidget() {
               </div>
               <div>
                 <h3 className="font-black tracking-wide text-md uppercase">
-                  RM Toys AI
+                  Jaloy - RM Toys AI
                 </h3>
                 <p className="text-[10px] opacity-90 font-medium">
                   Assistant Online
