@@ -7,7 +7,7 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
-    "postinstall": "PUPPETEER_CACHE_DIR=.cache/puppeteer npx puppeteer browsers install chrome"
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "keywords": [],
   "author": "",
