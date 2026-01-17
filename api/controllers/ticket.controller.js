@@ -1,6 +1,7 @@
 import Ticket from "../models/ticket.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { sendGrid } from "../sendGrid/sendGrid.js";
+import { getIO } from "../services/socketService.js";
 import {
   customerConfirmationEmail,
   adminNotificationEmail,
@@ -82,6 +83,21 @@ export const createTicket = async (req, res, next) => {
       );
     } catch (emailError) {
       console.error("Error sending admin notification email:", emailError);
+    }
+
+    // Emit real-time notification to admin dashboard
+    try {
+      const io = getIO();
+      io.to("admin-room").emit("new-ticket", {
+        ticketId: newTicket._id,
+        subject: newTicket.subject,
+        customerName: newTicket.name,
+        issueType: newTicket.issueType,
+        priority: newTicket.priority,
+        createdAt: newTicket.createdAt,
+      });
+    } catch (socketError) {
+      console.error("Error emitting socket event:", socketError);
     }
 
     res.status(201).json({
@@ -237,6 +253,8 @@ export const getSingleTicket = async (req, res, next) => {
   }
 };
 
+
+
 // Update ticket status (Admin only)
 export const updateTicketStatus = async (req, res, next) => {
   try {
@@ -324,6 +342,21 @@ export const addReplyToTicket = async (req, res, next) => {
       console.error("Error sending reply notification email:", emailError);
     }
 
+    // Emit real-time notification to customer if they have a userId
+    if (ticket.userId) {
+      try {
+        const io = getIO();
+        io.to(`customer-${ticket.userId}`).emit("admin-reply", {
+          ticketId: ticket._id,
+          subject: ticket.subject,
+          replyPreview: message.substring(0, 50),
+          adminName,
+        });
+      } catch (socketError) {
+        console.error("Error emitting socket event to customer:", socketError);
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: "Reply sent successfully",
@@ -384,6 +417,19 @@ export const customerReplyToTicket = async (req, res, next) => {
       );
     } catch (emailError) {
       console.error("Error sending admin notification email:", emailError);
+    }
+
+    // Emit real-time notification to admin dashboard
+    try {
+      const io = getIO();
+      io.to("admin-room").emit("new-ticket-reply", {
+        ticketId: ticket._id,
+        subject: ticket.subject,
+        customerName: ticket.name,
+        replyPreview: message.substring(0, 50),
+      });
+    } catch (socketError) {
+      console.error("Error emitting socket event:", socketError);
     }
 
     res.status(200).json({

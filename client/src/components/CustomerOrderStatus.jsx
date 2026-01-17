@@ -142,8 +142,8 @@ export default function CustomerOrderStatus() {
 
               {/* ACTIONS */}
               <div className="flex gap-2 pt-2 border-t border-black/5">
-                {order?.paymentMethod === "GcashQR" ||
-                order?.paymentMethod === "Online Payment" ? (
+                {(order.status === "Pending" ||
+                  order.status === "Processing") && (
                   <button
                     onClick={() => handleCancelOrder(order._id)}
                     type="button"
@@ -151,7 +151,7 @@ export default function CustomerOrderStatus() {
                   >
                     Cancel Order
                   </button>
-                ) : null}
+                )}
 
                 <button
                   className="flex-1 py-2  font-black uppercase text-[10px] tracking-widest rounded-[5px] border border-black bg-[#22c55e] text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all active:scale-95"

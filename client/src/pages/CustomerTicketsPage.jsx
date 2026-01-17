@@ -16,7 +16,7 @@ import {
   IoAttach,
   IoClose,
 } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
 import {
   getDownloadURL,
@@ -55,7 +55,8 @@ export default function CustomerTicketsPage() {
   const [selectedImages, setSelectedImages] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
-  const messagesEndRef = useRef(null);
+
+  const { ticketId } = useParams();
 
   const {
     data: ticketsData,
@@ -78,13 +79,11 @@ export default function CustomerTicketsPage() {
       );
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userTickets"] });
       setReplyMessage("");
       setSelectedImages([]);
-      if (data.ticket) {
-        setSelectedTicket(data.ticket);
-      }
+      // Don't override selectedTicket here, let the URL logic handle it or just update it if needed for immediate UI feedback (optional)
       toast.success("Reply sent");
     },
     onError: (err) => {
@@ -94,13 +93,20 @@ export default function CustomerTicketsPage() {
 
   const tickets = ticketsData?.tickets || [];
 
-  // Auto-scroll to bottom of chat
+  // Sync selectedTicket with URL param
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [selectedTicket?.messages]);
+    if (ticketId && tickets.length > 0) {
+      const ticketFromUrl = tickets.find((t) => t._id === ticketId);
+      if (ticketFromUrl) {
+        setSelectedTicket(ticketFromUrl);
+      }
+    } else if (!ticketId) {
+      setSelectedTicket(null);
+    }
+  }, [ticketId, tickets]);
 
   const handleViewTicket = (ticket) => {
-    setSelectedTicket(ticket);
+    navigate(`/my-tickets/${ticket._id}`);
     setReplyMessage("");
     setSelectedImages([]);
   };
@@ -339,7 +345,7 @@ export default function CustomerTicketsPage() {
               <div className="p-4 border-b border-black flex items-center justify-between bg-card shrink-0">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setSelectedTicket(null)}
+                    onClick={() => navigate("/my-tickets")}
                     className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-900"
                   >
                     <IoArrowBack size={20} />
@@ -448,7 +454,6 @@ export default function CustomerTicketsPage() {
                     </div>
                   );
                 })}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input Area */}

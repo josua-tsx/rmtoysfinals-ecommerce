@@ -24,7 +24,7 @@ export const ConfirmModal = ({
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 mt-8">
+        <div className="flex flex-col md:flex-row-reverse gap-4 mt-8">
           <Buttons
             buttonName="Confirm Action"
             onClick={onConfirm}

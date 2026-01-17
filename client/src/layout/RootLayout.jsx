@@ -1,6 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import AdminSideBar from "../components/admin/AdminSideBar";
+import AdminNotificationPanel from "../components/admin/AdminNotificationPanel";
+import CustomerNotificationPanel from "../components/CustomerNotificationPanel";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
 import { useEffect, useState } from "react";
@@ -11,6 +13,8 @@ import FooterSection from "../components/FooterSection";
 import TopProgressBar from "../reusable/TopProgressBar";
 import ChatWidget from "../components/ChatWidget";
 import LoadingSpinner from "../reusable/LoadingSpinner";
+import { useSocketNotifications } from "../hooks/useSocketNotifications";
+import { useCustomerNotifications } from "../hooks/useCustomerNotifications";
 
 const RootLayout = () => {
   // 🧠 User store
@@ -36,6 +40,9 @@ const RootLayout = () => {
     }
   }, [currentUser, signOut]);
 
+  // Enable customer notifications for logged-in users (must be before early returns)
+  useCustomerNotifications(currentUser?._id);
+
   // ⛔️ Redirect blocked users to sign-in
   if (currentUser?.status === "blocked") {
     return <Navigate to="/sign-in" />;
@@ -49,7 +56,13 @@ const RootLayout = () => {
       </header>
 
       {/* Main Content */}
-      <main className="bg-yellow">
+      <main className="bg-yellow relative">
+        {/* Customer Notification Bell - only for logged-in customers */}
+        {currentUser && !currentUser.isAdmin && (
+          <div className="fixed top-20 right-6 z-50">
+            <CustomerNotificationPanel />
+          </div>
+        )}
         <Outlet />
         <ChatWidget />
       </main>
@@ -62,9 +75,9 @@ const RootLayout = () => {
           style: {
             width: "300px",
             position: "relative",
-            right: "0", // Move left/right
-            bottom: "-60px", // Move up/down
-            transform: "translateY(20px)", // Fine adjustment
+            right: "0",
+            bottom: "-60px",
+            transform: "translateY(20px)",
           },
         }}
       />
@@ -151,6 +164,9 @@ const RequiredAuthGcashPage = ({ children }) => {
 };
 
 const AdminLayout = () => {
+  // Enable real-time notifications for admins
+  useSocketNotifications(true);
+
   return (
     <div className="flex bg-yellow h-full">
       <TopProgressBar />
@@ -159,7 +175,11 @@ const AdminLayout = () => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto ">
+      <main className="flex-1 overflow-y-auto relative">
+        {/* Notification Bell - Fixed Position */}
+        <div className="fixed top-40 right-8 z-50">
+          <AdminNotificationPanel />
+        </div>
         <Outlet />
       </main>
       <Toaster />

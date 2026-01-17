@@ -36,7 +36,7 @@ config();
 
 const app = express();
 
-const allowedOrigins = [
+export const allowedOrigins = [
   "https://rmtoysfinals-8jgr.vercel.app", // Your Vercel frontend
   "http://localhost:5173", // For local testing (optional)
   "https://www.rmtoys.store",

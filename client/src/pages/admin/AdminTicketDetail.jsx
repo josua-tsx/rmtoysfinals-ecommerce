@@ -170,7 +170,7 @@ export default function AdminTicketDetail() {
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Chat Interface */}
-        <div className="lg:col-span-2 flex flex-col  border border-black rounded-[5px] bg-card overflow-hidden shadow-sm">
+        <div className="lg:col-span-2 flex flex-col h-[calc(100vh-140px)] border border-black rounded-[5px] bg-card overflow-hidden shadow-sm">
           {/* Chat Header */}
           <div className="p-4 border-b border-black bg-white flex items-center justify-between shrink-0">
             <div>

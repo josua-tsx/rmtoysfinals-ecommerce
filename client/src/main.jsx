@@ -120,6 +120,10 @@ const router = createBrowserRouter([
         element: <CustomerTicketsPage />,
       },
       {
+        path: `/my-tickets/:ticketId`,
+        element: <CustomerTicketsPage />,
+      },
+      {
         path: "/tracker",
         element: <TrackerPage />,
       },
