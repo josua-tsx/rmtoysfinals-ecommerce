@@ -331,16 +331,14 @@ export const addReplyToTicket = async (req, res, next) => {
 
     await ticket.save();
 
-    // Send email notification to customer
-    try {
-      await sendGrid(
-        ticket.email,
-        `New Reply - ${ticket.subject}`,
-        adminReplyEmail(ticket, message)
-      );
-    } catch (emailError) {
+    // Send email notification to customer (Non-blocking)
+    sendGrid(
+      ticket.email,
+      `New Reply - ${ticket.subject}`,
+      adminReplyEmail(ticket, message)
+    ).catch((emailError) => {
       console.error("Error sending reply notification email:", emailError);
-    }
+    });
 
     // Emit real-time notification to customer if they have a userId
     if (ticket.userId) {
@@ -407,17 +405,9 @@ export const customerReplyToTicket = async (req, res, next) => {
 
     await ticket.save();
 
-    // Optionally notify admin of new customer reply
-    try {
-      const adminEmail = process.env.SHOP_EMAIL || "support@rmtoys.store";
-      await sendGrid(
-        adminEmail,
-        `Customer Reply - ${ticket.subject}`,
-        adminNotificationEmail(ticket)
-      );
-    } catch (emailError) {
-      console.error("Error sending admin notification email:", emailError);
-    }
+    // Email notification removed as per request
+    // to improve performance and avoid blocking
+
 
     // Emit real-time notification to admin dashboard
     try {
