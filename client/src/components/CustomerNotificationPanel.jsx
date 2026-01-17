@@ -67,7 +67,7 @@ export default function CustomerNotificationPanel() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 top-12 w-72 bg-white border-2 border-black rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50">
+        <div className="absolute right-0 top-12 w-72 bg-white border border-black rounded-[5px] z-50">
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b border-black bg-gray-50">
             <h3 className="font-black uppercase text-xs tracking-widest">

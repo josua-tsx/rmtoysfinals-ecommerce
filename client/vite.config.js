@@ -25,8 +25,8 @@ export default defineConfig({
             if (id.includes('lodash')) {
               return 'vendor-lodash';
             }
-            if (id.includes('phil-reg-prov-mun-brgy')) {
-              return 'vendor-geo';
+            if (id.includes('@jobuntux/psgc')) {
+              return 'vendor-psgc';
             }
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';

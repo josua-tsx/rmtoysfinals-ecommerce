@@ -4,10 +4,11 @@ import ValidatedInput from "../reusable/ValidatedInput";
 import { addressSchema } from "../schemas/address.schema";
 
 import {
-  regions,
-  getProvincesByRegion,
-  getCityMunByProvince,
-} from "phil-reg-prov-mun-brgy";
+  listRegions,
+  listProvinces,
+  listMuncities,
+  listBarangays,
+} from "@jobuntux/psgc";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
@@ -26,6 +27,7 @@ export default function ShippingAddressComponent() {
 
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
 
   const [barangay, setBarangay] = useState("");
   const [streetBuildingHouseNum, setStreetBuildingHouseNum] = useState("");
@@ -47,7 +49,7 @@ export default function ShippingAddressComponent() {
     queryKey: ["address", currentUser._id],
     queryFn: async () => {
       const res = await axiosInstance.get(
-        `/address/user/${currentUser._id}/address`
+        `/address/user/${currentUser._id}/address`,
       );
       return res.data;
     },
@@ -57,7 +59,7 @@ export default function ShippingAddressComponent() {
     queryKey: ["address", editAddressId],
     queryFn: async () => {
       const res = await axiosInstance.get(
-        `/address/get-address/${editAddressId}`
+        `/address/get-address/${editAddressId}`,
       );
       return res.data;
     },
@@ -86,7 +88,7 @@ export default function ShippingAddressComponent() {
   const { mutate: deleteAddressMutation } = useMutation({
     mutationFn: async (addressId) => {
       const res = await axiosInstance.delete(
-        `/address/delete-address/${addressId}`
+        `/address/delete-address/${addressId}`,
       );
       return res.data;
     },
@@ -120,8 +122,8 @@ export default function ShippingAddressComponent() {
     e.preventDefault();
 
     const data = {
-      region: selectedRegion?.name || "",
-      stateProvince: selectedProvince?.name || "",
+      region: selectedRegion?.regionName || "",
+      stateProvince: selectedProvince?.provName || "",
       city: selectedCity.toLocaleLowerCase(),
       barangay,
       streetBuildingHouseNum,
@@ -138,28 +140,45 @@ export default function ShippingAddressComponent() {
 
   const handleRegionChange = (e) => {
     const selectedRegCode = e.target.value;
-    const selecteddRegion = regions.find(
-      (region) => region.reg_code === selectedRegCode
+    const selecteddRegion = listRegions().find(
+      (region) => region.regCode === selectedRegCode,
     );
     setSelectedRegion(selecteddRegion);
-    setProvinces(getProvincesByRegion(selectedRegCode));
+    setProvinces(listProvinces(selectedRegCode));
     setSelectedProvince("");
     setCities([]);
+    setBarangays([]);
   };
 
   const handleProvinceChange = (e) => {
     const selectedProvCode = e.target.value;
     const selecteddProvince = provinces.find(
-      (province) => province.prov_code === selectedProvCode
+      (province) => province.provCode === selectedProvCode,
     );
     setSelectedProvince(selecteddProvince);
-    setCities(getCityMunByProvince(selectedProvCode));
-    setSelectedCity("");
+    const cityList = listMuncities(selectedProvCode);
+    setCities(cityList);
+    if (cityList.length === 1) {
+      setSelectedCity(cityList[0].munCityName);
+      // Auto-select city means we should also load its barangays
+      setBarangays(listBarangays(cityList[0].psgcCode));
+    } else {
+      setSelectedCity("");
+      setBarangays([]);
+    }
   };
 
   const handleCityChange = (e) => {
-    const cityCode = e.target.value;
-    setSelectedCity(cityCode);
+    const cityName = e.target.value;
+    setSelectedCity(cityName);
+    setBarangay("");
+
+    const selectedCityObj = cities.find((c) => c.munCityName === cityName);
+    if (selectedCityObj) {
+      setBarangays(listBarangays(selectedCityObj.psgcCode));
+    } else {
+      setBarangays([]);
+    }
   };
 
   const handleOpenEdit = (address) => {
@@ -239,16 +258,16 @@ export default function ShippingAddressComponent() {
                 Region
               </label>
               <select
-                value={selectedRegion ? selectedRegion.reg_code : ""}
+                value={selectedRegion ? selectedRegion.regCode : ""}
                 onChange={handleRegionChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 name="region"
                 id="region"
               >
                 <option value="">Select Region</option>
-                {regions.map((region) => (
-                  <option key={region.name} value={region.reg_code}>
-                    {region.name}
+                {listRegions().map((region) => (
+                  <option key={region.regCode} value={region.regCode}>
+                    {region.regionName}
                   </option>
                 ))}
               </select>
@@ -259,7 +278,7 @@ export default function ShippingAddressComponent() {
                 State / Province
               </label>
               <select
-                value={selectedProvince ? selectedProvince.prov_code : ""}
+                value={selectedProvince ? selectedProvince.provCode : ""}
                 onChange={handleProvinceChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 name="stateProvince"
@@ -267,8 +286,8 @@ export default function ShippingAddressComponent() {
               >
                 <option value="">Select Province</option>
                 {provinces.map((province) => (
-                  <option key={province.name} value={province.prov_code}>
-                    {province.name}
+                  <option key={province.provCode} value={province.provCode}>
+                    {province.provName}
                   </option>
                 ))}
               </select>
@@ -285,21 +304,34 @@ export default function ShippingAddressComponent() {
               >
                 <option value="">Select City</option>
                 {cities.map((city) => (
-                  <option key={city.name} value={city.name}>
-                    {city.name}
+                  <option key={city.psgcCode} value={city.munCityName}>
+                    {city.munCityName}
                   </option>
                 ))}
               </select>
             </div>
 
-            <ValidatedInput
-              label="Barangay"
-              name="barangay"
-              value={barangay}
-              onChange={handleInputChange(setBarangay)}
-              placeholder="Ex: Lower bicutan"
-              required
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Barangay
+              </label>
+              <select
+                value={barangay}
+                onChange={(e) => setBarangay(e.target.value)}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                name="barangay"
+                id="barangay"
+                required
+                disabled={!selectedCity}
+              >
+                <option value="">Select Barangay</option>
+                {barangays.map((brgy) => (
+                  <option key={brgy.psgcCode} value={brgy.brgyName}>
+                    {brgy.brgyName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <ValidatedInput
               label="Street Name, Building, House No."

@@ -3,10 +3,11 @@ import { FaCheckCircle } from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
 import AddressSection from "../hooks/AddressSection";
 import {
-  regions,
-  getProvincesByRegion,
-  getCityMunByProvince,
-} from "phil-reg-prov-mun-brgy";
+  listRegions,
+  listProvinces,
+  listMuncities,
+  listBarangays,
+} from "@jobuntux/psgc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
@@ -18,6 +19,7 @@ const EditAddress = ({ address, onClose }) => {
   const [selectedCity, setSelectedCity] = useState("");
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
   const [barangay, setBarangay] = useState("");
   const [streetBuildingHouseNum, setStreetBuildingHouseNum] = useState("");
 
@@ -26,6 +28,32 @@ const EditAddress = ({ address, onClose }) => {
 
   useEffect(() => {
     if (address) {
+      // Find region
+      const region = listRegions().find((r) => r.regionName === address.region);
+      if (region) {
+        setSelectedRegion(region);
+        const provs = listProvinces(region.regCode);
+        setProvinces(provs);
+
+        // Find province
+        const province = provs.find(
+          (p) => p.provName === address.stateProvince,
+        );
+        if (province) {
+          setSelectedProvince(province);
+          const muns = listMuncities(province.provCode);
+          setCities(muns);
+
+          // Find city
+          const city = muns.find(
+            (c) => c.munCityName.toLowerCase() === address.city.toLowerCase(),
+          );
+          if (city) {
+            setSelectedCity(city.munCityName);
+            setBarangays(listBarangays(city.psgcCode));
+          }
+        }
+      }
       setBarangay(address.barangay || "");
       setStreetBuildingHouseNum(address.streetBuildingHouseNum || "");
     }
@@ -35,7 +63,7 @@ const EditAddress = ({ address, onClose }) => {
     mutationFn: async (data) => {
       const res = await axiosInstance.put(
         `/address/edit-address/${address._id}`,
-        data
+        data,
       );
       return res.data;
     },
@@ -58,8 +86,8 @@ const EditAddress = ({ address, onClose }) => {
     e.preventDefault();
 
     updateAddressMutation({
-      region: selectedRegion.name,
-      stateProvince: selectedProvince.name,
+      region: selectedRegion.regionName,
+      stateProvince: selectedProvince?.provName || "",
       city: selectedCity.toLocaleLowerCase(),
       barangay,
       streetBuildingHouseNum,
@@ -68,24 +96,45 @@ const EditAddress = ({ address, onClose }) => {
 
   const handleRegionChange = (e) => {
     const selectedRegCode = e.target.value;
-    const selectedRegionObj = regions.find(
-      (region) => region.reg_code === selectedRegCode
+    const selectedRegionObj = listRegions().find(
+      (region) => region.regCode === selectedRegCode,
     );
     setSelectedRegion(selectedRegionObj || "");
-    setProvinces(getProvincesByRegion(selectedRegCode));
+    setProvinces(listProvinces(selectedRegCode));
     setSelectedProvince("");
     setSelectedCity("");
     setCities([]);
+    setBarangays([]);
   };
 
   const handleProvinceChange = (e) => {
     const selectedProvCode = e.target.value;
     const selectedProvinceObj = provinces.find(
-      (province) => province.prov_code === selectedProvCode
+      (province) => province.provCode === selectedProvCode,
     );
     setSelectedProvince(selectedProvinceObj || "");
-    setCities(getCityMunByProvince(selectedProvCode));
-    setSelectedCity("");
+    const cityList = listMuncities(selectedProvCode);
+    setCities(cityList);
+    if (cityList.length === 1) {
+      setSelectedCity(cityList[0].munCityName);
+      setBarangays(listBarangays(cityList[0].psgcCode));
+    } else {
+      setSelectedCity("");
+      setBarangays([]);
+    }
+  };
+
+  const handleCityChange = (e) => {
+    const cityName = e.target.value;
+    setSelectedCity(cityName);
+    setBarangay("");
+
+    const selectedCityObj = cities.find((c) => c.munCityName === cityName);
+    if (selectedCityObj) {
+      setBarangays(listBarangays(selectedCityObj.psgcCode));
+    } else {
+      setBarangays([]);
+    }
   };
 
   return (
@@ -125,7 +174,7 @@ const EditAddress = ({ address, onClose }) => {
 
             <AddressSection title="Region">
               <select
-                value={selectedRegion?.reg_code || ""}
+                value={selectedRegion?.regCode || ""}
                 onChange={handleRegionChange}
                 className="bg-gray-50  text-sm p-3 border border-black rounded-[5px] w-full outline-none focus:bg-white transition-colors cursor-pointer"
                 name="region"
@@ -133,9 +182,9 @@ const EditAddress = ({ address, onClose }) => {
                 required
               >
                 <option value="">Select Region</option>
-                {regions.map((region) => (
-                  <option key={region.reg_code} value={region.reg_code}>
-                    {region.name}
+                {listRegions().map((region) => (
+                  <option key={region.regCode} value={region.regCode}>
+                    {region.regionName}
                   </option>
                 ))}
               </select>
@@ -143,7 +192,7 @@ const EditAddress = ({ address, onClose }) => {
 
             <AddressSection title="State / Province">
               <select
-                value={selectedProvince?.prov_code || ""}
+                value={selectedProvince?.provCode || ""}
                 onChange={handleProvinceChange}
                 className="bg-gray-50  text-sm p-3 border border-black rounded-[5px] w-full outline-none focus:bg-white transition-colors cursor-pointer"
                 name="stateProvince"
@@ -152,8 +201,8 @@ const EditAddress = ({ address, onClose }) => {
               >
                 <option value="">Select Province</option>
                 {provinces.map((province) => (
-                  <option key={province.prov_code} value={province.prov_code}>
-                    {province.name}
+                  <option key={province.provCode} value={province.provCode}>
+                    {province.provName}
                   </option>
                 ))}
               </select>
@@ -163,7 +212,7 @@ const EditAddress = ({ address, onClose }) => {
               <AddressSection title="City">
                 <select
                   value={selectedCity || ""}
-                  onChange={(e) => setSelectedCity(e.target.value)}
+                  onChange={handleCityChange}
                   className="bg-gray-50  text-xs p-3 border border-black rounded-[5px] w-full outline-none focus:bg-white transition-colors cursor-pointer"
                   name="city"
                   id="city"
@@ -171,24 +220,30 @@ const EditAddress = ({ address, onClose }) => {
                 >
                   <option value="">Select City</option>
                   {cities.map((city) => (
-                    <option key={city.mun_code} value={city.name}>
-                      {city.name}
+                    <option key={city.psgcCode} value={city.munCityName}>
+                      {city.munCityName}
                     </option>
                   ))}
                 </select>
               </AddressSection>
 
               <AddressSection title="Barangay">
-                <input
+                <select
                   value={barangay}
                   onChange={(e) => setBarangay(e.target.value)}
-                  type="text"
-                  className="bg-gray-50  text-xs p-3 border border-black rounded-[5px] w-full outline-none focus:bg-white transition-colors focus:shadow-inner"
+                  className="bg-gray-50  text-xs p-3 border border-black rounded-[5px] w-full outline-none focus:bg-white transition-colors focus:shadow-inner cursor-pointer"
                   name="barangay"
                   id="barangay"
-                  placeholder="Input barangay"
                   required
-                />
+                  disabled={!selectedCity}
+                >
+                  <option value="">Select Barangay</option>
+                  {barangays.map((brgy) => (
+                    <option key={brgy.psgcCode} value={brgy.brgyName}>
+                      {brgy.brgyName}
+                    </option>
+                  ))}
+                </select>
               </AddressSection>
             </div>
 

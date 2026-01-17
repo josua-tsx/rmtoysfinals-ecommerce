@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@jobuntux/psgc':
+        specifier: ^0.2.1
+        version: 0.2.1
       '@tanstack/react-query':
         specifier: ^5.55.4
         version: 5.90.5(react@18.3.1)
@@ -29,9 +32,6 @@ importers:
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
-      phil-reg-prov-mun-brgy:
-        specifier: ^1.1.0
-        version: 1.1.0
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -595,6 +595,10 @@ packages:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
 
+  '@jobuntux/psgc@0.2.1':
+    resolution: {integrity: sha512-caW822qnU46/ETmh9AEEZQ2NscrnB4lCNrmMOdEhI9W9QrIJcrHYYEw+vaSsCRLWdNeLHP5VRzJ4VxwZknZP1Q==}
+    engines: {node: '>=22.0.0', npm: '>=10.8.0'}
+
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -1047,6 +1051,11 @@ packages:
 
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+
+  csv-parser@3.2.0:
+    resolution: {integrity: sha512-fgKbp+AJbn1h2dcAHKIdKNSSjfp43BZZykXsCjzALjKy80VXQNHPFJ6T9Afwdzoj24aMkq8GwDS7KGcDPpejrA==}
+    engines: {node: '>= 10'}
+    hasBin: true
 
   d3-array@3.2.4:
     resolution: {integrity: sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==}
@@ -1796,9 +1805,6 @@ packages:
   path-scurry@1.11.1:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
-
-  phil-reg-prov-mun-brgy@1.1.0:
-    resolution: {integrity: sha512-lD47cbyIKyLX30+V8yTgzhQoIWtpvEwlWzgjbMqPBJgTRVZYVj+Kc9B0KJjG8z1VvXEaJSBVlS5uonoNR+bb6Q==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -2919,6 +2925,10 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
+  '@jobuntux/psgc@0.2.1':
+    dependencies:
+      csv-parser: 3.2.0
+
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -3356,6 +3366,8 @@ snapshots:
   cssesc@3.0.0: {}
 
   csstype@3.1.3: {}
+
+  csv-parser@3.2.0: {}
 
   d3-array@3.2.4:
     dependencies:
@@ -4243,8 +4255,6 @@ snapshots:
     dependencies:
       lru-cache: 10.4.3
       minipass: 7.1.2
-
-  phil-reg-prov-mun-brgy@1.1.0: {}
 
   picocolors@1.1.1: {}
 
