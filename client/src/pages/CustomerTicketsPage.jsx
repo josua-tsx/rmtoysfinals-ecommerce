@@ -25,6 +25,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import app from "../firebase/firebase";
+import { socket } from "../lib/socket";
 
 const STATUS_CONFIG = {
   Pending: {
@@ -104,6 +105,24 @@ export default function CustomerTicketsPage() {
       setSelectedTicket(null);
     }
   }, [ticketId, tickets]);
+
+  // Real-time chat update listener
+  useEffect(() => {
+    if (!selectedTicket) return;
+
+    const handleAdminReply = (data) => {
+      if (data.ticketId === selectedTicket._id) {
+        // Just refetch to get clean state
+        queryClient.invalidateQueries({ queryKey: ["userTickets"] });
+      }
+    };
+
+    socket.on("admin-reply", handleAdminReply);
+
+    return () => {
+      socket.off("admin-reply", handleAdminReply);
+    };
+  }, [selectedTicket, queryClient]);
 
   const handleViewTicket = (ticket) => {
     navigate(`/my-tickets/${ticket._id}`);

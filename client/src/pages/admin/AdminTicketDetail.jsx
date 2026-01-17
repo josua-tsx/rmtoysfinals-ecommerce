@@ -19,6 +19,7 @@ import {
 import { SiGooglegemini } from "react-icons/si";
 import Buttons from "../../reusable/Buttons";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { socket } from "../../lib/socket";
 
 const STATUS_CONFIG = {
   Pending: {
@@ -123,6 +124,29 @@ export default function AdminTicketDetail() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [ticket?.messages]);
+
+  // Real-time chat update listener (Admin)
+  useEffect(() => {
+    if (!ticket) return;
+
+    // Connect socket if not connected (AdminLayout usually handles this, but safety first)
+    if (!socket.connected) {
+      socket.connect();
+      socket.emit("join-admin-room");
+    }
+
+    const handleCustomerReply = (data) => {
+      if (data.ticketId === ticket._id) {
+        queryClient.invalidateQueries({ queryKey: ["ticket", ticketId] });
+      }
+    };
+
+    socket.on("new-ticket-reply", handleCustomerReply);
+
+    return () => {
+      socket.off("new-ticket-reply", handleCustomerReply);
+    };
+  }, [ticket, ticketId, queryClient]);
 
   const handleSendReply = (e) => {
     e.preventDefault();

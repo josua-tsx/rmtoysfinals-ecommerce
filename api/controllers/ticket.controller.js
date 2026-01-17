@@ -211,7 +211,7 @@ export const getSingleTicket = async (req, res, next) => {
   try {
     const { ticketId } = req.params;
     const userId = req.user?._id;
-    const isAdmin = req.user?.isAdmin;
+    const isAdmin = req.user?.role === "admin" || req.user?.role === "validatorStaff";
 
     const ticket = await Ticket.findById(ticketId)
       .populate("userId", "name email")
@@ -346,7 +346,7 @@ export const addReplyToTicket = async (req, res, next) => {
     if (ticket.userId) {
       try {
         const io = getIO();
-        io.to(`customer-${ticket.userId}`).emit("admin-reply", {
+        io.to(`customer-${ticket.userId.toString()}`).emit("admin-reply", {
           ticketId: ticket._id,
           subject: ticket.subject,
           replyPreview: message.substring(0, 50),
