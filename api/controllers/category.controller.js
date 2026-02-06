@@ -223,3 +223,125 @@ export const getSingleCategory = async (req, res, next) => {
     next(error);
   }
 };
+
+// --- Batch Category Upload Logic ---
+
+export const getCategoryCsvTemplate = async (req, res, next) => {
+  try {
+    const headers = ["categoryName", "categoryDescription"];
+
+    const exampleRow = ["Example Category", "Description of the category"];
+
+    const csvContent = [headers.join(","), exampleRow.join(",")].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="category_upload_template.csv"'
+    );
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const batchAddCategories = async (req, res, next) => {
+  const file = req.file;
+  if (!file) {
+    return next(handleMakeError(400, "No CSV file uploaded"));
+  }
+
+  const userId = req.user.id;
+  const Papa = await import("papaparse");
+
+  try {
+    const csvData = file.buffer.toString("utf-8");
+    const { data, errors: parseErrors } = Papa.default.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim(),
+    });
+
+    if (parseErrors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "CSV parsing error",
+        errors: parseErrors,
+      });
+    }
+
+    if (data.length === 0) {
+      return next(handleMakeError(400, "CSV file is empty"));
+    }
+
+    const results = {
+      created: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    // Cache existing categories to check duplicates efficiently
+    const existingCategories = await Category.find({}, "categoryName");
+    const existingNames = new Set(
+      existingCategories.map((c) => c.categoryName.toLowerCase().trim())
+    );
+
+    for (const [index, row] of data.entries()) {
+      const rowNum = index + 2;
+      const { categoryName, categoryDescription } = row;
+
+      if (!categoryName) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: "Missing categoryName",
+        });
+        continue;
+      }
+
+      const normalizedName = categoryName.trim();
+
+      if (existingNames.has(normalizedName.toLowerCase())) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Category '${normalizedName}' already exists`,
+        });
+        continue;
+      }
+
+      // Create Category
+      try {
+        const newCategory = new Category({
+          categoryName: normalizedName,
+          categoryDescription: categoryDescription || "",
+        });
+        await newCategory.save();
+
+        // Audit Log
+        await logAuditTrail({
+          action: "create_category",
+          userId,
+          targetId: newCategory._id,
+          targetType: "Category",
+          details: { categoryName: normalizedName },
+          role: "admin",
+        });
+
+        // Add to Set to prevent duplicates within same batch
+        existingNames.add(normalizedName.toLowerCase());
+        results.created++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: err.message || "Database error",
+        });
+      }
+    }
+
+    res.status(200).json(results);
+  } catch (error) {
+    next(error);
+  }
+};

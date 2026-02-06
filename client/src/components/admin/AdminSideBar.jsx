@@ -5,16 +5,17 @@ import {
   IoMdArrowDropleft,
   IoIosStats,
 } from "react-icons/io";
-import { MdCategory, MdKeyboardReturn, MdDeliveryDining } from "react-icons/md";
+import { MdCategory, MdKeyboardReturn } from "react-icons/md";
 import {
   FaPuzzlePiece,
   FaBoxOpen,
   FaUsers,
   FaWarehouse,
   FaQuestionCircle,
-  FaTruckLoading,
   FaPercentage,
   FaMoneyBillWave,
+  FaTruck,
+  FaMotorcycle,
 } from "react-icons/fa";
 import { BiSupport } from "react-icons/bi";
 import { AiOutlineAudit } from "react-icons/ai";
@@ -50,6 +51,11 @@ export default function AdminSideBar() {
           name: "Add Product",
           path: "/admin/addProducts",
         },
+        {
+          name: "Batch Upload",
+          path: "/admin/batch-upload",
+        },
+
         // {
         //   name: "Products Draft",
         //   path: "/admin/draftProducts",
@@ -65,12 +71,24 @@ export default function AdminSideBar() {
       icon: <MdCategory size={20} />,
       allowedRoles: ["admin"],
       path: "/admin/category",
+      inner: [
+        {
+          name: "Batch Category",
+          path: "/admin/batch-category",
+        },
+      ],
     },
     {
       name: "Supplier Maintenance",
-      icon: <FaTruckLoading size={20} />,
+      icon: <FaTruck size={20} />,
       allowedRoles: ["admin"],
       path: "/admin/supplier",
+      inner: [
+        {
+          name: "Batch Supplier",
+          path: "/admin/batch-supplier",
+        },
+      ],
     },
     {
       name: "User Maintenance",
@@ -90,9 +108,15 @@ export default function AdminSideBar() {
 
     {
       name: "Rider Maintenance",
-      icon: <MdDeliveryDining size={20} />,
+      icon: <FaMotorcycle size={20} />,
       allowedRoles: ["admin"],
       path: "/admin/rider",
+      inner: [
+        {
+          name: "Batch Rider",
+          path: "/admin/batch-rider",
+        },
+      ],
     },
 
     {
@@ -100,6 +124,12 @@ export default function AdminSideBar() {
       path: "/admin/faqs",
       icon: <FaQuestionCircle size={20} />,
       allowedRoles: ["admin"],
+      inner: [
+        {
+          name: "Batch FAQ",
+          path: "/admin/batch-faq",
+        },
+      ],
     },
 
     {
@@ -115,7 +145,10 @@ export default function AdminSideBar() {
           name: "Pending Stocks",
           path: "/admin/pendingStocks",
         },
-
+        {
+          name: "Batch Stock",
+          path: "/admin/batch-stock",
+        },
         {
           name: "Order Stock History",
           path: "/admin/stockHistory",

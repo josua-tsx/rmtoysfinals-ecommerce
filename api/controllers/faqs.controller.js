@@ -182,3 +182,155 @@ export const updateFaq = async (req, res, next) => {
     next(error);
   }
 };
+
+// --- Batch FAQ Upload Logic ---
+import { faqsSchema } from "../schema/faqs.schema.js";
+
+export const getFaqCsvTemplate = async (req, res, next) => {
+  try {
+    const headers = ["title", "answer"];
+    const exampleRow = ["How do I track my order?", "You can track your order in the Orders section."];
+
+    const csvContent = [headers.join(","), exampleRow.join(",")].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="faq_upload_template.csv"'
+    );
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const batchAddFaqs = async (req, res, next) => {
+  const file = req.file;
+  if (!file) {
+    return next(handleMakeError(400, "No CSV file uploaded"));
+  }
+
+  const userId = req.user.id;
+  const Papa = await import("papaparse");
+
+  try {
+    const csvData = file.buffer.toString("utf-8");
+    const { data, errors: parseErrors } = Papa.default.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim(),
+    });
+
+    if (parseErrors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "CSV parsing error",
+        errors: parseErrors,
+      });
+    }
+
+    if (data.length === 0) {
+      return next(handleMakeError(400, "CSV file is empty"));
+    }
+
+    // Check max FAQ limit
+    const existingFaqs = await Faqs.find();
+    const remainingSlots = 5 - existingFaqs.length;
+
+    if (remainingSlots <= 0) {
+      return next(handleMakeError(400, "Maximum 5 FAQs allowed. Delete some to add more."));
+    }
+
+    if (data.length > remainingSlots) {
+      return next(handleMakeError(400, `Only ${remainingSlots} FAQ slots remaining. You're trying to add ${data.length}.`));
+    }
+
+    const results = {
+      created: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    // Cache existing titles
+    const existingTitles = new Set(
+      existingFaqs.map((f) => f.title.toLowerCase().trim())
+    );
+
+    for (const [index, row] of data.entries()) {
+      const rowNum = index + 2;
+      const { title, answer } = row;
+
+      if (!title || !answer) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: "Missing title or answer",
+        });
+        continue;
+      }
+
+      // ----------------------------------------------------
+      // Use Zod Schema for validation
+      // ----------------------------------------------------
+      const validation = faqsSchema.shape.body.safeParse({
+        title: title.trim(),
+        answer: answer.trim(),
+      });
+
+      if (!validation.success) {
+        const errorMessages = validation.error.issues
+          .map((issue) => issue.message)
+          .join(", ");
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Validation Error: ${errorMessages}`,
+        });
+        continue;
+      }
+
+      const normalizedTitle = title.trim();
+
+      // Check duplicate
+      if (existingTitles.has(normalizedTitle.toLowerCase())) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `FAQ '${normalizedTitle}' already exists`,
+        });
+        continue;
+      }
+
+      try {
+        const newFaq = new Faqs({
+          title: normalizedTitle,
+          answer: answer.trim(),
+        });
+        await newFaq.save();
+
+        // Audit Log
+        await logAuditTrail({
+          action: "create_faq",
+          userId,
+          targetId: newFaq._id,
+          targetType: "Faq",
+          details: { title: normalizedTitle },
+          role: "admin",
+        });
+
+        existingTitles.add(normalizedTitle.toLowerCase());
+        results.created++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: err.message || "Database error",
+        });
+      }
+    }
+
+    res.status(200).json(results);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -12,6 +12,7 @@ import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
 import { sendGrid } from "../sendGrid/sendGrid.js";
+import { orderStockSchema } from "../schema/stock.schema.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -682,5 +683,301 @@ export const getSingleStock = async (req, res, next) => {
     res.status(200).json(singleStock);
   } catch (error) {
     next(error);
+  }
+};
+
+// --- Batch Stock Upload Logic ---
+
+export const getStockCsvTemplate = async (req, res, next) => {
+  try {
+    const headers = [
+      "productName",
+      "supplierName",
+      "quantity",
+      "supplierPrice", // Cost per unit from supplier
+      "shopPrice", // Selling price
+      "shippingPrice", // Total shipping for this batch
+      "dateDelivery", // YYYY-MM-DD
+    ];
+
+    // Helper to escape CSV fields
+    const escapeCSV = (value) => {
+      if (
+        typeof value === "string" &&
+        (value.includes('"') || value.includes(",") || value.includes("\n"))
+      ) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+
+    const exampleRow = [
+      "Example Robot Toy",
+      "ABC Supplier",
+      "50",
+      "100",
+      "250",
+      "500",
+      "2023-12-01",
+    ].map(escapeCSV);
+
+    const csvContent = [headers.join(","), exampleRow.join(",")].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="stock_upload_template.csv"'
+    );
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const batchOrderStocks = async (req, res, next) => {
+  const file = req.file;
+  if (!file) {
+    return next(handleMakeError(400, "No CSV file uploaded"));
+  }
+
+  const userId = req.user.id;
+  const Papa = await import("papaparse"); // Dynamic import if not top-level
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const csvData = file.buffer.toString("utf-8");
+    const { data, errors: parseErrors } = Papa.default.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim(),
+    });
+
+    if (parseErrors.length > 0) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "CSV parsing error",
+        errors: parseErrors,
+      });
+    }
+
+    if (data.length === 0) {
+      await session.abortTransaction();
+      return next(handleMakeError(400, "CSV file is empty"));
+    }
+
+    const results = {
+      created: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    // Cache Suppliers to minimize DB calls
+    const allSuppliers = await Supplier.find({}).select("supplierName _id");
+    const supplierMap = new Map(
+      allSuppliers.map((s) => [s.supplierName.toLowerCase().trim(), s._id])
+    );
+
+    // 1. Process each row
+    for (const [index, row] of data.entries()) {
+      const rowNum = index + 2; // +2 for header + 0-index
+
+      const {
+        productName,
+        supplierName,
+        quantity,
+        supplierPrice,
+        shopPrice,
+        shippingPrice,
+        dateDelivery,
+      } = row;
+
+      // Basic Validation
+      if (!productName || !quantity || !supplierPrice || !shopPrice) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: "Missing required fields (productName, quantity, prices)",
+        });
+        continue;
+      }
+
+      // ----------------------------------------------------
+      // Use Zod Schema for numeric field validation
+      // Pick only numeric fields from orderStockSchema
+      // ----------------------------------------------------
+      const numericSchema = orderStockSchema.shape.body.pick({
+        quantity: true,
+        supplierPrice: true,
+        shopPrice: true,
+        shippingPrice: true,
+      });
+
+      const validation = numericSchema.safeParse({
+        quantity: Number(quantity),
+        supplierPrice: Number(supplierPrice),
+        shopPrice: Number(shopPrice),
+        shippingPrice: Number(shippingPrice) || 0,
+      });
+
+      if (!validation.success) {
+        const errorMessages = validation.error.issues
+          .map((issue) => issue.message)
+          .join(", ");
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Validation Error: ${errorMessages}`,
+        });
+        continue;
+      }
+
+      // Find Product
+      const product = await Product.findOne({
+        productName: { $regex: new RegExp(`^${productName.trim()}$`, "i") }, // Case-insensitive exact match
+      }).session(session);
+
+      if (!product) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Product '${productName}' not found`,
+        });
+        continue;
+      }
+
+      // Find Supplier
+      let supplierId = null;
+      if (supplierName && supplierMap.has(supplierName.toLowerCase().trim())) {
+        supplierId = supplierMap.get(supplierName.toLowerCase().trim());
+      } else if (supplierName) {
+        // Provided but not found
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Supplier '${supplierName}' not found`,
+        });
+        continue;
+      }
+      if (!supplierId) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: "Valid Supplier Name is required",
+        });
+        continue;
+      }
+
+      // VAT Logic (Reuse from OrderStocks)
+      let vatId = null;
+      let effectiveVatPercent = 0;
+
+      // If product has VAT set, use it
+      if (product.taxStatus === "vatable" && product.vat) {
+        vatId = product.vat;
+        const vatDoc = await Vat.findById(vatId).session(session);
+        if (vatDoc) effectiveVatPercent = vatDoc.vatPercent;
+      }
+
+      // Calcs
+      const qtyNum = Number(quantity);
+      const supplierPriceNum = Number(supplierPrice);
+      const shopPriceNum = Number(shopPrice);
+      const shippingPriceNum = Number(shippingPrice) || 0;
+
+      if (isNaN(qtyNum) || isNaN(supplierPriceNum) || isNaN(shopPriceNum)) {
+        results.failed++;
+        results.errors.push({ row: rowNum, reason: "Invalid number format" });
+        continue;
+      }
+
+      const calculatedVatShopPrice =
+        shopPriceNum * (1 + effectiveVatPercent / 100);
+      const calculateVatToRemit =
+        (calculatedVatShopPrice - shopPriceNum) * qtyNum;
+      const totalCostVal = supplierPriceNum * qtyNum + shippingPriceNum;
+
+      const newDeliveryId =
+        "BATCH-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+      // Create Stock
+      const newStock = new Stocks({
+        product: product._id,
+        supplier: supplierId,
+        supplierPrice: supplierPriceNum,
+        shopPrice: shopPriceNum,
+        quantity: qtyNum,
+        shippingPrice: shippingPriceNum,
+        totalCost: totalCostVal,
+        deliveryStatus: "delivered", // Immediate delivery for batch
+        deliveryId: newDeliveryId,
+        dateDelivery: dateDelivery ? new Date(dateDelivery) : new Date(),
+        vat: vatId,
+        vatShopPrice: calculatedVatShopPrice,
+        vatToRemit: calculateVatToRemit,
+      });
+
+      await newStock.save({ session });
+
+      // Create Log
+      await orderStockLogs(
+        {
+          action: "admin_ordered_stock",
+          userId,
+          deliveryId: newDeliveryId,
+          supplier: supplierId,
+          category: product.category,
+          quantityOrdered: qtyNum,
+          supplierPrice: supplierPriceNum,
+          shippingPrice: shippingPriceNum,
+          vatPercentApplied: effectiveVatPercent,
+          shopPrice: shopPriceNum,
+          receivedDate: newStock.dateDelivery,
+          receivedQuantity: qtyNum,
+          totalCost: totalCostVal,
+        },
+        session
+      );
+
+      // Update Product
+      const productUpdate = {
+        status: "published", // Auto-publish
+        price: calculatedVatShopPrice,
+        preVatPrice: shopPriceNum,
+        $push: { stocks: newStock._id },
+        taxStatus: effectiveVatPercent > 0 ? "vatable" : "exempt",
+        totalVat: effectiveVatPercent,
+      };
+
+      await Product.findByIdAndUpdate(product._id, productUpdate, { session });
+
+      // Update Supplier
+      await Supplier.findByIdAndUpdate(
+        supplierId,
+        { $addToSet: { product: product._id } },
+        { session }
+      );
+
+      // Update VAT
+      if (vatId) {
+        await Vat.findByIdAndUpdate(
+          vatId,
+          { $addToSet: { productId: product._id } },
+          { session }
+        );
+      }
+
+      results.created++;
+    }
+
+    await session.commitTransaction();
+    res.status(200).json(results);
+  } catch (error) {
+    await session.abortTransaction();
+    next(error);
+  } finally {
+    session.endSession();
   }
 };

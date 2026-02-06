@@ -3,6 +3,7 @@ import Order from "../models/order.model.js";
 import Rider from "../models/rider.models.js";
 import User from "../models/user.models.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { riderSchema } from "../schema/rider.schema.js";
 
 export const addRider = async (req, res, next) => {
   const userId = req.user.id;
@@ -222,6 +223,186 @@ export const editRider = async (req, res, next) => {
     if (!updateRider) return next(handleMakeError(400, "Update error"));
 
     res.status(200).json({ message: "Rider updated", data: updateRider });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// --- Batch Rider Upload Logic ---
+
+export const getRiderCsvTemplate = async (req, res, next) => {
+  try {
+    const headers = [
+      "riderName",
+      "riderPhoneNumber",
+    ];
+
+    const exampleRow = [
+      "Juan Dela Cruz",
+      "09123456789",
+    ];
+
+    const csvContent = [headers.join(","), exampleRow.join(",")].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="rider_upload_template.csv"'
+    );
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const batchAddRiders = async (req, res, next) => {
+  const file = req.file;
+  if (!file) {
+    return next(handleMakeError(400, "No CSV file uploaded"));
+  }
+
+  const userId = req.user.id;
+  const Papa = await import("papaparse");
+
+  try {
+    const csvData = file.buffer.toString("utf-8");
+    const { data, errors: parseErrors } = Papa.default.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim(),
+    });
+
+    if (parseErrors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "CSV parsing error",
+        errors: parseErrors,
+      });
+    }
+
+    if (data.length === 0) {
+      return next(handleMakeError(400, "CSV file is empty"));
+    }
+
+    const results = {
+      created: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    // Cache existing rider phone numbers
+    const existingRiders = await Rider.find({}, "riderPhoneNumber");
+    const existingPhones = new Set(
+      existingRiders.map((r) => r.riderPhoneNumber)
+    );
+
+    // We also need to check Users and Orders during the loop or pre-fetch if possible.
+    // Given the complexity of checking 3 collections, we'll do it per-row for safety,
+    // although strictly less efficient than a massive `$in` query, it's safer for data integrity
+    // considering the checks are across different schemas.
+    // Optimization: Pre-fetch all User phones and Pending Order Guest phones?
+    // Users might be many, but Riders are likely fewer. Let's pre-fetch for now to be faster.
+
+    const allUsers = await User.find({}, "phoneNumber");
+    const existingUserPhones = new Set(allUsers.map(u => u.phoneNumber));
+
+    const pendingOrders = await Order.find({ paymentStatus: "Pending" }, "guestUser.phone");
+    const existingOrderPhones = new Set(pendingOrders.map(o => o.guestUser?.phone).filter(Boolean));
+
+    for (const [index, row] of data.entries()) {
+      const rowNum = index + 2;
+      const { riderName, riderPhoneNumber } = row;
+
+      if (!riderName || !riderPhoneNumber) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: "Missing riderName or riderPhoneNumber",
+        });
+        continue;
+      }
+
+      // ----------------------------------------------------
+      // Use Zod Schema for validation
+      // Reuse the same schema as single add (riderSchema)
+      // ----------------------------------------------------
+      const validation = riderSchema.shape.body.safeParse({
+        riderName: riderName.trim(),
+        riderPhoneNumber: riderPhoneNumber.trim(),
+      });
+
+      if (!validation.success) {
+        const errorMessages = validation.error.issues
+          .map((issue) => issue.message)
+          .join(", ");
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Validation Error: ${errorMessages}`,
+        });
+        continue;
+      }
+
+      const normalizedPhone = riderPhoneNumber.trim();
+
+      // Check duplications
+      if (existingPhones.has(normalizedPhone)) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Phone '${normalizedPhone}' already exists in Riders`,
+        });
+        continue;
+      }
+
+      if (existingUserPhones.has(normalizedPhone)) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Phone '${normalizedPhone}' belongs to a registered User`,
+        });
+        continue;
+      }
+
+      if (existingOrderPhones.has(normalizedPhone)) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Phone '${normalizedPhone}' has a pending guest order`,
+        });
+        continue;
+      }
+
+      try {
+        const newRider = new Rider({
+          riderName: riderName.trim(),
+          riderPhoneNumber: normalizedPhone,
+        });
+        await newRider.save();
+
+        // Audit Log
+        await logAuditTrail({
+          action: "create_rider",
+          userId,
+          targetId: newRider._id,
+          targetType: "Rider",
+          details: { riderName: newRider.riderName },
+          role: "admin",
+        });
+
+        // Add to Set to prevent duplicates within same batch
+        existingPhones.add(normalizedPhone);
+        results.created++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: err.message || "Database error",
+        });
+      }
+    }
+
+    res.status(200).json(results);
   } catch (error) {
     next(error);
   }

@@ -1,4 +1,5 @@
 import express from "express";
+import { csvUpload } from "../middleware/csvUpload.js";
 import { validateResource } from "../middleware/validateResource.js";
 import { createSupplierSchema, updateSupplierSchema } from "../schema/supplier.schema.js";
 import {
@@ -9,10 +10,13 @@ import {
   getSingleSupplier,
   getSuppliers,
   toggleNotification,
+  getSupplierCsvTemplate,
+  batchAddSuppliers,
 } from "../controllers/supplier.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
+
 
 router.post(`/add-supplier`, requireAuth, requireAdmin, validateResource(createSupplierSchema), addSupplier);
 router.get(`/get-suppliers`, getSuppliers);
@@ -43,5 +47,9 @@ router.patch(
   requireAdmin,
   toggleNotification
 );
+
+// Batch Routes
+router.get("/csv-template", requireAuth, requireAdmin, getSupplierCsvTemplate);
+router.post("/batch-add", requireAuth, requireAdmin, csvUpload.single("file"), batchAddSuppliers);
 
 export default router;

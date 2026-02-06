@@ -1,4 +1,5 @@
 import express from "express";
+import { csvUpload } from "../middleware/csvUpload.js";
 import { validateResource } from "../middleware/validateResource.js";
 import { createProductSchema, updateProductSchema } from "../schema/product.schema.js";
 import {
@@ -19,8 +20,13 @@ import {
   mostReviewsProducts,
   // publishDraft,
   toggleBestProduct,
+  getProductCsvTemplate,
+  batchUploadProducts,
 } from "../controllers/product.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+
+// Configure multer for CSV file upload (memory storage)
+
 
 const router = express.Router();
 
@@ -59,5 +65,9 @@ router.get(`/get-bestProducts`, getBestProducts)
 // router.get(`/get-drafts`, getDrafts);
 // router.delete(`/delete-draft/:draftId`, deleteDraft);
 // router.post(`/publish-draft/:draftId`, publishDraft);
+
+// BATCH UPLOAD
+router.get(`/csv-template`, requireAuth, requireAdmin, getProductCsvTemplate);
+router.post("/batch-upload", requireAuth, requireAdmin, csvUpload.single("file"), batchUploadProducts);
 
 export default router;

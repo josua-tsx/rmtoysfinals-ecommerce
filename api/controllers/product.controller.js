@@ -9,6 +9,7 @@ import Order from "../models/order.model.js";
 
 import Supplier from "../models/supplier.model.js";
 import Vat from "../models/vat.models.js";
+import { createProductSchema } from "../schema/product.schema.js";
 
 export const addProduct = async (req, res, next) => {
   const userId = req.user.id;
@@ -753,6 +754,355 @@ export const getBestProducts = async (req, res, next) => {
     const product = await Product.find({ isBestProduct: true });
     if (product.length === 0) return res.status(200).json([]);
     res.status(200).json(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /product/csv-template
+ * Generates and sends a CSV template file for batch product upload.
+ */
+export const getProductCsvTemplate = async (req, res, next) => {
+  try {
+    const headers = [
+      "productName",
+      "productDescription",
+      "productDetails",
+      "productImages",
+      "categoryName",
+      "supplierName",
+      "taxStatus",
+      "points",
+    ];
+
+    // Helper to escape CSV fields (wrap in quotes and escape internal quotes)
+    const escapeCSV = (value) => {
+      if (value.includes('"') || value.includes(',') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+
+    const exampleRow = [
+      "Example Toy Name",
+      "A great toy for kids aged 5+",
+      '[{"label":"material","value":"plastic"},{"label":"age","value":"5+"}]',
+      "https://example.com/image1.jpg,https://example.com/image2.jpg",
+      "Action Figures",
+      "ABC Supplier",
+      "vatable",
+      "10",
+    ].map(escapeCSV);
+
+    const csvContent = [headers.join(","), exampleRow.join(",")].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="product_upload_template.csv"'
+    );
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /product/batch-upload
+ * Parses an uploaded CSV file and creates products in bulk.
+ * Expects multipart form data with a "file" field.
+ */
+export const batchUploadProducts = async (req, res, next) => {
+  const userId = req.user.id;
+
+  try {
+    if (!req.file) {
+      return next(handleMakeError(400, "No CSV file uploaded"));
+    }
+
+    // Parse CSV from buffer
+    const Papa = await import("papaparse");
+    const csvString = req.file.buffer.toString("utf-8");
+    const parsed = Papa.default.parse(csvString, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    if (parsed.errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "CSV parsing error",
+        errors: parsed.errors.map((e) => ({
+          row: e.row,
+          reason: e.message,
+        })),
+      });
+    }
+
+    const rows = parsed.data;
+    if (rows.length === 0) {
+      return next(handleMakeError(400, "CSV file is empty"));
+    }
+
+    // Validate required columns
+    const requiredColumns = [
+      "productName",
+      "productDescription",
+      "productDetails",
+      "productImages",
+      "categoryName",
+      "taxStatus",
+    ];
+    const csvColumns = Object.keys(rows[0]);
+    const missingColumns = requiredColumns.filter(
+      (col) => !csvColumns.includes(col)
+    );
+
+    if (missingColumns.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required columns: ${missingColumns.join(", ")}`,
+        errors: [],
+      });
+    }
+
+    // Fetch all categories and suppliers for lookup
+    const allCategories = await Category.find({}).lean();
+    const allSuppliers = await Supplier.find({}).lean();
+    const allVats = await Vat.find({}).lean();
+
+    const categoryMap = new Map(
+      allCategories.map((c) => [c.categoryName.toLowerCase(), c])
+    );
+    const supplierMap = new Map(
+      allSuppliers.map((s) => [s.supplierName.toLowerCase(), s])
+    );
+
+    // Get default VAT for vatable products
+    const defaultVat = allVats.length > 0 ? allVats[0] : null;
+
+    // Track product names in this batch to detect duplicates within the CSV
+    const namesInBatch = new Set();
+
+    const results = {
+      created: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNum = i + 2; // +2 for header row and 0-indexing
+
+      try {
+        // --- Validate productName ---
+        const productName = row.productName?.trim();
+        if (!productName) {
+          results.errors.push({ row: rowNum, reason: "productName is required" });
+          results.failed++;
+          continue;
+        }
+
+        // --- Validate productDescription ---
+        const productDescription = row.productDescription?.trim();
+        if (!productDescription) {
+          results.errors.push({
+            row: rowNum,
+            reason: "productDescription is required",
+          });
+          results.failed++;
+          continue;
+        }
+
+        // --- Validate productDetails (JSON) ---
+        let productDetails;
+        try {
+          productDetails = JSON.parse(row.productDetails || "[]");
+          if (!Array.isArray(productDetails)) {
+            throw new Error("productDetails must be an array");
+          }
+        } catch (e) {
+          results.errors.push({
+            row: rowNum,
+            reason: `Invalid productDetails JSON: ${e.message}`,
+          });
+          results.failed++;
+          continue;
+        }
+
+        // Sanitize productDetails
+        productDetails = productDetails.map((detail) => ({
+          label: String(detail.label || "").toLowerCase(),
+          value: String(detail.value || "").toLowerCase(),
+        }));
+
+        // --- Validate productImages (comma-separated URLs) ---
+        const imageUrlsRaw = row.productImages?.trim();
+        if (!imageUrlsRaw) {
+          results.errors.push({
+            row: rowNum,
+            reason: "productImages is required",
+          });
+          results.failed++;
+          continue;
+        }
+        const productImages = imageUrlsRaw.split(",").map((url) => url.trim());
+        if (productImages.length === 0 || productImages.some((url) => !url)) {
+          results.errors.push({
+            row: rowNum,
+            reason: "productImages must contain at least one valid URL",
+          });
+          results.failed++;
+          continue;
+        }
+
+        // --- Validate categoryName ---
+        const categoryName = row.categoryName?.trim();
+        if (!categoryName) {
+          results.errors.push({ row: rowNum, reason: "categoryName is required" });
+          results.failed++;
+          continue;
+        }
+
+        // --- Validate taxStatus ---
+        const taxStatus = row.taxStatus?.trim()?.toLowerCase();
+        if (!taxStatus || !["vatable", "exempt"].includes(taxStatus)) {
+          results.errors.push({
+            row: rowNum,
+            reason: "taxStatus must be 'vatable' or 'exempt'",
+          });
+          results.failed++;
+          continue;
+        }
+
+        // ----------------------------------------------------
+        // Use Zod Schema for validation (subset of createProductSchema)
+        // Note: We validate productName, productDescription, productDetails,
+        //       productImages, taxStatus here. Category/Supplier are DB lookups.
+        // ----------------------------------------------------
+        const bodySchema = createProductSchema.shape.body;
+        const validation = bodySchema.pick({
+          productName: true,
+          productDescription: true,
+          productDetails: true,
+          productImages: true,
+          taxStatus: true,
+        }).safeParse({
+          productName,
+          productDescription,
+          productDetails,
+          productImages,
+          taxStatus,
+        });
+
+        if (!validation.success) {
+          const errorMessages = validation.error.issues
+            .map((issue) => issue.message)
+            .join(", ");
+          results.errors.push({
+            row: rowNum,
+            reason: `Validation Error: ${errorMessages}`,
+          });
+          results.failed++;
+          continue;
+        }
+
+        // Check duplicate in this batch
+        if (namesInBatch.has(productName.toLowerCase())) {
+          results.errors.push({
+            row: rowNum,
+            reason: `Duplicate productName '${productName}' in CSV`,
+          });
+          results.failed++;
+          continue;
+        }
+        namesInBatch.add(productName.toLowerCase());
+
+        // Check duplicate in DB
+        const existingProduct = await Product.findOne({ productName });
+        if (existingProduct) {
+          results.errors.push({
+            row: rowNum,
+            reason: `Product '${productName}' already exists in database`,
+          });
+          results.failed++;
+          continue;
+        }
+
+        const category = categoryMap.get(categoryName.toLowerCase());
+        if (!category) {
+          results.errors.push({
+            row: rowNum,
+            reason: `Category '${categoryName}' not found`,
+          });
+          results.failed++;
+          continue;
+        }
+
+        // --- Validate supplierName (optional) ---
+        let supplier = null;
+        const supplierName = row.supplierName?.trim();
+        if (supplierName) {
+          supplier = supplierMap.get(supplierName.toLowerCase());
+          if (!supplier) {
+            results.errors.push({
+              row: rowNum,
+              reason: `Supplier '${supplierName}' not found`,
+            });
+            results.failed++;
+            continue;
+          }
+        }
+
+        // --- Points (optional) ---
+        const points = parseInt(row.points, 10) || 0;
+
+        // --- Create Product ---
+        const newProduct = new Product({
+          productName,
+          productDescription,
+          productDetails,
+          productImages,
+          category: category._id,
+          supplier: supplier?._id || null,
+          status: "pending",
+          points,
+          taxStatus,
+          vat: taxStatus === "vatable" && defaultVat ? defaultVat._id : null,
+        });
+
+        await newProduct.save();
+
+        // Update category
+        await Category.findByIdAndUpdate(category._id, {
+          $push: { products: newProduct._id },
+        });
+
+        // Audit log
+        await logAuditTrail({
+          action: "create_product_batch",
+          userId,
+          targetId: newProduct._id,
+          targetType: "Product",
+          details: { productName, batchUpload: true },
+          role: "admin",
+        });
+
+        results.created++;
+      } catch (rowError) {
+        results.errors.push({
+          row: rowNum,
+          reason: rowError.message || "Unknown error",
+        });
+        results.failed++;
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      ...results,
+    });
   } catch (error) {
     next(error);
   }

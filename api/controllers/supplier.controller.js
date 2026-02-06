@@ -1,6 +1,7 @@
 import Supplier from "../models/supplier.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { createSupplierSchema } from "../schema/supplier.schema.js";
 import Stocks from "../models/stocks.model.js";
 
 
@@ -266,6 +267,177 @@ export const toggleNotification = async (req, res, next) => {
     });
 
     res.status(200).json(supplier);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// --- Batch Supplier Upload Logic ---
+
+export const getSupplierCsvTemplate = async (req, res, next) => {
+  try {
+    const headers = [
+      "supplierName",
+      "contactPerson",
+      "contactNumber",
+      "supplierAddress",
+      "enableNotifications", // TRUE or FALSE
+    ];
+
+    const exampleRow = [
+      "Example Supplier Inc.",
+      "Juan Dela Cruz",
+      "09123456789",
+      "123 Toy Street, Manila",
+      "TRUE",
+    ];
+
+    const csvContent = [headers.join(","), exampleRow.join(",")].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="supplier_upload_template.csv"'
+    );
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const batchAddSuppliers = async (req, res, next) => {
+  const file = req.file;
+  if (!file) {
+    return next(handleMakeError(400, "No CSV file uploaded"));
+  }
+
+  const userId = req.user.id;
+  const Papa = await import("papaparse");
+
+  try {
+    const csvData = file.buffer.toString("utf-8");
+    const { data, errors: parseErrors } = Papa.default.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim(),
+    });
+
+    if (parseErrors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "CSV parsing error",
+        errors: parseErrors,
+      });
+    }
+
+    if (data.length === 0) {
+      return next(handleMakeError(400, "CSV file is empty"));
+    }
+
+    const results = {
+      created: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    // Cache existing suppliers
+    const existingSuppliers = await Supplier.find({}, "supplierName");
+    const existingNames = new Set(
+      existingSuppliers.map((s) => s.supplierName.toLowerCase().trim())
+    );
+
+    for (const [index, row] of data.entries()) {
+      const rowNum = index + 2;
+      const {
+        supplierName,
+        contactPerson,
+        contactNumber,
+        supplierAddress,
+        enableNotifications,
+      } = row;
+
+      if (
+        !supplierName ||
+        !contactPerson ||
+        !contactNumber ||
+        !supplierAddress
+      ) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: "Missing required fields",
+        });
+        continue;
+      }
+
+      // ----------------------------------------------------
+      // Use Zod Schema for validation
+      // Reuse the same schema as single add (createSupplierSchema)
+      // ----------------------------------------------------
+      const validation = createSupplierSchema.shape.body.safeParse({
+        supplierName: supplierName.trim(),
+        contactPerson: contactPerson.trim(),
+        contactNumber: contactNumber.trim(),
+        supplierAddress: supplierAddress.trim(),
+      });
+
+      if (!validation.success) {
+        const errorMessages = validation.error.issues
+          .map((issue) => issue.message)
+          .join(", ");
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Validation Error: ${errorMessages}`,
+        });
+        continue;
+      }
+
+      const normalizedName = supplierName.trim();
+
+      if (existingNames.has(normalizedName.toLowerCase())) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Supplier '${normalizedName}' already exists`,
+        });
+        continue;
+      }
+
+      // Create Supplier
+      try {
+        const newSupplier = new Supplier({
+          supplierName: normalizedName,
+          contactPerson: contactPerson.trim(),
+          contactNumber: contactNumber.trim(),
+          supplierAddress: supplierAddress.trim(),
+          enableNotifications:
+            String(enableNotifications).toUpperCase() === "TRUE",
+        });
+        await newSupplier.save();
+
+        // Audit Log
+        await logAuditTrail({
+          action: "create_supplier",
+          userId,
+          targetId: newSupplier._id,
+          targetType: "Supplier",
+          details: { supplierName: normalizedName },
+          role: "admin",
+        });
+
+        existingNames.add(normalizedName.toLowerCase());
+        results.created++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: err.message || "Database error",
+        });
+      }
+    }
+
+    res.status(200).json(results);
   } catch (error) {
     next(error);
   }
