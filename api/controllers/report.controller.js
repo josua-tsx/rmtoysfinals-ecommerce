@@ -1,7 +1,7 @@
 import Order from '../models/order.model.js';
 import Product from '../models/product.model.js';
 import StoreInfo from '../models/storeInfo.model.js';
-import { generateReportPdf } from '../utils/generateReportPdf.js';
+
 
 /**
  * Generate and download Sales Report PDF.
@@ -79,15 +79,8 @@ export const getSalesReportPdf = async (req, res, next) => {
       })),
     };
 
-    // Generate PDF
-    const pdfBuffer = await generateReportPdf('report_sales.html', templateData);
-
-    // Send response
-    const filename = `Sales-Report-${new Date().toISOString().split('T')[0]}.pdf`;
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', pdfBuffer.length);
-    res.send(pdfBuffer);
+    // Send JSON response
+    res.status(200).json(templateData);
   } catch (error) {
     console.error('Sales Report Error:', error);
     next(error);
@@ -95,7 +88,7 @@ export const getSalesReportPdf = async (req, res, next) => {
 };
 
 /**
- * Generate and download Orders Summary Report PDF.
+ * Generate and download Orders Summary Report Data.
  * GET /api/report/orders
  */
 export const getOrdersReportPdf = async (req, res, next) => {
@@ -147,15 +140,8 @@ export const getOrdersReportPdf = async (req, res, next) => {
       })),
     };
 
-    // Generate PDF
-    const pdfBuffer = await generateReportPdf('report_orders.html', templateData);
-
-    // Send response
-    const filename = `Orders-Report-${new Date().toISOString().split('T')[0]}.pdf`;
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', pdfBuffer.length);
-    res.send(pdfBuffer);
+    // Send JSON response
+    res.status(200).json(templateData);
   } catch (error) {
     console.error('Orders Report Error:', error);
     next(error);
@@ -163,7 +149,7 @@ export const getOrdersReportPdf = async (req, res, next) => {
 };
 
 /**
- * Generate and download Inventory Report PDF.
+ * Generate and download Inventory Report Data.
  * GET /api/report/inventory
  */
 export const getInventoryReportPdf = async (req, res, next) => {
@@ -227,15 +213,8 @@ export const getInventoryReportPdf = async (req, res, next) => {
       products: productData,
     };
 
-    // Generate PDF
-    const pdfBuffer = await generateReportPdf('report_inventory.html', templateData);
-
-    // Send response
-    const filename = `Inventory-Report-${new Date().toISOString().split('T')[0]}.pdf`;
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', pdfBuffer.length);
-    res.send(pdfBuffer);
+    // Send JSON response
+    res.status(200).json(templateData);
   } catch (error) {
     console.error('Inventory Report Error:', error);
     next(error);

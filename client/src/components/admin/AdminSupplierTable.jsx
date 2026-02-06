@@ -26,6 +26,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
   const [contactPerson, setContactPerson] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [supplierAddress, setSupplierAddress] = useState("");
+  const [enableNotifications, setEnableNotifications] = useState(true);
 
   const {
     data: suppliers = [],
@@ -52,14 +53,14 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     useMutation({
       mutationFn: async (data) => {
         const res = await axiosInstance.put(
-          `/supplier/edit-supplier/${selectedSupplier._id}`,
-          data
+          `/supplier/edit-supplier/${data._id || selectedSupplier._id}`,
+          data,
         );
         return res.data;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["supplier"] });
-        toast.success("Successfully Edited!");
+        toast.success("Successfully Updated!");
         setIsOpenEditModal(false);
         setSelectedSupplier(null);
       },
@@ -71,7 +72,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
   const { mutate: deleteSupplierMutation } = useMutation({
     mutationFn: async (supplierId) => {
       const res = await axiosInstance.delete(
-        `/supplier/delete-supplier/${supplierId}`
+        `/supplier/delete-supplier/${supplierId}`,
       );
       return res.data;
     },
@@ -115,7 +116,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
 
     if (
       window.confirm(
-        `Are you sure you want to delete ${selectedIds.length} suppliers?`
+        `Are you sure you want to delete ${selectedIds.length} suppliers?`,
       )
     ) {
       deleteMultiSupplier(selectedIds);
@@ -143,7 +144,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     setSelectedIds((prev) =>
       prev.includes(supplierId)
         ? prev.filter((id) => id !== supplierId)
-        : [...prev, supplierId]
+        : [...prev, supplierId],
     );
   };
 
@@ -166,6 +167,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     setContactPerson(supplier.contactPerson);
     setContactNumber(supplier.contactNumber);
     setSupplierAddress(supplier.supplierAddress);
+    setEnableNotifications(supplier.enableNotifications !== false); // Default true
     setIsOpenEditModal(true);
   };
 
@@ -176,13 +178,39 @@ export default function AdminSupplierTable({ enableMultiDel }) {
       contactPerson,
       contactNumber,
       supplierAddress,
+      enableNotifications,
+    });
+  };
+
+  const { mutate: toggleNotificationMutation } = useMutation({
+    mutationFn: async ({ supplierId, enableNotifications }) => {
+      const res = await axiosInstance.patch(
+        `/supplier/toggle-notification/${supplierId}`,
+        { enableNotifications },
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["supplier"] });
+      toast.success("Notification setting updated!");
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to update setting");
+    },
+  });
+
+  const handleToggleNotification = (supplier) => {
+    const newStatus = supplier.enableNotifications === false; // Toggle logic
+    toggleNotificationMutation({
+      supplierId: supplier._id,
+      enableNotifications: newStatus,
     });
   };
 
   const filteredArraySuppliers = arraySuppliers.filter(
     (supplier) =>
       supplier.supplierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier._id.includes(searchTerm)
+      supplier._id.includes(searchTerm),
   );
 
   if (isSupplierError) {
@@ -307,6 +335,23 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               (5-200 chars, no double spaces)
             </p>
           </div>
+
+          {/* New Toggle for Edit Modal */}
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id="editEnableNotifications"
+              checked={enableNotifications}
+              onChange={(e) => setEnableNotifications(e.target.checked)}
+              className="w-5 h-5 border border-black rounded-[3px] accent-green-500 cursor-pointer"
+            />
+            <label
+              htmlFor="editEnableNotifications"
+              className="font-black uppercase text-[11px] tracking-widest text-black cursor-pointer"
+            >
+              Enable Low Stock Notifications
+            </label>
+          </div>
         </div>
       </FormModal>
 
@@ -348,6 +393,9 @@ export default function AdminSupplierTable({ enableMultiDel }) {
                 </th>
                 <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-left">
                   Address
+                </th>
+                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
+                  Notify
                 </th>
                 <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
                   Products
@@ -395,6 +443,18 @@ export default function AdminSupplierTable({ enableMultiDel }) {
                     <td className="p-4 font-black text-gray-600 max-w-[250px] truncate">
                       {supplier?.supplierAddress}
                     </td>
+                    {/* TOGGLE NOTIFY COLUMN */}
+                    <td className="p-4 text-center">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={supplier.enableNotifications !== false}
+                          onChange={() => handleToggleNotification(supplier)}
+                        />
+                        <div className="w-9 h-5 bg-gray-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </td>
                     <td className="p-4 text-center">
                       <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                         {supplier?.product ? supplier?.product.length : 0}
@@ -434,7 +494,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               ) : (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="p-8 text-center font-black uppercase text-gray-400 tracking-widest"
                   >
                     no suppliers found

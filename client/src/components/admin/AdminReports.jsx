@@ -3,6 +3,11 @@ import { HiDownload, HiDocumentReport } from "react-icons/hi";
 import { FaFileInvoiceDollar, FaBoxes, FaClipboardList } from "react-icons/fa";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import {
+  generateSalesPDF,
+  generateOrdersPDF,
+  generateInventoryPDF,
+} from "../../lib/generateReport";
 
 export default function AdminReports() {
   const [isDownloading, setIsDownloading] = useState({
@@ -15,27 +20,21 @@ export default function AdminReports() {
     setIsDownloading((prev) => ({ ...prev, [type]: true }));
 
     try {
-      const response = await axiosInstance.get(`/report/${type}`, {
-        responseType: "blob",
-      });
+      // 1. Fetch JSON data from API
+      const response = await axiosInstance.get(`/report/${type}`);
+      const data = response.data;
 
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `${type.charAt(0).toUpperCase() + type.slice(1)}-Report-${
-          new Date().toISOString().split("T")[0]
-        }.pdf`
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      // 2. Generate PDF Client-Side
+      if (type === "sales") {
+        generateSalesPDF(data);
+      } else if (type === "orders") {
+        generateOrdersPDF(data);
+      } else if (type === "inventory") {
+        generateInventoryPDF(data);
+      }
 
       toast.success(
-        `${type.charAt(0).toUpperCase() + type.slice(1)} Report downloaded!`
+        `${type.charAt(0).toUpperCase() + type.slice(1)} Report downloaded!`,
       );
     } catch (error) {
       console.error("Download error:", error);

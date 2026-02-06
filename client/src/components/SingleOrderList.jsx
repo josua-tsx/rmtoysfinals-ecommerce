@@ -9,6 +9,7 @@ import { useState } from "react";
 import formatPrice from "../reusable/formatPrice";
 import { useNavigate } from "react-router-dom";
 import ReviewModal from "./ReviewModal";
+import { generateInvoicePDF } from "../lib/generateReport";
 
 export default function SingleOrderList({ order, onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -25,22 +26,16 @@ export default function SingleOrderList({ order, onClose }) {
   const navigate = useNavigate();
 
   // Download Invoice PDF
+  // Download Invoice PDF
   const handleDownloadInvoice = async () => {
     setIsDownloading(true);
     try {
-      const response = await axiosInstance.get(`/invoice/${order._id}`, {
-        responseType: "blob",
-      });
+      // 1. Fetch JSON Invoice Data
+      const response = await axiosInstance.get(`/invoice/${order._id}`);
+      const invoiceData = response.data;
 
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Invoice-${order._id.slice(-8)}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      // 2. Generate PDF Client-Side
+      generateInvoicePDF(invoiceData);
 
       toast.success("Invoice downloaded!");
     } catch (error) {
@@ -403,7 +398,7 @@ export default function SingleOrderList({ order, onClose }) {
                   onClick={() =>
                     window.open(
                       order?.gcashQRmethod?.proofOfPaymentImage,
-                      "_blank"
+                      "_blank",
                     )
                   }
                 />

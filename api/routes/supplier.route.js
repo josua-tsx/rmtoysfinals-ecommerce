@@ -8,6 +8,7 @@ import {
   editSupplier,
   getSingleSupplier,
   getSuppliers,
+  toggleNotification,
 } from "../controllers/supplier.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 
@@ -34,6 +35,13 @@ router.post(
   requireAuth,
   requireAdmin,
   deleteMultiSupplier
+);
+
+router.patch(
+  `/toggle-notification/:supplierId`,
+  requireAuth,
+  requireAdmin,
+  toggleNotification
 );
 
 export default router;

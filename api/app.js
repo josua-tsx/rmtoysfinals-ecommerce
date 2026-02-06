@@ -29,7 +29,7 @@ import ticketRoute from "../api/routes/ticket.route.js";
 import storeInfoRoute from "../api/routes/storeInfo.route.js";
 import invoiceRoute from "../api/routes/invoice.route.js";
 import reportRoute from "../api/routes/report.route.js";
-import { generatePDF } from "./services/pdfService.js";
+
 
 // Load environment variables from .env file
 config();
@@ -85,24 +85,7 @@ app.use(`/api/store-info`, storeInfoRoute);
 app.use(`/api/invoice`, invoiceRoute);
 app.use(`/api/report`, reportRoute);
 
-app.post('/api/generate-pdf', async (req, res) => {
-  try {
-      // The data for the template (comes from the React frontend)
-      const data = req.body; 
 
-      // Generate the PDF
-      const pdfBuffer = await generatePDF(data);
-
-      // Send the PDF back to the client
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
-      res.send(pdfBuffer);
-
-  } catch (error) {
-      console.error('Error generating PDF:', error);
-      res.status(500).send('Error generating PDF');
-  }
-});
 
 // Error handling middleware
 app.use(handleError);

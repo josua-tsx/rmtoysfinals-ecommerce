@@ -26,6 +26,7 @@ export default function AdminSupplier() {
   const [contactPerson, setContactPerson] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [supplierAddress, setSupplierAddress] = useState("");
+  const [enableNotifications, setEnableNotifications] = useState(true);
 
   const { mutate: addSupplierMutation, isPending: isSupplierPending } =
     useMutation({
@@ -40,6 +41,7 @@ export default function AdminSupplier() {
         setContactPerson("");
         setContactNumber("");
         setSupplierAddress("");
+        setEnableNotifications(true);
         setShowAdd(false);
       },
       onError: (err) => {
@@ -55,6 +57,7 @@ export default function AdminSupplier() {
       contactPerson,
       contactNumber,
       supplierAddress,
+      enableNotifications,
     };
 
     const result = createSupplierSchema.safeParse(data);
@@ -200,6 +203,22 @@ export default function AdminSupplier() {
               <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
                 (5-200 chars, no double spaces)
               </p>
+            </div>
+
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="checkbox"
+                id="addEnableNotifications"
+                checked={enableNotifications}
+                onChange={(e) => setEnableNotifications(e.target.checked)}
+                className="w-5 h-5 border border-black rounded-[3px] accent-green-500 cursor-pointer"
+              />
+              <label
+                htmlFor="addEnableNotifications"
+                className="font-black uppercase text-[11px] tracking-widest text-black cursor-pointer"
+              >
+                Enable Low Stock Notifications
+              </label>
             </div>
           </div>
         </FormModal>

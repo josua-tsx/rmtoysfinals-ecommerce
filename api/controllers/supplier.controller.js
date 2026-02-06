@@ -7,8 +7,13 @@ import Stocks from "../models/stocks.model.js";
 export const addSupplier = async (req, res, next) => {
   const userId = req.user.id;
 
-  const { contactNumber, supplierName, contactPerson, supplierAddress } =
-    req.body;
+  const {
+    contactNumber,
+    supplierName,
+    contactPerson,
+    supplierAddress,
+    enableNotifications,
+  } = req.body;
 
   /* 
     VALIDATION REFACTOR NOTE:
@@ -23,6 +28,7 @@ export const addSupplier = async (req, res, next) => {
       contactPerson,
       contactNumber,
       supplierAddress,
+      enableNotifications,
     });
 
     await newSupplier.save();
@@ -175,8 +181,13 @@ export const editSupplier = async (req, res, next) => {
   const userId = req.user.id;
 
   const { supplierId } = req.params;
-  const { supplierName, contactPerson, contactNumber, supplierAddress } =
-    req.body;
+  const {
+    supplierName,
+    contactPerson,
+    contactNumber,
+    supplierAddress,
+    enableNotifications,
+  } = req.body;
 
   /* 
     VALIDATION REFACTOR NOTE:
@@ -190,6 +201,7 @@ export const editSupplier = async (req, res, next) => {
       contactPerson,
       contactNumber,
       supplierAddress,
+      enableNotifications,
     });
 
     if (!updateSupplier)
@@ -220,6 +232,40 @@ export const getSingleSupplier = async (req, res, next) => {
     if (!getSingleSupplier)
       return next(handleMakeError(400, "Supplier not found"));
     res.status(200).json(getSingleSupplier);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const toggleNotification = async (req, res, next) => {
+  const { supplierId } = req.params;
+  const { enableNotifications } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const supplier = await Supplier.findByIdAndUpdate(
+      supplierId,
+      { enableNotifications },
+      { new: true }
+    );
+
+    if (!supplier) {
+      return next(handleMakeError(404, "Supplier not found"));
+    }
+
+    await logAuditTrail({
+      action: "toggle_notification",
+      userId,
+      targetId: supplier._id,
+      targetType: "Supplier",
+      details: {
+        supplierName: supplier.supplierName,
+        status: enableNotifications ? "Enabled" : "Disabled",
+      },
+      role: "admin",
+    });
+
+    res.status(200).json(supplier);
   } catch (error) {
     next(error);
   }

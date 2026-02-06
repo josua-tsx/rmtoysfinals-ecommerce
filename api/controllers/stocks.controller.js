@@ -17,6 +17,8 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   const {
     product,
@@ -34,49 +36,50 @@ export const OrderStocks = async (req, res, next) => {
   } = req.body;
 
   try {
-    // ✅ Validate required fields first (Validation handled by Zod)
-    // Removed manual required check
-
-    // ✅ Validate ObjectIds (Validation handled by Zod)
-
     // ✅ Fetch Product FIRST to check Tax Status
-    const productExists = await Product.findById(product);
+    const productExists = await Product.findById(product).session(session);
     if (!productExists) {
+      await session.abortTransaction();
+      session.endSession();
       return next(handleMakeError(404, "Product not found"));
     }
 
     // ✅ Handle VAT Logic
     let vatExists = null;
-    
+
     if (productExists.taxStatus === "vatable") {
       if (!vat || !mongoose.Types.ObjectId.isValid(vat)) {
-        return next(handleMakeError(400, "VAT ID is required for vatable products"));
+        await session.abortTransaction();
+        session.endSession();
+        return next(
+          handleMakeError(400, "VAT ID is required for vatable products")
+        );
       }
-      vatExists = await Vat.findById(vat);
+      vatExists = await Vat.findById(vat).session(session);
       if (!vatExists) {
+        await session.abortTransaction();
+        session.endSession();
         return next(handleMakeError(404, "VAT not found"));
       }
-    } 
-    // If Status is 'exempt' (or others), we proceed with vatExists = null
+    }
 
-    const supplierExists = await Supplier.findById(supplier);
+    const supplierExists = await Supplier.findById(supplier).session(session);
     if (!supplierExists) {
+      await session.abortTransaction();
+      session.endSession();
       return next(handleMakeError(404, "Supplier not found"));
     }
 
-    // ✅ Additional validations (Handled by Zod)
-    // Removed manual price and quantity validation logic as it is now enforced by Zod schema
-
-
-    // ✅ Get subscribed users (only email field for efficiency)
-    const subscribedUser = await User.find({
+    // ✅ Get subscribed users (OPTIMIZED: returns array of strings)
+    const subscribedEmails = await User.find({
       isSubscribed: true,
-    }).select("email");
+    }).distinct("email");
 
     // ✅ Calculate VAT values server-side
     const vatPercent = vatExists ? vatExists.vatPercent : 0;
     const calculatedVatShopPrice = Number(shopPrice) * (1 + vatPercent / 100);
-    const calculatedVatToRemit = (calculatedVatShopPrice - Number(shopPrice)) * Number(quantity);
+    const calculatedVatToRemit =
+      (calculatedVatShopPrice - Number(shopPrice)) * Number(quantity);
 
     // ✅ Create and save new delivery
     const newDelivery = new Stocks({
@@ -95,25 +98,79 @@ export const OrderStocks = async (req, res, next) => {
       vatToRemit: calculatedVatToRemit,
     });
 
-    await newDelivery.save();
+    await newDelivery.save({ session });
 
+    // ✅ Fixed orderStockLogs with proper data types
+    await orderStockLogs(
+      {
+        action: "admin_ordered_stock",
+        userId,
+        deliveryId,
+        supplier,
+        category: productExists.category || null, // Use actual category from product
+        quantityOrdered: Number(quantity),
+        supplierPrice: Number(supplierPrice) || 0,
+        shippingPrice: Number(shippingPrice),
+        vatPercentApplied: vatPercent,
+        shopPrice: Number(shopPrice),
+        receivedDate: new Date(dateDelivery),
+        receivedQuantity: Number(quantity),
+        totalCost: Number(totalCost),
+      },
+      session
+    ); // Pass session to logs if supported
+
+    // ✅ Update related documents
+    await Promise.all([
+      // NOTE: Using $push for stocks array history as requested
+      Product.findByIdAndUpdate(
+        product,
+        {
+          status: "published",
+          price: calculatedVatShopPrice,
+          preVatPrice: Number(shopPrice),
+          $push: { stocks: newDelivery._id }, // Keeping history!
+          taxStatus: vatPercent > 0 ? "vatable" : "exempt",
+          totalVat: vatPercent,
+        },
+        { new: true, runValidators: true, session }
+      ),
+      Supplier.findByIdAndUpdate(
+        supplier,
+        {
+          $addToSet: { product: newDelivery.product }, // Use $addToSet to avoid duplicates
+        },
+        { session }
+      ),
+      vatExists &&
+        Vat.findByIdAndUpdate(
+          vat,
+          {
+            $addToSet: { productId: newDelivery.product },
+          },
+          { session }
+        ),
+    ]);
+
+    // ✅ Commit Transaction
+    await session.commitTransaction();
+    session.endSession();
 
     // ✅ Send response FIRST to prevent lag
     res.status(201).json({
       message: "Stock ordered successfully",
       delivery: newDelivery,
       emailNotification:
-        notifySubscribedUser && subscribedUser.length > 0
+        notifySubscribedUser && subscribedEmails.length > 0
           ? "Sending notifications in background"
           : "No notifications sent",
     });
 
-    
-
     // ✅ Process emails in BACKGROUND after response
-    if (notifySubscribedUser === true && subscribedUser.length > 0) {
+    if (notifySubscribedUser === true && subscribedEmails.length > 0) {
+      // Pass emails array directly
       processEmailsInBackground(
-        subscribedUser,
+        subscribedEmails,
         productExists,
         newDelivery,
         quantity
@@ -127,46 +184,9 @@ export const OrderStocks = async (req, res, next) => {
           console.error("❌ Background email processing failed:", error);
         });
     }
-
-    // ✅ Fixed orderStockLogs with proper data types
-    await orderStockLogs({
-      action: "admin_ordered_stock",
-      userId,
-      deliveryId,
-      supplier,
-      category: productExists.category || null, // Use actual category from product
-      quantityOrdered: Number(quantity),
-      supplierPrice: Number(supplierPrice) || 0,
-      shippingPrice: Number(shippingPrice),
-      vatPercentApplied: vatPercent, 
-      shopPrice: Number(shopPrice),
-      receivedDate: new Date(dateDelivery),
-      receivedQuantity: Number(quantity),
-      totalCost: Number(totalCost),
-    });
-
-    // ✅ Update related documents
-    await Promise.all([
-      Product.findByIdAndUpdate(
-        product,
-        {
-          status: "published",
-          price: calculatedVatShopPrice,
-          preVatPrice: Number(shopPrice),
-          stocks: newDelivery._id,
-          taxStatus: vatPercent > 0 ? "vatable" : "exempt",
-          totalVat: vatPercent
-        },
-        { new: true, runValidators: true }
-      ),
-      Supplier.findByIdAndUpdate(supplier, {
-        $push: { product: newDelivery.product },
-      }),
-      (vatExists && Vat.findByIdAndUpdate(vat, {
-        $addToSet: { productId: newDelivery.product },
-      }))
-    ]);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("OrderStocks error:", error);
     next(error);
   }
@@ -493,7 +513,12 @@ export const getStocks = async (req, res, next) => {
       const supplierAlerts = {};
 
       stockAlerts.low.forEach((item) => {
-        if (item.supplier && item.supplier.contactNumber) {
+        // CHECK ENABLE NOTIFICATIONS HERE
+        if (
+          item.supplier &&
+          item.supplier.contactNumber &&
+          item.supplier.enableNotifications !== false // Default to true if undefined
+        ) {
           if (!supplierAlerts[item.supplier._id]) {
             supplierAlerts[item.supplier._id] = {
               supplier: item.supplier,
@@ -543,7 +568,12 @@ export const getStocks = async (req, res, next) => {
       // SMS to each supplier about their out-of-stock products
       const supplierAlerts = {};
       stockAlerts.out.forEach((item) => {
-        if (item.supplier && item.supplier.contactNumber) {
+        // CHECK ENABLE NOTIFICATIONS HERE
+        if (
+          item.supplier &&
+          item.supplier.contactNumber &&
+          item.supplier.enableNotifications !== false
+        ) {
           if (!supplierAlerts[item.supplier._id]) {
             supplierAlerts[item.supplier._id] = {
               supplier: item.supplier,

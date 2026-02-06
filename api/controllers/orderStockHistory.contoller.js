@@ -1,21 +1,24 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import OrderStockHistory from "../models/orderStockHistory.models.js";
 
-export const orderStockLogs = async ({
-  action,
-  userId,
-  deliveryId,
-  supplier,
-  category,
-  quantityOrdered,
-  supplierPrice,
-  shippingPrice,
-  vatPercentApplied,
-  shopPrice,
-  receivedDate,
-  receivedQuantity,
-  totalCost,
-}) => {
+export const orderStockLogs = async (
+  {
+    action,
+    userId,
+    deliveryId,
+    supplier,
+    category,
+    quantityOrdered,
+    supplierPrice,
+    shippingPrice,
+    vatPercentApplied,
+    shopPrice,
+    receivedDate,
+    receivedQuantity,
+    totalCost,
+  },
+  session = null
+) => {
   try {
     const newOrderStockHistory = new OrderStockHistory({
       action,
@@ -33,7 +36,7 @@ export const orderStockLogs = async ({
       totalCost,
     });
 
-    await newOrderStockHistory.save();
+    await newOrderStockHistory.save({ session });
   } catch (error) {
     console.log(error);
   }

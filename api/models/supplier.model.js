@@ -25,6 +25,10 @@ const SupplierModelSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    enableNotifications: {
+      type: Boolean,
+      default: true,
+    },
   },
 
   {
