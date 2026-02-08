@@ -53,10 +53,20 @@ export const addSupplier = async (req, res, next) => {
 
 export const getSuppliers = async (req, res, next) => {
   try {
-    const getSuppliers = await Supplier.find().sort({ createdAt: -1 });
+    // Exclude archived suppliers by default
+    const getSuppliers = await Supplier.find({ isArchived: { $ne: true } }).sort({ createdAt: -1 });
     if (!getSuppliers)
       return next(handleMakeError(400, "no suppliers availabe"));
     res.status(200).json(getSuppliers);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getArchivedSuppliers = async (req, res, next) => {
+  try {
+    const suppliers = await Supplier.find({ isArchived: true }).sort({ updatedAt: -1 });
+    res.status(200).json(suppliers);
   } catch (error) {
     next(error);
   }
@@ -97,27 +107,35 @@ export const deleteMultiSupplier = async (req, res, next) => {
     ];
 
     if (allUsedSuppliers.length > 0) {
+      const usedSupplierNames = supplier
+        .filter((s) => allUsedSuppliers.includes(s._id.toString()))
+        .map((s) => s.supplierName);
+        
       return next(
         handleMakeError(
           400,
-          `These suppliers are in use and cannot be deleted ${allUsedSuppliers.join(
+          `These suppliers are in use and cannot be deleted: ${usedSupplierNames.join(
             ", "
           )}`
         )
       );
     }
 
+    // Soft Delete: Mark isArchived = true
+    await Supplier.updateMany(
+      { _id: { $in: supplierIds } },
+      { isArchived: true }
+    );
+
     const supplierNames = supplier.reduce((acc, supplier) => {
       acc[supplier._id] = supplier.supplierName;
       return acc;
     }, {});
 
-    await Supplier.deleteMany({ _id: { $in: supplierIds } });
-
     await Promise.all(
       supplierIds.map((id) =>
         logAuditTrail({
-          action: "delete_supplier",
+          action: "delete_supplier_bulk",
           userId,
           targetId: id,
           targetType: "Supplier",
@@ -159,7 +177,8 @@ export const deleteSupplier = async (req, res, next) => {
 
     const supplierName = singleSupplier.supplierName;
 
-    await Supplier.findByIdAndDelete(supplierId);
+    // SOFT DELETE: Mark as archived
+    await Supplier.findByIdAndUpdate(supplierId, { isArchived: true });
 
     await logAuditTrail({
       action: "delete_supplier",
@@ -167,12 +186,46 @@ export const deleteSupplier = async (req, res, next) => {
       targetId: singleSupplier._id,
       targetType: "Supplier",
       details: {
-        supplierName, // Use the correct variable name
+        supplierName,
       },
       role: "admin",
     });
 
-    res.status(200).json({ message: "Successfully deleted the supplier" });
+    res.status(200).json({ message: "Supplier deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const restoreSupplier = async (req, res, next) => {
+  const userId = req.user.id;
+  const { supplierId } = req.params;
+
+  try {
+    const supplier = await Supplier.findById(supplierId);
+
+    if (!supplier) {
+      return next(handleMakeError(400, "Supplier not found!"));
+    }
+
+    if (!supplier.isArchived) {
+      return next(handleMakeError(400, "Supplier is not archived"));
+    }
+
+    await Supplier.findByIdAndUpdate(supplierId, { isArchived: false });
+
+    await logAuditTrail({
+      action: "restore_supplier",
+      userId,
+      targetId: supplier._id,
+      targetType: "Supplier",
+      details: {
+        supplierName: supplier.supplierName,
+      },
+      role: "admin",
+    });
+
+    res.status(200).json({ message: "Supplier restored successfully" });
   } catch (error) {
     next(error);
   }

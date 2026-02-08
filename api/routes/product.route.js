@@ -8,6 +8,8 @@ import {
   // deleteDraft,
   deleteMultiProduct,
   deleteProduct,
+  restoreProduct,
+  getArchivedProducts,
   editProduct,
   getBestProducts,
   getBestRatedProducts,
@@ -32,6 +34,7 @@ const router = express.Router();
 
 router.post(`/add-product`, requireAuth, requireAdmin, validateResource(createProductSchema), addProduct);
 router.get(`/get-products`, getProducts);
+router.get(`/get-archived-products`, requireAuth, requireAdmin, getArchivedProducts);
 
 router.post(`/delete-multi-prod`, requireAuth, requireAdmin, deleteMultiProduct)
 
@@ -51,6 +54,13 @@ router.delete(
   requireAuth,
   requireAdmin,
   deleteProduct
+);
+
+router.patch(
+  `/restore-product/:productId`,
+  requireAuth,
+  requireAdmin,
+  restoreProduct
 );
 
 router.put(`/edit-product/:id`, requireAuth, requireAdmin, validateResource(updateProductSchema), editProduct);

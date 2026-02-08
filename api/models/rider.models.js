@@ -38,6 +38,11 @@ const RiderModelSchema = new mongoose.Schema(
     // review: {
     //   type: String,
     // },
+
+    isArchived: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

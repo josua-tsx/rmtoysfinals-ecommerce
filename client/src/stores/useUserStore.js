@@ -27,6 +27,7 @@ const customStorage = {
 export const useUserStore = create(persist(
     (set) => ({
         currentUser: null,
+        isCheckingAuth: true, // Start as true to wait for initial check
         setCurrentUser: (user) => set({ currentUser: user }),
         clearUser: () => {
             set({ currentUser: null });
@@ -35,12 +36,13 @@ export const useUserStore = create(persist(
             localStorage.removeItem("rememberMe");
         },
         checkAuth: async () => {
+            set({ isCheckingAuth: true });
             try {
                 const response = await axiosInstance.get('/auth/getMe');
-                set({ currentUser: response.data });
+                set({ currentUser: response.data, isCheckingAuth: false });
             } catch (error) {
                 console.error('Authentication check failed:', error);
-                set({ currentUser: null });
+                set({ currentUser: null, isCheckingAuth: false });
             }
         },
     }),

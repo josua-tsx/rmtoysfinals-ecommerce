@@ -66,6 +66,7 @@ const AdminOrderTransact = lazy(
 const AdminAuditTrailLogs = lazy(
   () => import("./pages/admin/AdminAuditTrailLogs.jsx"),
 );
+const AdminArchives = lazy(() => import("./pages/admin/AdminArchives.jsx"));
 const AdminProductReviews = lazy(
   () => import("./pages/admin/AdminProductReviews.jsx"),
 );
@@ -314,6 +315,10 @@ const router = createBrowserRouter([
       {
         path: "/admin/audit",
         element: <AdminAuditTrailLogs />,
+      },
+      {
+        path: "/admin/archives",
+        element: <AdminArchives />,
       },
 
       {

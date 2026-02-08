@@ -11,6 +11,8 @@ import {
   getSingleRider,
   getRiderCsvTemplate,
   batchAddRiders,
+  restoreRider,
+  getArchivedRiders,
 } from "../controllers/rider.controller.js";
 import { deleteMultiRiderSchema, editRiderSchema, riderSchema } from "../schema/rider.schema.js";
 
@@ -23,6 +25,9 @@ router.get("/get-single-rider/:riderId", getSingleRider);
 router.delete("/delete-rider/:riderId", requireAuth, requireAdmin, deleteRider);
 router.put("/edit-rider/:riderId", requireAuth, requireAdmin, validateResource(editRiderSchema), editRider);
 router.post("/delete-multi-rider", requireAuth, requireAdmin, validateResource(deleteMultiRiderSchema), deleteMultiRider);
+
+router.patch("/restore-rider/:riderId", requireAuth, requireAdmin, restoreRider);
+router.get("/get-archived-riders", requireAuth, requireAdmin, getArchivedRiders);
 
 // Batch Routes
 router.get("/csv-template", requireAuth, requireAdmin, getRiderCsvTemplate);

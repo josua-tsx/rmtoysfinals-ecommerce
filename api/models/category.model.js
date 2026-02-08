@@ -17,6 +17,11 @@ const CategorySchemaModel = new mongoose.Schema(
         ref: "Product",
       },
     ],
+
+    isArchived: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

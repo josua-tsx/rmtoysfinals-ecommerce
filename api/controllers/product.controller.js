@@ -9,7 +9,7 @@ import Order from "../models/order.model.js";
 
 import Supplier from "../models/supplier.model.js";
 import Vat from "../models/vat.models.js";
-import { createProductSchema } from "../schema/product.schema.js";
+import { createProductSchema, productBodyBase } from "../schema/product.schema.js";
 
 export const addProduct = async (req, res, next) => {
   const userId = req.user.id;
@@ -47,15 +47,52 @@ export const addProduct = async (req, res, next) => {
   }
 
   try {
-    const existingDraftProduct = await Product.findOne({
-      productName,
-      status: "draft",
+    // Check if product exists (Active, Draft, or Archived)
+    // Case-insensitive check
+    const existingProduct = await Product.findOne({
+      productName: { $regex: new RegExp(`^${productName.trim()}$`, "i") },
     });
 
-    if (existingDraftProduct) {
-      return next(
-        handleMakeError(400, "This product name is already in draft")
-      );
+    if (existingProduct) {
+      if (existingProduct.isArchived) {
+        // --- RESTORE ARCHIVED PRODUCT ---
+        existingProduct.isArchived = false;
+        existingProduct.status = "pending"; 
+        existingProduct.productDescription = productDescription;
+        existingProduct.productDetails = productDetails;
+        existingProduct.productImages = productImages;
+        existingProduct.category = category;
+        existingProduct.points = points;
+        existingProduct.taxStatus = taxStatus;
+        existingProduct.vat = taxStatus === "vatable" ? vat : null;
+
+        await existingProduct.save();
+
+        // Update Category correlation just in case
+        await Category.findByIdAndUpdate(
+            category,
+            { $addToSet: { products: existingProduct._id } }, 
+        );
+
+        // Log Audit
+        await logAuditTrail({
+            action: "restore_product",
+            userId,
+            targetId: existingProduct._id,
+            targetType: "Product",
+            details: { productName, reason: "Restored via Add Product" },
+            role: "admin",
+        });
+
+        return res.status(200).json(existingProduct);
+      } else {
+        // --- DUPLICATE ACTIVE PRODUCT ---
+        // If it's a draft, say so. otherwise generic duplicate
+        const msg = existingProduct.status === "draft" 
+            ? "This product name is already in draft" 
+            : "Product name already exists";
+        return next(handleMakeError(400, msg));
+      }
     }
 
     const newProduct = new Product({
@@ -112,7 +149,8 @@ export const getProducts = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     // Build the query object for filtering products
-    const query = { status: "published" };
+    // Exclude archived products by default
+    const query = { status: "published", isArchived: { $ne: true } };
 
     // If categoryName is provided, first find the category ObjectId
     if (categoryName) {
@@ -177,9 +215,24 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
+export const getArchivedProducts = async (req, res, next) => {
+  try {
+    const products = await Product.find({ isArchived: true })
+      .populate({ path: "supplier", select: "supplierName" })
+      .populate({ path: "category", select: "categoryName" })
+      .populate({ path: "stocks", select: "quantity" })
+      .populate({ path: "vat", select: "vatPercent vatValue" })
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getStockStatusPendings = async (req, res, next) => {
   try {
-    const products = await Product.find({ status: "pending" })
+    const products = await Product.find({ status: "pending", isArchived: { $ne: true } })
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -316,36 +369,31 @@ export const deleteProduct = async (req, res, next) => {
   try {
     const singleProduct = await Product.findById(productId);
 
-    const existingStocks = await Stocks.findOne({ product: productId });
-
-    // If no stock validation, just proceed. Pending products have no stocks.
-    // if (!existingStocks) return next(handleMakeError(400, "Stock not found!"));
-
     if (!singleProduct) return next(handleMakeError(400, "Product not found"));
 
-    await Stocks.deleteMany({ product: productId });
+    // SOFT DELETE: Mark as archived instead of removing from DB
+    await Product.findByIdAndUpdate(productId, { isArchived: true });
 
-    await Category.findByIdAndUpdate(singleProduct.category, {
-      $pull: { products: productId },
-    });
-
-    if (existingStocks) {
-      await Supplier.findByIdAndUpdate(existingStocks.supplier, {
-        $pull: { product: productId },
-      });
-
-      await Vat.findByIdAndUpdate(existingStocks.vat, {
-        $pull: { productId: productId },
+    // Remove from Category's product list so the count updates
+    if (singleProduct.category) {
+      await Category.findByIdAndUpdate(singleProduct.category, {
+        $pull: { products: singleProduct._id },
       });
     }
 
-    await Cart.deleteMany({ "items.productId": productId });
+    // Remove from Supplier's product list
+    if (singleProduct.supplier) {
+      await Supplier.findByIdAndUpdate(singleProduct.supplier, {
+        $pull: { product: singleProduct._id },
+      });
+    }
 
-    await Review.deleteMany({ productId: productId });
-
-    await Order.deleteMany({ "orderItems.productId": productId });
-
-    await Product.findByIdAndDelete(productId);
+    // Remove from Vat's product list (using field 'productId' as per model)
+    if (singleProduct.vat) {
+      await Vat.findByIdAndUpdate(singleProduct.vat, {
+        $pull: { productId: singleProduct._id },
+      });
+    }
 
     await logAuditTrail({
       action: "delete_product",
@@ -359,7 +407,60 @@ export const deleteProduct = async (req, res, next) => {
       role: "admin",
     });
 
-    res.status(200).json({ message: "Successfully deleted" });
+    res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const restoreProduct = async (req, res, next) => {
+  const userId = req.user.id;
+  const { productId } = req.params;
+
+  try {
+    const product = await Product.findById(productId);
+
+    if (!product) return next(handleMakeError(400, "Product not found"));
+
+    if (!product.isArchived) {
+      return next(handleMakeError(400, "Product is not archived"));
+    }
+
+    await Product.findByIdAndUpdate(productId, { isArchived: false });
+
+    // Add back to Category's product list
+    if (product.category) {
+      await Category.findByIdAndUpdate(product.category, {
+        $addToSet: { products: product._id },
+      });
+    }
+
+    // Add back to Supplier's product list
+    if (product.supplier) {
+      await Supplier.findByIdAndUpdate(product.supplier, {
+        $addToSet: { product: product._id },
+      });
+    }
+
+    // Add back to Vat's product list
+    if (product.vat) {
+      await Vat.findByIdAndUpdate(product.vat, {
+        $addToSet: { productId: product._id },
+      });
+    }
+
+    await logAuditTrail({
+      action: "restore_product",
+      userId,
+      targetId: product._id,
+      targetType: "Product",
+      details: {
+        productName: product.productName,
+      },
+      role: "admin",
+    });
+    
+    res.status(200).json({ message: "Product restored successfully" });
   } catch (error) {
     next(error);
   }
@@ -384,56 +485,46 @@ export const deleteMultiProduct = async (req, res, next) => {
       );
     }
 
-    const stocks = await Stocks.find({ product: { $in: productIds } });
-
-    if (!stocks.length) {
-      return next(handleMakeError(400, "Stocks not found!"));
-    }
-
-    // Delete related data for each product
+    // Soft Delete (Archive) each product
     for (const product of products) {
-      const { _id, category } = product;
+      // 1. Mark as Archived
+      await Product.findByIdAndUpdate(product._id, { isArchived: true });
 
-      // Delete stocks
-      await Stocks.deleteMany({ product: _id });
-      await Category.updateMany(
-        { products: _id },
-        { $pull: { products: _id } }
-      );
-      await Vat.deleteMany({ productId: _id });
-      // Delete from related collections
-      await Cart.deleteMany({ "items.productId": _id });
-      await Review.deleteMany({ productId: _id });
-      await Order.deleteMany({ "orderItems.productId": _id });
-      // Delete from supplier and vat based on existing stock info
-      const stockForProduct = stocks.find(
-        (s) => s.product.toString() === _id.toString()
-      );
-
-      if (stockForProduct) {
-        await Supplier.findByIdAndUpdate(stockForProduct.supplier, {
-          $pull: { product: _id },
-        });
-
-        await Vat.findByIdAndUpdate(stockForProduct.vat, {
-          $pull: { productId: _id },
+      // 2. Remove from Category
+      if (product.category) {
+        await Category.findByIdAndUpdate(product.category, {
+          $pull: { products: product._id },
         });
       }
-    }
 
-    // Finally delete the products
-    await Product.deleteMany({ _id: { $in: productIds } });
+      // 3. Remove from Supplier
+      if (product.supplier) {
+        await Supplier.findByIdAndUpdate(product.supplier, {
+          $pull: { product: product._id },
+        });
+      }
+
+      // 4. Remove from Vat
+      if (product.vat) {
+        await Vat.findByIdAndUpdate(product.vat, {
+          $pull: { productId: product._id },
+        });
+      }
+      
+      // NOTE: We do NOT delete Stocks, Orders, Reviews, or Cart items in a soft delete.
+      // This preserves history.
+    }
 
     await Promise.all(
       products.map((product) =>
         logAuditTrail({
-          action: "delete_product",
+          action: "delete_product_bulk",
           userId,
           targetId: product._id,
           targetType: "Product",
           details: {
-            productName: product.name,
-            deletedAt: new Date().toISOString(),
+            productName: product.productName, // Changed from product.name to product.productName to match model
+            archivedAt: new Date().toISOString(),
           },
           role: req.user.role,
         })
@@ -442,7 +533,7 @@ export const deleteMultiProduct = async (req, res, next) => {
 
     res
       .status(200)
-      .json({ message: "Products and related data deleted successfully." });
+      .json({ message: "Products deleted successfully." });
   } catch (error) {
     console.error(error);
     next(error);
@@ -771,7 +862,6 @@ export const getProductCsvTemplate = async (req, res, next) => {
       "productDetails",
       "productImages",
       "categoryName",
-      "supplierName",
       "taxStatus",
       "points",
     ];
@@ -790,7 +880,6 @@ export const getProductCsvTemplate = async (req, res, next) => {
       '[{"label":"material","value":"plastic"},{"label":"age","value":"5+"}]',
       "https://example.com/image1.jpg,https://example.com/image2.jpg",
       "Action Figures",
-      "ABC Supplier",
       "vatable",
       "10",
     ].map(escapeCSV);
@@ -868,15 +957,13 @@ export const batchUploadProducts = async (req, res, next) => {
     }
 
     // Fetch all categories and suppliers for lookup
-    const allCategories = await Category.find({}).lean();
-    const allSuppliers = await Supplier.find({}).lean();
+    // Only fetch ACTIVE (non-archived) ones
+    const allCategories = await Category.find({ isArchived: { $ne: true } }).lean();
+    const allSuppliers = await Supplier.find({ isArchived: { $ne: true } }).lean();
     const allVats = await Vat.find({}).lean();
 
     const categoryMap = new Map(
       allCategories.map((c) => [c.categoryName.toLowerCase(), c])
-    );
-    const supplierMap = new Map(
-      allSuppliers.map((s) => [s.supplierName.toLowerCase(), s])
     );
 
     // Get default VAT for vatable products
@@ -977,12 +1064,11 @@ export const batchUploadProducts = async (req, res, next) => {
         }
 
         // ----------------------------------------------------
-        // Use Zod Schema for validation (subset of createProductSchema)
+        // Use Zod Schema for validation (subset of productBodyBase)
         // Note: We validate productName, productDescription, productDetails,
         //       productImages, taxStatus here. Category/Supplier are DB lookups.
         // ----------------------------------------------------
-        const bodySchema = createProductSchema.shape.body;
-        const validation = bodySchema.pick({
+        const validation = productBodyBase.pick({
           productName: true,
           productDescription: true,
           productDetails: true,
@@ -1020,16 +1106,10 @@ export const batchUploadProducts = async (req, res, next) => {
         namesInBatch.add(productName.toLowerCase());
 
         // Check duplicate in DB
+        // Check duplicate in DB
         const existingProduct = await Product.findOne({ productName });
-        if (existingProduct) {
-          results.errors.push({
-            row: rowNum,
-            reason: `Product '${productName}' already exists in database`,
-          });
-          results.failed++;
-          continue;
-        }
 
+        // Helper to find category
         const category = categoryMap.get(categoryName.toLowerCase());
         if (!category) {
           results.errors.push({
@@ -1040,15 +1120,28 @@ export const batchUploadProducts = async (req, res, next) => {
           continue;
         }
 
-        // --- Validate supplierName (optional) ---
-        let supplier = null;
-        const supplierName = row.supplierName?.trim();
-        if (supplierName) {
-          supplier = supplierMap.get(supplierName.toLowerCase());
-          if (!supplier) {
+        if (existingProduct) {
+          // If archived, we RESTORE and UPDATE it
+          if (existingProduct.isArchived) {
+             existingProduct.isArchived = false;
+             existingProduct.status = "published"; // Make active
+             existingProduct.productDescription = productDescription;
+             existingProduct.productDetails = productDetails;
+             existingProduct.productImages = productImages;
+             existingProduct.category = category._id;
+             existingProduct.points = parseInt(row.points, 10) || 0;
+             existingProduct.taxStatus = taxStatus;
+             existingProduct.vat = taxStatus === "vatable" && defaultVat ? defaultVat._id : null;
+             
+             await existingProduct.save();
+             
+             results.created++; // Treat as success
+             continue;
+          } else {
+            // Error: Active product with same name exists
             results.errors.push({
               row: rowNum,
-              reason: `Supplier '${supplierName}' not found`,
+              reason: `Product '${productName}' already exists in database`,
             });
             results.failed++;
             continue;
@@ -1065,7 +1158,6 @@ export const batchUploadProducts = async (req, res, next) => {
           productDetails,
           productImages,
           category: category._id,
-          supplier: supplier?._id || null,
           status: "pending",
           points,
           taxStatus,

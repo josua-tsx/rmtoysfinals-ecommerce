@@ -6,6 +6,8 @@ import {
   addSupplier,
   deleteMultiSupplier,
   deleteSupplier,
+  restoreSupplier,
+  getArchivedSuppliers,
   editSupplier,
   getSingleSupplier,
   getSuppliers,
@@ -20,11 +22,19 @@ const router = express.Router();
 
 router.post(`/add-supplier`, requireAuth, requireAdmin, validateResource(createSupplierSchema), addSupplier);
 router.get(`/get-suppliers`, getSuppliers);
+router.get(`/get-archived-suppliers`, requireAuth, requireAdmin, getArchivedSuppliers);
 router.delete(
   `/delete-supplier/:supplierId`,
   requireAuth,
   requireAdmin,
   deleteSupplier
+);
+
+router.patch(
+  `/restore-supplier/:supplierId`,
+  requireAuth,
+  requireAdmin,
+  restoreSupplier
 );
 router.get(`/get-supplier/:supplierId`, getSingleSupplier);
 router.put(

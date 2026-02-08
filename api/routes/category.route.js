@@ -5,6 +5,8 @@ import { createCategorySchema, updateCategorySchema } from "../schema/category.s
 import {
   addCategory,
   deleteCategory,
+  restoreCategory,
+  getArchivedCategories,
   deleteMultiCategory,
   editCategory,
   getCategories,
@@ -19,11 +21,19 @@ const router = express.Router();
 
 router.post(`/add-category`, requireAuth, requireAdmin, validateResource(createCategorySchema), addCategory);
 router.get(`/get-categories`, getCategories);
+router.get(`/get-archived-categories`, requireAuth, requireAdmin, getArchivedCategories);
 router.delete(
   `/delete-category/:categoryId`,
   requireAuth,
   requireAdmin,
   deleteCategory
+);
+
+router.patch(
+  `/restore-category/:categoryId`,
+  requireAuth,
+  requireAdmin,
+  restoreCategory
 );
 router.put(
   `/edit-category/:categoryId`,

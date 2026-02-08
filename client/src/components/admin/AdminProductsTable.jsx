@@ -45,7 +45,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
   const { mutate: addToSlider } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.put(
-        `/product/add-to-slider/${productId}`
+        `/product/add-to-slider/${productId}`,
       );
       return res.data;
     },
@@ -61,7 +61,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
   const { mutate: deleteProductMutation } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.delete(
-        `/product/delete-product/${productId}`
+        `/product/delete-product/${productId}`,
       );
       return res.data;
     },
@@ -131,7 +131,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
     setSelectedIds((prev) =>
       prev.includes(productIds)
         ? prev.filter((id) => id !== productIds)
-        : [...prev, productIds]
+        : [...prev, productIds],
     );
   };
 
@@ -147,7 +147,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
 
     if (
       window.confirm(
-        `Are you sure you want to delete ${selectedIds.length} products?`
+        `Are you sure you want to delete ${selectedIds.length} products?`,
       )
     ) {
       deleteMultiProd(selectedIds);
@@ -157,7 +157,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
   const filteredProducts = productArray.filter(
     (product) =>
       product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product._id.includes(searchTerm)
+      product._id.includes(searchTerm),
   );
 
   const navigateToeditPage = (editId) => {
@@ -218,6 +218,15 @@ export default function AdminProductsTable({ enableMultiDel }) {
                   Category
                 </th>
                 <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Supplier
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Supplier
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
+                  Tax Status
+                </th>
+                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
                   Price
                 </th>
                 <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
@@ -273,6 +282,26 @@ export default function AdminProductsTable({ enableMultiDel }) {
                     <td className="p-4 text-center">
                       <span className="px-2 py-0.5 border border-black bg-white rounded-[3px]  text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
                         {product.category && product.category.categoryName}
+                      </span>
+                    </td>
+
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                        {product.supplier?.supplierName || "N/A"}
+                      </span>
+                    </td>
+
+                    <td className="p-4 text-center">
+                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+                        {product.supplier?.supplierName || "N/A"}
+                      </span>
+                    </td>
+
+                    <td className="p-4 text-center">
+                      <span
+                        className={`px-2 py-0.5 border border-black rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${product.taxStatus === "vatable" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+                      >
+                        {product.taxStatus || "N/A"}
                       </span>
                     </td>
 

@@ -40,11 +40,21 @@ export const addCategory = async (req, res, next) => {
 
 export const getCategories = async (req, res, next) => {
   try {
-    const getCategories = await Category.find().sort({ createdAt: -1 });
+    // Exclude archived categories by default
+    const getCategories = await Category.find({ isArchived: { $ne: true } }).sort({ createdAt: -1 });
 
     if (!getCategories) return res.status(200).json([]);
 
     res.status(200).json(getCategories);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getArchivedCategories = async (req, res, next) => {
+  try {
+    const categories = await Category.find({ isArchived: true }).sort({ updatedAt: -1 });
+    res.status(200).json(categories);
   } catch (error) {
     next(error);
   }
@@ -90,30 +100,37 @@ export const deleteMultiCategory = async (req, res, next) => {
     ];
 
     if (allUsedCategories.length > 0) {
+      const usedCategoryNames = categories
+        .filter((c) => allUsedCategories.includes(c._id.toString()))
+        .map((c) => c.categoryName);
+        
       return next(
         handleMakeError(
           400,
-          `These categories are in use and cannot be deleted: ${allUsedCategories.join(
+          `These categories are in use and cannot be archived: ${usedCategoryNames.join(
             ", "
           )}`
         )
       );
     }
 
-    // Get category names for audit trail before deletion
+    // Soft Delete: Mark isArchived = true for all selected categories
+    await Category.updateMany(
+      { _id: { $in: categoryIds } },
+      { isArchived: true }
+    );
+
+    // Get category names for audit trail
     const categoryNames = categories.reduce((acc, category) => {
       acc[category._id] = category.categoryName;
       return acc;
     }, {});
 
-    // Delete all categories
-    await Category.deleteMany({ _id: { $in: categoryIds } });
-
-    // Create audit trail entries for each deleted category
+    // Create audit trail entries for each archived category
     await Promise.all(
       categoryIds.map((id) =>
         logAuditTrail({
-          action: "delete_category",
+          action: "archive_category_bulk",
           userId,
           targetId: id,
           targetType: "Category",
@@ -126,7 +143,7 @@ export const deleteMultiCategory = async (req, res, next) => {
     );
 
     res.status(200).json({
-      message: `${categoryIds.length} categories deleted successfully`,
+      message: `${categoryIds.length} categories archived successfully`,
       deletedCount: categoryIds.length,
     });
   } catch (error) {
@@ -145,19 +162,21 @@ export const deleteCategory = async (req, res, next) => {
     if (!singleCategory)
       return next(handleMakeError(400, "Category not found!"));
 
+    // Check if category is in use
     const categoryInUse = await Stocks.exists({ category: categoryId });
     if (categoryInUse || singleCategory?.products?.length > 0) {
       return next(
-        handleMakeError(400, "Category is in use and cannot be deleted")
+        handleMakeError(400, "Category is in use (has products/stocks) and cannot be archived")
       );
     }
 
     const categoryName = singleCategory.categoryName;
 
-    await Category.findByIdAndDelete(categoryId);
+    // SOFT DELETE: Mark as archived
+    await Category.findByIdAndUpdate(categoryId, { isArchived: true });
 
     await logAuditTrail({
-      action: "delete_category",
+      action: "archive_category",
       userId,
       targetId: singleCategory._id,
       targetType: "Category",
@@ -167,7 +186,39 @@ export const deleteCategory = async (req, res, next) => {
       role: "admin",
     });
 
-    res.status(200).json({ message: "Category Deleted" });
+    res.status(200).json({ message: "Category archived successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const restoreCategory = async (req, res, next) => {
+  const { categoryId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const category = await Category.findById(categoryId);
+
+    if (!category) return next(handleMakeError(400, "Category not found!"));
+
+    if (!category.isArchived) {
+      return next(handleMakeError(400, "Category is not archived"));
+    }
+
+    await Category.findByIdAndUpdate(categoryId, { isArchived: false });
+
+    await logAuditTrail({
+      action: "restore_category",
+      userId,
+      targetId: category._id,
+      targetType: "Category",
+      details: {
+        categoryName: category.categoryName,
+      },
+      role: "admin",
+    });
+
+    res.status(200).json({ message: "Category restored successfully" });
   } catch (error) {
     next(error);
   }

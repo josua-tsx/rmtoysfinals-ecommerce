@@ -12,6 +12,8 @@ import {
   getSingleUser,
   updateProfile,
   verifyUserEmail,
+  restoreWorker,
+  getArchivedWorkers,
 } from "../controllers/user.controller.js";
 import { editWorkerSchema, updateUserSchema } from "../schema/auth.schema.js";
 import { validateResource } from "../middleware/validateResource.js";
@@ -34,6 +36,15 @@ router.delete(
 );
 
 router.put(`/edit-worker/:workerId`, requireAuth, requireAdmin, validateResource(editWorkerSchema), editWorker);
+
+router.patch(
+  `/restore-worker/:workerId`,
+  requireAuth,
+  requireAdmin,
+  restoreWorker
+);
+
+router.get(`/get-archived-workers`, requireAuth, requireAdmin, getArchivedWorkers);
 
 router.put(
   `/update-status/:customerId`,

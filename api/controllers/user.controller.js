@@ -243,6 +243,7 @@ export const getAllWorkers = async (req, res, next) => {
       role: { 
         $nin: ["admin", "customer"]
        },
+       isArchived: { $ne: true },
     })
       .populate({
         path: "address",
@@ -270,10 +271,11 @@ export const deleteWorker = async (req, res, next) => {
 
     if (!worker) return next(handleMakeError(400, "worker not found!"));
 
-    await User.findByIdAndDelete(workerId);
+    // SOFT DELETE: Mark as archived
+    await User.findByIdAndUpdate(workerId, { isArchived: true });
 
     await logAuditTrail({
-      action: "admin_delete_worker",
+      action: "archive_worker",
       userId,
       targetId: worker._id,
       targetType: "Worker",
@@ -285,7 +287,53 @@ export const deleteWorker = async (req, res, next) => {
       role: "admin",
     });
 
-    res.status(200).json({ message: "Worker Deleted" });
+    res.status(200).json({ message: "Worker Archived" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const restoreWorker = async (req, res, next) => {
+  const { workerId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const worker = await User.findById(workerId);
+
+    if (!worker) return next(handleMakeError(400, "Worker not found!"));
+
+    if (!worker.isArchived) {
+      return next(handleMakeError(400, "Worker is not archived"));
+    }
+
+    await User.findByIdAndUpdate(workerId, { isArchived: false });
+
+    await logAuditTrail({
+      action: "restore_worker",
+      userId,
+      targetId: worker._id,
+      targetType: "Worker",
+      details: {
+        email: worker.email,
+        job: worker.role,
+      },
+      role: "admin",
+    });
+
+    res.status(200).json({ message: "Worker restored successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getArchivedWorkers = async (req, res, next) => {
+  try {
+    const workers = await User.find({
+      role: { $nin: ["admin", "customer"] },
+      isArchived: true,
+    }).sort({ updatedAt: -1 });
+
+    res.status(200).json(workers);
   } catch (error) {
     next(error);
   }

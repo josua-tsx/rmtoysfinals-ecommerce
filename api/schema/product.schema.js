@@ -14,11 +14,10 @@ const objectIdSchema = z.string().refine((val) => mongoose.Types.ObjectId.isVali
 });
 
 /**
- * Product Payload Schema
- * Matches the validation logic in addProduct/editProduct
+ * Base Product Body Schema (without refinements)
+ * Exported separately so .pick() can be used in batch upload
  */
-const productPayload = {
-  body: z.object({
+export const productBodyBase = z.object({
     productName: z
       .string({ required_error: "Please input product name" })
       .min(5, "Product name must be 5-50 characters")
@@ -26,7 +25,6 @@ const productPayload = {
       .trim()
       .regex(PRODUCT_NAME_REGEX, "Only letters, numbers, spaces, hyphens (-), and apostrophes (') are allowed")
       .regex(PRODUCT_NAME_NO_NUMBER_START_REGEX, "Product name cannot start with a number")
-      // The manual validation for "start/end with hyphen" is covered partially by regex above but let's be explicit if needed
       .refine(
         (val) => !val.startsWith("-") && !val.startsWith("'") && !val.endsWith("-") && !val.endsWith("'"),
         "Product name cannot start or end with a hyphen (-) or apostrophe (')"
@@ -38,7 +36,7 @@ const productPayload = {
       .min(1, "Please input product description")
       .max(200, "Description cannot exceed 200 characters"),
       
-    category: objectIdSchema, // Expecting a valid MongoDB ID
+    category: objectIdSchema,
     
     productImages: z
       .array(z.string())
@@ -50,7 +48,6 @@ const productPayload = {
     
     vat: z.string().optional().nullable(),
     
-    // Product Details: Max 10 items, must have label & value
     productDetails: z
       .array(
         z.object({
@@ -61,7 +58,13 @@ const productPayload = {
       .max(10, "Maximum 10 product details allowed")
       .optional()
       .default([]),
-  }).superRefine((data, ctx) => {
+  });
+
+/**
+ * Product Payload with cross-field validation
+ */
+const productPayload = {
+  body: productBodyBase.superRefine((data, ctx) => {
     // Cross-field validation: VAT is required if taxStatus is vatable
     if (data.taxStatus === "vatable" && !data.vat) {
       ctx.addIssue({

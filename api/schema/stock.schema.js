@@ -5,8 +5,7 @@ const objectIdSchema = z.string().refine((val) => mongoose.Types.ObjectId.isVali
   message: "Invalid ID format",
 });
 
-export const orderStockSchema = z.object({
-  body: z.object({
+export const stockBodyBase = z.object({
     product: objectIdSchema,
     supplier: objectIdSchema,
     deliveryId: z.string({ required_error: "Delivery ID is required" }),
@@ -32,7 +31,10 @@ export const orderStockSchema = z.object({
     
     vat: objectIdSchema.optional().or(z.literal(null)), // VAT ID or null
     notifySubscribedUser: z.boolean().optional(),
-  }).refine((data) => data.shopPrice >= data.supplierPrice, {
+  });
+
+export const orderStockSchema = z.object({
+  body: stockBodyBase.refine((data) => data.shopPrice >= data.supplierPrice, {
       message: "Shop price cannot be lower than supplier price",
       path: ["shopPrice"],
   }),

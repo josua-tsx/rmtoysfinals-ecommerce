@@ -12,7 +12,7 @@ import { sendEmail } from "../nodemailer/nodemailer.js";
 import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
 import { sendGrid } from "../sendGrid/sendGrid.js";
-import { orderStockSchema } from "../schema/stock.schema.js";
+import { orderStockSchema, stockBodyBase } from "../schema/stock.schema.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -133,6 +133,7 @@ export const OrderStocks = async (req, res, next) => {
           $push: { stocks: newDelivery._id }, // Keeping history!
           taxStatus: vatPercent > 0 ? "vatable" : "exempt",
           totalVat: vatPercent,
+          supplier: supplier, // ✅ Update supplier when ordering stock
         },
         { new: true, runValidators: true, session }
       ),
@@ -372,7 +373,8 @@ export const reorderStock = async (req, res, next) => {
         price: calculatedVatShopPrice,
         preVatPrice: Number(shopPrice),
         taxStatus: vatPercent > 0 ? "vatable" : "exempt", // Update tax status based on effective VAT
-        totalVat: vatPercent
+        totalVat: vatPercent,
+        supplier: supplier, // ✅ Update supplier on reorder
       },
       { new: true, runValidators: true }
     );
@@ -774,11 +776,15 @@ export const batchOrderStocks = async (req, res, next) => {
       errors: [],
     };
 
-    // Cache Suppliers to minimize DB calls
-    const allSuppliers = await Supplier.find({}).select("supplierName _id");
+    // Cache Suppliers and VATs to minimize DB calls
+    // Only fetch ACTIVE (non-archived) ones
+    const allSuppliers = await Supplier.find({ isArchived: { $ne: true } }).select("supplierName _id");
     const supplierMap = new Map(
       allSuppliers.map((s) => [s.supplierName.toLowerCase().trim(), s._id])
     );
+
+    const allVats = await Vat.find({}).lean();
+    const defaultVat = allVats.length > 0 ? allVats[0] : null;
 
     // 1. Process each row
     for (const [index, row] of data.entries()) {
@@ -808,7 +814,7 @@ export const batchOrderStocks = async (req, res, next) => {
       // Use Zod Schema for numeric field validation
       // Pick only numeric fields from orderStockSchema
       // ----------------------------------------------------
-      const numericSchema = orderStockSchema.shape.body.pick({
+      const numericSchema = stockBodyBase.pick({
         quantity: true,
         supplierPrice: true,
         shopPrice: true,
@@ -875,10 +881,22 @@ export const batchOrderStocks = async (req, res, next) => {
       let effectiveVatPercent = 0;
 
       // If product has VAT set, use it
-      if (product.taxStatus === "vatable" && product.vat) {
-        vatId = product.vat;
-        const vatDoc = await Vat.findById(vatId).session(session);
-        if (vatDoc) effectiveVatPercent = vatDoc.vatPercent;
+      if (product.taxStatus === "vatable") {
+        if (product.vat) {
+           vatId = product.vat;
+           // We need to fetch the specific VAT doc if it's not in our list (though likely is)
+           const vatDoc = allVats.find(v => v._id.toString() === product.vat.toString());
+           if (vatDoc) effectiveVatPercent = vatDoc.vatPercent;
+           else {
+             // Fallback if product points to non-existent VAT
+             const liveVat = await Vat.findById(vatId).session(session);
+             if (liveVat) effectiveVatPercent = liveVat.vatPercent;
+           }
+        } else if (defaultVat) {
+          // If vatable but no VAT set, use default
+          vatId = defaultVat._id;
+          effectiveVatPercent = defaultVat.vatPercent;
+        }
       }
 
       // Calcs
@@ -949,6 +967,7 @@ export const batchOrderStocks = async (req, res, next) => {
         $push: { stocks: newStock._id },
         taxStatus: effectiveVatPercent > 0 ? "vatable" : "exempt",
         totalVat: effectiveVatPercent,
+        supplier: supplierId, // ✅ Update supplier on batch order
       };
 
       await Product.findByIdAndUpdate(product._id, productUpdate, { session });

@@ -92,6 +92,11 @@ const ProductModelSchema = new mongoose.Schema(
         ref: "Review",
       },
     ],
+
+    isArchived: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

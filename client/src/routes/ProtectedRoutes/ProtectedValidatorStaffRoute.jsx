@@ -1,9 +1,24 @@
 import { Navigate } from "react-router-dom";
 import { useUserStore } from "../../stores/useUserStore";
+import { useEffect } from "react";
 // Make sure this import is correct
+import LoadingSpinner from "../../reusable/LoadingSpinner";
 
 export default function ProtectedValidatorStaffRoute({ children }) {
-  const currentUser = useUserStore(state => state.currentUser); 
+  const { currentUser, isCheckingAuth, checkAuth } = useUserStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+  0;
 
   // Check if the currentUser is loaded and contains the role
   if (!currentUser) {

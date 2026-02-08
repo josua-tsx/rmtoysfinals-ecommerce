@@ -72,7 +72,7 @@ export const addRider = async (req, res, next) => {
 
 export const getRiders = async (req, res, next) => {
   try {
-    const riders = await Rider.find();
+    const riders = await Rider.find({ isArchived: { $ne: true } });
     if (!riders) return next(handleMakeError(400, "No rider found!"));
     res.status(200).json(riders);
   } catch (error) {
@@ -103,12 +103,13 @@ export const deleteRider = async (req, res, next) => {
 
     if (!rider) return next(handleMakeError(400, "Rider ID is not found!"));
 
-    await Rider.findByIdAndDelete(riderId);
+    // SOFT DELETE
+    await Rider.findByIdAndUpdate(riderId, { isArchived: true });
 
-    res.status(200).json({ message: "Deleted Succesfully!" });
+    res.status(200).json({ message: "Archived Succesfully!" });
 
     await logAuditTrail({
-      action: "delete_rider",
+      action: "archive_rider",
       userId,
       targetId: rider._id,
       targetType: "Rider",
@@ -150,12 +151,13 @@ export const deleteMultiRider = async (req, res, next) => {
       return acc;
     }, {});
 
-    await Rider.deleteMany({ _id: { $in: riderIds } });
+    // Soft Delete
+    await Rider.updateMany({ _id: { $in: riderIds } }, { isArchived: true });
 
     await Promise.all(
       riderIds.map((id) =>
         logAuditTrail({
-          action: "delete_riders",
+          action: "archive_riders_bulk",
           userId,
           targetId: id,
           targetType: "riders",
@@ -167,7 +169,7 @@ export const deleteMultiRider = async (req, res, next) => {
       )
     );
 
-    res.status(200).json({ message: "Succesfully Deleted" });
+    res.status(200).json({ message: "Succesfully Archived" });
   } catch (error) {
     next(error);
   }
@@ -223,6 +225,48 @@ export const editRider = async (req, res, next) => {
     if (!updateRider) return next(handleMakeError(400, "Update error"));
 
     res.status(200).json({ message: "Rider updated", data: updateRider });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// --- Batch Rider Upload Logic ---
+export const restoreRider = async (req, res, next) => {
+  const { riderId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const rider = await Rider.findById(riderId);
+
+    if (!rider) return next(handleMakeError(400, "Rider not found!"));
+
+    if (!rider.isArchived) {
+      return next(handleMakeError(400, "Rider is not archived"));
+    }
+
+    await Rider.findByIdAndUpdate(riderId, { isArchived: false });
+
+    await logAuditTrail({
+      action: "restore_rider",
+      userId,
+      targetId: rider._id,
+      targetType: "Rider",
+      details: {
+        riderName: rider.riderName,
+      },
+      role: "admin",
+    });
+
+    res.status(200).json({ message: "Rider restored successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getArchivedRiders = async (req, res, next) => {
+  try {
+    const riders = await Rider.find({ isArchived: true }).sort({ updatedAt: -1 });
+    res.status(200).json(riders);
   } catch (error) {
     next(error);
   }
