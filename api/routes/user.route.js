@@ -1,5 +1,6 @@
 import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import { authLimiter } from "../middleware/rateLimiter.js";
 import {
   adminUpdateUserStatus,
   checkIfAdminExists,
@@ -21,7 +22,7 @@ import { validateResource } from "../middleware/validateResource.js";
 const router = express.Router();
 
 router.post(`/update/:id`, requireAuth, validateResource(updateUserSchema), updateProfile);
-router.post(`/verify-email`, verifyUserEmail);
+router.post(`/verify-email`, authLimiter, verifyUserEmail);
 router.post(`/confirm-email`, confirmVerifyEmail);
 router.get(`/getAll`, getAll);
 router.get(`/getAllCustomer`, getAllCustomer);

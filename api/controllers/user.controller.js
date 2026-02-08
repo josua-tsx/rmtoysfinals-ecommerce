@@ -11,31 +11,12 @@ import crypto from "crypto";
 import Subscribe from "../models/subscribe.model.js";
 import { sendGrid } from "../sendGrid/sendGrid.js";
 
-const emailVerificationAttempts = new Map();
+
 
 export const verifyUserEmail = async (req, res, next) => {
   const { email } = req.body;
 
-  const lastAttempt = emailVerificationAttempts.get(email);
 
-  if (lastAttempt) {
-    const coolDown = 1 * 60 * 1000; // 5 minutes
-    const timeSinceLastAttempt = Date.now() - lastAttempt;
-
-    if (timeSinceLastAttempt < coolDown) {
-      const timeLeftMinutes = Math.ceil(
-        (coolDown - timeSinceLastAttempt) / (1000 * 60)
-      );
-      return next(
-        handleMakeError(
-          400,
-          `Please wait ${timeLeftMinutes} minute(s) before requesting another verification email.`
-        )
-      );
-    }
-  }
-
-  emailVerificationAttempts.set(email, Date.now());
 
   const validUser = await User.findOne({ email });
 

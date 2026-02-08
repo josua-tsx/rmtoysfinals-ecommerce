@@ -305,9 +305,6 @@ export const addWorker = async (req, res, next) => {
   }
 };
 
-// Simple in-memory store for tracking reset attempts
-const passwordResetAttempts = new Map(); // Stores { email: lastAttemptTimestamp }
-
 export const forgetPassword = async (req, res, next) => {
   const { email } = req.body;
 
@@ -317,27 +314,6 @@ export const forgetPassword = async (req, res, next) => {
   */
 
   try {
-    // Check if the email has a recent reset attempt
-    const lastAttempt = passwordResetAttempts.get(email);
-    if (lastAttempt) {
-      const cooldownMs = 5 * 60 * 1000; // 5 minutes in milliseconds
-      const timeSinceLastAttempt = Date.now() - lastAttempt;
-
-      if (timeSinceLastAttempt < cooldownMs) {
-        const timeLeftMinutes = Math.ceil(
-          (cooldownMs - timeSinceLastAttempt) / (1000 * 60)
-        );
-        return next(
-          handleMakeError(
-            429,
-            `Please wait ${timeLeftMinutes} minute(s) before requesting another reset.`
-          )
-        );
-      }
-    }
-
-    // Record this attempt (even before checking user existence to prevent email probing)
-    passwordResetAttempts.set(email, Date.now());
 
     const validUser = await User.findOne({ email });
     if (!validUser) {
@@ -371,8 +347,7 @@ export const forgetPassword = async (req, res, next) => {
     );
     res.status(200).json({
       success: true,
-      message:
-        "Recovery password sent to your email. Please wait 5 minutes before requesting another.",
+      message: "Recovery password sent to your email.",
     });
   } catch (error) {
     next(error);
