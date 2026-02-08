@@ -21,8 +21,6 @@ export default function AdminArchives() {
     enabled: activeTab === "products",
   });
 
-  console.log(products);
-
   const { data: categories = [], isPending: categoriesLoading } = useQuery({
     queryKey: ["archivedCategories"],
     queryFn: async () => {
@@ -148,7 +146,7 @@ export default function AdminArchives() {
 
       <div className="max-w-[95%] pt-10 mx-auto px-4">
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b-2 border-black pb-4">
+        <div className="flex flex-col md:flex-row gap-4 mb-8 border-b-2 border-black pb-4">
           {["products", "categories", "suppliers", "workers", "riders"].map(
             (tab) => (
               <button
