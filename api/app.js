@@ -3,6 +3,7 @@ import { config } from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { handleError } from "./middleware/handleError.js";
+import { apiLimiter } from "./middleware/rateLimiter.js";
 
 // routes import
 import authRoutes from "../api/routes/auth.route.js";
@@ -61,6 +62,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Route configurations
+// Apply global rate limiter to all API routes
+app.use("/api", apiLimiter);
+
 app.use(`/api/auth`, authRoutes);
 app.use(`/api/product`, productRoutes);
 app.use(`/api/user`, userRoutes);

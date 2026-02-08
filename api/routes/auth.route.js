@@ -1,3 +1,4 @@
+import { authLimiter, strictLimiter } from "../middleware/rateLimiter.js";
 import { validateResource } from "../middleware/validateResource.js";
 import {
   addWorkerSchema,
@@ -21,10 +22,10 @@ import express from "express";
 
 const router = express.Router();
 
-router.post(`/signup`, validateResource(signupSchema), signup);
-router.post(`/signin`, validateResource(signinSchema), signin);
-router.post(`/forget-password`, validateResource(forgetPasswordSchema), forgetPassword);
-router.post(`/reset-password`, validateResource(resetPasswordSchema), resetPassword);
+router.post(`/signup`, authLimiter, validateResource(signupSchema), signup);
+router.post(`/signin`, authLimiter, validateResource(signinSchema), signin);
+router.post(`/forget-password`, strictLimiter, validateResource(forgetPasswordSchema), forgetPassword);
+router.post(`/reset-password`, strictLimiter, validateResource(resetPasswordSchema), resetPassword);
 router.post(`/signout`, requireAuth, signout);
 // ADD WORKER
 
