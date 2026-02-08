@@ -3,7 +3,7 @@ import { IoSearch } from "react-icons/io5";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminUserTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,7 +51,7 @@ export default function AdminUserTable() {
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer._id.includes(searchTerm) ||
-      customer.status.toLowerCase().includes(searchTerm.toLowerCase())
+      customer.status.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (isError) {
@@ -87,8 +87,8 @@ export default function AdminUserTable() {
 
       <div className="overflow-y-auto h-[600px] py-3">
         {isPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">

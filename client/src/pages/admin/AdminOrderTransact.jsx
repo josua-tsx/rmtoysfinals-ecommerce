@@ -7,6 +7,8 @@ import AdminCancelledTransact from "./AdminCancelledTransact";
 import axiosInstance from "../../lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import AdminStatCard from "../../components/admin/AdminStatCard";
+import AdminStatCardSkeleton from "../../components/skeleton/AdminStatCardSkeleton";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminOrderTransact() {
   const [selectedComponent, setSelectedComponent] = useState("successful");
@@ -107,58 +109,80 @@ export default function AdminOrderTransact() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 font-main">
-          <AdminStatCard
-            title={"Successful"}
-            value={successOrderData.length}
-            value2={"Paid"}
-          />
-          <AdminStatCard
-            title={"Failed"}
-            value={failedCancelledData.length}
-            value2={"Unpaid"}
-          />
-          <AdminStatCard
-            title={"Refunded"}
-            value={refundedCancelled.length}
-            value2={"Returned"}
-          />
-          <AdminStatCard
-            title={"Cancelled"}
-            value={cancelledOrder.length}
-            value2={"Void"}
-          />
-        </div>
+        {isSuccessPending ||
+        isFailedCancelledPending ||
+        isRefundedCancelledPending ||
+        iscancelledOrderPending ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 font-main">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <AdminStatCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 font-main">
+            <AdminStatCard
+              title={"Successful"}
+              value={successOrderData.length}
+              value2={"Paid"}
+            />
+            <AdminStatCard
+              title={"Failed"}
+              value={failedCancelledData.length}
+              value2={"Unpaid"}
+            />
+            <AdminStatCard
+              title={"Refunded"}
+              value={refundedCancelled.length}
+              value2={"Returned"}
+            />
+            <AdminStatCard
+              title={"Cancelled"}
+              value={cancelledOrder.length}
+              value2={"Void"}
+            />
+          </div>
+        )}
 
         {/* Dynamic Content Section */}
         <div className="mt-4 transition-all duration-300">
-          {selectedComponent === "successful" && (
-            <AdminSuccesfullTransactions
-              successOrderData={successOrderData}
-              isSuccessPending={isSuccessPending}
-              isSuccessError={isSuccessError}
-            />
-          )}
-          {selectedComponent === "failed" && (
-            <AdminFailedTransactions
-              failedCancelledData={failedCancelledData}
-              isFailedCancelledPending={isFailedCancelledPending}
-              isFailedCancelledError={isFailedCancelledError}
-            />
-          )}
-          {selectedComponent === "refunded" && (
-            <AdminRefundedCancelledTransactions
-              refundedCancelled={refundedCancelled}
-              isRefundedCancelledPending={isRefundedCancelledPending}
-              isRefundedCancelledError={isRefundedCancelledError}
-            />
-          )}
-          {selectedComponent === "cancelled" && (
-            <AdminCancelledTransact
-              cancelledOrder={cancelledOrder}
-              iscancelledOrderPending={iscancelledOrderPending}
-              iscancelledOrderError={iscancelledOrderError}
-            />
+          {isSuccessPending ||
+          isFailedCancelledPending ||
+          isRefundedCancelledPending ||
+          iscancelledOrderPending ? (
+            <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible p-4">
+              <AdminTableSkeleton />
+            </div>
+          ) : (
+            <>
+              {selectedComponent === "successful" && (
+                <AdminSuccesfullTransactions
+                  successOrderData={successOrderData}
+                  isSuccessPending={isSuccessPending}
+                  isSuccessError={isSuccessError}
+                />
+              )}
+              {selectedComponent === "failed" && (
+                <AdminFailedTransactions
+                  failedCancelledData={failedCancelledData}
+                  isFailedCancelledPending={isFailedCancelledPending}
+                  isFailedCancelledError={isFailedCancelledError}
+                />
+              )}
+              {selectedComponent === "refunded" && (
+                <AdminRefundedCancelledTransactions
+                  refundedCancelled={refundedCancelled}
+                  isRefundedCancelledPending={isRefundedCancelledPending}
+                  isRefundedCancelledError={isRefundedCancelledError}
+                />
+              )}
+              {selectedComponent === "cancelled" && (
+                <AdminCancelledTransact
+                  cancelledOrder={cancelledOrder}
+                  iscancelledOrderPending={iscancelledOrderPending}
+                  iscancelledOrderError={iscancelledOrderError}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

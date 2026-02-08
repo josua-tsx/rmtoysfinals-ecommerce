@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { IoSearch } from "react-icons/io5";
 
 const ACTION_TYPES = [
@@ -30,7 +30,7 @@ export default function AdminCustomerLogs() {
   const filteredArrayCustomerLogs = arrayCustomerLogs.filter(
     (logs) =>
       logs.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      logs.targetId.includes(searchTerm)
+      logs.targetId.includes(searchTerm),
   );
 
   if (isError) return <p>Error.</p>;
@@ -67,8 +67,8 @@ export default function AdminCustomerLogs() {
 
       <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
         {isPending ? (
-          <div className="flex justify-center items-center h-[400px]">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full border-collapse">

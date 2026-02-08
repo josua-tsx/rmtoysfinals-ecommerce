@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import formatPrice from "../../reusable/formatPrice";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminProductsTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
@@ -204,8 +204,8 @@ export default function AdminProductsTable({ enableMultiDel }) {
 
       <div className="overflow-y-auto h-[600px] py-3">
         {isPending ? (
-          <div className="flex h-full justify-center items-center">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">

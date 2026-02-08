@@ -6,7 +6,10 @@ import AdminProductOverviewCard from "./AdminProductOverviewCard";
 import { useNavigate } from "react-router-dom";
 import StarsRating from "../StarsRating";
 import { TbPinnedFilled } from "react-icons/tb";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import AdminStatCardSkeleton from "../skeleton/AdminStatCardSkeleton";
+import AdminPieChartSkeleton from "../skeleton/AdminPieChartSkeleton";
+import AdminProductOverviewCardSkeleton from "../skeleton/AdminProductOverviewCardSkeleton";
+import AdminLatestReviewSkeleton from "../skeleton/AdminLatestReviewSkeleton";
 
 export default function AdminProductOverview() {
   const navigate = useNavigate();
@@ -63,7 +66,7 @@ export default function AdminProductOverview() {
 
   const sumOfRating = topSingleBestRatingProduct?.reviews?.reduce(
     (sum, review) => sum + review.rating,
-    0
+    0,
   );
   const averageRating =
     sumOfRating / topSingleBestRatingProduct?.reviews?.length;
@@ -139,9 +142,7 @@ export default function AdminProductOverview() {
     <div className="flex flex-col text-sm md:text-normal bg-yellow gap-16">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
         {isProductPending ? (
-          <div className="flex justify-center h-[150px] items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL PRODUCTS"}
@@ -154,9 +155,7 @@ export default function AdminProductOverview() {
         )}
 
         {isCategoriesPending ? (
-          <div className="flex justify-center h-[150px] items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL CATEGORIES"}
@@ -165,9 +164,7 @@ export default function AdminProductOverview() {
         )}
 
         {isSupplierPending ? (
-          <div className="flex justify-center h-[150px] items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL SUPPLIERS"}
@@ -176,9 +173,7 @@ export default function AdminProductOverview() {
         )}
 
         {isReviewsPending ? (
-          <div className="flex justify-center h-[150px] items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL PRODUCTS REVIEWS"}
@@ -196,9 +191,7 @@ export default function AdminProductOverview() {
           </div>
           <ResponsiveContainer width="100%" height="100%">
             {isCategoriesPending ? (
-              <div className="flex h-full justify-center items-center">
-                <LoadingSpinner />
-              </div>
+              <AdminPieChartSkeleton />
             ) : pieData.every((item) => item.value === 0) ? (
               <div className="flex h-full justify-center items-center p-4">
                 <p className="text-center">
@@ -229,9 +222,7 @@ export default function AdminProductOverview() {
         </div>
         <div className="w-full md:w-[50%] grid grid-cols-1 md:grid-cols-2 gap-5 relative">
           {isRatingPending ? (
-            <div className="flex justify-center flex-col items-center">
-              <LoadingSpinner />
-            </div>
+            <AdminProductOverviewCardSkeleton />
           ) : topSingleBestRatingProduct ? (
             <AdminProductOverviewCard
               singleBestSoldProduct={topSingleBestRatingProduct}
@@ -255,9 +246,7 @@ export default function AdminProductOverview() {
           )}
 
           {isSingleReviewPending ? (
-            <div className="flex justify-center flex-col items-center">
-              <LoadingSpinner />
-            </div>
+            <AdminProductOverviewCardSkeleton />
           ) : topSingleMostReviewsProduct ? (
             <AdminProductOverviewCard
               singleBestSoldProduct={topSingleMostReviewsProduct}
@@ -285,9 +274,7 @@ export default function AdminProductOverview() {
           )}
 
           {isLatestReviewPending ? (
-            <div className="flex justify-center items-center">
-              <LoadingSpinner />
-            </div>
+            <AdminLatestReviewSkeleton />
           ) : latestReview && Object.keys(latestReview).length > 0 ? (
             <div className="border border-black flex justify-center items-center rounded-lg relative bg-white hover:translate-x-[2px] hover:translate-y-[2px] transition-all mt-6">
               {/* Floating Sticker Header */}

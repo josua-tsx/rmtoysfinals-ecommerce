@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../lib/axios";
 import formatPrice from "../../reusable/formatPrice";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+
+import AdminRecentOrderSkeleton from "../skeleton/AdminRecentOrderSkeleton";
 
 export default function AdminRecentCancelledOrder() {
   const navigate = useNavigate();
@@ -27,9 +28,7 @@ export default function AdminRecentCancelledOrder() {
   return (
     <div className="flex-1">
       {isPending ? (
-        <div className="flex items-center justify-center h-full">
-          <LoadingSpinner />
-        </div>
+        <AdminRecentOrderSkeleton />
       ) : latestcancelledOrder ? (
         <div className="bg-card h-full border flex items-center justify-between relative border-black rounded-[5px] p-2">
           <div className="absolute -top-11 -left-1 border rounded-[5px]  bg-primary text-card border-black p-1">
@@ -46,7 +45,8 @@ export default function AdminRecentCancelledOrder() {
             ) : (
               <img
                 src={
-                  latestcancelledOrder?.orderItems[0]?.productId?.productImages[0]
+                  latestcancelledOrder?.orderItems[0]?.productId
+                    ?.productImages[0]
                 }
                 alt="product image"
                 className="w-[50px] hidden md:block"
@@ -63,7 +63,10 @@ export default function AdminRecentCancelledOrder() {
               ) : (
                 <div className="flex flex-col gap-1">
                   <p className="uppercase truncate w-[50px]">
-                    {latestcancelledOrder?.orderItems[0]?.productId?.productName}
+                    {
+                      latestcancelledOrder?.orderItems[0]?.productId
+                        ?.productName
+                    }
                   </p>
                   <p className="uppercase text-indigo-700">
                     {latestcancelledOrder.paymentMethod}

@@ -3,7 +3,7 @@ import formatPrice from "../../reusable/formatPrice";
 import { IoSearch } from "react-icons/io5";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminOrderStockHistoryTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +41,7 @@ export default function AdminOrderStockHistoryTable() {
       stock?.receivedQuantity
         .toString()
         .toLowerCase()
-        .includes(searchTerm.toString().toLowerCase())
+        .includes(searchTerm.toString().toLowerCase()),
   );
 
   if (isStockHistoryError) return <p>Error.</p>;
@@ -70,8 +70,8 @@ export default function AdminOrderStockHistoryTable() {
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
         {isStockHistoryPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-700">

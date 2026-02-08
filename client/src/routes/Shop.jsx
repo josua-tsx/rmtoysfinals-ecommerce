@@ -7,7 +7,7 @@ import axiosInstance from "../lib/axios.js";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import CreditPointsAuto from "../components/CreditPointsAuto.jsx";
 import { throttle } from "lodash";
-import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
+import ShopProductCardSkeleton from "../components/skeleton/ShopProductCardSkeleton.jsx";
 
 export default function Shop() {
   const queryClient = useQueryClient();
@@ -51,7 +51,7 @@ export default function Shop() {
   // Flatten pages to products array
   const products = useMemo(
     () => data?.pages.flatMap((page) => page.products) || [],
-    [data]
+    [data],
   );
 
   // Filter products based on search term OR use AI search results
@@ -66,10 +66,10 @@ export default function Shop() {
       (product) =>
         product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.productDetails?.some((detail) =>
-          detail.value.toLowerCase().includes(searchTerm.toLowerCase())
+          detail.value.toLowerCase().includes(searchTerm.toLowerCase()),
         ) ||
         (product.discount &&
-          product.discount.toString().includes(searchTerm.toLowerCase()))
+          product.discount.toString().includes(searchTerm.toLowerCase())),
     );
   }, [products, searchTerm, aiSearchResults]);
 
@@ -124,77 +124,79 @@ export default function Shop() {
           <p className="text-sm">SHOP{">"}</p>
         </div>
 
-        {isLoading ? (
-          <div className="w-full flex justify-center items-center  h-[400px] ">
-            <LoadingSpinner />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4 md:flex-row">
-            {/* SIDEBAR FORM*/}
-            <ShopSide
-              setSearchTerm={setSearchTerm}
-              setSelectedCategory={setSelectedCategory}
-              setSortBy={setSortBy}
-              setSortOrder={setSortOrder}
-              setAiSearchResults={setAiSearchResults}
-            />
+        <div className="flex flex-col gap-4 md:flex-row">
+          {/* SIDEBAR FORM*/}
+          <ShopSide
+            setSearchTerm={setSearchTerm}
+            setSelectedCategory={setSelectedCategory}
+            setSortBy={setSortBy}
+            setSortOrder={setSortOrder}
+            setAiSearchResults={setAiSearchResults}
+          />
 
-            {/* Products/Cards */}
-            <div className="w-full h-full">
-              {/* AI Search Results Banner */}
-              {aiSearchResults && aiSearchResults.length > 0 && (
-                <div className="mb-6 p-4 bg-gradient-to-r from-violet-100 to-indigo-100 border border-violet-200 rounded-[10px] flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white p-2 rounded-full shadow-sm text-violet-600">
-                      <SiGooglegemini size={24} />
-                    </div>
-                    <div>
-                      <h3 className="font-black text-violet-900 uppercase tracking-wide text-sm">
-                        AI Recommendations
-                      </h3>
-                      <p className="text-xs text-violet-700 font-medium">
-                        Showing {aiSearchResults.length} items curated just for
-                        you.
-                      </p>
-                    </div>
+          {/* Products/Cards */}
+          <div className="w-full h-full">
+            {/* AI Search Results Banner */}
+            {aiSearchResults && aiSearchResults.length > 0 && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-violet-100 to-indigo-100 border border-violet-200 rounded-[10px] flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white p-2 rounded-full shadow-sm text-violet-600">
+                    <SiGooglegemini size={24} />
                   </div>
-                  <button
-                    onClick={() => setAiSearchResults(null)}
-                    className="flex items-center gap-1 bg-white text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full text-xs font-bold border border-violet-200 transition-all shadow-sm"
-                  >
-                    <IoClose size={16} />
-                    Clear Results
-                  </button>
+                  <div>
+                    <h3 className="font-black text-violet-900 uppercase tracking-wide text-sm">
+                      AI Recommendations
+                    </h3>
+                    <p className="text-xs text-violet-700 font-medium">
+                      Showing {aiSearchResults.length} items curated just for
+                      you.
+                    </p>
+                  </div>
                 </div>
-              )}
-              {filteredArrayProducts.length === 0 && !isLoading ? (
-                <p className="text-center py-10">
-                  No products found matching your criteria.
-                </p>
-              ) : (
-                <>
-                  <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredArrayProducts.map((product) => (
-                      <ShopProductCards key={product._id} product={product} />
+                <button
+                  onClick={() => setAiSearchResults(null)}
+                  className="flex items-center gap-1 bg-white text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full text-xs font-bold border border-violet-200 transition-all shadow-sm"
+                >
+                  <IoClose size={16} />
+                  Clear Results
+                </button>
+              </div>
+            )}
+            {isLoading ? (
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <ShopProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : filteredArrayProducts.length === 0 ? (
+              <p className="text-center py-10">
+                No products found matching your criteria.
+              </p>
+            ) : (
+              <>
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredArrayProducts.map((product) => (
+                    <ShopProductCards key={product._id} product={product} />
+                  ))}
+                </div>
+
+                {isFetchingNextPage && (
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <ShopProductCardSkeleton key={i} />
                     ))}
                   </div>
+                )}
 
-                  {isFetchingNextPage && (
-                    <div className="flex justify-center py-5">
-                      <LoadingSpinner />
-                    </div>
-                  )}
-
-                  {!hasNextPage && filteredArrayProducts.length > 0 && (
-                    <p className="text-center pt-5 text-gray-500">
-                      You&apos;ve reached the end of products.
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
+                {!hasNextPage && filteredArrayProducts.length > 0 && (
+                  <p className="text-center pt-5 text-gray-500">
+                    You&apos;ve reached the end of products.
+                  </p>
+                )}
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </section>
   );

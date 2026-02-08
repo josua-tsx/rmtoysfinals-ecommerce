@@ -1,8 +1,8 @@
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
@@ -44,7 +44,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     mutationFn: async (data) => {
       const res = await axiosInstance.put(
         `/faqs/update-faq/${selectedFaq._id}`,
-        data
+        data,
       );
       return res.data;
     },
@@ -69,7 +69,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
     setSelectedIds((prev) =>
       prev.includes(faqId)
         ? prev.filter((id) => id !== faqId)
-        : [...prev, faqId]
+        : [...prev, faqId],
     );
   };
 
@@ -116,7 +116,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
 
     if (
       window.confirm(
-        `Are you sure wou want to dlete ${selectedIds.length} faqs?`
+        `Are you sure wou want to dlete ${selectedIds.length} faqs?`,
       )
     ) {
       deleteAllFaqs(selectedIds);
@@ -247,8 +247,8 @@ export default function AdminFaqsTable({ enableMultiDel }) {
       </div>
       <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
         {isLoading ? (
-          <div className="flex justify-center items-center h-[400px]">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full border-collapse">

@@ -18,7 +18,8 @@ import AdminRecentSuccessOrder from "./AdminRecentSuccessOrder.jsx";
 import AdminRecentFailedOrder from "./AdminRecentFailedOrder.jsx";
 import AdminRecentRefundedOrder from "./AdminRecentRefundedOrder.jsx";
 import AdminRecentCancelledOrder from "./AdminRecentCancelledOrder.jsx";
-import LoadingSpinner from "../../reusable/LoadingSpinner.jsx";
+import AdminStatCardSkeleton from "../skeleton/AdminStatCardSkeleton.jsx";
+import AdminChartSkeleton from "../skeleton/AdminChartSkeleton.jsx";
 
 export default function AdminSalesOverview() {
   const [chartView, setChartView] = useState("monthly");
@@ -179,9 +180,7 @@ export default function AdminSalesOverview() {
         />
 
         {isStocksPending ? (
-          <div className="flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL EXPENSES"}
@@ -190,9 +189,7 @@ export default function AdminSalesOverview() {
         )}
 
         {isPendingPending ? (
-          <div className="flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL VAT TO REMIT"}
@@ -201,22 +198,18 @@ export default function AdminSalesOverview() {
         )}
 
         {isPendingPending ? (
-          <div className="flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL PROFIT"}
             value={`${formatPrice(
-              Math.max(0, totalRevenue - totalExpenses)
+              Math.max(0, totalRevenue - totalExpenses),
             )} PHP`}
           />
         )}
 
         {isCustomerPending ? (
-          <div className="flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL CUSTOMERS"}
@@ -228,9 +221,7 @@ export default function AdminSalesOverview() {
         )}
 
         {isPendingPending ? (
-          <div className="flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
+          <AdminStatCardSkeleton />
         ) : (
           <AdminStatCard
             title={"TOTAL PENDING ORDERS"}
@@ -277,9 +268,7 @@ export default function AdminSalesOverview() {
             </div>
 
             {isAnalyticsPending ? (
-              <div className="h-full flex justify-center items-center">
-                <LoadingSpinner />
-              </div>
+              <AdminChartSkeleton />
             ) : chartData.length === 0 ? (
               <p className="p-4">No data available for the chart</p>
             ) : (

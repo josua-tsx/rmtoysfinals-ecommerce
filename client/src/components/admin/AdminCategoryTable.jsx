@@ -6,8 +6,8 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import FormModal from "../../reusable/FormModal";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminCategoryTable({ enableMultiDel }) {
@@ -49,7 +49,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
       mutationFn: async (data) => {
         const res = await axiosInstance.put(
           `/category/edit-category/${selectedCategory._id}`,
-          data
+          data,
         );
         return res.data;
       },
@@ -67,7 +67,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   const { mutate: deleteCategoryMutation } = useMutation({
     mutationFn: async (categoryId) => {
       const res = await axiosInstance.delete(
-        `/category/delete-category/${categoryId}`
+        `/category/delete-category/${categoryId}`,
       );
       return res.data;
     },
@@ -108,7 +108,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     setSelectedIds((prev) =>
       prev.includes(categoryId)
         ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
+        : [...prev, categoryId],
     );
   };
 
@@ -144,7 +144,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
 
     if (
       window.confirm(
-        `Are you sure you want to delete ${selectedIds.length} categories?`
+        `Are you sure you want to delete ${selectedIds.length} categories?`,
       )
     ) {
       deleteAllCategories(selectedIds);
@@ -172,7 +172,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   const filterdArrayCategories = arrayCategories.filter(
     (category) =>
       category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category._id.includes(searchTerm)
+      category._id.includes(searchTerm),
   );
 
   if (isCategoryError) {
@@ -268,8 +268,8 @@ export default function AdminCategoryTable({ enableMultiDel }) {
 
       <div className="overflow-y-auto h-[600px] py-3">
         {isCategoryPending ? (
-          <div className="flex justify-center h-full items-center">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">

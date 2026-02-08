@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { CiEdit } from "react-icons/ci";
 import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminRiderTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
@@ -49,7 +49,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
       mutationFn: async (data) => {
         const res = await axiosInstance.put(
           `/rider/edit-rider/${selectedRider._id}`,
-          data
+          data,
         );
         return res.data;
       },
@@ -62,13 +62,13 @@ export default function AdminRiderTable({ enableMultiDel }) {
       onError: (err) => {
         toast.error(err.response.data.message);
       },
-    }
+    },
   );
 
   const filteredArrayRiders = arrayRiders.filter(
     (rider) =>
       rider?.riderName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rider?.riderStatus?.toLowerCase().includes(searchTerm.toLowerCase())
+      rider?.riderStatus?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const { mutate: deleteRiderMutation } = useMutation({
@@ -112,7 +112,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
     setSelectedIds((prev) =>
       prev.includes(riderId)
         ? prev.filter((id) => id !== riderId)
-        : [...prev, riderId]
+        : [...prev, riderId],
     );
   };
 
@@ -123,7 +123,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
 
     if (
       window.confirm(
-        `Are you sure you want to delete ${selectedIds.length} riders?`
+        `Are you sure you want to delete ${selectedIds.length} riders?`,
       )
     ) {
       DeleteMultiRiders(selectedIds);
@@ -255,8 +255,8 @@ export default function AdminRiderTable({ enableMultiDel }) {
       </div>
       <div className="overflow-y-auto h-[600px] py-3">
         {isPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">

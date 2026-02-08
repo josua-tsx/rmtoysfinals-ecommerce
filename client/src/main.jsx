@@ -115,8 +115,6 @@ const CustomerTicketsPage = lazy(
 
 import GlobalErrorBoundary from "./reusable/GlobalErrorBoundary.jsx";
 
-import LoadingSpinner from "./reusable/LoadingSpinner.jsx";
-
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
@@ -445,7 +443,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <Suspense fallback={<LoadingSpinner fullScreen={true} />}>
+        <Suspense fallback={null}>
           <RouterProvider router={router} />
         </Suspense>
         <ReactQueryDevtools initialIsOpen={false} />

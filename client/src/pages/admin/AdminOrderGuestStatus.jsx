@@ -5,9 +5,10 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import ToShipModal from "../../modals/ToShipModal";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminOrderGuestStatus() {
   const queryClient = useQueryClient();
@@ -46,7 +47,7 @@ export default function AdminOrderGuestStatus() {
       (order?.paymentMethod &&
         order.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (order?.paymentStatus &&
-        order.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase()))
+        order.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   const { data: singleUserOrder } = useQuery({
@@ -192,8 +193,8 @@ export default function AdminOrderGuestStatus() {
       </div>
       <div className="overflow-y-auto  h-[600px] ">
         {isOrdersPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full border-collapse">

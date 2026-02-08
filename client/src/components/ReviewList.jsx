@@ -1,5 +1,5 @@
 import ReviewCardTwo from "./ReviewCardTwo";
-import LoadingSpinner from "../reusable/LoadingSpinner";
+import ReviewCardTwoSkeleton from "./skeleton/ReviewCardTwoSkeleton";
 
 export default function ReviewList({
   reviews = [],
@@ -17,8 +17,10 @@ export default function ReviewList({
     );
 
   return isPending ? (
-    <div className="flex justify-center items-center flex-col h-[500px]">
-      <LoadingSpinner />
+    <div className="flex flex-col h-[700px] overflow-hidden gap-4 pr-2">
+      {[...Array(3)].map((_, i) => (
+        <ReviewCardTwoSkeleton key={i} />
+      ))}
     </div>
   ) : (
     <div className="flex flex-col h-[700px] overflow-y-auto gap-4 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent pr-2">

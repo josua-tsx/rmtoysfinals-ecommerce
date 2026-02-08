@@ -4,11 +4,11 @@ import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
 import ValidatedInput from "../../reusable/ValidatedInput";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminVatTable() {
   const queryClient = useQueryClient();
@@ -62,7 +62,7 @@ export default function AdminVatTable() {
     mutationFn: async (data) => {
       const res = await axiosInstance.put(
         `/vat/edit-vat/${selectedVat._id}`,
-        data
+        data,
       );
       return res.data;
     },
@@ -278,8 +278,8 @@ export default function AdminVatTable() {
       </div>
       <div className="overflow-y-auto h-full">
         {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">

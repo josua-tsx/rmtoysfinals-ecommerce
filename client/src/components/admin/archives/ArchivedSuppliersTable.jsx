@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MdRestore } from "react-icons/md";
 import axiosInstance from "../../../lib/axios";
-import LoadingSpinner from "../../../reusable/LoadingSpinner";
+import AdminTableSkeleton from "../../skeleton/AdminTableSkeleton";
 import toast from "react-hot-toast";
 
 export default function ArchivedSuppliersTable() {
@@ -36,8 +36,8 @@ export default function ArchivedSuppliersTable() {
 
   if (isPending) {
     return (
-      <div className="flex justify-center p-12">
-        <LoadingSpinner />
+      <div className="p-4">
+        <AdminTableSkeleton />
       </div>
     );
   }

@@ -10,8 +10,8 @@ import AdminTopSellingProducts from "../../components/admin/AdminTopSellingProdu
 import AdminReports from "../../components/admin/AdminReports";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import axiosInstance from "../../lib/axios";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import AdminAISummaryModal from "../../components/admin/AdminAISummaryModal";
+import AdminStockCardSkeleton from "../../components/skeleton/AdminStockCardSkeleton";
 import { SiGooglegemini } from "react-icons/si";
 
 export default function AdminOverview() {
@@ -46,7 +46,7 @@ export default function AdminOverview() {
       setShowSummaryModal(true);
     } catch (error) {
       setSummaryError(
-        error.response?.data?.message || "Failed to generate summary"
+        error.response?.data?.message || "Failed to generate summary",
       );
     } finally {
       setSummaryLoading(false);
@@ -106,8 +106,10 @@ export default function AdminOverview() {
           </div>
           <div className="bg-card border border-black rounded-[5px] p-8 pt-10">
             {isPending ? (
-              <div className="h-[150px] flex justify-center flex-col items-center">
-                <LoadingSpinner />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 relative">
+                {[...Array(4)].map((_, i) => (
+                  <AdminStockCardSkeleton key={i} />
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 relative">

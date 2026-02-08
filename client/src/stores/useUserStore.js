@@ -6,15 +6,17 @@ import axiosInstance from '../lib/axios';
 const customStorage = {
     getItem: (name) => {
         const item = localStorage.getItem(name) || sessionStorage.getItem(name);
-        return item;
+        return item; // Return string (Zustand persist handles JSON parsing)
     },
     setItem: (name, value) => {
+        // Ensure value is a string (JSON stringify if it's an object)
+        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
         const rememberMe = localStorage.getItem("rememberMe") === "true";
         if (rememberMe) {
-            localStorage.setItem(name, value);
+            localStorage.setItem(name, stringValue);
             sessionStorage.removeItem(name);
         } else {
-            sessionStorage.setItem(name, value);
+            sessionStorage.setItem(name, stringValue);
             localStorage.removeItem(name);
         }
     },
@@ -24,10 +26,29 @@ const customStorage = {
     }
 };
 
+// Get initial user synchronously from storage to avoid redirect on fresh page load
+const getInitialUser = () => {
+    try {
+        const stored = localStorage.getItem("user-store") || sessionStorage.getItem("user-store");
+        console.log("🔍 Raw stored value:", stored);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            console.log("🔍 Parsed value:", parsed);
+            // Zustand persist stores state under "state" key
+            const user = parsed?.state?.currentUser || parsed?.currentUser || null;
+            console.log("🔍 Found user:", user);
+            return user;
+        }
+    } catch (e) {
+        console.log("🔍 Error reading storage:", e);
+        return null;
+    }
+    return null;
+};
+
 export const useUserStore = create(persist(
     (set) => ({
-        currentUser: null,
-        isCheckingAuth: true, // Start as true to wait for initial check
+        currentUser: getInitialUser(), // Initialize synchronously from storage
         setCurrentUser: (user) => set({ currentUser: user }),
         clearUser: () => {
             set({ currentUser: null });
@@ -36,13 +57,12 @@ export const useUserStore = create(persist(
             localStorage.removeItem("rememberMe");
         },
         checkAuth: async () => {
-            set({ isCheckingAuth: true });
             try {
                 const response = await axiosInstance.get('/auth/getMe');
-                set({ currentUser: response.data, isCheckingAuth: false });
+                set({ currentUser: response.data });
             } catch (error) {
                 console.error('Authentication check failed:', error);
-                set({ currentUser: null, isCheckingAuth: false });
+                set({ currentUser: null });
             }
         },
     }),

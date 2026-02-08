@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import axiosInstance from "../../lib/axios";
 import { IoSearch } from "react-icons/io5";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminTickets() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,7 +35,7 @@ export default function AdminTickets() {
       ticket?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket?.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket?._id?.includes(searchTerm)
+      ticket?._id?.includes(searchTerm),
   );
 
   const handleViewTicket = (ticketId) => {
@@ -122,8 +122,8 @@ export default function AdminTickets() {
 
           <div className="overflow-y-auto h-[600px]">
             {isPending ? (
-              <div className="flex justify-center items-center h-full">
-                <LoadingSpinner />
+              <div className="p-4">
+                <AdminTableSkeleton />
               </div>
             ) : (
               <table className="w-full">
@@ -188,10 +188,10 @@ export default function AdminTickets() {
                               ticket.status === "Pending"
                                 ? "bg-yellow-400"
                                 : ticket.status === "In Progress"
-                                ? "bg-blue-400"
-                                : ticket.status === "Resolved"
-                                ? "bg-green-400"
-                                : "bg-gray-400"
+                                  ? "bg-blue-400"
+                                  : ticket.status === "Resolved"
+                                    ? "bg-green-400"
+                                    : "bg-gray-400"
                             }`}
                           >
                             {ticket.status}
@@ -203,8 +203,8 @@ export default function AdminTickets() {
                               ticket.priority === "High"
                                 ? "text-red-600 font-bold"
                                 : ticket.priority === "Medium"
-                                ? "text-yellow-600 font-bold"
-                                : "text-green-600 font-bold"
+                                  ? "text-yellow-600 font-bold"
+                                  : "text-green-600 font-bold"
                             }`}
                           >
                             {ticket.priority}

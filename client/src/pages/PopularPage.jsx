@@ -4,7 +4,7 @@ import { TbPinnedFilled } from "react-icons/tb";
 import axiosInstance from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 import CreditPointsAuto from "../components/CreditPointsAuto";
-import LoadingSpinner from "../reusable/LoadingSpinner";
+import ShopProductCardSkeleton from "../components/skeleton/ShopProductCardSkeleton";
 
 export default function PopularPage() {
   const navigate = useNavigate();
@@ -63,8 +63,10 @@ export default function PopularPage() {
               </button>
             </div>
             {isBestPending ? (
-              <div className="flex justify-center h-[200px] flex-col items-center">
-                <LoadingSpinner />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <ShopProductCardSkeleton key={i} />
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -96,8 +98,10 @@ export default function PopularPage() {
             </div>
 
             {isRatingPending ? (
-              <div className="flex justify-center h-[200px] flex-col items-center">
-                <LoadingSpinner />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {[...Array(4)].map((_, i) => (
+                  <ShopProductCardSkeleton key={i} />
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

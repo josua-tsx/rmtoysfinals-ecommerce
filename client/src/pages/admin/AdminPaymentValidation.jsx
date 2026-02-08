@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import toast from "react-hot-toast";
 import formatPrice from "../../reusable/formatPrice";
 import { FaCreditCard, FaWallet, FaTimes } from "react-icons/fa";
 import { useState } from "react";
+import AdminPaymentValidationSkeleton from "../../components/skeleton/AdminPaymentValidationSkeleton";
 
 export default function AdminPaymentValidation() {
   const queryClient = useQueryClient();
@@ -75,7 +75,7 @@ export default function AdminPaymentValidation() {
     });
   };
 
-  if (isPending) return <LoadingSpinner />;
+  if (isPending) return <AdminPaymentValidationSkeleton />;
   if (isError)
     return (
       <p className="text-red-500 font-bold">
@@ -219,7 +219,7 @@ export default function AdminPaymentValidation() {
                       onClick={() =>
                         window.open(
                           order.gcashQRmethod.proofOfPaymentImage,
-                          "_blank"
+                          "_blank",
                         )
                       }
                     />
@@ -280,7 +280,7 @@ export default function AdminPaymentValidation() {
                   <span className="font-bold">Items:</span>{" "}
                   {order.orderItems
                     ?.map(
-                      (i) => i.productId?.productName || i.name || "Product"
+                      (i) => i.productId?.productName || i.name || "Product",
                     )
                     .join(", ")}
                 </div>

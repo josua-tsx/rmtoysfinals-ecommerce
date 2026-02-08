@@ -7,6 +7,7 @@ import FilterSection from "./FilterSection";
 import axiosInstance from "../lib/axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import ShopSideSkeleton from "./skeleton/ShopSideSkeleton";
 
 export default function ShopSide({
   setSearchTerm,
@@ -53,11 +54,11 @@ export default function ShopSide({
         .flatMap((product) => {
           // Find the color detail from productDetails
           const colorDetail = product.productDetails?.find(
-            (detail) => detail.label === "color"
+            (detail) => detail.label === "color",
           );
           return colorDetail ? colorDetail.value : null; // Return color value if found, otherwise null
         })
-        .filter((color) => color !== null) // Remove null values if no color found
+        .filter((color) => color !== null), // Remove null values if no color found
     ),
   ];
 
@@ -81,7 +82,7 @@ export default function ShopSide({
       if (data.success && data.products.length > 0) {
         setAiSearchResults?.(data.products);
         toast.success(
-          `Found ${data.products.length} products matching your query!`
+          `Found ${data.products.length} products matching your query!`,
         );
       } else {
         setAiSearchResults?.([]);
@@ -90,7 +91,7 @@ export default function ShopSide({
     },
     onError: (err) => {
       toast.error(
-        err.response?.data?.message || "AI search failed. Try again."
+        err.response?.data?.message || "AI search failed. Try again.",
       );
     },
   });
@@ -133,11 +134,11 @@ export default function ShopSide({
   };
 
   if (isPending || isCategoryPending) {
-    return <p>loading...</p>;
+    return <ShopSideSkeleton />;
   }
 
   if (isError || isCategoryError) {
-    return <p>loading...</p>;
+    return <p>Error loading filters...</p>;
   }
 
   const handleSortChange = (event) => {

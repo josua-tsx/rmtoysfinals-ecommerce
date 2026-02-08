@@ -4,7 +4,8 @@ import AdminStocksTable from "../../components/admin/AdminStocksTable";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import formatPrice from "../../reusable/formatPrice";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import AdminStatCardSkeleton from "../../components/skeleton/AdminStatCardSkeleton";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminStocks() {
   const {
@@ -39,8 +40,6 @@ export default function AdminStocks() {
       }, 0)
     : 0;
 
-  if (isStocksError) return <p>Error</p>;
-
   return (
     <section className="bg-yellow h-screen">
       <AdminHeader title={"Stocks"} />
@@ -48,31 +47,44 @@ export default function AdminStocks() {
         {/* main */}
 
         {isStocksPending ? (
-          <div className="flex justify-center items-center w-full ">
-            <LoadingSpinner />
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <AdminStatCardSkeleton key={index} />
+              ))}
+            </div>
+            <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible p-4">
+              <AdminTableSkeleton />
+            </div>
+          </>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
-            <AdminStatCard
-              title={"TOTAL EXPECTED REVENUE WITHOUT VAT"}
-              value={`${formatPrice(totalExpectedRevenue)} PHP`}
-            />
-            <AdminStatCard
-              title={"TOTAL EXPECTED EXPENSES"}
-              value={`${formatPrice(totalExpectedExpenses)} PHP`}
-            />
-            <AdminStatCard
-              title={"TOTAL EXPECTED VAT TO REMIT"}
-              value={`${formatPrice(totalExpectedVatToRemit)} PHP`}
-            />
-            <AdminStatCard
-              title={"TOTAL EXPECTED PROFIT WITHOUT VAT"}
-              value={`${formatPrice(totalExpectedProfit)} PHP`}
-            />
-          </div>
-        )}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-2 md:gap-5 relative font-main">
+              <AdminStatCard
+                title={"TOTAL EXPECTED REVENUE WITHOUT VAT"}
+                value={`${formatPrice(totalExpectedRevenue)} PHP`}
+              />
+              <AdminStatCard
+                title={"TOTAL EXPECTED EXPENSES"}
+                value={`${formatPrice(totalExpectedExpenses)} PHP`}
+              />
+              <AdminStatCard
+                title={"TOTAL EXPECTED VAT TO REMIT"}
+                value={`${formatPrice(totalExpectedVatToRemit)} PHP`}
+              />
+              <AdminStatCard
+                title={"TOTAL EXPECTED PROFIT WITHOUT VAT"}
+                value={`${formatPrice(totalExpectedProfit)} PHP`}
+              />
+            </div>
 
-        <AdminStocksTable />
+            <AdminStocksTable
+              stocks={stocks}
+              isStocksPending={isStocksPending}
+              isStocksError={isStocksError}
+            />
+          </>
+        )}
       </div>
     </section>
   );

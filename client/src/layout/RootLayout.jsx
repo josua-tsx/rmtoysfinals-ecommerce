@@ -5,14 +5,13 @@ import AdminNotificationPanel from "../components/admin/AdminNotificationPanel";
 import CustomerNotificationPanel from "../components/CustomerNotificationPanel";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import useOrderStore from "../stores/useOrderStore";
 import FooterSection from "../components/FooterSection";
 import TopProgressBar from "../reusable/TopProgressBar";
 import ChatWidget from "../components/ChatWidget";
-import LoadingSpinner from "../reusable/LoadingSpinner";
 import { useSocketNotifications } from "../hooks/useSocketNotifications";
 import { useCustomerNotifications } from "../hooks/useCustomerNotifications";
 
@@ -121,27 +120,20 @@ const RequiredAuthGcashPage = ({ children }) => {
   const { checkAuth } = useUserStore();
   const currentUser = useUserStore((state) => state.currentUser);
   const currentOrder = useOrderStore((state) => state.currentOrder);
-  const [checking, setChecking] = useState(true);
 
-  useEffect(() => {
-    const authenticate = async () => {
-      await checkAuth();
-      setChecking(false);
-    };
-    authenticate();
-  }, [checkAuth]);
-
-  if (checking) {
-    return <LoadingSpinner fullScreen={true} />;
-  }
-
-  // Allow access if user is logged in OR if it's a guest order
-  // Check both store and localStorage fallback
+  // Check localStorage immediately for guest orders
   const backupOrder = JSON.parse(localStorage.getItem("manual-order-backup"));
-  const canAccess =
+  const canAccessImmediately =
     currentUser || currentOrder?.isGuest || backupOrder?.isGuest;
 
-  return !canAccess ? (
+  useEffect(() => {
+    // Only check auth if not a guest order
+    if (!canAccessImmediately) {
+      checkAuth();
+    }
+  }, [checkAuth, canAccessImmediately]);
+
+  return !canAccessImmediately ? (
     <Navigate to={`/sign-in`} />
   ) : (
     <div className="font-main-text">

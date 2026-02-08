@@ -6,8 +6,8 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import FormModal from "../../reusable/FormModal";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 
 export default function AdminSupplierTable({ enableMultiDel }) {
@@ -375,8 +375,8 @@ export default function AdminSupplierTable({ enableMultiDel }) {
 
       <div className="overflow-y-auto h-[600px] py-3">
         {isSupplierPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">

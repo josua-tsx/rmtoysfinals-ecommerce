@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+
 import { TbTrophyFilled } from "react-icons/tb";
+import AdminTopSellingProductsSkeleton from "../skeleton/AdminTopSellingProductsSkeleton";
 
 export default function AdminTopSellingProducts() {
   const {
@@ -66,9 +67,7 @@ export default function AdminTopSellingProducts() {
 
       <div className="bg-card border border-black rounded-[5px] p-8 pt-10 min-h-[300px]">
         {isPending ? (
-          <div className="flex justify-center items-center h-[200px]">
-            <LoadingSpinner />
-          </div>
+          <AdminTopSellingProductsSkeleton />
         ) : topProducts.length === 0 ? (
           <div className="flex flex-col justify-center items-center h-[200px] text-gray-500">
             <p>No sales data yet.</p>

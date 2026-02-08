@@ -5,10 +5,14 @@ import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import AdminOrderRestockModal from "./AdminOrderRestockModal";
 import ReduceQuantityModal from "../ReduceQuantityModal";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useUserStore } from "../../stores/useUserStore";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
-export default function AdminStocksTable() {
+export default function AdminStocksTable({
+  stocks = [],
+  isStocksPending,
+  isStocksError,
+}) {
   const currentUser = useUserStore((state) => state.currentUser);
 
   // const queryClient = useQueryClient();
@@ -21,25 +25,11 @@ export default function AdminStocksTable() {
   const [deliveryId, setDeliveryId] = useState(null);
   const [singleDataStock, setSingleDataStock] = useState();
 
-  const {
-    data: stocks = [],
-    isLoading: isStocksPending,
-    isError: isStocksError,
-  } = useQuery({
-    queryKey: ["stocks"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stock`);
-      return res.data;
-    },
-  });
-
-  console.log(stocks);
-
   useQuery({
     queryKey: ["singleDeliveredProduct", deliveryId],
     queryFn: async () => {
       const res = await axiosInstance.get(
-        `/stocks/get-single-stock/${deliveryId}`
+        `/stocks/get-single-stock/${deliveryId}`,
       );
       return res.data;
     },
@@ -87,7 +77,7 @@ export default function AdminStocksTable() {
       stock?.quantity
         .toString()
         .toLowerCase()
-        .includes(searchTerm.toString().toLowerCase())
+        .includes(searchTerm.toString().toLowerCase()),
   );
 
   if (isStocksError) {
@@ -138,8 +128,8 @@ export default function AdminStocksTable() {
 
       <div className="overflow-x-auto overflow-y-auto h-[600px] ">
         {isStocksPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">
@@ -261,19 +251,19 @@ export default function AdminStocksTable() {
                             stock?.quantity > 50
                               ? "bg-green-400"
                               : stock?.quantity > 30
-                              ? "bg-orange-400"
-                              : stock?.quantity >= 1
-                              ? "bg-red-400"
-                              : "bg-gray-400"
+                                ? "bg-orange-400"
+                                : stock?.quantity >= 1
+                                  ? "bg-red-400"
+                                  : "bg-gray-400"
                           }`}
                           title={
                             stock?.quantity > 50
                               ? "High Stock"
                               : stock?.quantity > 30
-                              ? "Medium Stock"
-                              : stock?.quantity >= 1
-                              ? "Low Stock"
-                              : "Out of Stock"
+                                ? "Medium Stock"
+                                : stock?.quantity >= 1
+                                  ? "Low Stock"
+                                  : "Out of Stock"
                           }
                         ></div>
                       </div>
@@ -299,7 +289,7 @@ export default function AdminStocksTable() {
                     <td className="p-4 text-center font-mono font-bold text-red-600">
                       {formatPrice(
                         stock?.supplierPrice * stock?.quantity +
-                          stock?.shippingPrice
+                          stock?.shippingPrice,
                       )}
                     </td>
                     <td className="p-4">

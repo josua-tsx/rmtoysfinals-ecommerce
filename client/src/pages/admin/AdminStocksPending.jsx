@@ -10,7 +10,6 @@ import {
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import axiosInstance from "../../lib/axios";
 import { useState, useEffect } from "react";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import { useUserStore } from "../../stores/useUserStore";
 import FormModal from "../../reusable/FormModal";
 import ValidatedInput from "../../reusable/ValidatedInput";
@@ -18,6 +17,7 @@ import toast from "react-hot-toast";
 import formatPrice from "../../reusable/formatPrice";
 import { MdToggleOff, MdToggleOn } from "react-icons/md";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminStocksPending() {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -133,7 +133,7 @@ export default function AdminStocksPending() {
   const { mutate: deleteProduct } = useMutation({
     mutationFn: async (productId) => {
       const res = await axiosInstance.delete(
-        `/product/delete-product/${productId}`
+        `/product/delete-product/${productId}`,
       );
       return res.data;
     },
@@ -230,8 +230,8 @@ export default function AdminStocksPending() {
 
           <div className=" flex flex-col overflow-x-auto gap-4 h-[600px] overflow-y-auto pt-6">
             {isProductsPending ? (
-              <div className="flex justify-center items-center h-full">
-                <LoadingSpinner />
+              <div className="p-4">
+                <AdminTableSkeleton />
               </div>
             ) : (
               <table className="w-full divide-y divide-gray-700 min-w-[800px]">

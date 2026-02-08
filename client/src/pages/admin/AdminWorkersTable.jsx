@@ -6,8 +6,8 @@ import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
 import FormModal from "../../reusable/FormModal";
+import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminWorkersTable() {
   const queryClient = useQueryClient();
@@ -46,7 +46,7 @@ export default function AdminWorkersTable() {
       worker.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       worker.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       worker?.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      worker._id.includes(searchTerm)
+      worker._id.includes(searchTerm),
   );
 
   const { mutate: deleteWorkerMutation } = useMutation({
@@ -67,7 +67,7 @@ export default function AdminWorkersTable() {
     mutationFn: async (data) => {
       const res = await axiosInstance.put(
         `/user/edit-worker/${selectedWorker._id}`,
-        data
+        data,
       );
       return res.data;
     },
@@ -307,8 +307,8 @@ export default function AdminWorkersTable() {
       </div>
       <div className="overflow-y-auto  h-[600px] py-3">
         {isWorkersPending ? (
-          <div className="flex justify-center items-center h-full">
-            <LoadingSpinner />
+          <div className="p-4">
+            <AdminTableSkeleton />
           </div>
         ) : (
           <table className="w-full">

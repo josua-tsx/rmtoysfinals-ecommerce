@@ -1,7 +1,7 @@
 import ImageCard from "./ImageCard";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import ImageCardSkeleton from "../skeleton/ImageCardSkeleton";
 
 export default function ImageSlider() {
   const {
@@ -21,8 +21,12 @@ export default function ImageSlider() {
   return (
     <div className="w-full relative py-10 overflow-hidden group bg-transparent">
       {isPending ? (
-        <div className="flex justify-center flex-col items-center h-[200px]">
-          <LoadingSpinner />
+        <div className="flex w-max gap-5 pl-6 overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <div key={i}>
+              <ImageCardSkeleton />
+            </div>
+          ))}
         </div>
       ) : bestProducts.length > 0 ? (
         <div className="flex w-max gap-5  pl-6 animate-scroll group-hover:[animation-play-state:paused]">
@@ -32,7 +36,7 @@ export default function ImageSlider() {
               <div key={`${i}-${product._id}`}>
                 <ImageCard product={product} />
               </div>
-            ))
+            )),
           )}
         </div>
       ) : (

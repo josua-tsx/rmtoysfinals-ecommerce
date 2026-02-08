@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
 import axiosInstance from "../lib/axios";
-import LoadingSpinner from "../reusable/LoadingSpinner";
 import TicketModal from "../components/ticket/TicketModal";
 import toast from "react-hot-toast";
 import {
@@ -26,6 +25,7 @@ import {
 } from "firebase/storage";
 import app from "../firebase/firebase";
 import { socket } from "../lib/socket";
+import TicketListSkeleton from "../components/skeleton/TicketListSkeleton";
 
 const STATUS_CONFIG = {
   Pending: {
@@ -76,7 +76,7 @@ export default function CustomerTicketsPage() {
     mutationFn: async ({ ticketId, message, images }) => {
       const res = await axiosInstance.post(
         `/ticket/${ticketId}/customer-reply`,
-        { message, images }
+        { message, images },
       );
       return res.data;
     },
@@ -186,7 +186,7 @@ export default function CustomerTicketsPage() {
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
               uploadedUrls.push(downloadURL);
               resolve();
-            }
+            },
           );
         });
       }
@@ -275,9 +275,11 @@ export default function CustomerTicketsPage() {
           {/* Ticket List Scroll Area */}
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
             {isPending ? (
-              <div className="flex justify-center p-8">
-                <LoadingSpinner />
-              </div>
+              <>
+                {[...Array(5)].map((_, i) => (
+                  <TicketListSkeleton key={i} />
+                ))}
+              </>
             ) : tickets.length > 0 ? (
               tickets.map((ticket) => {
                 const StatusIcon = STATUS_CONFIG[ticket.status].icon;
@@ -434,7 +436,7 @@ export default function CustomerTicketsPage() {
                           <span className="text-[10px] text-gray-400 font-medium">
                             {new Date(message.timestamp).toLocaleTimeString(
                               [],
-                              { hour: "2-digit", minute: "2-digit" }
+                              { hour: "2-digit", minute: "2-digit" },
                             )}
                           </span>
                         </div>
