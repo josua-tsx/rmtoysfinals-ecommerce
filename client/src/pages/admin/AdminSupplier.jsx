@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  createSupplierSchema,
-  supplierNameSchema,
-  supplierAddressSchema,
-} from "../../schemas/supplier.schema";
-import { phMobileSchema, fullNameSchema } from "../../schemas/common.schema";
+import { createSupplierSchema } from "../../schemas/supplier.schema";
 import AdminSupplierTable from "../../components/admin/AdminSupplierTable";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import ValidatedInput from "../../reusable/ValidatedInput";
@@ -14,19 +9,34 @@ import FormModal from "../../reusable/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminSupplier() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [enableMultiDel, setEnableMultiDel] = useState(false);
 
-  // Add Form State
-  const [supplierName, setSupplierName] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
-  const [supplierAddress, setSupplierAddress] = useState("");
-  const [enableNotifications, setEnableNotifications] = useState(true);
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createSupplierSchema),
+    defaultValues: {
+      supplierName: "",
+      contactPerson: "",
+      contactNumber: "",
+      supplierAddress: "",
+      enableNotifications: true,
+    },
+  });
+
+  const enableNotifications = watch("enableNotifications");
 
   const { mutate: addSupplierMutation, isPending: isSupplierPending } =
     useMutation({
@@ -37,11 +47,7 @@ export default function AdminSupplier() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["supplier"] });
         toast.success("Added Successfully!");
-        setSupplierName("");
-        setContactPerson("");
-        setContactNumber("");
-        setSupplierAddress("");
-        setEnableNotifications(true);
+        reset();
         setShowAdd(false);
       },
       onError: (err) => {
@@ -49,28 +55,13 @@ export default function AdminSupplier() {
       },
     });
 
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-
-    const data = {
-      supplierName,
-      contactPerson,
-      contactNumber,
-      supplierAddress,
-      enableNotifications,
-    };
-
-    const result = createSupplierSchema.safeParse(data);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    addSupplierMutation(result.data);
+  const onSubmit = (data) => {
+    addSupplierMutation(data);
   };
 
   const toggleAddCategory = () => {
     setShowAdd(!showAdd);
+    if (!showAdd) reset();
   };
 
   return (
@@ -117,9 +108,9 @@ export default function AdminSupplier() {
           isOpen={showAdd}
           title="Add Supplier"
           onClose={() => setShowAdd(false)}
-          onSubmit={handleAddSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           submitLabel="ADD SUPPLIER"
-          isSubmitting={isSupplierPending}
+          isSubmitting={isSupplierPending || isSubmitting}
         >
           <div className="flex gap-4 p-2 flex-col">
             <div className="flex flex-col gap-2">
@@ -130,10 +121,9 @@ export default function AdminSupplier() {
                 Supplier Name
               </label>
               <ValidatedInput
-                name="supplierName"
-                value={supplierName}
-                onChange={handleInputChange(setSupplierName)}
-                schema={supplierNameSchema}
+                id="supplierName"
+                {...register("supplierName")}
+                error={errors.supplierName}
                 placeholder="Ex: Toy Kingdom"
                 required
               />
@@ -150,10 +140,9 @@ export default function AdminSupplier() {
                 Contact Person Full Name
               </label>
               <ValidatedInput
-                name="contactPerson"
-                value={contactPerson}
-                onChange={handleInputChange(setContactPerson)}
-                schema={fullNameSchema}
+                id="contactPerson"
+                {...register("contactPerson")}
+                error={errors.contactPerson}
                 placeholder="Ex: Juan Dela Cruz"
                 required
               />
@@ -171,10 +160,9 @@ export default function AdminSupplier() {
               </label>
               <ValidatedInput
                 type="tel"
-                name="contactNumber"
-                value={contactNumber}
-                onChange={handleInputChange(setContactNumber)}
-                schema={phMobileSchema}
+                id="contactNumber"
+                {...register("contactNumber")}
+                error={errors.contactNumber}
                 placeholder="Ex: 09123456789"
                 required
               />
@@ -192,10 +180,9 @@ export default function AdminSupplier() {
               </label>
               <ValidatedInput
                 type="textarea"
-                name="supplierAddress"
-                value={supplierAddress}
-                onChange={handleInputChange(setSupplierAddress)}
-                schema={supplierAddressSchema}
+                id="supplierAddress"
+                {...register("supplierAddress")}
+                error={errors.supplierAddress}
                 placeholder="Ex: 123 Toy St., Manila City"
                 className="h-[100px] resize-none"
                 required
@@ -210,7 +197,9 @@ export default function AdminSupplier() {
                 type="checkbox"
                 id="addEnableNotifications"
                 checked={enableNotifications}
-                onChange={(e) => setEnableNotifications(e.target.checked)}
+                onChange={(e) =>
+                  setValue("enableNotifications", e.target.checked)
+                }
                 className="w-5 h-5 border border-black rounded-[3px] accent-green-500 cursor-pointer"
               />
               <label

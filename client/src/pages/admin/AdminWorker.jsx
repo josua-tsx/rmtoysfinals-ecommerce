@@ -7,27 +7,31 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import ValidatedInput from "../../reusable/ValidatedInput";
-import {
-  addWorkerSchema,
-  jobDescriptionSchema,
-} from "../../schemas/worker.schema";
-import {
-  emailSchema,
-  usernameSchema,
-  passwordSchema,
-} from "../../schemas/auth.schema";
+import { addWorkerSchema } from "../../schemas/worker.schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminWorker() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
 
-  // Add Form State
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [role, setRole] = useState("validatorStaff"); // Default role
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(addWorkerSchema),
+    defaultValues: {
+      email: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
+      jobDescription: "",
+      role: "validatorStaff",
+    },
+  });
 
   const { mutate: addWorkerMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -36,11 +40,7 @@ export default function AdminWorker() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["validatorStaff"] });
-      setEmail("");
-      setUsername("");
-      setPassword("");
-      setConfirmPassword("");
-      setJobDescription("");
+      reset();
       toast.success("Worker Added!");
       setShowAdd(false);
     },
@@ -49,27 +49,13 @@ export default function AdminWorker() {
     },
   });
 
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-
-    const result = addWorkerSchema.safeParse({
-      email,
-      username,
-      password,
-      confirmPassword,
-      role,
-      jobDescription,
-    });
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    addWorkerMutation(result.data);
+  const onSubmit = (data) => {
+    addWorkerMutation(data);
   };
 
   const toggleAddCategory = () => {
     setShowAdd(!showAdd);
+    if (!showAdd) reset();
   };
 
   return (
@@ -102,9 +88,9 @@ export default function AdminWorker() {
           isOpen={showAdd}
           title="Add Worker"
           onClose={() => setShowAdd(false)}
-          onSubmit={handleAddSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           submitLabel="ADD WORKER"
-          isSubmitting={isPending}
+          isSubmitting={isPending || isSubmitting}
         >
           <div className="flex gap-4 p-2 flex-col">
             <div className="flex flex-col gap-2">
@@ -116,12 +102,10 @@ export default function AdminWorker() {
               </label>
               <ValidatedInput
                 type="email"
-                name="email"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
+                error={errors.email}
                 placeholder="Ex: worker@example.com"
-                schema={emailSchema}
                 required
               />
             </div>
@@ -135,12 +119,10 @@ export default function AdminWorker() {
               </label>
               <ValidatedInput
                 type="text"
-                name="username"
                 id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                {...register("username")}
+                error={errors.username}
                 placeholder="Ex: JuanDelaCruz"
-                schema={usernameSchema}
                 required
               />
             </div>
@@ -154,12 +136,10 @@ export default function AdminWorker() {
               </label>
               <ValidatedInput
                 type="password"
-                name="password"
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register("password")}
+                error={errors.password}
                 placeholder="••••••••"
-                schema={passwordSchema}
                 required
               />
             </div>
@@ -173,10 +153,9 @@ export default function AdminWorker() {
               </label>
               <ValidatedInput
                 type="password"
-                name="confirmPassword"
                 id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                {...register("confirmPassword")}
+                error={errors.confirmPassword}
                 placeholder="••••••••"
                 required
               />
@@ -190,10 +169,8 @@ export default function AdminWorker() {
                 ROLE
               </label>
               <select
-                name="role"
                 id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+                {...register("role")}
                 className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
                 required
               >
@@ -210,12 +187,10 @@ export default function AdminWorker() {
               </label>
               <ValidatedInput
                 type="text"
-                name="jobDescription"
                 id="jobDescription"
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
+                {...register("jobDescription")}
+                error={errors.jobDescription}
                 placeholder="Ex: Customer Support & Verification"
-                schema={jobDescriptionSchema}
                 required
               />
             </div>

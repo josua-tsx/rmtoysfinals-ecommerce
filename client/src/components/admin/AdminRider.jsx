@@ -8,17 +8,28 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import ValidatedInput from "../../reusable/ValidatedInput";
-import { addRiderSchema, riderNameSchema } from "../../schemas/rider.schema";
-import { phMobileSchema } from "../../schemas/auth.schema";
+import { addRiderSchema } from "../../schemas/rider.schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminRider() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [enableMultiDel, setEnableMultiDel] = useState(false);
 
-  // Add Form State
-  const [riderName, setRiderName] = useState("");
-  const [riderPhoneNum, setRiderPhoneNum] = useState("");
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(addRiderSchema),
+    defaultValues: {
+      riderName: "",
+      riderPhoneNumber: "",
+    },
+  });
 
   const { mutate: riderAddMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -27,8 +38,7 @@ export default function AdminRider() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["riders"] });
-      setRiderName("");
-      setRiderPhoneNum("");
+      reset();
       setShowAdd(false);
       toast.success("Succesfully Added new rider");
     },
@@ -37,19 +47,13 @@ export default function AdminRider() {
     },
   });
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
+  const onSubmit = (data) => {
+    riderAddMutation(data);
+  };
 
-    const result = addRiderSchema.safeParse({
-      riderName,
-      riderPhoneNumber: riderPhoneNum,
-    });
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    riderAddMutation(result.data);
+  const toggleShowAdd = () => {
+    setShowAdd((prev) => !prev);
+    if (!showAdd) reset();
   };
 
   return (
@@ -64,7 +68,7 @@ export default function AdminRider() {
             </h2>
             <div className="flex gap-4">
               <button
-                onClick={() => setShowAdd((prev) => !prev)}
+                onClick={toggleShowAdd}
                 className="flex items-center gap-3 bg-indigo-600 text-white border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group"
               >
                 {showAdd ? "CANCEL ADD" : "ADD RIDER"}
@@ -96,9 +100,9 @@ export default function AdminRider() {
           isOpen={showAdd}
           title="Add Rider"
           onClose={() => setShowAdd(false)}
-          onSubmit={handleFormSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           submitLabel="Add Rider"
-          isSubmitting={isPending}
+          isSubmitting={isPending || isSubmitting}
         >
           <div className="flex gap-4 p-2 flex-col w-full">
             <div className="flex flex-col gap-2 w-full">
@@ -112,26 +116,24 @@ export default function AdminRider() {
                 type="text"
                 id="riderName"
                 placeholder="Ex: Juan Dela Cruz"
-                value={riderName}
-                onChange={(e) => setRiderName(e.target.value)}
-                schema={riderNameSchema}
+                {...register("riderName")}
+                error={errors.riderName}
                 required
               />
             </div>
             <div className="flex flex-col gap-2 w-full">
               <label
-                htmlFor="riderPhoneNum"
+                htmlFor="riderPhoneNumber"
                 className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
               >
                 Rider Phone Number
               </label>
               <ValidatedInput
                 type="tel"
-                id="riderPhoneNum"
-                value={riderPhoneNum}
-                onChange={(e) => setRiderPhoneNum(e.target.value)}
+                id="riderPhoneNumber"
                 placeholder="Ex: 0917XXXXXXX"
-                schema={phMobileSchema}
+                {...register("riderPhoneNumber")}
+                error={errors.riderPhoneNumber}
                 required
               />
             </div>

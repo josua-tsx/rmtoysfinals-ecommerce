@@ -1,12 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  orderStockSchema,
-  supplierPriceSchema,
-  shopPriceSchema,
-  shippingPriceSchema,
-  quantitySchema,
-  dateDeliverySchema,
-} from "../../schemas/stock.schema";
+import { orderStockSchema } from "../../schemas/stock.schema";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import axiosInstance from "../../lib/axios";
 import { useState, useEffect } from "react";
@@ -18,6 +11,8 @@ import formatPrice from "../../reusable/formatPrice";
 import { MdToggleOff, MdToggleOn } from "react-icons/md";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminStocksPending() {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -25,6 +20,53 @@ export default function AdminStocksPending() {
 
   const [productToDelete, setProductToDelete] = useState(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  // Modal & Selection State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [toggleNotify, setToggleNotify] = useState(false);
+
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(orderStockSchema),
+    defaultValues: {
+      product: "",
+      supplier: "",
+      deliveryId: "",
+      dateDelivery: "",
+      supplierPrice: 0,
+      shopPrice: 0,
+      shippingPrice: 0,
+      quantity: 0,
+      totalCost: 0,
+      vat: "",
+      vatShopPrice: 0,
+      notifySubscribedUser: false,
+    },
+  });
+
+  // Watch values for calculations
+  const supplierPrice = watch("supplierPrice");
+  const shopPrice = watch("shopPrice");
+  const shippingPrice = watch("shippingPrice");
+  const quantity = watch("quantity");
+  const deliveryId = watch("deliveryId");
+
+  // Calculate derived values
+  const totalCost =
+    Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
+
+  // Update totalCost when calculated
+  useEffect(() => {
+    setValue("totalCost", totalCost);
+  }, [totalCost, setValue]);
 
   const handleDeleteClick = (productId) => {
     setProductToDelete(productId);
@@ -38,26 +80,6 @@ export default function AdminStocksPending() {
       setProductToDelete(null);
     }
   };
-
-  // Modal & Selection State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-
-  // Form State
-  const [supplier, setSupplier] = useState("");
-  const [supplierPrice, setSupplierPrice] = useState(0);
-  const [shopPrice, setShopPrice] = useState(0);
-  const [shippingPrice, setShippingPrice] = useState(0);
-  const [quantity, setQuantity] = useState(0);
-  const [totalCost, setTotalCost] = useState(0);
-  const [deliveryId, setDeliveryId] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-  const [toggleNotify, setToggleNotify] = useState(false);
-  const [selectedVat, setSelectedVat] = useState(""); // NEW: VAT Selection State
-
-  // Derived Values
-  const calculateTotalExpenses =
-    Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
 
   // Queries
   const {
@@ -80,30 +102,15 @@ export default function AdminStocksPending() {
     },
   });
 
-  // NEW: Fetch VATS
-  const { data: vats = [] } = useQuery({
-    queryKey: ["vats"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/vat/get-vat`);
-      return res.data;
-    },
-  });
-
   // Calculate VAT Details
-  // Find the selected/current VAT object from the vats list or the product's embedded vat
-  const currentVatObject =
-    vats.find((v) => v._id === selectedVat) || selectedProduct?.vat;
-  const productVatPercent = currentVatObject?.vatPercent || 0;
-
+  const productVatPercent = selectedProduct?.vat?.vatPercent || 0;
   const totalPriceWithVAT = Number(shopPrice) * (1 + productVatPercent / 100);
   const roundedPrice = Math.round(totalPriceWithVAT);
 
-  // Effects
+  // Update vatShopPrice when calculated
   useEffect(() => {
-    if (calculateTotalExpenses >= 0) {
-      setTotalCost(calculateTotalExpenses);
-    }
-  }, [calculateTotalExpenses]);
+    setValue("vatShopPrice", roundedPrice);
+  }, [roundedPrice, setValue]);
 
   // Generators
   const generateRandomDeliveryId = () => {
@@ -113,7 +120,7 @@ export default function AdminStocksPending() {
   };
 
   // Mutations
-  const { mutate: addNewDeliver, isPending: isSubmitting } = useMutation({
+  const { mutate: addNewDeliver, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/stocks/order-stock`, data);
       return res.data;
@@ -122,8 +129,9 @@ export default function AdminStocksPending() {
       toast.success("Stock ordered successfully!");
       queryClient.invalidateQueries(["pendingProducts"]);
       queryClient.invalidateQueries(["stocks"]);
-      setFormDefaults();
+      reset();
       setIsModalOpen(false);
+      setToggleNotify(false);
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong!");
@@ -149,54 +157,33 @@ export default function AdminStocksPending() {
   // Handlers
   const handleOpenModal = (product) => {
     setSelectedProduct(product);
-    setDeliveryId(generateRandomDeliveryId());
-    setFormDefaults(); // Reset form fields
+    setToggleNotify(false);
 
-    // Pre-select VAT if product has one, otherwise empty
-    setSelectedVat(product?.vat?._id || "");
+    // Reset form with new values
+    reset({
+      product: product?._id || "",
+      supplier: "",
+      deliveryId: generateRandomDeliveryId(),
+      dateDelivery: "",
+      supplierPrice: 0,
+      shopPrice: 0,
+      shippingPrice: 0,
+      quantity: 0,
+      totalCost: 0,
+      vat: product?.vat?._id || "",
+      vatShopPrice: 0,
+      notifySubscribedUser: false,
+    });
 
     setIsModalOpen(true);
   };
 
-  const setFormDefaults = () => {
-    setSupplier("");
-    setSupplierPrice(0);
-    setShopPrice(0);
-    setShippingPrice(0);
-    setQuantity(0);
-    setTotalCost(0);
-    setSelectedDate("");
-    setToggleNotify(false);
-    setSelectedVat("");
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-
-    const formData = {
-      product: selectedProduct?._id,
-      supplier: supplier || undefined,
-      supplierPrice,
-      shopPrice,
-      quantity,
-      shippingPrice,
-      totalCost,
-      deliveryId,
-      dateDelivery: selectedDate,
-      vat: selectedVat || selectedProduct?.vat?._id || null, // Use null instead of ""
-      vatShopPrice: roundedPrice,
+  const onSubmit = (data) => {
+    // Add notifySubscribedUser from state
+    addNewDeliver({
+      ...data,
       notifySubscribedUser: toggleNotify,
-    };
-
-    const result = orderStockSchema.safeParse(formData);
-
-    if (!result.success) {
-      // Show the first error message
-      const error = result.error.issues[0];
-      return toast.error(error.message);
-    }
-
-    addNewDeliver(result.data);
+    });
   };
 
   const toggleNotification = () => {
@@ -316,9 +303,9 @@ export default function AdminStocksPending() {
         isOpen={isModalOpen}
         title="Order Stock"
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleFormSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         submitLabel="Order"
-        isSubmitting={isSubmitting}
+        isSubmitting={isPending || isSubmitting}
       >
         <div className="flex gap-4 p-2 flex-col">
           <div className="flex gap-2 flex-col">
@@ -371,14 +358,17 @@ export default function AdminStocksPending() {
             >
               Date Delivery
             </label>
-            <ValidatedInput
+            <input
               type="date"
-              name="dateDelivery"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              schema={dateDeliverySchema}
-              required
+              id="deliveryDate"
+              className={`border ${errors.dateDelivery ? "border-red-500" : "border-black"} rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-bold`}
+              {...register("dateDelivery")}
             />
+            {errors.dateDelivery && (
+              <p className="text-red-500 text-xs font-bold">
+                {errors.dateDelivery.message}
+              </p>
+            )}
           </div>
 
           <div className="flex gap-2 flex-col">
@@ -390,10 +380,8 @@ export default function AdminStocksPending() {
             </label>
             <select
               id="supplier"
-              value={supplier}
-              onChange={(e) => setSupplier(e.target.value)}
-              className="rounded-[5px] border border-black p-2 outline-none font-bold"
-              required
+              {...register("supplier")}
+              className={`rounded-[5px] border ${errors.supplier ? "border-red-500" : "border-black"} p-2 outline-none font-bold`}
             >
               <option value="">Select Supplier</option>
               {suppliers.length > 0 &&
@@ -403,6 +391,11 @@ export default function AdminStocksPending() {
                   </option>
                 ))}
             </select>
+            {errors.supplier && (
+              <p className="text-red-500 text-xs font-bold">
+                {errors.supplier.message}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -415,11 +408,9 @@ export default function AdminStocksPending() {
               </label>
               <ValidatedInput
                 type="number"
-                name="supplierPrice"
-                value={supplierPrice}
-                onChange={(e) => setSupplierPrice(e.target.value)}
-                schema={supplierPriceSchema}
-                required
+                id="supplierPrice"
+                {...register("supplierPrice")}
+                error={errors.supplierPrice}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -431,11 +422,9 @@ export default function AdminStocksPending() {
               </label>
               <ValidatedInput
                 type="number"
-                name="shopPrice"
-                value={shopPrice}
-                onChange={(e) => setShopPrice(e.target.value)}
-                schema={shopPriceSchema}
-                required
+                id="shopPrice"
+                {...register("shopPrice")}
+                error={errors.shopPrice}
               />
             </div>
           </div>
@@ -456,11 +445,9 @@ export default function AdminStocksPending() {
               </label>
               <ValidatedInput
                 type="number"
-                name="shippingPrice"
-                value={shippingPrice}
-                onChange={(e) => setShippingPrice(e.target.value)}
-                schema={shippingPriceSchema}
-                required
+                id="shippingPrice"
+                {...register("shippingPrice")}
+                error={errors.shippingPrice}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -472,11 +459,9 @@ export default function AdminStocksPending() {
               </label>
               <ValidatedInput
                 type="number"
-                name="quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                schema={quantitySchema}
-                required
+                id="quantity"
+                {...register("quantity")}
+                error={errors.quantity}
               />
             </div>
           </div>

@@ -2,15 +2,27 @@ import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
-import { useState } from "react";
 import Buttons from "../reusable/Buttons";
 import { FaPaperPlane } from "react-icons/fa";
 import ValidatedInput from "../reusable/ValidatedInput";
 import { forgetPasswordSchema } from "../schemas/auth.schema";
-import { emailSchema } from "../schemas/common.schema";
+
+/* replace-imports-start */
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+/* replace-imports-end */
 
 export default function RecoverPassword() {
-  const [email, setEmail] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(forgetPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
 
   const { mutate: forgetPasswordMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -25,15 +37,8 @@ export default function RecoverPassword() {
     },
   });
 
-  const handleForgetPasswordSubmit = (e) => {
-    e.preventDefault();
-
-    const result = forgetPasswordSchema.safeParse({ email });
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    forgetPasswordMutation(result.data);
+  const onSubmit = (data) => {
+    forgetPasswordMutation(data);
   };
 
   return (
@@ -41,7 +46,7 @@ export default function RecoverPassword() {
       <div className="max-w-[600px] h-full flex flex-col justify-center   mx-auto ">
         {/* FORM */}
         <form
-          onSubmit={handleForgetPasswordSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="relative border flex gap-4 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg mt-8"
         >
           {/* Sticker Header */}
@@ -78,11 +83,10 @@ export default function RecoverPassword() {
 
           <ValidatedInput
             label="Email Address"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            schema={emailSchema}
+            id="email"
             placeholder="Ex: example@domain.com"
+            {...register("email")}
+            error={errors.email}
             required
           />
 

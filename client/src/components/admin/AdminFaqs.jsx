@@ -7,13 +7,41 @@ import FormModal from "../../reusable/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import ValidatedInput from "../../reusable/ValidatedInput";
+
+// FAQ Schema
+const faqSchema = z.object({
+  title: z
+    .string({ required_error: "Question is required" })
+    .min(5, "Question must be at least 5 characters")
+    .max(100, "Question cannot exceed 100 characters"),
+  answer: z
+    .string({ required_error: "Answer is required" })
+    .min(10, "Answer must be at least 10 characters")
+    .max(500, "Answer cannot exceed 500 characters"),
+});
 
 export default function AdminFaqs() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [enableMultiDel, setEnableMultiDel] = useState(false);
-  const [title, setTitle] = useState("");
-  const [answer, setAnswer] = useState("");
+
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(faqSchema),
+    defaultValues: {
+      title: "",
+      answer: "",
+    },
+  });
 
   const { mutate: addFaqsMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -23,8 +51,7 @@ export default function AdminFaqs() {
     onSuccess: () => {
       toast.success("Added Succesfully!");
       queryClient.invalidateQueries({ queryKey: ["faqs"] });
-      setTitle("");
-      setAnswer("");
+      reset();
       setShowAdd(false);
     },
     onError: (err) => {
@@ -32,9 +59,13 @@ export default function AdminFaqs() {
     },
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    addFaqsMutation({ title, answer });
+  const onSubmit = (data) => {
+    addFaqsMutation(data);
+  };
+
+  const toggleShowAdd = () => {
+    setShowAdd((prev) => !prev);
+    if (!showAdd) reset();
   };
 
   return (
@@ -49,7 +80,7 @@ export default function AdminFaqs() {
             </h2>
             <div className="flex gap-4">
               <button
-                onClick={() => setShowAdd((prev) => !prev)}
+                onClick={toggleShowAdd}
                 className="flex items-center gap-3 bg-indigo-600 text-white border border-black py-3 px-6 rounded-[5px] font-black uppercase text-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group"
               >
                 {showAdd ? "CANCEL ADD" : "ADD NEW FAQ"}
@@ -96,9 +127,9 @@ export default function AdminFaqs() {
           isOpen={showAdd}
           title="Create New FAQ Entry"
           onClose={() => setShowAdd(false)}
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           submitLabel="PUBLISH FAQ"
-          isSubmitting={isPending}
+          isSubmitting={isPending || isSubmitting}
         >
           <div className="flex gap-6 p-4 flex-col bg-gray-50/50">
             <div className="flex flex-col gap-2">
@@ -108,15 +139,12 @@ export default function AdminFaqs() {
               >
                 FAQ Question
               </label>
-              <input
-                name="title"
+              <ValidatedInput
                 id="title"
                 type="text"
                 placeholder="e.g., How do I track my order?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={100}
-                className="border border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-gray-300"
+                {...register("title")}
+                error={errors.title}
                 required
               />
             </div>
@@ -128,16 +156,18 @@ export default function AdminFaqs() {
                 Detailed Answer
               </label>
               <textarea
-                name="answer"
                 id="answer"
                 rows={4}
                 placeholder="Provide a clear, helpful response..."
-                value={answer}
-                maxLength={500}
-                onChange={(e) => setAnswer(e.target.value)}
-                className="border border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-gray-300 resize-none"
+                {...register("answer")}
+                className={`border ${errors.answer ? "border-red-500" : "border-black"} w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-gray-300 resize-none`}
                 required
               ></textarea>
+              {errors.answer && (
+                <p className="text-red-500 text-xs font-bold">
+                  {errors.answer.message}
+                </p>
+              )}
             </div>
           </div>
         </FormModal>

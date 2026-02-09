@@ -1,22 +1,16 @@
 import AdminHeader from "../../reusable/Admin/AdminHeader";
-import {
-  createProductSchema,
-  productNameSchema,
-  productDescriptionSchema,
-} from "../../schemas/product.schema";
+import { createProductSchema } from "../../schemas/product.schema";
 import AdminUploadProductImage from "../../components/admin/AdminUploadProductImage";
 import ValidatedInput from "../../reusable/ValidatedInput";
 import { FiEdit3 } from "react-icons/fi";
 import { HiTrash } from "react-icons/hi";
 import { FaCheckCircle } from "react-icons/fa";
-// import { IoArchive } from "react-icons/io5";
 import { IoIosAdd } from "react-icons/io";
 import { SiGooglegemini } from "react-icons/si";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 import { useNavigate } from "react-router-dom";
 import {
   getDownloadURL,
@@ -25,27 +19,53 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import app from "../../firebase/firebase";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminAddProducts() {
   const queryClient = useQueryClient();
-
   const navigate = useNavigate();
 
-  const [images, setImages] = useState([]);
-  const [label, setLabel] = useState("");
-  const [value, setValue] = useState("");
-  const [productName, setProductName] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [productsDetailsArray, setProductsDetailsArray] = useState([]);
-  const [category, setCategory] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentEditIndex, setCurrentIndex] = useState(null);
-  const [points, setPoints] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [taxStatus, setTaxStatus] = useState("vatable");
-  const [vat, setVat] = useState("");
-  const [files, setFiles] = useState([]); // Raw files for upload
+  const [files, setFiles] = useState([]); // Raw files for upload (separate from form state)
   const [isUploading, setIsUploading] = useState(false);
+
+  // Local state for adding new product details before pushing to array
+  const [detailLabel, setDetailLabel] = useState("");
+  const [detailValue, setDetailValue] = useState("");
+  const [editingDetailIndex, setEditingDetailIndex] = useState(null);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(createProductSchema),
+    defaultValues: {
+      productName: "",
+      productDescription: "",
+      productImages: [],
+      category: "",
+      points: 0,
+      taxStatus: "vatable",
+      vat: "",
+      productDetails: [],
+    },
+  });
+
+  const { fields, append, remove, update } = useFieldArray({
+    control,
+    name: "productDetails",
+  });
+
+  // Watch values for conditional rendering and validaton
+  const watchedTaxStatus = watch("taxStatus");
+  const watchedProductName = watch("productName");
+  const watchedImages = watch("productImages");
 
   const {
     data: categories = [],
@@ -75,17 +95,14 @@ export default function AdminAddProducts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["colors"] });
-      setProductDescription("");
-      setProductName("");
-      setProductsDetailsArray([]);
-      setImages([]);
-      setTaxStatus("vatable");
-      setVat("");
-
+      reset(); // Reset form
+      setFiles([]);
+      setDetailLabel("");
+      setDetailValue("");
       toast.success("Product Submitted");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong");
+      toast.error(err.response?.data?.message || "Something went wrong");
     },
   });
 
@@ -108,38 +125,18 @@ export default function AdminAddProducts() {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             resolve(downloadURL);
           });
-        }
+        },
       );
     });
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validation first
-    const baseData = {
-      productName,
-      productDescription,
-      productDetails: productsDetailsArray,
-      productImages: images, // This might be empty if not uploaded yet
-      category: category,
-      points,
-      taxStatus,
-      vat: taxStatus === "vatable" ? vat : null,
-    };
-
-    const result = createProductSchema.safeParse(baseData);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    if (files.length === 0 && images.length === 0) {
+  const onSubmit = async (data) => {
+    if (files.length === 0 && data.productImages.length === 0) {
       return toast.error("Please add at least one image");
     }
 
     setIsUploading(true);
-    let uploadedUrls = [...images];
+    let uploadedUrls = [...data.productImages];
 
     try {
       if (files.length > 0) {
@@ -152,13 +149,15 @@ export default function AdminAddProducts() {
 
       // Filter out any blob preview URLs and only keep the real Firebase URLs
       const sanitizedUrls = uploadedUrls.filter((url) =>
-        url.startsWith("http")
+        url.startsWith("http"),
       );
 
       // Proceed with mutation
       addProductMutation({
-        ...result.data,
+        ...data,
         productImages: sanitizedUrls,
+        // Ensure vat is null if taxStatus is exempt (handled by schema transform usually but safe to enforce)
+        vat: data.taxStatus === "vatable" ? data.vat : null,
       });
     } catch (error) {
       toast.error("Image upload failed: " + error.message);
@@ -167,64 +166,42 @@ export default function AdminAddProducts() {
     }
   };
 
-  const handleSubmitLabelValueObject = () => {
-    const isDuplicate = productsDetailsArray.some(
-      (detail, index) => detail.label === label && index !== currentEditIndex
+  // Handler for adding/updating details to the field array
+  const handleDetailAction = () => {
+    const isDuplicate = fields.some(
+      (detail, index) =>
+        detail.label === detailLabel && index !== editingDetailIndex,
     );
 
-    if (!label || !value) {
+    if (!detailLabel || !detailValue) {
       toast.error("Both label and value are required.");
     } else if (isDuplicate) {
       toast.error("Label already exists. Please enter a unique label.");
     } else {
-      if (isEditing) {
-        handleUpdateLabelValue();
+      if (editingDetailIndex !== null) {
+        update(editingDetailIndex, { label: detailLabel, value: detailValue });
+        setEditingDetailIndex(null);
       } else {
-        handleAddProductLabelValue();
+        if (fields.length >= 10) {
+          return toast.error("Product details must not exceed 10!");
+        }
+        append({ label: detailLabel, value: detailValue });
       }
-
-      setLabel("");
-      setValue("");
+      setDetailLabel("");
+      setDetailValue("");
     }
   };
 
-  const handleAddProductLabelValue = () => {
-    setProductsDetailsArray((prevDetails) => [
-      ...prevDetails,
-      { label: label, value: value },
-    ]);
-
-    if (productsDetailsArray.length > 10) {
-      return toast.error("Product details must not exceed to 10!");
-    }
-    setLabel("");
-    setValue("");
-  };
-
-  const handleUpdateLabelValue = () => {
-    const updateDetails = productsDetailsArray.map((item, index) =>
-      index === currentEditIndex ? { label, value } : item
-    );
-
-    setProductsDetailsArray(updateDetails);
-    setIsEditing(false);
-    setCurrentIndex(null);
-  };
-
-  const handleEditLabelValue = (index) => {
-    setIsEditing(true);
-    setCurrentIndex(index);
-    setLabel(productsDetailsArray[index].label); // Load the label and value into the inputs
-    setValue(productsDetailsArray[index].value);
-  };
-
-  const handleRemoveLabelValue = (index) => {
-    setProductsDetailsArray((prev) => prev.filter((_, i) => i !== index));
+  const handleEditDetail = (index) => {
+    const detail = fields[index];
+    setDetailLabel(detail.label);
+    setDetailValue(detail.value);
+    setEditingDetailIndex(index);
   };
 
   // AI Product Description Generator
   const handleGenerateWithAI = async () => {
-    if (!productName || productName.trim().length < 3) {
+    if (!watchedProductName || watchedProductName.trim().length < 3) {
       toast.error("Please enter a product name first (at least 3 characters)");
       return;
     }
@@ -234,16 +211,21 @@ export default function AdminAddProducts() {
       const response = await axiosInstance.post(
         "/gemini/generate-product-description",
         {
-          productName: productName.trim(),
-        }
+          productName: watchedProductName.trim(),
+        },
       );
 
       if (response.data.success) {
         // Auto-fill description
-        setProductDescription(response.data.description);
+        setValue("productDescription", response.data.description, {
+          shouldValidate: true,
+        });
 
         // Auto-fill product details
-        setProductsDetailsArray(response.data.details);
+        // Keep existing details and append new ones, or replace? Usually replace or append logic.
+        // Let's replace for simplicity as per previous logic, or append if desired.
+        // The previous logic was `setProductsDetailsArray(response.data.details)`.
+        setValue("productDetails", response.data.details);
 
         toast.success("AI generated content successfully!");
       } else {
@@ -253,7 +235,7 @@ export default function AdminAddProducts() {
       console.error("AI Generation Error:", error);
       toast.error(
         error.response?.data?.message ||
-          "Failed to generate content. Please try again."
+          "Failed to generate content. Please try again.",
       );
     } finally {
       setIsGenerating(false);
@@ -274,7 +256,7 @@ export default function AdminAddProducts() {
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
         <form
-          onSubmit={handleFormSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex gap-6 flex-col-reverse lg:flex-row"
         >
           <div className="flex-1 flex flex-col gap-6">
@@ -290,8 +272,8 @@ export default function AdminAddProducts() {
                     onClick={handleGenerateWithAI}
                     disabled={
                       isGenerating ||
-                      !productName ||
-                      productName.trim().length < 3
+                      !watchedProductName ||
+                      watchedProductName.trim().length < 3
                     }
                     className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white flex items-center gap-2 px-4 py-2 rounded-[5px] border border-black hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] group"
                   >
@@ -306,15 +288,16 @@ export default function AdminAddProducts() {
                     {isGenerating ? "Generating..." : "Generate with AI"}
                   </button>
                 </div>
+
                 <ValidatedInput
-                  name="productName"
-                  value={productName}
-                  onChange={handleInputChange(setProductName)}
-                  schema={productNameSchema}
+                  id="productName"
+                  {...register("productName")}
+                  error={errors.productName}
                   className="text-lg font-bold"
                   placeholder="Enter product name"
                   required
                 />
+
                 <p className="text-[11px] pt-2  uppercase tracking-tight">
                   (Product name must be 5-50 characters. Double spaces are not
                   allowed)
@@ -331,12 +314,12 @@ export default function AdminAddProducts() {
                     spaces, uppercase letters allowed.)
                   </p>
                 </div>
+
                 <ValidatedInput
                   type="textarea"
-                  name="productDescription"
-                  value={productDescription}
-                  onChange={handleInputChange(setProductDescription)}
-                  schema={productDescriptionSchema}
+                  id="productDescription"
+                  {...register("productDescription")}
+                  error={errors.productDescription}
                   className="h-[120px] leading-relaxed"
                   placeholder="Enter product description"
                   required
@@ -386,9 +369,9 @@ export default function AdminAddProducts() {
                         <input
                           type="text"
                           placeholder="e.g. Color"
-                          value={label}
+                          value={detailLabel}
                           maxLength={40}
-                          onChange={handleInputChange(setLabel)}
+                          onChange={(e) => setDetailLabel(e.target.value)}
                           className="w-full px-3 py-2 border border-black outline-none rounded-[5px] focus:ring-0"
                         />
                       </div>
@@ -402,29 +385,42 @@ export default function AdminAddProducts() {
                         <input
                           type="text"
                           placeholder="e.g. Red"
-                          value={value}
+                          value={detailValue}
                           maxLength={40}
-                          onChange={handleInputChange(setValue)}
+                          onChange={(e) => setDetailValue(e.target.value)}
                           className="w-full px-3 py-2 border border-black outline-none rounded-[5px] focus:ring-0"
                         />
                       </div>
                     </div>
                     <button
                       type="button"
-                      onClick={handleSubmitLabelValueObject}
+                      onClick={handleDetailAction}
                       className="bg-[#22c55e] text-white border border-black px-6 py-2 rounded-[5px] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all min-w-[140px]"
                     >
-                      {isEditing ? "Update" : "Add Detail"}
+                      {editingDetailIndex !== null ? "Update" : "Add Detail"}
                       <IoIosAdd size={20} />
                     </button>
+                    {editingDetailIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingDetailIndex(null);
+                          setDetailLabel("");
+                          setDetailValue("");
+                        }}
+                        className="bg-gray-200 text-black border border-black px-4 py-2 rounded-[5px] font-bold uppercase text-xs"
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
 
                   {/* DETAILS LIST */}
                   <div className="overflow-y-auto max-h-[281px]">
                     <ul className="flex flex-col gap-3">
-                      {productsDetailsArray.map((item, index) => (
+                      {fields.map((item, index) => (
                         <li
-                          key={index}
+                          key={item.id}
                           className="flex items-center justify-between bg-[#fffdf6] rounded-[5px] p-3 border border-black shadow-sm"
                         >
                           <div className="flex items-center gap-3">
@@ -435,14 +431,14 @@ export default function AdminAddProducts() {
                           </div>
                           <div className="flex gap-2">
                             <button
-                              onClick={() => handleEditLabelValue(index)}
+                              onClick={() => handleEditDetail(index)}
                               type="button"
                               className="w-8 h-8 flex items-center justify-center bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                             >
                               <FiEdit3 size={16} />
                             </button>
                             <button
-                              onClick={() => handleRemoveLabelValue(index)}
+                              onClick={() => remove(index)}
                               type="button"
                               className="w-8 h-8 flex items-center justify-center bg-[#ef4444] text-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                             >
@@ -451,6 +447,11 @@ export default function AdminAddProducts() {
                           </div>
                         </li>
                       ))}
+                      {fields.length === 0 && (
+                        <p className="text-center text-gray-400 text-xs italic py-4">
+                          No product details added yet.
+                        </p>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -469,10 +470,8 @@ export default function AdminAddProducts() {
                   </label>
                   <select
                     className="p-3 rounded-[5px] border border-black outline-none bg-white  font-bold"
-                    name="points"
                     id="points"
-                    value={points}
-                    onChange={(e) => setPoints(e.target.value)}
+                    {...register("points")}
                   >
                     <option value="0">No Points</option>
                     <option value="10">10 Points</option>
@@ -488,11 +487,9 @@ export default function AdminAddProducts() {
                     Category
                   </label>
                   <select
-                    name="category"
                     id="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
+                    className={`p-3 rounded-[5px] border border-black outline-none bg-white font-bold ${errors.category ? "border-red-500" : ""}`}
+                    {...register("category")}
                   >
                     <option value="">Select Category</option>
                     {categories.map((cat) => (
@@ -501,6 +498,11 @@ export default function AdminAddProducts() {
                       </option>
                     ))}
                   </select>
+                  {errors.category && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">
+                      {errors.category.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -513,18 +515,16 @@ export default function AdminAddProducts() {
                     TAX STATUS
                   </label>
                   <select
-                    name="taxStatus"
                     id="taxStatus"
-                    value={taxStatus}
-                    onChange={(e) => setTaxStatus(e.target.value)}
                     className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
+                    {...register("taxStatus")}
                   >
                     <option value="vatable">Vatable</option>
                     <option value="exempt">Tax Exempt</option>
                   </select>
                 </div>
 
-                {taxStatus === "vatable" && (
+                {watchedTaxStatus === "vatable" && (
                   <div className="flex flex-col">
                     <label
                       htmlFor="vat"
@@ -533,12 +533,9 @@ export default function AdminAddProducts() {
                       VAT RATE *
                     </label>
                     <select
-                      name="vat"
                       id="vat"
-                      value={vat}
-                      onChange={(e) => setVat(e.target.value)}
-                      className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
-                      required
+                      className={`p-3 rounded-[5px] border border-black outline-none bg-white font-bold ${errors.vat ? "border-red-500" : ""}`}
+                      {...register("vat")}
                     >
                       <option value="">Select Rate</option>
                       {vatOptions.map((option) => (
@@ -547,6 +544,11 @@ export default function AdminAddProducts() {
                         </option>
                       ))}
                     </select>
+                    {errors.vat && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">
+                        {errors.vat.message}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -573,12 +575,25 @@ export default function AdminAddProducts() {
 
           {/* COLUMN 2 - IMAGE UPLOAD */}
           <div className="lg:w-[320px]">
+            {/* Wrapper to bridge simple state with RHF */}
             <AdminUploadProductImage
-              images={images}
-              setImages={setImages}
+              images={watchedImages}
+              setImages={(newImages) => {
+                // If newImages is a function (React state updater pattern), call it with current value
+                const updated =
+                  typeof newImages === "function"
+                    ? newImages(watchedImages)
+                    : newImages;
+                setValue("productImages", updated, { shouldValidate: true });
+              }}
               files={files}
               setFiles={setFiles}
             />
+            {errors.productImages && (
+              <p className="text-red-500 text-[10px] font-bold mt-2 text-center uppercase">
+                {errors.productImages.message}
+              </p>
+            )}
           </div>
         </form>
       </div>

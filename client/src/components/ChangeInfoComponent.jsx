@@ -10,6 +10,7 @@ import {
   phMobileSchema,
   fullNameSchema,
 } from "../schemas/common.schema";
+import { passwordSchema } from "../schemas/auth.schema";
 
 import app from "../firebase/firebase";
 
@@ -23,6 +24,18 @@ import { useUserStore } from "../stores/useUserStore";
 
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Profile Schema
+const profileSchema = z.object({
+  username: usernameSchema,
+  email: emailSchema,
+  fullName: fullNameSchema.optional().or(z.literal("")),
+  phoneNumber: phMobileSchema.optional().or(z.literal("")),
+  password: z.union([z.literal(""), passwordSchema]).optional(),
+});
 
 export default function ChangeInfoComponent() {
   const [file, setFile] = useState(null);
@@ -33,20 +46,43 @@ export default function ChangeInfoComponent() {
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
 
-  // Local states for inputs to support ValidatedInput
-  const [username, setUsername] = useState(currentUser.username || "");
-  const [email, setEmail] = useState(currentUser.email || "");
-  const [fullName, setFullName] = useState(currentUser.fullName || "");
-  const [phoneNumber, setPhoneNumber] = useState(currentUser.phoneNumber || "");
-  const [password, setPassword] = useState("");
-
   const fileRef = useRef(null);
+
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      username: currentUser?.username || "",
+      email: currentUser?.email || "",
+      fullName: currentUser?.fullName || "",
+      phoneNumber: currentUser?.phoneNumber || "",
+      password: "",
+    },
+  });
+
+  // Reset form when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      reset({
+        username: currentUser.username || "",
+        email: currentUser.email || "",
+        fullName: currentUser.fullName || "",
+        phoneNumber: currentUser.phoneNumber || "",
+        password: "",
+      });
+    }
+  }, [currentUser, reset]);
 
   const { mutate: updateProfile, isPending: isUpdating } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(
         `/user/update/${currentUser._id}`,
-        data
+        data,
       );
       return res.data;
     },
@@ -54,7 +90,7 @@ export default function ChangeInfoComponent() {
       setCurrentUser(data);
       toast.success("Profile Updated Successfully");
       setChangePassword(false);
-      setPassword("");
+      reset({ ...data, password: "" });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "An error occurred");
@@ -78,35 +114,19 @@ export default function ChangeInfoComponent() {
     verifyEmailMutation(email);
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-
-    const data = {
-      username,
-      email,
-      fullName,
-      phoneNumber,
-      password,
+  const onSubmit = (data) => {
+    // Build submission data
+    const submitData = {
+      ...data,
       avatar: imageUrl ? imageUrl : currentUser.avatar,
     };
 
-    // Note: On frontend we validate the body part of updateUserSchema or just individual fields
-    // Using a simple check for required fields or specific schemas
-    const usernameResult = usernameSchema.safeParse(username);
-    const emailResult = emailSchema.safeParse(email);
-    const phoneResult = phMobileSchema.safeParse(phoneNumber);
-    const nameResult = fullNameSchema.safeParse(fullName);
+    // Remove password if empty
+    if (!submitData.password) {
+      delete submitData.password;
+    }
 
-    if (!usernameResult.success)
-      return toast.error(usernameResult.error.issues[0].message);
-    if (!emailResult.success)
-      return toast.error(emailResult.error.issues[0].message);
-    if (fullName && !nameResult.success)
-      return toast.error(nameResult.error.issues[0].message);
-    if (phoneNumber && !phoneResult.success)
-      return toast.error(phoneResult.error.issues[0].message);
-
-    updateProfile(data);
+    updateProfile(submitData);
   };
 
   const handleFileChange = (e) => {
@@ -156,7 +176,7 @@ export default function ChangeInfoComponent() {
           toast.success(`Avatar uploaded`);
           setImageUrl(downloadUrl);
         });
-      }
+      },
     );
   };
 
@@ -175,7 +195,7 @@ export default function ChangeInfoComponent() {
         </p>
       </div>
       <div className="  p-8 space-y-8">
-        <form onSubmit={handleFormSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* Avatar Section */}
           <div className="flex flex-col items-center space-y-4">
             <div
@@ -249,10 +269,10 @@ export default function ChangeInfoComponent() {
                 <div className="space-y-2 relative">
                   <ValidatedInput
                     label="Email Address"
-                    name="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    schema={emailSchema}
+                    id="email"
+                    type="email"
+                    {...register("email")}
+                    error={errors.email}
                     placeholder="name@example.com"
                   />
                   <div className="absolute right-8 top-8">
@@ -276,10 +296,9 @@ export default function ChangeInfoComponent() {
                 {/* Username Field */}
                 <ValidatedInput
                   label="Username"
-                  name="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  schema={usernameSchema}
+                  id="username"
+                  {...register("username")}
+                  error={errors.username}
                   placeholder="johndoe123"
                   errorText="3-30 characters, no special characters"
                 />
@@ -287,20 +306,18 @@ export default function ChangeInfoComponent() {
                 {/* Full Name Field */}
                 <ValidatedInput
                   label="Full Name"
-                  name="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  schema={fullNameSchema}
+                  id="fullName"
+                  {...register("fullName")}
+                  error={errors.fullName}
                   placeholder="John Doe"
                 />
 
                 {/* Phone Number Field */}
                 <ValidatedInput
                   label="Phone Number"
-                  name="phoneNumber"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  schema={phMobileSchema}
+                  id="phoneNumber"
+                  {...register("phoneNumber")}
+                  error={errors.phoneNumber}
                   placeholder="09xxxxxxxxx"
                   errorText="Must be a valid 11-digit number starting with 09"
                 />
@@ -327,9 +344,9 @@ export default function ChangeInfoComponent() {
                 <div className=" rounded-lg p-6 space-y-4 border border-black bg-white animate-in fade-in slide-in-from-top-2 duration-200">
                   <PasswordInput
                     label="New Password"
-                    name="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    id="password"
+                    {...register("password")}
+                    error={errors.password}
                     placeholder="Enter new password"
                     className="!bg-white"
                     errorText="Must be at least 8 characters with 1 lowercase, 1 uppercase, 1 symbol, and 1 number"
@@ -352,7 +369,7 @@ export default function ChangeInfoComponent() {
             <Buttons
               buttonType="submit"
               buttonName="Save Changes"
-              isLoading={isUpdating}
+              isLoading={isUpdating || isSubmitting}
               loadingText="Updating..."
               icon={<FaCheckCircle className="text-lg" />}
               animateIcon={true}

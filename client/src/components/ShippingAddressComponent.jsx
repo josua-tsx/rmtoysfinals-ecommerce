@@ -1,7 +1,6 @@
 import { FaCheckCircle } from "react-icons/fa";
 import Buttons from "../reusable/Buttons";
 import ValidatedInput from "../reusable/ValidatedInput";
-import { addressSchema } from "../schemas/address.schema";
 
 import {
   listRegions,
@@ -16,30 +15,59 @@ import toast from "react-hot-toast";
 import EditAddress from "../pages/EditAddress";
 import { useUserStore } from "../stores/useUserStore";
 import { ConfirmModal } from "../reusable/ConfirmModal";
-import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Reusing the same schema pattern or importing if centralized
+const addressSchema = z.object({
+  country: z.string().default("Philippines"),
+  region: z.string().min(1, "Region is required"),
+  stateProvince: z.string().min(1, "Province is required"),
+  city: z.string().min(1, "City is required"),
+  barangay: z.string().min(1, "Barangay is required"),
+  streetBuildingHouseNum: z
+    .string()
+    .min(1, "Street / Building / House No. is required"),
+});
 
 export default function ShippingAddressComponent() {
   const queryClient = useQueryClient();
 
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-
+  // PSGC Lists State
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [barangays, setBarangays] = useState([]);
 
-  const [barangay, setBarangay] = useState("");
-  const [streetBuildingHouseNum, setStreetBuildingHouseNum] = useState("");
+  // PSGC Code Tracking
+  const [selectedRegionCode, setSelectedRegionCode] = useState("");
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
+  const [selectedCityCode, setSelectedCityCode] = useState("");
 
   const [openModal, setOpenModal] = useState(false);
-
   const [editAddressId, setEditAddressId] = useState(null);
-
   const currentUser = useUserStore((state) => state.currentUser);
-
   const [selectedId, setSelectedId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(addressSchema),
+    defaultValues: {
+      country: "Philippines",
+      region: "",
+      stateProvince: "",
+      city: "",
+      barangay: "",
+      streetBuildingHouseNum: "",
+    },
+  });
 
   const {
     data: currentUserAddress,
@@ -73,15 +101,17 @@ export default function ShippingAddressComponent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["address"] });
-      setSelectedRegion("");
-      setSelectedProvince("");
-      setSelectedCity("");
-      setBarangay("");
-      setStreetBuildingHouseNum("");
-      toast.success("Sucessfully added address!");
+      reset(); // Reset form fields
+      setSelectedRegionCode("");
+      setSelectedProvinceCode("");
+      setSelectedCityCode("");
+      setProvinces([]);
+      setCities([]);
+      setBarangays([]);
+      toast.success("Successfully added address!");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong");
+      toast.error(err.response?.data?.message || "Something went wrong");
     },
   });
 
@@ -97,7 +127,7 @@ export default function ShippingAddressComponent() {
       toast.success(`Address deleted successfully!`);
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "Something went wrong!");
+      toast.error(err.response?.data?.message || "Something went wrong!");
     },
   });
 
@@ -118,65 +148,67 @@ export default function ShippingAddressComponent() {
     setIsModalOpen(false);
   };
 
-  const handleAddressSubmit = (e) => {
-    e.preventDefault();
-
-    const data = {
-      region: selectedRegion?.regionName || "",
-      stateProvince: selectedProvince?.provName || "",
-      city: selectedCity.toLocaleLowerCase(),
-      barangay,
-      streetBuildingHouseNum,
-    };
-
-    const result = addressSchema.safeParse(data);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    addAddressMutation(result.data);
+  const onSubmit = (data) => {
+    addAddressMutation({
+      ...data,
+      city: data.city.toLowerCase(),
+    });
   };
 
+  // PSGC Handlers
   const handleRegionChange = (e) => {
-    const selectedRegCode = e.target.value;
-    const selecteddRegion = listRegions().find(
-      (region) => region.regCode === selectedRegCode,
-    );
-    setSelectedRegion(selecteddRegion);
-    setProvinces(listProvinces(selectedRegCode));
-    setSelectedProvince("");
+    const regCode = e.target.value;
+    const regionObj = listRegions().find((r) => r.regCode === regCode);
+
+    setSelectedRegionCode(regCode);
+    setValue("region", regionObj?.regionName || "");
+
+    setProvinces(listProvinces(regCode));
     setCities([]);
     setBarangays([]);
+    setSelectedProvinceCode("");
+    setSelectedCityCode("");
+
+    setValue("stateProvince", "");
+    setValue("city", "");
+    setValue("barangay", "");
   };
 
   const handleProvinceChange = (e) => {
-    const selectedProvCode = e.target.value;
-    const selecteddProvince = provinces.find(
-      (province) => province.provCode === selectedProvCode,
-    );
-    setSelectedProvince(selecteddProvince);
-    const cityList = listMuncities(selectedProvCode);
+    const provCode = e.target.value;
+    const provObj = provinces.find((p) => p.provCode === provCode);
+
+    setSelectedProvinceCode(provCode);
+    setValue("stateProvince", provObj?.provName || "");
+
+    const cityList = listMuncities(provCode);
     setCities(cityList);
+
+    setBarangays([]);
+    setSelectedCityCode("");
+    setValue("city", "");
+    setValue("barangay", "");
+
     if (cityList.length === 1) {
-      setSelectedCity(cityList[0].munCityName);
-      // Auto-select city means we should also load its barangays
-      setBarangays(listBarangays(cityList[0].psgcCode));
-    } else {
-      setSelectedCity("");
-      setBarangays([]);
+      const city = cityList[0];
+      setSelectedCityCode(city.psgcCode);
+      setValue("city", city.munCityName);
+      setBarangays(listBarangays(city.psgcCode));
     }
   };
 
   const handleCityChange = (e) => {
     const cityName = e.target.value;
-    setSelectedCity(cityName);
-    setBarangay("");
+    setValue("city", cityName);
+    setValue("barangay", "");
 
     const selectedCityObj = cities.find((c) => c.munCityName === cityName);
+
     if (selectedCityObj) {
+      setSelectedCityCode(selectedCityObj.psgcCode);
       setBarangays(listBarangays(selectedCityObj.psgcCode));
     } else {
+      setSelectedCityCode("");
       setBarangays([]);
     }
   };
@@ -194,7 +226,7 @@ export default function ShippingAddressComponent() {
       {openModal && singleAddressEdit && (
         <EditAddress
           address={singleAddressEdit}
-          onClose={() => setOpenModal(false)} // Close modal function
+          onClose={() => setOpenModal(false)}
         />
       )}
 
@@ -238,16 +270,16 @@ export default function ShippingAddressComponent() {
           </div>
         </div>
 
-        <form onSubmit={handleAddressSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Country
               </label>
               <select
+                {...register("country")}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                name="country"
-                id="contry"
+                disabled
               >
                 <option value="Philippines">Philippines</option>
               </select>
@@ -258,11 +290,9 @@ export default function ShippingAddressComponent() {
                 Region
               </label>
               <select
-                value={selectedRegion ? selectedRegion.regCode : ""}
                 onChange={handleRegionChange}
+                value={selectedRegionCode}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                name="region"
-                id="region"
               >
                 <option value="">Select Region</option>
                 {listRegions().map((region) => (
@@ -271,6 +301,12 @@ export default function ShippingAddressComponent() {
                   </option>
                 ))}
               </select>
+              <input type="hidden" {...register("region")} />
+              {errors.region && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.region.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -278,11 +314,10 @@ export default function ShippingAddressComponent() {
                 State / Province
               </label>
               <select
-                value={selectedProvince ? selectedProvince.provCode : ""}
                 onChange={handleProvinceChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                name="stateProvince"
-                id="stateProvince"
+                value={selectedProvinceCode}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:opacity-50"
+                disabled={!selectedRegionCode}
               >
                 <option value="">Select Province</option>
                 {provinces.map((province) => (
@@ -291,16 +326,21 @@ export default function ShippingAddressComponent() {
                   </option>
                 ))}
               </select>
+              <input type="hidden" {...register("stateProvince")} />
+              {errors.stateProvince && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.stateProvince.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">City</label>
               <select
-                value={selectedCity}
                 onChange={handleCityChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                name="city"
-                id="city"
+                value={watch("city")}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:opacity-50"
+                disabled={!selectedProvinceCode}
               >
                 <option value="">Select City</option>
                 {cities.map((city) => (
@@ -309,37 +349,56 @@ export default function ShippingAddressComponent() {
                   </option>
                 ))}
               </select>
+              <input type="hidden" {...register("city")} />
+              {errors.city && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.city.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Barangay
               </label>
-              <select
-                value={barangay}
-                onChange={(e) => setBarangay(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                name="barangay"
-                id="barangay"
-                required
-                disabled={!selectedCity}
-              >
-                <option value="">Select Barangay</option>
-                {barangays.map((brgy) => (
-                  <option key={brgy.psgcCode} value={brgy.brgyName}>
-                    {brgy.brgyName}
-                  </option>
-                ))}
-              </select>
+              {barangays.length > 0 ? (
+                <select
+                  {...register("barangay")}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:opacity-50"
+                  disabled={!selectedCityCode}
+                >
+                  <option value="">Select Barangay</option>
+                  {barangays.map((brgy) => (
+                    <option key={brgy.psgcCode} value={brgy.brgyName}>
+                      {brgy.brgyName}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  {...register("barangay")}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-black rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:opacity-50"
+                  placeholder={
+                    selectedCityCode
+                      ? "Enter Barangay manually"
+                      : "Select City first"
+                  }
+                  disabled={!selectedCityCode}
+                />
+              )}
+              {errors.barangay && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.barangay.message}
+                </p>
+              )}
             </div>
 
             <ValidatedInput
               label="Street Name, Building, House No."
-              name="streetBuildingHouseNum"
-              value={streetBuildingHouseNum}
-              onChange={handleInputChange(setStreetBuildingHouseNum)}
+              id="streetBuildingHouseNum"
+              {...register("streetBuildingHouseNum")}
+              error={errors.streetBuildingHouseNum}
               placeholder="Ex: 14 St. #28"
-              required
             />
           </div>
 
@@ -347,6 +406,7 @@ export default function ShippingAddressComponent() {
             <Buttons
               buttonType="submit"
               buttonName="Save Address"
+              isLoading={isPending || isSubmitting}
               icon={<FaCheckCircle className="text-lg" />}
               animateIcon={true}
               className="w-fit px-10 "

@@ -7,59 +7,55 @@ import { useNavigate } from "react-router-dom";
 import formatPrice from "../../reusable/formatPrice";
 import useOrderStore from "../../stores/useOrderStore";
 import axiosInstance from "../../lib/axios";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import ValidatedInput from "../../reusable/ValidatedInput";
+import {
+  emailSchema,
+  fullNameSchema,
+  phMobileSchema,
+} from "../../schemas/common.schema";
+
+// Guest Order Schema
+const guestOrderSchema = z.object({
+  fullName: fullNameSchema,
+  email: emailSchema,
+  phoneNumber: phMobileSchema,
+  currentAddress: z
+    .string()
+    .min(5, "Address MUST be at least 5 characters")
+    .max(200, "Address cannot exceed 200 characters"),
+  paymentMethod: z.enum(["GcashQR", "Online Payment"]),
+  notes: z.string().max(200, "Notes cannot exceed 200 characters").optional(),
+});
 
 export default function GuestSummaryModal({ onClose }) {
   const currentOrder = useOrderStore((state) => state.currentOrder);
   const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
   const navigate = useNavigate();
-  const [notes, setNotes] = useState("");
+  // const [notes, setNotes] = useState(""); // Managed by RHF now
   const [taxes, setTaxes] = useState(0);
   const [shippingFee, setShippingFee] = useState(35);
   const [cartItems, setCartItems] = useState([]);
   const [cart, setCart] = useState(guestSelectedCarts());
 
-  const [guestDetails, setGuestDetails] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    currentAddress: "",
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(guestOrderSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      currentAddress: "",
+      paymentMethod: "GcashQR",
+      notes: "",
+    },
   });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "phoneNumber") {
-      // Only allow numbers, max 11 digits
-      const numericValue = value.replace(/\D/g, "").slice(0, 11);
-      setGuestDetails((prev) => ({ ...prev, [name]: numericValue }));
-      return;
-    }
-
-    if (name === "fullName") {
-      // Limit length to 80
-      if (value.length > 80) return;
-      setGuestDetails((prev) => ({ ...prev, [name]: value }));
-      return;
-    }
-
-    if (name === "currentAddress") {
-      if (value.length > 200) return;
-      setGuestDetails((prev) => ({ ...prev, [name]: value }));
-      return;
-    }
-
-    if (name === "email") {
-      if (value.length > 254) return;
-      // Block spaces in email
-      if (value.includes(" ")) return;
-      setGuestDetails((prev) => ({ ...prev, [name]: value }));
-      return;
-    }
-
-    setGuestDetails((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // console.log(cart);
 
   const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -179,16 +175,15 @@ export default function GuestSummaryModal({ onClose }) {
     }
   };
 
-  const handleOrderFormSubmit = (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const { paymentMethod } = Object.fromEntries(formData);
-
-    const { fullName, email, phoneNumber, currentAddress } = guestDetails;
-
-    if (!fullName || !phoneNumber || !currentAddress || !email)
-      return toast.error("Please input required fields!");
+  const onOrderSubmit = (data) => {
+    const {
+      fullName,
+      email,
+      phoneNumber,
+      currentAddress,
+      paymentMethod,
+      notes,
+    } = data;
 
     const orderData = {
       orderItems: cartItems?.map((item) => ({
@@ -221,10 +216,6 @@ export default function GuestSummaryModal({ onClose }) {
       quantity: cartItems?.quantity,
       totalPoints,
     };
-
-    // if (paymentMethod === "Cod") {
-    //   placeOrder(orderData);
-    // }
 
     if (paymentMethod === "GcashQR" && cartItems.length > 0) {
       handleGcashQRpaymentMethod(orderData);
@@ -272,9 +263,6 @@ export default function GuestSummaryModal({ onClose }) {
     }
   };
 
-  //   if (isActivePending || isCartPending) return <div className="absolute inset-0 backdrop-blur-sm  z-10"><LoadingSpinner fullScreen/></div>;
-  //   if (isActiveError || isCartError) return <p>error...</p>;
-
   return (
     <section className="fixed inset-0 overflow-y-auto flex items-center justify-center font-main z-50 backdrop-blur-sm p-4">
       <div className="bg-card border flex-col-reverse text-sm md:text-normal border-black rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex  md:flex-row">
@@ -292,108 +280,57 @@ export default function GuestSummaryModal({ onClose }) {
             </button>
           </div>
 
-          <form onSubmit={handleOrderFormSubmit} className="relative">
+          <form onSubmit={handleSubmit(onOrderSubmit)} className="relative">
             {/* Customer Information Section */}
             <div className="bg-card p-4 rounded-lg">
               <h3 className="text-lg mb-3">Customer Information</h3>
 
-              {/* <div className="bg-yellow-50 border-l-4 my-2  rounded border-red-700 p-3  text-red-700">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-yellow-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-yellow-700">
-                      <strong>Note:</strong>
-                      To be able to place an order you must update required
-                      information in your profile page.
-                      <span>
-                        {" "}
-                        <Link
-                          to={"/profile"}
-                          className="underline text-blue-700"
-                        >
-                          Click here!
-                        </Link>{" "}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </div>  */}
-
               <div className="my-3">
-                <label className="block text-sm  text-black mb-1">Email</label>
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="email"
-                    name="email"
-                    value={guestDetails.email}
-                    onChange={handleInputChange}
-                    className="p-2 border border-gray-300 rounded-[5px]"
-                    maxLength={254}
-                  />
-                </div>
+                <ValidatedInput
+                  label="Email"
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  error={errors.email}
+                  placeholder="Ex: user@example.com"
+                  maxLength={254}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm  text-black mb-1">
-                    Full Name
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={guestDetails.fullName}
-                      onChange={handleInputChange}
-                      className="p-2 rounded-[5px] border border-gray-300"
-                      maxLength={80}
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Full Name"
+                    id="fullName"
+                    {...register("fullName")}
+                    error={errors.fullName}
+                    placeholder="Ex: Juan Dela Cruz"
+                    maxLength={80}
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-sm  text-black mb-1">
-                    Phone Number
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="tel"
-                      name="phoneNumber"
-                      value={guestDetails.phoneNumber}
-                      onChange={handleInputChange}
-                      className={`p-2 border border-gray-300 rounded-[5px]`}
-                      maxLength={11}
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Phone Number"
+                    id="phoneNumber"
+                    type="tel"
+                    {...register("phoneNumber")}
+                    error={errors.phoneNumber}
+                    placeholder="Ex: 09xxxxxxxxx"
+                    maxLength={11}
+                  />
                 </div>
               </div>
 
               <div className="mt-3">
-                <label className="block text-sm  text-black mb-1">
-                  Shipping Address
-                </label>
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="text"
-                    name="currentAddress"
-                    value={guestDetails.currentAddress}
-                    onChange={handleInputChange}
-                    className="p-2 border border-gray-300 rounded-[5px]"
-                    maxLength={200}
-                  />
-                </div>
+                <ValidatedInput
+                  label="Shipping Address"
+                  id="currentAddress"
+                  {...register("currentAddress")}
+                  error={errors.currentAddress}
+                  placeholder="Complete Address"
+                  maxLength={200}
+                />
               </div>
             </div>
 
@@ -402,12 +339,17 @@ export default function GuestSummaryModal({ onClose }) {
               <h3 className=" text-lg ">Payment Method</h3>
 
               <select
-                name="paymentMethod"
+                {...register("paymentMethod")}
                 className="w-full p-2 border outline-none border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               >
                 <option value="GcashQR">GCash QR</option>
                 <option value="Online Payment">Credit/Debit Card (TEST)</option>
               </select>
+              {errors.paymentMethod && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.paymentMethod.message}
+                </p>
+              )}
             </div>
 
             {/* Additional Notes */}
@@ -416,22 +358,27 @@ export default function GuestSummaryModal({ onClose }) {
                 Additional Notes (Optional)
               </label>
               <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                {...register("notes")}
                 className="w-full p-2 border border-gray-300 resize-none rounded-md outline-none focus:ring-primary focus:border-primary"
                 rows="3"
                 maxLength={200}
                 placeholder="Special instructions, delivery notes, etc."
               ></textarea>
+              {errors.notes && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.notes.message}
+                </p>
+              )}
             </div>
 
             {/* Action Buttons */}
             <div className="flex flex-row-reverse w-full gap-4 mt-4">
               <button
                 type="submit"
-                className="flex-1 py-4 border-2 border-black bg-[#10b981] text-white rounded-[5px] font-black uppercase tracking-widest text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] active:scale-95 transition-all outline-none"
+                disabled={isSubmitting}
+                className="flex-1 py-4 border-2 border-black bg-[#10b981] text-white rounded-[5px] font-black uppercase tracking-widest text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] active:scale-95 transition-all outline-none disabled:opacity-50"
               >
-                Place Order
+                {isSubmitting ? "Processing..." : "Place Order"}
               </button>
               <button
                 type="button"

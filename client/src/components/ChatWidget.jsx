@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { IoChatbubbleEllipsesOutline, IoClose, IoSend } from "react-icons/io5";
+import { Link } from "react-router-dom";
 import axiosInstance from "../lib/axios";
 
 /**
@@ -24,6 +25,9 @@ export default function ChatWidget() {
 
   // State for loading indicator while waiting for AI response
   const [isLoading, setIsLoading] = useState(false);
+
+  // State for guest chat limit reached
+  const [limitReached, setLimitReached] = useState(false);
 
   // State for the chat messages (what's displayed in the UI)
   const [messages, setMessages] = useState([
@@ -50,7 +54,7 @@ export default function ChatWidget() {
    */
   const handleSendMessage = async () => {
     // Don't send empty messages
-    if (!inputMessage.trim() || isLoading) return;
+    if (!inputMessage.trim() || isLoading || limitReached) return;
 
     const userMessage = inputMessage.trim();
     setInputMessage(""); // Clear input immediately
@@ -86,15 +90,28 @@ export default function ChatWidget() {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "model",
-          text:
-            error.response?.data?.message ||
-            "Sorry, I'm having trouble connecting. Please try again.",
-        },
-      ]);
+
+      // Check if guest limit reached
+      if (error.response?.data?.limitReached) {
+        setLimitReached(true);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "model",
+            text: "🔒 " + error.response.data.message,
+          },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "model",
+            text:
+              error.response?.data?.message ||
+              "Sorry, I'm having trouble connecting. Please try again.",
+          },
+        ]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -209,28 +226,46 @@ export default function ChatWidget() {
           {/* INPUT AREA */}
           {/* ============================================================ */}
           <div className="p-3 border-t-2 border-black bg-white">
-            <div className="flex gap-2 relative">
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask about toys..."
-                className="flex-1 p-3 pr-12 border-2 border-black rounded-[10px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all font-medium placeholder:text-gray-400 text-sm"
-                disabled={isLoading}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={isLoading || !inputMessage.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-1.5 rounded-[6px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                aria-label="Send message"
-              >
-                <IoSend size={16} />
-              </button>
-            </div>
-            <p className="text-[10px] text-center text-gray-400 mt-2 font-medium">
-              Powered by Google Gemini AI
-            </p>
+            {limitReached ? (
+              // Login prompt when guest limit is reached
+              <div className="text-center py-2">
+                <p className="text-sm text-gray-600 mb-2">
+                  🔒 You&apos;ve used all 3 free messages!
+                </p>
+                <Link
+                  to="/sign-in"
+                  className="inline-block bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-2 rounded-[10px] font-bold text-sm border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  Log in for 24/7 Chat
+                </Link>
+              </div>
+            ) : (
+              // Normal input area
+              <>
+                <div className="flex gap-2 relative">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask about toys..."
+                    className="flex-1 p-3 pr-12 border-2 border-black rounded-[10px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all font-medium placeholder:text-gray-400 text-sm"
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={isLoading || !inputMessage.trim()}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-1.5 rounded-[6px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    aria-label="Send message"
+                  >
+                    <IoSend size={16} />
+                  </button>
+                </div>
+                <p className="text-[10px] text-center text-gray-400 mt-2 font-medium">
+                  Powered by Google Gemini AI
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}

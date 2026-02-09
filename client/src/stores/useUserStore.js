@@ -55,6 +55,7 @@ export const useUserStore = create(persist(
             localStorage.removeItem("user-store");
             sessionStorage.removeItem("user-store");
             localStorage.removeItem("rememberMe");
+            sessionStorage.removeItem("snoozeOnboarding"); // Clear snoozing preference on logout
         },
         checkAuth: async () => {
             try {

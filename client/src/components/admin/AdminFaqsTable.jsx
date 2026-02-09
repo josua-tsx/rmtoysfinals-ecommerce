@@ -1,13 +1,28 @@
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { useEffect } from "react";
 import FormModal from "../../reusable/FormModal";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import ValidatedInput from "../../reusable/ValidatedInput";
+
+// FAQ Schema
+const faqSchema = z.object({
+  title: z
+    .string({ required_error: "Question is required" })
+    .min(5, "Question must be at least 5 characters")
+    .max(100, "Question cannot exceed 100 characters"),
+  answer: z
+    .string({ required_error: "Answer is required" })
+    .min(10, "Answer must be at least 10 characters")
+    .max(500, "Answer cannot exceed 500 characters"),
+});
 
 export default function AdminFaqsTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
@@ -19,8 +34,20 @@ export default function AdminFaqsTable({ enableMultiDel }) {
   // Edit Modal State
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
   const [selectedFaq, setSelectedFaq] = useState(null);
-  const [title, setTitle] = useState("");
-  const [answer, setAnswer] = useState("");
+
+  // Edit Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(faqSchema),
+    defaultValues: {
+      title: "",
+      answer: "",
+    },
+  });
 
   const {
     data: faqsTable = [],
@@ -53,6 +80,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
       toast.success("Updated Succesfully!");
       setIsOpenEditModal(false);
       setSelectedFaq(null);
+      reset();
     },
     onError: (err) => {
       toast.error(err.response.data.message);
@@ -150,14 +178,15 @@ export default function AdminFaqsTable({ enableMultiDel }) {
   // --- EDIT HANDLERS ---
   const handleOpenEditModal = (faq) => {
     setSelectedFaq(faq);
-    setTitle(faq.title);
-    setAnswer(faq.answer);
+    reset({
+      title: faq.title,
+      answer: faq.answer,
+    });
     setIsOpenEditModal(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    updateFaqMutation({ title, answer });
+  const handleEditSubmit = (data) => {
+    updateFaqMutation(data);
   };
 
   if (isError) return <p>Error</p>;
@@ -186,9 +215,9 @@ export default function AdminFaqsTable({ enableMultiDel }) {
         isOpen={isOpenEditModal}
         title="Update FAQ Entry"
         onClose={() => setIsOpenEditModal(false)}
-        onSubmit={handleEditSubmit}
+        onSubmit={handleSubmit(handleEditSubmit)}
         submitLabel="SAVE CHANGES"
-        isSubmitting={isEditPending}
+        isSubmitting={isEditPending || isSubmitting}
       >
         <div className="flex gap-6 p-4 flex-col bg-gray-50/50">
           <div className="flex flex-col gap-2">
@@ -198,14 +227,11 @@ export default function AdminFaqsTable({ enableMultiDel }) {
             >
               Question
             </label>
-            <input
-              name="title"
+            <ValidatedInput
               id="editTitle"
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={100}
-              className="border-2 border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
+              {...register("title")}
+              error={errors.title}
               required
             />
           </div>
@@ -217,15 +243,17 @@ export default function AdminFaqsTable({ enableMultiDel }) {
               Answer
             </label>
             <textarea
-              name="answer"
               id="editAnswer"
               rows={4}
-              value={answer}
-              maxLength={500}
-              onChange={(e) => setAnswer(e.target.value)}
-              className="border border-black w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none"
+              {...register("answer")}
+              className={`border ${errors.answer ? "border-red-500" : "border-black"} w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none`}
               required
             ></textarea>
+            {errors.answer && (
+              <p className="text-red-500 text-xs font-bold">
+                {errors.answer.message}
+              </p>
+            )}
           </div>
         </div>
       </FormModal>

@@ -8,7 +8,10 @@ import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
 import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createCategorySchema } from "../../schemas/category.schema";
+import ValidatedInput from "../../reusable/ValidatedInput";
 
 export default function AdminCategoryTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
@@ -20,8 +23,20 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   // Edit Modal State
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [categoryName, setCategoryName] = useState("");
-  const [categoryDescription, setCategoryDescription] = useState("");
+
+  // Edit Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createCategorySchema),
+    defaultValues: {
+      categoryName: "",
+      categoryDescription: "",
+    },
+  });
 
   const {
     data: categories = [],
@@ -58,6 +73,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
         toast.success("Successfully Edited!");
         setIsOpenEditModal(false);
         setSelectedCategory(null);
+        reset();
       },
       onError: (err) => {
         toast.error(err.response.data.message || "Something went wrong!");
@@ -159,14 +175,15 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   // --- EDIT HANDLERS ---
   const handleOpenEditModal = (category) => {
     setSelectedCategory(category);
-    setCategoryName(category.categoryName);
-    setCategoryDescription(category.categoryDescription);
+    reset({
+      categoryName: category.categoryName,
+      categoryDescription: category.categoryDescription,
+    });
     setIsOpenEditModal(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    editCategoryMutation({ categoryName, categoryDescription });
+  const handleEditSubmit = (data) => {
+    editCategoryMutation(data);
   };
 
   const filterdArrayCategories = arrayCategories.filter(
@@ -203,9 +220,9 @@ export default function AdminCategoryTable({ enableMultiDel }) {
         isOpen={isOpenEditModal}
         title="Edit Category"
         onClose={() => setIsOpenEditModal(false)}
-        onSubmit={handleEditSubmit}
+        onSubmit={handleSubmit(handleEditSubmit)}
         submitLabel="Update Category"
-        isSubmitting={isEditPending}
+        isSubmitting={isEditPending || isSubmitting}
       >
         <div className="flex gap-2 p-2 flex-col">
           <div className="flex gap-2 flex-col">
@@ -218,14 +235,11 @@ export default function AdminCategoryTable({ enableMultiDel }) {
                 (No spaces or numbers allowed. 3-50 characters.)
               </span>
             </label>
-            <input
-              type="text"
-              name="categoryName"
+            <ValidatedInput
               id="editCategoryName"
-              value={categoryName}
-              maxLength={50}
-              onChange={handleInputChange(setCategoryName)}
-              className="border border-black w-full rounded-[5px] p-2 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
+              {...register("categoryName")}
+              error={errors.categoryName}
+              placeholder="Enter category name"
               required
             />
           </div>
@@ -236,13 +250,13 @@ export default function AdminCategoryTable({ enableMultiDel }) {
             >
               Category Description:{" "}
             </label>
-            <textarea
-              name="categoryDescription"
+            <ValidatedInput
+              type="textarea"
               id="editCategoryDescription"
-              value={categoryDescription}
-              maxLength={200}
-              onChange={handleInputChange(setCategoryDescription)}
-              className="border border-black w-full rounded-[5px] p-2 h-[100px] focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold resize-none"
+              {...register("categoryDescription")}
+              error={errors.categoryDescription}
+              className="h-[100px]"
+              placeholder="Enter category description"
             />
           </div>
         </div>

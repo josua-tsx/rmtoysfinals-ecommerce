@@ -25,7 +25,7 @@ export default function AdminUploadProductImage({
       const validTypes = ["image/jpeg", "image/png", "image/jpg"];
       if (!validTypes.includes(file.type)) {
         toast.error(
-          `"${file.name}" is not a valid image type (only JPG/JPEG/PNG allowed)`
+          `"${file.name}" is not a valid image type (only JPG/JPEG/PNG allowed)`,
         );
         return;
       }
@@ -42,10 +42,28 @@ export default function AdminUploadProductImage({
   };
 
   const handleRemoveImage = (index) => {
+    // Check if what we are removing is an existing URL (http...) or a new blob (blob:...)
+    // Since images[index] is the image source string.
+    const imageToRemove = images[index];
+
+    // If it's a new image (blob), we need to find its correct index within the files array
+    // Assuming 'files' corresponds to the blob URLs in 'images' in order of appearance
+    if (imageToRemove.startsWith("blob:")) {
+      // Find all blob URLs up to this index
+      let blobCountBefore = 0;
+      for (let i = 0; i < index; i++) {
+        if (images[i].startsWith("blob:")) {
+          blobCountBefore++;
+        }
+      }
+
+      const updatedFiles = files.filter((_, i) => i !== blobCountBefore);
+      setFiles(updatedFiles);
+    }
+    // If it's not a blob (e.g. http://firebase...), do not touch files array as it doesn't correspond to any file there
+
     const updatedImages = images.filter((_, i) => i !== index);
-    const updatedFiles = files.filter((_, i) => i !== index);
     setImages(updatedImages);
-    setFiles(updatedFiles);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 

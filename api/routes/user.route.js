@@ -4,6 +4,7 @@ import { authLimiter } from "../middleware/rateLimiter.js";
 import {
   adminUpdateUserStatus,
   checkIfAdminExists,
+  completeOnboarding,
   confirmVerifyEmail,
   deleteWorker,
   editWorker,
@@ -16,7 +17,7 @@ import {
   restoreWorker,
   getArchivedWorkers,
 } from "../controllers/user.controller.js";
-import { editWorkerSchema, updateUserSchema } from "../schema/auth.schema.js";
+import { editWorkerSchema, onboardingSchema, updateUserSchema } from "../schema/auth.schema.js";
 import { validateResource } from "../middleware/validateResource.js";
 
 const router = express.Router();
@@ -24,6 +25,7 @@ const router = express.Router();
 router.post(`/update/:id`, requireAuth, validateResource(updateUserSchema), updateProfile);
 router.post(`/verify-email`, authLimiter, verifyUserEmail);
 router.post(`/confirm-email`, confirmVerifyEmail);
+router.post(`/onboarding`, requireAuth, authLimiter, validateResource(onboardingSchema), completeOnboarding);
 router.get(`/getAll`, getAll);
 router.get(`/getAllCustomer`, getAllCustomer);
 router.get(`/getAllWorkers`, getAllWorkers);
@@ -57,3 +59,6 @@ router.put(
 router.get(`/get-user/:userId`, getSingleUser);
 
 export default router;
+
+
+

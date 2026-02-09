@@ -91,6 +91,7 @@ export const signup = async (req, res, next) => {
       email: newUser.email,
       username: newUser.username,
       role: newUser.role,
+      isOnboardingComplete: newUser.isOnboardingComplete,
     });
   } catch (error) {
     next(error);
@@ -238,7 +239,8 @@ export const signout = async (req, res, next) => {
 
 export const getMe = async (req, res, next) => {
   try {
-    res.status(200).json(req.user);
+    const { password, ...rest } = req.user._doc;
+    res.status(200).json(rest);
   } catch (error) {
     next(error);
     console.log(error);

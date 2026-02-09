@@ -8,7 +8,10 @@ import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
 import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createSupplierSchema } from "../../schemas/supplier.schema";
+import ValidatedInput from "../../reusable/ValidatedInput";
 
 export default function AdminSupplierTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
@@ -22,11 +25,27 @@ export default function AdminSupplierTable({ enableMultiDel }) {
   // Edit Modal State
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
-  const [supplierName, setSupplierName] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
-  const [supplierAddress, setSupplierAddress] = useState("");
-  const [enableNotifications, setEnableNotifications] = useState(true);
+
+  // Edit Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createSupplierSchema),
+    defaultValues: {
+      supplierName: "",
+      contactPerson: "",
+      contactNumber: "",
+      supplierAddress: "",
+      enableNotifications: true,
+    },
+  });
+
+  const enableNotifications = watch("enableNotifications");
 
   const {
     data: suppliers = [],
@@ -53,7 +72,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     useMutation({
       mutationFn: async (data) => {
         const res = await axiosInstance.put(
-          `/supplier/edit-supplier/${data._id || selectedSupplier._id}`,
+          `/supplier/edit-supplier/${selectedSupplier._id}`,
           data,
         );
         return res.data;
@@ -63,6 +82,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
         toast.success("Successfully Updated!");
         setIsOpenEditModal(false);
         setSelectedSupplier(null);
+        reset();
       },
       onError: (err) => {
         toast.error(err.response.data.message || "Something went wrong");
@@ -163,23 +183,18 @@ export default function AdminSupplierTable({ enableMultiDel }) {
   // --- EDIT HANDLERS ---
   const handleOpenEditModal = (supplier) => {
     setSelectedSupplier(supplier);
-    setSupplierName(supplier.supplierName);
-    setContactPerson(supplier.contactPerson);
-    setContactNumber(supplier.contactNumber);
-    setSupplierAddress(supplier.supplierAddress);
-    setEnableNotifications(supplier.enableNotifications !== false); // Default true
+    reset({
+      supplierName: supplier.supplierName,
+      contactPerson: supplier.contactPerson,
+      contactNumber: supplier.contactNumber,
+      supplierAddress: supplier.supplierAddress,
+      enableNotifications: supplier.enableNotifications !== false,
+    });
     setIsOpenEditModal(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    editSupplierMutation({
-      supplierName,
-      contactPerson,
-      contactNumber,
-      supplierAddress,
-      enableNotifications,
-    });
+  const handleEditSubmit = (data) => {
+    editSupplierMutation(data);
   };
 
   const { mutate: toggleNotificationMutation } = useMutation({
@@ -240,9 +255,9 @@ export default function AdminSupplierTable({ enableMultiDel }) {
         isOpen={isOpenEditModal}
         title="Edit Supplier"
         onClose={() => setIsOpenEditModal(false)}
-        onSubmit={handleEditSubmit}
+        onSubmit={handleSubmit(handleEditSubmit)}
         submitLabel="UPDATE SUPPLIER"
-        isSubmitting={isEditPending}
+        isSubmitting={isEditPending || isSubmitting}
       >
         <div className="flex gap-4 p-2 flex-col">
           <div className="flex flex-col gap-2">
@@ -252,15 +267,11 @@ export default function AdminSupplierTable({ enableMultiDel }) {
             >
               Supplier Name
             </label>
-            <input
-              type="text"
-              name="supplierName"
+            <ValidatedInput
               id="editSupplierName"
-              value={supplierName}
-              maxLength={50}
-              onChange={handleInputChange(setSupplierName)}
+              {...register("supplierName")}
+              error={errors.supplierName}
               placeholder="Ex: Toy Kingdom"
-              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -275,15 +286,11 @@ export default function AdminSupplierTable({ enableMultiDel }) {
             >
               Contact Person Full Name
             </label>
-            <input
-              type="text"
-              name="contactPerson"
+            <ValidatedInput
               id="editContactPerson"
-              value={contactPerson}
-              maxLength={100}
-              onChange={handleInputChange(setContactPerson)}
+              {...register("contactPerson")}
+              error={errors.contactPerson}
               placeholder="Ex: Juan Dela Cruz"
-              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -298,15 +305,12 @@ export default function AdminSupplierTable({ enableMultiDel }) {
             >
               Contact Number
             </label>
-            <input
+            <ValidatedInput
               type="tel"
-              name="contactNumber"
               id="editContactNumber"
-              value={contactNumber}
-              maxLength={11}
-              onChange={handleInputChange(setContactNumber)}
+              {...register("contactNumber")}
+              error={errors.contactNumber}
               placeholder="Ex: 09123456789"
-              className="border border-black w-full rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -321,14 +325,13 @@ export default function AdminSupplierTable({ enableMultiDel }) {
             >
               Supplier Address
             </label>
-            <textarea
-              name="supplierAddress"
+            <ValidatedInput
+              type="textarea"
               id="editSupplierAddress"
-              value={supplierAddress}
-              maxLength={200}
-              onChange={handleInputChange(setSupplierAddress)}
+              {...register("supplierAddress")}
+              error={errors.supplierAddress}
               placeholder="Ex: 123 Toy St., Manila City"
-              className="border border-black w-full rounded-[5px] p-3 h-[100px] outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
+              className="h-[100px]"
               required
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -342,7 +345,9 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               type="checkbox"
               id="editEnableNotifications"
               checked={enableNotifications}
-              onChange={(e) => setEnableNotifications(e.target.checked)}
+              onChange={(e) =>
+                setValue("enableNotifications", e.target.checked)
+              }
               className="w-5 h-5 border border-black rounded-[3px] accent-green-500 cursor-pointer"
             />
             <label

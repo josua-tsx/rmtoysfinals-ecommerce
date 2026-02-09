@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  createCategorySchema,
-  categoryNameSchema,
-  categoryDescriptionSchema,
-} from "../../schemas/category.schema";
+import { createCategorySchema } from "../../schemas/category.schema";
 import AdminCategoryTable from "../../components/admin/AdminCategoryTable";
 import AdminHeader from "../../reusable/Admin/AdminHeader";
 import ValidatedInput from "../../reusable/ValidatedInput";
@@ -13,16 +9,27 @@ import FormModal from "../../reusable/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminCategory() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [enableMultiDel, setEnableMultiDel] = useState(false);
 
-  // Add Form State
-  const [categoryName, setCategoryName] = useState("");
-  const [categoryDescription, setCategoryDescription] = useState("");
+  // React Hook Form setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createCategorySchema),
+    defaultValues: {
+      categoryName: "",
+      categoryDescription: "",
+    },
+  });
 
   const { mutate: addCategoryMutation, isPending: isCategoryPending } =
     useMutation({
@@ -32,8 +39,7 @@ export default function AdminCategory() {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["categories"] });
-        setCategoryDescription("");
-        setCategoryName("");
+        reset(); // Clear form
         toast.success("Category Added");
         setShowAdd(false);
       },
@@ -42,21 +48,13 @@ export default function AdminCategory() {
       },
     });
 
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-
-    const data = { categoryName, categoryDescription };
-    const result = createCategorySchema.safeParse(data);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    addCategoryMutation(result.data);
+  const onSubmit = (data) => {
+    addCategoryMutation(data);
   };
 
   const toggleAddCategory = () => {
     setShowAdd(!showAdd);
+    if (!showAdd) reset(); // Reset form when opening/closing if needed (optional)
   };
 
   return (
@@ -104,9 +102,9 @@ export default function AdminCategory() {
           isOpen={showAdd}
           title="Add Category"
           onClose={() => setShowAdd(false)}
-          onSubmit={handleAddSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           submitLabel="Add Category"
-          isSubmitting={isCategoryPending}
+          isSubmitting={isCategoryPending || isSubmitting}
         >
           <div className="flex gap-4 p-2 flex-col">
             <div className="flex gap-2 flex-col">
@@ -117,10 +115,9 @@ export default function AdminCategory() {
                 CATEGORY NAME
               </label>
               <ValidatedInput
-                name="categoryName"
-                value={categoryName}
-                onChange={handleInputChange(setCategoryName)}
-                schema={categoryNameSchema}
+                id="categoryName"
+                {...register("categoryName")}
+                error={errors.categoryName}
                 placeholder="Enter category name"
                 required
               />
@@ -138,10 +135,9 @@ export default function AdminCategory() {
               </label>
               <ValidatedInput
                 type="textarea"
-                name="categoryDescription"
-                value={categoryDescription}
-                onChange={handleInputChange(setCategoryDescription)}
-                schema={categoryDescriptionSchema}
+                id="categoryDescription"
+                {...register("categoryDescription")}
+                error={errors.categoryDescription}
                 className="h-[100px]"
                 placeholder="Enter category description"
               />

@@ -5,20 +5,31 @@ import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 import Buttons from "../reusable/Buttons";
 import { FaSignInAlt } from "react-icons/fa";
 import { signinSchema } from "../schemas/auth.schema";
 
 import PasswordInput from "../reusable/PasswordInput";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function SignIn() {
   const navigate = useNavigate();
 
   const { setCurrentUser } = useUserStore();
 
-  const [loginId, setLoginId] = useState("");
-  const [password, setPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(signinSchema),
+    defaultValues: {
+      loginId: "",
+      password: "",
+    },
+  });
+
   const [rememberMe, setRememberMe] = useState(false);
 
   const { data: isAdminExist, isLoading } = useQuery({
@@ -39,8 +50,6 @@ export default function SignIn() {
       localStorage.setItem("rememberMe", rememberMe);
 
       setCurrentUser(userData);
-      setLoginId("");
-      setPassword("");
       navigate(`/`);
     },
     onError: (err) => {
@@ -48,17 +57,8 @@ export default function SignIn() {
     },
   });
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-
-    const formData = { loginId, password };
-    const result = signinSchema.safeParse(formData);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    loginMutation(result.data);
+  const onSubmit = (data) => {
+    loginMutation(data);
   };
 
   return (
@@ -66,7 +66,7 @@ export default function SignIn() {
       <div className="max-w-[600px] h-full  flex flex-col justify-center   mx-auto ">
         {/* FORM */}
         <form
-          onSubmit={handleFormSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="relative border flex gap-2 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg mt-8"
         >
           {/* Sticker Header */}
@@ -77,7 +77,7 @@ export default function SignIn() {
           </div>
           <div className="flex justify-between flex-col">
             <label
-              htmlFor="email"
+              htmlFor="loginId"
               className=" mb-2 uppercase text-[10px] font-black tracking-widest text-gray-500"
             >
               Email or Username :{" "}
@@ -85,21 +85,25 @@ export default function SignIn() {
             <input
               type="text"
               placeholder="Ex: example@domain.com or johndoe123"
-              name="email"
-              id="email"
-              value={loginId}
-              onChange={handleInputChange(setLoginId)}
+              id="loginId"
               maxLength={246}
-              className="outline-none p-3 bg-white border-black border rounded-[5px]"
+              {...register("loginId")}
+              className={`outline-none p-3 bg-white border-black border rounded-[5px] ${errors.loginId ? "border-red-500" : ""}`}
             />
+            {errors.loginId && (
+              <p className="text-red-500 text-xs mt-1 font-bold">
+                {errors.loginId.message}
+              </p>
+            )}
           </div>
 
           <PasswordInput
             label="Password:"
-            name="password"
-            value={password}
-            onChange={handleInputChange(setPassword)}
+            id="password"
             autoComplete="current-password"
+            {...register("password")}
+            errorText={errors.password?.message}
+            className={errors.password ? "border-red-500" : ""}
           />
 
           <div className="flex items-center gap-2 mb-4">

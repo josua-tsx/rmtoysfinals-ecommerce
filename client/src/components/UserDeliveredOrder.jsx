@@ -3,6 +3,8 @@ import axiosInstance from "../lib/axios";
 import SingleOrderList from "./SingleOrderList";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
+import { generateInvoicePDF } from "../lib/generateReport";
+import toast from "react-hot-toast";
 
 export default function UserDeliveredOrder() {
   const [orderId, setOrderId] = useState(null);
@@ -41,20 +43,14 @@ export default function UserDeliveredOrder() {
     e.stopPropagation();
     try {
       setDownloadingId(orderId);
-      const res = await axiosInstance.get(`/invoice/${orderId}`, {
-        responseType: "blob",
-      });
+      const res = await axiosInstance.get(`/invoice/${orderId}`);
+      const invoiceData = res.data;
 
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Invoice-${orderId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
+      generateInvoicePDF(invoiceData);
+      toast.success("Invoice downloaded!");
     } catch (error) {
       console.error(error);
-      // toast.error("Failed to download invoice");
+      toast.error("Failed to download invoice");
     } finally {
       setDownloadingId(null);
     }

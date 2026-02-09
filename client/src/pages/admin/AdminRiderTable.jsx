@@ -7,8 +7,11 @@ import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
-import { handleInputChange } from "../../reusable/helperFunctions/onChangeInput";
 import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { addRiderSchema } from "../../schemas/rider.schema";
+import ValidatedInput from "../../reusable/ValidatedInput";
 
 export default function AdminRiderTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
@@ -20,8 +23,20 @@ export default function AdminRiderTable({ enableMultiDel }) {
   // Edit Modal State
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
   const [selectedRider, setSelectedRider] = useState(null);
-  const [riderName, setRiderName] = useState("");
-  const [riderPhoneNum, setRiderPhoneNum] = useState("");
+
+  // Edit Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(addRiderSchema),
+    defaultValues: {
+      riderName: "",
+      riderPhoneNumber: "",
+    },
+  });
 
   const {
     data: getRiders = [],
@@ -57,6 +72,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
         queryClient.invalidateQueries({ queryKey: ["riders"] });
         setIsOpenEditModal(false);
         setSelectedRider(null);
+        reset();
         toast.success("Rider updated succesfully!");
       },
       onError: (err) => {
@@ -160,14 +176,15 @@ export default function AdminRiderTable({ enableMultiDel }) {
   // --- EDIT HANDLERS ---
   const handleOpenEditModal = (rider) => {
     setSelectedRider(rider);
-    setRiderName(rider.riderName);
-    setRiderPhoneNum(rider.riderPhoneNumber);
+    reset({
+      riderName: rider.riderName,
+      riderPhoneNumber: rider.riderPhoneNumber,
+    });
     setIsOpenEditModal(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    updateRiderMutation({ riderName, riderPhoneNumber: riderPhoneNum });
+  const handleEditSubmit = (data) => {
+    updateRiderMutation(data);
   };
 
   if (isError) return <p>Error...</p>;
@@ -196,9 +213,9 @@ export default function AdminRiderTable({ enableMultiDel }) {
         isOpen={isOpenEditModal}
         title="Edit Rider"
         onClose={() => setIsOpenEditModal(false)}
-        onSubmit={handleEditSubmit}
+        onSubmit={handleSubmit(handleEditSubmit)}
         submitLabel="Update Rider"
-        isSubmitting={isEditPending}
+        isSubmitting={isEditPending || isSubmitting}
       >
         <div className="flex gap-2 p-2 flex-col w-full">
           <div className="flex flex-col gap-2 w-full justify-between">
@@ -208,29 +225,27 @@ export default function AdminRiderTable({ enableMultiDel }) {
             >
               Rider Full Name:{" "}
             </label>
-            <input
+            <ValidatedInput
               type="text"
               id="editRiderName"
               placeholder="Ex: Brendon Mae"
-              value={riderName}
-              onChange={handleInputChange(setRiderName)}
-              className="border border-black w-full rounded-[5px] p-2 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
+              {...register("riderName")}
+              error={errors.riderName}
             />
           </div>
           <div className="flex flex-col gap-2 w-full justify-between">
             <label
-              htmlFor="editRiderPhoneNum"
+              htmlFor="editRiderPhoneNumber"
               className="font-black uppercase text-xs tracking-widest text-gray-500"
             >
               Rider Phone Number:{" "}
             </label>
-            <input
+            <ValidatedInput
               type="text"
-              id="editRiderPhoneNum"
-              value={riderPhoneNum}
-              onChange={(e) => setRiderPhoneNum(e.target.value)}
+              id="editRiderPhoneNumber"
               placeholder="Ex: 09*******83"
-              className="border border-black w-full rounded-[5px] p-2 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
+              {...register("riderPhoneNumber")}
+              error={errors.riderPhoneNumber}
             />
           </div>
         </div>

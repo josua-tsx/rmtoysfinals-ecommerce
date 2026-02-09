@@ -8,6 +8,25 @@ import { CiEdit } from "react-icons/ci";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
 import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import ValidatedInput from "../../reusable/ValidatedInput";
+import {
+  emailSchema,
+  usernameSchema,
+  passwordSchema,
+} from "../../schemas/auth.schema";
+import { jobDescriptionSchema } from "../../schemas/worker.schema";
+
+// Edit worker schema - password is optional for edits
+const editWorkerSchema = z.object({
+  email: emailSchema,
+  username: usernameSchema,
+  password: z.union([z.literal(""), passwordSchema]).optional(),
+  jobDescription: jobDescriptionSchema,
+  role: z.enum(["staff", "validatorStaff"]),
+});
 
 export default function AdminWorkersTable() {
   const queryClient = useQueryClient();
@@ -19,12 +38,24 @@ export default function AdminWorkersTable() {
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState(null);
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [role, setRole] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Edit Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(editWorkerSchema),
+    defaultValues: {
+      email: "",
+      username: "",
+      password: "",
+      jobDescription: "",
+      role: "validatorStaff",
+    },
+  });
 
   const {
     data: workers = [],
@@ -73,11 +104,7 @@ export default function AdminWorkersTable() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["validatorStaff"] });
-      setEmail("");
-      setUsername("");
-      setJobDescription("");
-      setRole("");
-      setPassword("");
+      reset();
       toast.success("Successfully worker updated!");
       setIsEditModalOpen(false);
       setSelectedWorker(null);
@@ -107,23 +134,23 @@ export default function AdminWorkersTable() {
   // Edit Handlers
   const handleEditClick = (worker) => {
     setSelectedWorker(worker);
-    setEmail(worker.email);
-    setUsername(worker.username);
-    setJobDescription(worker.jobDescription);
-    setRole(worker.role);
-    setPassword(""); // Reset password field
+    reset({
+      email: worker.email,
+      username: worker.username,
+      password: "",
+      jobDescription: worker.jobDescription,
+      role: worker.role,
+    });
     setIsEditModalOpen(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    updateWorkerMutation({
-      email,
-      username,
-      password,
-      role,
-      jobDescription,
-    });
+  const handleEditSubmit = (data) => {
+    // Only send password if it's not empty
+    const submitData = { ...data };
+    if (!submitData.password) {
+      delete submitData.password;
+    }
+    updateWorkerMutation(submitData);
   };
 
   const togglePassword = () => {
@@ -158,9 +185,9 @@ export default function AdminWorkersTable() {
         isOpen={isEditModalOpen}
         title="Edit Worker"
         onClose={() => setIsEditModalOpen(false)}
-        onSubmit={handleEditSubmit}
+        onSubmit={handleSubmit(handleEditSubmit)}
         submitLabel="UPDATE WORKER"
-        isSubmitting={isUpdating}
+        isSubmitting={isUpdating || isSubmitting}
       >
         <div className="flex gap-4 p-2 flex-col">
           <div className="flex flex-col gap-2">
@@ -170,15 +197,12 @@ export default function AdminWorkersTable() {
             >
               WORKER EMAIL
             </label>
-            <input
+            <ValidatedInput
               type="email"
-              name="email"
               id="editEmail"
-              value={email}
-              maxLength={254}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register("email")}
+              error={errors.email}
               placeholder="Ex: worker@example.com"
-              className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -193,15 +217,12 @@ export default function AdminWorkersTable() {
             >
               Username
             </label>
-            <input
+            <ValidatedInput
               type="text"
-              name="username"
               id="editUsername"
-              value={username}
-              maxLength={50}
-              onChange={(e) => setUsername(e.target.value)}
+              {...register("username")}
+              error={errors.username}
               placeholder="Ex: JuanDelaCruz"
-              className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
@@ -217,15 +238,12 @@ export default function AdminWorkersTable() {
               Password (leave blank to keep current)
             </label>
             <div className="flex flex-col gap-2 relative w-full">
-              <input
+              <ValidatedInput
                 type={showPassword ? "text" : "password"}
-                name="password"
                 id="editPassword"
-                value={password}
-                maxLength={128}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register("password")}
+                error={errors.password}
                 placeholder="••••••••"
-                className="border border-black rounded-[5px] p-3 w-full outline-none bg-gray-50 focus:bg-white transition-colors"
               />
               <button
                 type="button"
@@ -254,10 +272,8 @@ export default function AdminWorkersTable() {
               ROLE
             </label>
             <select
-              name="role"
               id="editRole"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+              {...register("role")}
               className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
               required
             >
@@ -273,15 +289,12 @@ export default function AdminWorkersTable() {
             >
               Job Description
             </label>
-            <input
+            <ValidatedInput
               type="text"
-              name="jobDescription"
               id="editJobDescription"
-              value={jobDescription}
-              maxLength={200}
-              onChange={(e) => setJobDescription(e.target.value)}
+              {...register("jobDescription")}
+              error={errors.jobDescription}
               placeholder="Ex: Customer Support & Verification"
-              className="border border-black rounded-[5px] p-3 outline-none bg-gray-50 focus:bg-white transition-colors"
               required
             />
           </div>

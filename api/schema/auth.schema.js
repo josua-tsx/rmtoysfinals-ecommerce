@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { emailSchema, usernameSchema, passwordSchema } from "../utils/validations.js";
+import { emailSchema, usernameSchema, passwordSchema, phMobileSchema } from "../utils/validations.js";
 
 /**
  * Sign Up Schema
@@ -95,5 +95,24 @@ export const updateUserSchema = z.object({
     avatar: z.string().optional(),
     phoneNumber: z.string().optional(),
     fullName: z.string().optional(),
+  }),
+});
+
+/**
+ * Onboarding Schema
+ */
+export const onboardingSchema = z.object({
+  body: z.object({
+    fullName: z.string({ required_error: "Full name is required" })
+      .trim()
+      .min(2, "Full name must be at least 2 characters"),
+    phoneNumber: phMobileSchema,
+    address: z.object({
+      region: z.string({ required_error: "Region is required" }).trim().min(1, "Region is required"),
+      stateProvince: z.string({ required_error: "State/Province is required" }).trim().min(1, "State/Province is required"),
+      city: z.string({ required_error: "City is required" }).trim().min(1, "City is required"),
+      barangay: z.string({ required_error: "Barangay is required" }).trim().min(1, "Barangay is required"),
+      streetBuildingHouseNum: z.string({ required_error: "Street/Building/House number is required" }).trim().min(1, "Street address is required"),
+    }),
   }),
 });

@@ -4,33 +4,45 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
-import { useState } from "react";
-import { handleInputChange } from "../reusable/helperFunctions/onChangeInput";
 import { FaUserPlus } from "react-icons/fa";
 import PasswordInput from "../reusable/PasswordInput";
 import ValidatedInput from "../reusable/ValidatedInput";
 import { signupSchema } from "../schemas/auth.schema";
-import { emailSchema, usernameSchema } from "../schemas/common.schema";
+import { useUserStore } from "../stores/useUserStore";
+
+/* replace-imports-start */
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+/* replace-imports-end */
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { checkAuth } = useUserStore();
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   const { mutate: signUpMutation, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post("/auth/signup", data);
       return res.data;
     },
-    onSuccess: () => {
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      navigate(`/sign-in`);
+    onSuccess: async () => {
+      await checkAuth(); // Updates the user store immediately
+      // Clear any snoozed state from previous sessions
+      sessionStorage.removeItem("snoozeOnboarding");
+      navigate(`/`);
       toast.success("Account created Successfully");
     },
     onError: (err) => {
@@ -38,24 +50,15 @@ export default function SignUp() {
     },
   });
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-
-    const formData = { username, email, password, confirmPassword };
-    const result = signupSchema.safeParse(formData);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    signUpMutation(result.data);
+  const onSubmit = (data) => {
+    signUpMutation(data);
   };
 
   return (
     <section className="h-screen pt-28 bg-yellow p-4 font-main">
       <div className="max-w-[600px] h-full flex flex-col justify-center   mx-auto ">
         <form
-          onSubmit={handleFormSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="relative border flex gap-2 bg-card flex-col border-[#313031] p-4 rounded-[5px] pt-[40px] pb-[70px] shadow-lg mt-8"
         >
           {/* Sticker Header */}
@@ -67,39 +70,41 @@ export default function SignUp() {
 
           <ValidatedInput
             label="Email:"
-            name="email"
-            value={email}
-            onChange={handleInputChange(setEmail)}
-            schema={emailSchema}
+            id="email"
             placeholder="Ex: example@domain.com"
+            {...register("email")}
+            error={errors.email}
             required
           />
 
           <ValidatedInput
             label="Username:"
-            name="username"
-            value={username}
-            onChange={handleInputChange(setUsername)}
-            schema={usernameSchema}
+            id="username"
             placeholder="Ex: johndoe123"
+            {...register("username")}
+            error={errors.username}
             required
             errorText="(3-30 chars, no special characters)"
           />
 
           <PasswordInput
             label="Password:"
-            name="password"
-            value={password}
-            onChange={handleInputChange(setPassword)}
-            errorText="(At least 8 chars, 1 uppercase, symbol, and number)"
+            id="password"
+            {...register("password")}
+            errorText={
+              errors.password
+                ? errors.password.message
+                : "(At least 8 chars, 1 uppercase, symbol, and number)"
+            }
+            className={errors.password ? "border-red-500" : ""}
           />
 
           <PasswordInput
             label="Confirm password:"
-            name="confirmPassword"
             id="confirmPassword"
-            value={confirmPassword}
-            onChange={handleInputChange(setConfirmPassword)}
+            {...register("confirmPassword")}
+            errorText={errors.confirmPassword?.message}
+            className={errors.confirmPassword ? "border-red-500" : ""}
           />
 
           <div className="flex justify-center mt-4 gap-2">

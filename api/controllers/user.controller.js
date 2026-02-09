@@ -5,6 +5,8 @@ import { generateTokens } from "../utils/generateToken.js";
 import { logAuditTrail } from "./audit.controller.js";
 
 import Address from "../models/address.models.js";
+import Rider from "../models/rider.models.js";
+import Supplier from "../models/supplier.model.js";
 import Review from "../models/review.model.js";
 
 import crypto from "crypto";
@@ -457,6 +459,103 @@ export const checkIfAdminExists = async (req, res, next) => {
     } else {
       res.status(200).json({ hasAdmin: false });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Complete user onboarding
+ * Collects fullName, phoneNumber, and shipping address after signup
+ */
+export const completeOnboarding = async (req, res, next) => {
+  const userId = req.user._id;
+  const { fullName, phoneNumber, address } = req.body;
+
+  try {
+    // Check if already onboarded
+    const existingUser = await User.findById(userId);
+    if (existingUser.isOnboardingComplete) {
+      return next(handleMakeError(400, "Onboarding already completed"));
+    }
+
+    // Check for duplicate phone number across User, Rider, and Supplier collections
+    const [phoneExistsInUser, phoneExistsInRider, phoneExistsInSupplier] = await Promise.all([
+      User.findOne({ 
+        phoneNumber, 
+        _id: { $ne: userId } // Exclude current user
+      }),
+      Rider.findOne({ riderPhoneNumber: phoneNumber }),
+      Supplier.findOne({ contactNumber: phoneNumber })
+    ]);
+
+    if (phoneExistsInUser) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+    if (phoneExistsInRider) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+    if (phoneExistsInSupplier) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+
+    // Update user profile
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        fullName,
+        phoneNumber,
+        isOnboardingComplete: true,
+      },
+      { new: true }
+    );
+
+    // Create shipping address if provided
+    if (address) {
+      const { region, stateProvince, city, barangay, streetBuildingHouseNum } = address;
+      
+      const fullAddress = `${streetBuildingHouseNum}, ${barangay}, ${city}, ${stateProvince}, ${region}, Philippines`;
+      
+      const newAddress = new Address({
+        userId,
+        region,
+        stateProvince,
+        city,
+        barangay,
+        streetBuildingHouseNum,
+        fullAddress,
+        isActive: true, // Set as default address
+      });
+
+      await newAddress.save();
+
+      // Add address reference to user
+      await User.findByIdAndUpdate(userId, {
+        $push: { address: newAddress._id },
+      });
+    }
+
+    await logAuditTrail({
+      action: "onboarding_completed",
+      userId: userId,
+      targetId: userId,
+      targetType: "User",
+      details: {
+        description: "User completed onboarding",
+      },
+      role: updatedUser.role,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Onboarding completed successfully",
+      user: {
+        _id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        phoneNumber: updatedUser.phoneNumber,
+        isOnboardingComplete: updatedUser.isOnboardingComplete,
+      },
+    });
   } catch (error) {
     next(error);
   }

@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { vatSchema, vatPercentSchema } from "../../schemas/vat.schema";
+import { vatSchema } from "../../schemas/vat.schema";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
 import ValidatedInput from "../../reusable/ValidatedInput";
 import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminVatTable() {
   const queryClient = useQueryClient();
@@ -19,9 +21,53 @@ export default function AdminVatTable() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedVat, setSelectedVat] = useState(null);
 
-  // Form states
-  const [vatPercent, setVatPercent] = useState(0);
-  const [vatValue, setVatValue] = useState(0);
+  // React Hook Form Setup for Add Modal
+  const {
+    register: registerAdd,
+    handleSubmit: handleSubmitAdd,
+    reset: resetAdd,
+    watch: watchAdd,
+    setValue: setValueAdd,
+    formState: { errors: errorsAdd, isSubmitting: isSubmittingAdd },
+  } = useForm({
+    resolver: zodResolver(vatSchema),
+    defaultValues: {
+      vatPercent: 0,
+      vatValue: 0,
+    },
+  });
+
+  // React Hook Form Setup for Edit Modal
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    reset: resetEdit,
+    watch: watchEdit,
+    setValue: setValueEdit,
+    formState: { errors: errorsEdit, isSubmitting: isSubmittingEdit },
+  } = useForm({
+    resolver: zodResolver(vatSchema),
+    defaultValues: {
+      vatPercent: 0,
+      vatValue: 0,
+    },
+  });
+
+  // Watch vatPercent for auto-calculation
+  const addVatPercent = watchAdd("vatPercent");
+  const editVatPercent = watchEdit("vatPercent");
+
+  // Auto-calculate vatValue when vatPercent changes (Add Modal)
+  useEffect(() => {
+    const percent = parseFloat(addVatPercent) || 0;
+    setValueAdd("vatValue", percent / 100);
+  }, [addVatPercent, setValueAdd]);
+
+  // Auto-calculate vatValue when vatPercent changes (Edit Modal)
+  useEffect(() => {
+    const percent = parseFloat(editVatPercent) || 0;
+    setValueEdit("vatValue", percent / 100);
+  }, [editVatPercent, setValueEdit]);
 
   const {
     data: vatTable = [],
@@ -35,12 +81,6 @@ export default function AdminVatTable() {
     },
   });
 
-  const handleConvertedToPercent = (e) => {
-    const input = parseFloat(e.target.value) || 0;
-    setVatPercent(input);
-    setVatValue(input / 100);
-  };
-
   const { mutate: addVatMutation, isPending: isAdding } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/vat/add-vat`, data);
@@ -49,8 +89,7 @@ export default function AdminVatTable() {
     onSuccess: () => {
       toast.success("Added Successfully!");
       queryClient.invalidateQueries({ queryKey: ["vats"] });
-      setVatPercent(0);
-      setVatValue(0);
+      resetAdd();
       setIsOpenAddModal(false);
     },
     onError: (err) => {
@@ -92,40 +131,25 @@ export default function AdminVatTable() {
   });
 
   const handleOpenAddModal = () => {
-    setVatPercent(0);
-    setVatValue(0);
+    resetAdd({ vatPercent: 0, vatValue: 0 });
     setIsOpenAddModal(true);
   };
 
   const handleOpenEditModal = (vat) => {
     setSelectedVat(vat);
-    setVatPercent(vat.vatPercent);
-    setVatValue(vat.vatValue);
+    resetEdit({
+      vatPercent: vat.vatPercent,
+      vatValue: vat.vatValue,
+    });
     setIsOpenEditModal(true);
   };
 
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-    const data = { vatPercent, vatValue };
-    const result = vatSchema.safeParse(data);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    addVatMutation(result.data);
+  const onAddSubmit = (data) => {
+    addVatMutation(data);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    const data = { vatPercent, vatValue };
-    const result = vatSchema.safeParse(data);
-
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    updateVatMutation(result.data);
+  const onEditSubmit = (data) => {
+    updateVatMutation(data);
   };
 
   const handleClickDelete = (vatId) => {
@@ -174,9 +198,9 @@ export default function AdminVatTable() {
         isOpen={isOpenAddModal}
         title="Add VAT Rate"
         onClose={() => setIsOpenAddModal(false)}
-        onSubmit={handleAddSubmit}
+        onSubmit={handleSubmitAdd(onAddSubmit)}
         submitLabel="ADD VAT"
-        isSubmitting={isAdding}
+        isSubmitting={isAdding || isSubmittingAdd}
       >
         <div className="flex gap-4 p-2 flex-col">
           <div className="flex gap-2 flex-col">
@@ -188,13 +212,11 @@ export default function AdminVatTable() {
             </label>
             <ValidatedInput
               type="number"
-              value={vatPercent}
-              onChange={handleConvertedToPercent}
+              id="add-vatPercent"
               step={"any"}
-              name="vatPercent"
-              schema={vatPercentSchema}
               placeholder="Ex: 12"
-              required
+              {...registerAdd("vatPercent")}
+              error={errorsAdd.vatPercent}
             />
           </div>
 
@@ -207,10 +229,9 @@ export default function AdminVatTable() {
             </label>
             <input
               type="number"
-              value={vatValue}
+              value={watchAdd("vatValue")}
               disabled
               id="vatValue"
-              name="vatValue"
               className="border border-black rounded-[5px] p-3 bg-gray-100 font-bold"
             />
           </div>
@@ -222,9 +243,9 @@ export default function AdminVatTable() {
         isOpen={isOpenEditModal}
         title="Edit VAT Rate"
         onClose={() => setIsOpenEditModal(false)}
-        onSubmit={handleEditSubmit}
+        onSubmit={handleSubmitEdit(onEditSubmit)}
         submitLabel="UPDATE VAT"
-        isSubmitting={isUpdating}
+        isSubmitting={isUpdating || isSubmittingEdit}
       >
         <div className="flex gap-4 p-2 flex-col">
           <div className="flex gap-2 flex-col">
@@ -236,13 +257,11 @@ export default function AdminVatTable() {
             </label>
             <ValidatedInput
               type="number"
-              value={vatPercent}
-              onChange={handleConvertedToPercent}
+              id="edit-vatPercent"
               step={"any"}
-              name="vatPercent"
-              schema={vatPercentSchema}
               placeholder="Ex: 12"
-              required
+              {...registerEdit("vatPercent")}
+              error={errorsEdit.vatPercent}
             />
           </div>
 
@@ -255,10 +274,9 @@ export default function AdminVatTable() {
             </label>
             <input
               type="number"
-              value={vatValue}
+              value={watchEdit("vatValue")}
               disabled
               id="edit-vatValue"
-              name="vatValue"
               className="border border-black rounded-[5px] p-3 bg-gray-100 font-bold"
             />
           </div>

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
@@ -7,15 +7,28 @@ import Buttons from "../reusable/Buttons";
 import { FaSignInAlt } from "react-icons/fa";
 import ValidatedInput from "../reusable/ValidatedInput";
 import { resetPasswordSchema } from "../schemas/auth.schema";
-import { passwordSchema } from "../schemas/common.schema";
+
+/* replace-imports-start */
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+/* replace-imports-end */
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   const { mutate: resetPasswordMutation, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -31,15 +44,8 @@ export default function ResetPassword() {
     },
   });
 
-  const handleResetPasswordSubmit = (e) => {
-    e.preventDefault();
-
-    const result = resetPasswordSchema.safeParse({ password, confirmPassword });
-    if (!result.success) {
-      return toast.error(result.error.issues[0].message);
-    }
-
-    resetPasswordMutation({ token, newPassword: password });
+  const onSubmit = (data) => {
+    resetPasswordMutation({ token, newPassword: data.password });
   };
 
   useEffect(() => {
@@ -53,7 +59,7 @@ export default function ResetPassword() {
       <div className="max-w-[600px] h-full flex flex-col justify-center   mx-auto ">
         {/* FORM */}
         <form
-          onSubmit={handleResetPasswordSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="relative border flex gap-4 bg-card flex-col border-black p-4 rounded-[5px] pt-[40px] pb-[80px] md:pb-[70px] shadow-lg mt-8"
         >
           {/* Sticker Header */}
@@ -91,22 +97,21 @@ export default function ResetPassword() {
 
           <ValidatedInput
             label="New Password"
-            name="password"
+            id="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            schema={passwordSchema}
             placeholder="Min 8 chars, 1 upper, 1 number, 1 symbol"
+            {...register("password")}
+            error={errors.password}
             required
           />
 
           <ValidatedInput
             label="Confirm New Password"
-            name="confirmPassword"
+            id="confirmPassword"
             type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Repeat your new password"
+            {...register("confirmPassword")}
+            error={errors.confirmPassword}
             required
           />
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
@@ -22,6 +22,15 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import app from "../../firebase/firebase";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import ValidatedInput from "../../reusable/ValidatedInput";
+import {
+  emailSchema,
+  fullNameSchema,
+  phMobileSchema,
+} from "../../schemas/common.schema";
 
 const ISSUE_TYPES = [
   {
@@ -48,36 +57,53 @@ const ISSUE_TYPES = [
   { value: "Other", label: "Other", icon: HiOutlineChatBubbleLeftEllipsis },
 ];
 
+// Ticket Schema
+const ticketSchema = z.object({
+  name: fullNameSchema,
+  email: emailSchema,
+  phone: phMobileSchema.optional().or(z.literal("")),
+  orderNumber: z.string().optional(),
+  issueType: z.string().min(1, "Please select an issue type"),
+  subject: z.string().min(3, "Subject must be at least 3 characters"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+  priority: z.enum(["Low", "Medium", "High"]),
+});
+
 export default function TicketModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
   const user = useUserStore((state) => state.currentUser);
 
-  const [formData, setFormData] = useState({
-    name: user?.fullName || "",
-    email: user?.email || "",
-    phone: user?.phoneNumber || "",
-    orderNumber: "",
-    issueType: "",
-    subject: "",
-    message: "",
-    priority: "Medium",
+  // React Hook Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(ticketSchema),
+    defaultValues: {
+      name: user?.fullName || "",
+      email: user?.email || "",
+      phone: user?.phoneNumber || "",
+      orderNumber: "",
+      issueType: "",
+      subject: "",
+      message: "",
+      priority: "Medium",
+    },
   });
 
   const [selectedImages, setSelectedImages] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const watchedIssueType = watch("issueType");
 
-  const { mutate: createTicket, isPending } = useMutation({
-    mutationFn: async (data) => {
-      const res = await axiosInstance.post("/ticket/create", data);
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success(
-        "Ticket submitted successfully! We'll respond to your email shortly."
-      );
-      onClose();
-      setFormData({
+  // Reset form when user changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      reset({
         name: user?.fullName || "",
         email: user?.email || "",
         phone: user?.phoneNumber || "",
@@ -88,7 +114,19 @@ export default function TicketModal({ isOpen, onClose }) {
         priority: "Medium",
       });
       setSelectedImages([]);
+    }
+  }, [isOpen, user, reset]);
 
+  const { mutate: createTicket, isPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post("/ticket/create", data);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success(
+        "Ticket submitted successfully! We'll respond to your email shortly.",
+      );
+      onClose();
       queryClient.invalidateQueries({
         queryKey: ["userTickets"],
       });
@@ -96,37 +134,15 @@ export default function TicketModal({ isOpen, onClose }) {
     onError: (err) => {
       toast.error(
         err.response?.data?.message ||
-          "Failed to submit ticket. Please try again."
+          "Failed to submit ticket. Please try again.",
       );
     },
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.issueType) {
-      toast.error("Please select an issue type");
-      return;
-    }
-
-    if (!formData.subject.trim()) {
-      toast.error("Please enter a subject");
-      return;
-    }
-
-    if (!formData.message.trim()) {
-      toast.error("Please enter your message");
-      return;
-    }
-
+  const onSubmit = async (data) => {
     // Upload images first
     const imageUrls = await uploadImages();
-    createTicket({ ...formData, images: imageUrls });
+    createTicket({ ...data, images: imageUrls });
   };
 
   // Image handlers
@@ -185,7 +201,7 @@ export default function TicketModal({ isOpen, onClose }) {
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
               uploadedUrls.push(downloadURL);
               resolve();
-            }
+            },
           );
         });
       }
@@ -222,7 +238,7 @@ export default function TicketModal({ isOpen, onClose }) {
               as possible.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* Issue Type Selection */}
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -235,14 +251,9 @@ export default function TicketModal({ isOpen, onClose }) {
                       <button
                         key={type.value}
                         type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            issueType: type.value,
-                          }))
-                        }
+                        onClick={() => setValue("issueType", type.value)}
                         className={`p-3 border border-black hover:bg-primary/50 bg-primary rounded-[5px] text-sm flex flex-col items-center gap-1 transition-all ${
-                          formData.issueType === type.value
+                          watchedIssueType === type.value
                             ? " text-card bg-primary/50 "
                             : ""
                         }`}
@@ -253,35 +264,31 @@ export default function TicketModal({ isOpen, onClose }) {
                     );
                   })}
                 </div>
+                {errors.issueType && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.issueType.message}
+                  </p>
+                )}
               </div>
 
               {/* Name & Email Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-black rounded-[5px] p-2 focus:outline-none focus:border-primary"
+                  <ValidatedInput
+                    label="Full Name *"
+                    id="name"
+                    {...register("name")}
+                    error={errors.name}
                     placeholder="Your name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Email *
-                  </label>
-                  <input
+                  <ValidatedInput
+                    label="Email *"
+                    id="email"
                     type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-black rounded-[5px] p-2 focus:outline-none focus:border-primary"
+                    {...register("email")}
+                    error={errors.email}
                     placeholder="your@email.com"
                   />
                 </div>
@@ -290,28 +297,21 @@ export default function TicketModal({ isOpen, onClose }) {
               {/* Phone & Order Number Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full border border-black rounded-[5px] p-2 focus:outline-none focus:border-primary"
+                  <ValidatedInput
+                    label="Phone Number"
+                    id="phone"
+                    type="tel"
+                    {...register("phone")}
+                    error={errors.phone}
                     placeholder="09xxxxxxxxx"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Order Number (if applicable)
-                  </label>
-                  <input
-                    type="text"
-                    name="orderNumber"
-                    value={formData.orderNumber}
-                    onChange={handleChange}
-                    className="w-full border border-black rounded-[5px] p-2 focus:outline-none focus:border-primary"
+                  <ValidatedInput
+                    label="Order Number (if applicable)"
+                    id="orderNumber"
+                    {...register("orderNumber")}
+                    error={errors.orderNumber}
                     placeholder="Order ID"
                   />
                 </div>
@@ -319,16 +319,11 @@ export default function TicketModal({ isOpen, onClose }) {
 
               {/* Subject */}
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  Subject *
-                </label>
-                <input
-                  type="text"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-black rounded-[5px] p-2 focus:outline-none focus:border-primary"
+                <ValidatedInput
+                  label="Subject *"
+                  id="subject"
+                  {...register("subject")}
+                  error={errors.subject}
                   placeholder="Brief description of your issue"
                 />
               </div>
@@ -339,14 +334,18 @@ export default function TicketModal({ isOpen, onClose }) {
                   Message *
                 </label>
                 <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
+                  {...register("message")}
                   rows={4}
-                  className="w-full border border-black rounded-[5px] p-2 focus:outline-none focus:border-primary resize-none"
+                  className={`w-full border ${
+                    errors.message ? "border-red-500" : "border-black"
+                  } rounded-[5px] p-2 focus:outline-none focus:border-primary resize-none`}
                   placeholder="Please describe your issue in detail..."
                 />
+                {errors.message && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.message.message}
+                  </p>
+                )}
               </div>
 
               {/* Image Attachments */}
@@ -405,9 +404,7 @@ export default function TicketModal({ isOpen, onClose }) {
                   Priority
                 </label>
                 <select
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleChange}
+                  {...register("priority")}
                   className="w-full border border-black rounded-[5px] p-2 focus:outline-none focus:border-primary"
                 >
                   <option value="Low">Low</option>
@@ -419,7 +416,7 @@ export default function TicketModal({ isOpen, onClose }) {
               {/* Submit Button */}
               <Buttons
                 buttonType="submit"
-                isLoading={isPending || isUploading}
+                isLoading={isPending || isUploading || isSubmitting}
                 loadingText={
                   isUploading ? "Uploading images..." : "Submitting..."
                 }

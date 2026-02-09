@@ -1,55 +1,66 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import AdminSideBar from "../components/admin/AdminSideBar";
 import AdminNotificationPanel from "../components/admin/AdminNotificationPanel";
 import CustomerNotificationPanel from "../components/CustomerNotificationPanel";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
-import { useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
-import axiosInstance from "../lib/axios";
+import { useEffect, useState } from "react";
 import useOrderStore from "../stores/useOrderStore";
 import FooterSection from "../components/FooterSection";
 import TopProgressBar from "../reusable/TopProgressBar";
 import ChatWidget from "../components/ChatWidget";
 import { useSocketNotifications } from "../hooks/useSocketNotifications";
-import { useCustomerNotifications } from "../hooks/useCustomerNotifications";
+import UserOnboardingModal from "../components/modals/UserOnboardingModal";
 
 const RootLayout = () => {
   // 🧠 User store
   const { checkAuth } = useUserStore();
   const currentUser = useUserStore((state) => state.currentUser);
-  const clearUser = useUserStore((state) => state.clearUser);
+
+  // State for onboarding modal
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // 🔍 Check auth on mount
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  // ❌ Mutation: sign-out user
-  const { mutate: signOut } = useMutation({
-    mutationFn: () => axiosInstance.post("/auth/signout"),
-    onSuccess: clearUser,
-  });
-
-  // 🚫 Sign out if user is blocked
+  // Check onboarding status
   useEffect(() => {
-    if (currentUser?.status === "blocked") {
-      signOut();
+    // Check if user exists and is a customer (not admin/staff)
+    // Adjust logic based on your actual User model structure
+    const isCustomer =
+      currentUser && (currentUser.role === "customer" || !currentUser.role);
+    const isNotComplete = currentUser && !currentUser.isOnboardingComplete;
+
+    if (isCustomer && isNotComplete) {
+      // Check if user has "snoozed" onboarding this session
+      const hasSnoozed = sessionStorage.getItem("snoozeOnboarding");
+      if (!hasSnoozed) {
+        setShowOnboarding(true);
+      } else {
+        console.log("Onboarding Snoozed");
+      }
     }
-  }, [currentUser, signOut]);
+  }, [currentUser]);
 
-  // Enable customer notifications for logged-in users (must be before early returns)
-  useCustomerNotifications(currentUser?._id);
+  // Handle "Update Later" logic
+  const handleCloseOnboarding = () => {
+    setShowOnboarding(false);
+    sessionStorage.setItem("snoozeOnboarding", "true");
+  };
 
-  // ⛔️ Redirect blocked users to sign-in
-  if (currentUser?.status === "blocked") {
-    return <Navigate to="/sign-in" />;
-  }
+  // ... rest of existing code
 
   return (
     <div className="font-main-text h-full flex flex-col justify-between bg-yellow">
       <TopProgressBar />
+      {/* Onboarding Modal */}
+      <UserOnboardingModal
+        isOpen={showOnboarding}
+        onClose={handleCloseOnboarding}
+      />
       <header>
         <Navbar />
       </header>

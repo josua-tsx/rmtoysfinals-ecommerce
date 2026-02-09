@@ -123,6 +123,11 @@ const UserModelSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    isOnboardingComplete: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
