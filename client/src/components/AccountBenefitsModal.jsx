@@ -101,7 +101,7 @@ export default function AccountBenefitsModal() {
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         exit={{ opacity: 0, scale: 0.8, rotate: 2 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="w-full max-w-sm md:max-w-md bg-white rounded-[20px] border-[3px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative"
+        className="w-full max-w-sm md:max-w-md bg-white rounded-[20px] border border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative"
       >
         {/* Dynamic Background */}
         <motion.div

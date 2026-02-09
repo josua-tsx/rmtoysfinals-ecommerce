@@ -42,7 +42,7 @@ export const verifyUserEmail = async (req, res, next) => {
   await validUser.save();
 
   // Send verification email
-  const verificationUrl = process.env.NODE_ENV === "development" ? process.env.FRONTEND_URL + `/verify-email?token=${verificationToken}` : process.env.CLIENT_URL + `/verify-email?token=${verificationToken}`;
+  const verificationUrl = process.env.NODE_ENV === "development" ? process.env.CLIENT_URL + `/verify-email?token=${verificationToken}` : process.env.CLIENT_URL + `/verify-email?token=${verificationToken}`;
 
   try {
     await sendGrid(

@@ -1,4 +1,3 @@
-import React from "react";
 import { useUserStore } from "../stores/useUserStore";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -36,8 +35,10 @@ export default function VerifyEmailComponent() {
       <div className="border  gap-4 border-black bg-card p-4 text-center w-[100%] md:max-w-[450px] h-[250px] rounded-[5px] flex flex-col items-center justify-center ">
         <h1 className="text-2xl">Verify your email</h1>
         <p className="flex gap-2 flex-col items-center">
-          Ar you sure you want to verify this email?
-          <span className="text-blue-500">{currentUser.email}</span>
+          Are you sure you want to verify this email?
+          <span className="text-blue-500">
+            {currentUser?.email || "your account"}
+          </span>
         </p>
         <div className="flex gap-4 mt-4">
           <button
