@@ -11,12 +11,22 @@ import toast from "react-hot-toast";
 import { MdDelete, MdCloudUpload } from "react-icons/md";
 import { FaCopy, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import useOrderStore from "../stores/useOrderStore";
-import { useBlocker, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import formatPrice from "../reusable/formatPrice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 
 import { clearGuestOrder } from "../lib/utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { phMobileSchema } from "../schemas/common.schema";
+import ValidatedInput from "../reusable/ValidatedInput";
+
+const gcashPaymentSchema = z.object({
+  gcashPhoneNumber: phMobileSchema,
+  gcashName: z.string().min(1, "GCash Name is required"),
+});
 
 export default function GcashPaymentPage() {
   const navigate = useNavigate();
@@ -32,18 +42,27 @@ export default function GcashPaymentPage() {
       navigate("/");
       return;
     }
-  }, [currentOrder]);
+  }, [currentOrder, navigate]);
 
-  const [gcashPhoneNumber, setGcashPhoneNumber] = useState("");
-  const [gcashName, setGcashName] = useState("");
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(gcashPaymentSchema),
+    defaultValues: {
+      gcashPhoneNumber: "",
+      gcashName: "",
+    },
+  });
 
   useEffect(() => {
     if (currentOrder?.guestUser) {
-      if (!gcashName) setGcashName(currentOrder.guestUser.name || "");
-      if (!gcashPhoneNumber)
-        setGcashPhoneNumber(currentOrder.guestUser.phone || "");
+      setValue("gcashName", currentOrder.guestUser.name || "");
+      setValue("gcashPhoneNumber", currentOrder.guestUser.phone || "");
     }
-  }, [currentOrder]);
+  }, [currentOrder, setValue]);
 
   const [receiptImage, setReceiptImage] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -70,21 +89,11 @@ export default function GcashPaymentPage() {
     },
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     if (!receiptImage) {
       toast.error("Please upload proof of payment");
       return;
     }
-
-    if (!gcashPhoneNumber) {
-      toast.error("no gcash number");
-      return;
-    }
-
-    // Remove spaces for submission
-    const cleanPhone = gcashPhoneNumber.replace(/\s/g, "");
 
     try {
       setUploading(true);
@@ -93,8 +102,8 @@ export default function GcashPaymentPage() {
       const orderData = {
         ...currentOrder,
         gcashQRmethod: {
-          gcashPhoneNumber: cleanPhone,
-          gcashName,
+          gcashPhoneNumber: data.gcashPhoneNumber,
+          gcashName: data.gcashName,
           proofOfPaymentImage: downloadURL,
         },
       };
@@ -106,22 +115,6 @@ export default function GcashPaymentPage() {
     } finally {
       setUploading(false);
     }
-  };
-
-  const handlePhoneChange = (e) => {
-    const input = e.target.value.replace(/\D/g, ""); // Remove non-numeric
-    const truncated = input.substring(0, 11); // Limit to 11 digits
-
-    // Format as 09XX XXX XXXX
-    let formatted = truncated;
-    if (truncated.length > 4) {
-      formatted = `${truncated.slice(0, 4)} ${truncated.slice(4)}`;
-    }
-    if (truncated.length > 7) {
-      formatted = `${formatted.slice(0, 8)} ${truncated.slice(7)}`;
-    }
-
-    setGcashPhoneNumber(formatted);
   };
 
   const handleCopyNumber = () => {
@@ -190,7 +183,7 @@ export default function GcashPaymentPage() {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             resolve(downloadURL);
           });
-        }
+        },
       );
     });
   };
@@ -210,42 +203,24 @@ export default function GcashPaymentPage() {
             Submit Proof of Payment
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-semibold text-gray-700 mb-1"
-              >
-                Your Gcash Phone Number
-              </label>
-              <input
-                type="tel"
-                id="gcashPhoneNumber"
-                name="gcashPhoneNumber"
-                value={gcashPhoneNumber}
-                onChange={handlePhoneChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-mono text-lg"
-                placeholder="09XX XXX XXXX"
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <ValidatedInput
+              label="Your Gcash Phone Number"
+              id="gcashPhoneNumber"
+              {...register("gcashPhoneNumber")}
+              error={errors.gcashPhoneNumber}
+              placeholder="09XX XXX XXXX"
+              maxLength={11}
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Your Gcash Name
-              </label>
-              <input
-                type="text"
-                name="gcashName"
-                id="gcashName"
-                value={gcashName}
-                onChange={(e) => setGcashName(e.target.value)}
-                placeholder="Juan D."
-                maxLength={50}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                required
-              />
-            </div>
+            <ValidatedInput
+              label="Your Gcash Name"
+              id="gcashName"
+              {...register("gcashName")}
+              error={errors.gcashName}
+              placeholder="Juan D."
+              maxLength={50}
+            />
 
             <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-md">
               <div className="flex">
