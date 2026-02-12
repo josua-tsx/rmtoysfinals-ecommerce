@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { handleMakeError } from "../middleware/handleError.js";
 import Review from "../models/review.model.js";
 import Product from "../models/product.model.js";
@@ -97,12 +98,38 @@ export const userAddReview = async (req, res, next) => {
 
 export const getReviews = async (req, res, next) => {
   try {
-    const reviews = await Review.find().populate({
-      path: "userId",
-      select: "avatar username email",
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+
+    const query = {};
+
+    if (search) {
+        query.$or = [
+            { _id: search },
+            { commentReview: { $regex: search, $options: "i" } },
+            // Search by product ID or User ID if valid ObjectId
+             ...(mongoose.Types.ObjectId.isValid(search) ? [{ productId: search }, { userId: search }] : [])
+        ];
+    }
+
+    const total = await Review.countDocuments(query);
+
+    const reviews = await Review.find(query)
+      .populate({
+        path: "userId",
+        select: "avatar username email",
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    res.status(200).json({
+        reviews,
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: parseInt(page),
+        hasMore: total > page * limit
     });
-    if (!reviews) return res.status(200).json([]);
-    res.status(200).json(reviews);
   } catch (error) {
     next(error);
   }

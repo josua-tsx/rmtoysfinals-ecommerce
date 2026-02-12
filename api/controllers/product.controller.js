@@ -141,16 +141,35 @@ export const getProducts = async (req, res, next) => {
     const {
       page = 1,
       limit = 10,
+      search,
       categoryName,
-      // price,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
-    const skip = (page - 1) * limit;
+    
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
 
     // Build the query object for filtering products
     // Exclude archived products by default
     const query = { status: "published", isArchived: { $ne: true } };
+
+    // Search logic: by productName (regex) or _id (exact)
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      // Check if search term looks like a valid ObjectId
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+      
+      if (isObjectId) {
+        query.$or = [
+          { productName: searchRegex },
+          { _id: search }
+        ];
+      } else {
+        query.productName = searchRegex;
+      }
+    }
 
     // If categoryName is provided, first find the category ObjectId
     if (categoryName) {
@@ -162,15 +181,11 @@ export const getProducts = async (req, res, next) => {
         return res.status(200).json({
           products: [],
           hasMore: false,
+          total: 0,
+          totalPages: 0
         });
       }
     }
-
-    // // If priceRange is provided, add price range filter
-    // if (price) {
-    //   const [minPrice, maxPrice] = price.split(",").map(Number);
-    //   query["price"] = { $gte: minPrice, $lte: maxPrice };
-    // }
 
     // Sorting based on query parameters
     const sortOptions = {};
@@ -200,7 +215,7 @@ export const getProducts = async (req, res, next) => {
       })
       .sort(sortOptions)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(limitNum);
 
     // Get the total number of products matching the query for pagination
     const totalCount = await Product.countDocuments(query);
@@ -208,7 +223,10 @@ export const getProducts = async (req, res, next) => {
     // Send response with products and pagination info
     res.status(200).json({
       products,
-      hasMore: totalCount > page * limit,
+      hasMore: totalCount > pageNum * limitNum,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum
     });
   } catch (error) {
     next(error);

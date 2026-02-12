@@ -40,12 +40,50 @@ export const addCategory = async (req, res, next) => {
 
 export const getCategories = async (req, res, next) => {
   try {
-    // Exclude archived categories by default
-    const getCategories = await Category.find({ isArchived: { $ne: true } }).sort({ createdAt: -1 });
+    const { 
+      page = 1, 
+      limit = 10, 
+      search 
+    } = req.query;
 
-    if (!getCategories) return res.status(200).json([]);
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
 
-    res.status(200).json(getCategories);
+    // Base query: exclude archived
+    const query = { isArchived: { $ne: true } };
+
+    // Search logic
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      if (isObjectId) {
+        query.$or = [
+          { categoryName: searchRegex },
+          { _id: search }
+        ];
+      } else {
+        query.categoryName = searchRegex;
+      }
+    }
+
+    // Fetch categories with pagination
+    const categories = await Category.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    // Get total count for pagination
+    const totalCount = await Category.countDocuments(query);
+
+    res.status(200).json({
+      categories,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

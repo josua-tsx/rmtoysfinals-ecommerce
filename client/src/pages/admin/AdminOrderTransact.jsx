@@ -8,64 +8,53 @@ import axiosInstance from "../../lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import AdminStatCard from "../../components/admin/AdminStatCard";
 import AdminStatCardSkeleton from "../../components/skeleton/AdminStatCardSkeleton";
-import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminOrderTransact() {
   const [selectedComponent, setSelectedComponent] = useState("successful");
 
-  const {
-    data: successOrderData = [],
-    isPending: isSuccessPending,
-    isError: isSuccessError,
-  } = useQuery({
-    queryKey: ["successOrder"],
+  const { data: successData, isPending: isSuccessPending } = useQuery({
+    queryKey: ["successOrderStats"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-successOrder`);
+      const res = await axiosInstance.get(`/order/get-successOrder?limit=1`);
       return res.data;
     },
   });
 
-  const {
-    data: failedCancelledData = [],
-    isPending: isFailedCancelledPending,
-    isError: isFailedCancelledError,
-  } = useQuery({
-    queryKey: ["failedCancelled"],
+  const { data: failedData, isPending: isFailedPending } = useQuery({
+    queryKey: ["failedOrderStats"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-failedCancelled`);
+      const res = await axiosInstance.get(`/order/get-failedCancelled?limit=1`);
       return res.data;
     },
   });
 
-  const {
-    data: refundedCancelled = [],
-    isPending: isRefundedCancelledPending,
-    isError: isRefundedCancelledError,
-  } = useQuery({
-    queryKey: ["refundedCancelled"],
+  const { data: refundedData, isPending: isRefundedPending } = useQuery({
+    queryKey: ["refundedOrderStats"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-refundedCancelled`);
+      const res = await axiosInstance.get(
+        `/order/get-refundedCancelled?limit=1`,
+      );
       return res.data;
     },
   });
 
-  const {
-    data: cancelledOrder = [],
-    isPending: iscancelledOrderPending,
-    isError: iscancelledOrderError,
-  } = useQuery({
-    queryKey: ["cancelledOrder"],
+  const { data: cancelledData, isPending: isCancelledPending } = useQuery({
+    queryKey: ["cancelledOrderStats"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-cancelled`);
+      const res = await axiosInstance.get(`/order/get-cancelled?limit=1`);
       return res.data;
     },
   });
 
   const handleChangeComponent = (e) => {
-    const componentChange = e.target.value;
-
-    setSelectedComponent(componentChange);
+    setSelectedComponent(e.target.value);
   };
+
+  const isLoadingStats =
+    isSuccessPending ||
+    isFailedPending ||
+    isRefundedPending ||
+    isCancelledPending;
 
   return (
     <section className="bg-[#fffdf6] min-h-screen pb-20">
@@ -109,10 +98,7 @@ export default function AdminOrderTransact() {
         </div>
 
         {/* Stats Grid */}
-        {isSuccessPending ||
-        isFailedCancelledPending ||
-        isRefundedCancelledPending ||
-        iscancelledOrderPending ? (
+        {isLoadingStats ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 font-main">
             {Array.from({ length: 4 }).map((_, index) => (
               <AdminStatCardSkeleton key={index} />
@@ -122,22 +108,22 @@ export default function AdminOrderTransact() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 font-main">
             <AdminStatCard
               title={"Successful"}
-              value={successOrderData.length}
+              value={successData?.pagination?.total || 0}
               value2={"Paid"}
             />
             <AdminStatCard
               title={"Failed"}
-              value={failedCancelledData.length}
+              value={failedData?.pagination?.total || 0}
               value2={"Unpaid"}
             />
             <AdminStatCard
               title={"Refunded"}
-              value={refundedCancelled.length}
+              value={refundedData?.pagination?.total || 0}
               value2={"Returned"}
             />
             <AdminStatCard
               title={"Cancelled"}
-              value={cancelledOrder.length}
+              value={cancelledData?.pagination?.total || 0}
               value2={"Void"}
             />
           </div>
@@ -145,45 +131,14 @@ export default function AdminOrderTransact() {
 
         {/* Dynamic Content Section */}
         <div className="mt-4 transition-all duration-300">
-          {isSuccessPending ||
-          isFailedCancelledPending ||
-          isRefundedCancelledPending ||
-          iscancelledOrderPending ? (
-            <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible p-4">
-              <AdminTableSkeleton />
-            </div>
-          ) : (
-            <>
-              {selectedComponent === "successful" && (
-                <AdminSuccesfullTransactions
-                  successOrderData={successOrderData}
-                  isSuccessPending={isSuccessPending}
-                  isSuccessError={isSuccessError}
-                />
-              )}
-              {selectedComponent === "failed" && (
-                <AdminFailedTransactions
-                  failedCancelledData={failedCancelledData}
-                  isFailedCancelledPending={isFailedCancelledPending}
-                  isFailedCancelledError={isFailedCancelledError}
-                />
-              )}
-              {selectedComponent === "refunded" && (
-                <AdminRefundedCancelledTransactions
-                  refundedCancelled={refundedCancelled}
-                  isRefundedCancelledPending={isRefundedCancelledPending}
-                  isRefundedCancelledError={isRefundedCancelledError}
-                />
-              )}
-              {selectedComponent === "cancelled" && (
-                <AdminCancelledTransact
-                  cancelledOrder={cancelledOrder}
-                  iscancelledOrderPending={iscancelledOrderPending}
-                  iscancelledOrderError={iscancelledOrderError}
-                />
-              )}
-            </>
+          {selectedComponent === "successful" && (
+            <AdminSuccesfullTransactions />
           )}
+          {selectedComponent === "failed" && <AdminFailedTransactions />}
+          {selectedComponent === "refunded" && (
+            <AdminRefundedCancelledTransactions />
+          )}
+          {selectedComponent === "cancelled" && <AdminCancelledTransact />}
         </div>
       </div>
     </section>

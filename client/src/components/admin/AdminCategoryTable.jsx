@@ -1,28 +1,42 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CiEdit } from "react-icons/ci";
-import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
-import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createCategorySchema } from "../../schemas/category.schema";
 import ValidatedInput from "../../reusable/ValidatedInput";
+import ReusableTable from "../../reusable/ReusableTable";
+import useDebounce from "../../hooks/useDebounce";
 
 export default function AdminCategoryTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // Search & Pagination State
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10); // Fixed limit for now
+
+  // Modal State
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+
+  // Selection State
   const [selectedIds, setSelectedIds] = useState([]);
 
   // Edit Modal State
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
 
   // Edit Form Setup
   const {
@@ -39,24 +53,33 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   });
 
   const {
-    data: categories = [],
+    data,
     isPending: isCategoryPending,
     isError: isCategoryError,
   } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories", page, limit, debouncedSearchTerm],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/category/get-categories`);
+      const params = new URLSearchParams({
+        page,
+        limit,
+      });
+
+      if (debouncedSearchTerm) {
+        params.append("search", debouncedSearchTerm);
+      }
+
+      const res = await axiosInstance.get(
+        `/category/get-categories?${params.toString()}`,
+      );
       return res.data;
     },
+    keepPreviousData: true,
   });
 
-  const arrayCategories = Array.isArray(categories) ? categories : [];
-
-  const numSelected = selectedIds.length;
-  const numProducts = arrayCategories.length;
-
-  // Checkbox is ticked only if all products are selected
-  const allSelected = numProducts > 0 && numSelected === numProducts;
+  const categories = data?.categories || [];
+  const totalPages = data?.totalPages || 0;
+  const totalItems = data?.total || 0;
+  const currentPage = data?.currentPage || 1;
 
   // --- EDIT MUTATION ---
   const { mutate: editCategoryMutation, isPending: isEditPending } =
@@ -120,7 +143,8 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     }
   }, [enableMultiDel]);
 
-  const pushMultipleCate = (categoryId) => {
+  // Selection Logic for ReusableTable
+  const handleSelect = (categoryId) => {
     setSelectedIds((prev) =>
       prev.includes(categoryId)
         ? prev.filter((id) => id !== categoryId)
@@ -129,10 +153,21 @@ export default function AdminCategoryTable({ enableMultiDel }) {
   };
 
   const handleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds([]);
+    const allOnPageSelected =
+      categories.length > 0 &&
+      categories.every((c) => selectedIds.includes(c._id));
+
+    if (allOnPageSelected) {
+      // Unselect all on current page
+      const newSelected = selectedIds.filter(
+        (id) => !categories.map((c) => c._id).includes(id),
+      );
+      setSelectedIds(newSelected);
     } else {
-      setSelectedIds(arrayCategories.map((category) => category._id));
+      // Select all on current page
+      const currentIds = categories.map((c) => c._id);
+      const uniqueIds = [...new Set([...selectedIds, ...currentIds])];
+      setSelectedIds(uniqueIds);
     }
   };
 
@@ -186,25 +221,63 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     editCategoryMutation(data);
   };
 
-  const filterdArrayCategories = arrayCategories.filter(
-    (category) =>
-      category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category._id.includes(searchTerm),
-  );
-
   if (isCategoryError) {
-    <p>loading...</p>;
+    return <p>Error loading categories</p>;
   }
 
-  return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible">
-      {/* Green Sticker Header */}
-      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
-          Category Table
-        </h1>
-      </div>
+  // Column Definitions
+  const columns = [
+    {
+      header: "Category Name",
+      className: "text-left",
+      render: (category) => (
+        <span className="uppercase tracking-tight text-black">
+          {category?.categoryName}
+        </span>
+      ),
+    },
+    {
+      header: "Description",
+      className: "text-left",
+      render: (category) => (
+        <span className="text-gray-600 max-w-[300px] truncate block">
+          {category?.categoryDescription}
+        </span>
+      ),
+    },
+    {
+      header: "Products Count",
+      render: (category) => (
+        <span className="px-3 py-1 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          {category?.products?.length || 0} Products
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      render: (category) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => handleOpenEditModal(category)}
+            title="Edit"
+            className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <CiEdit size={18} />
+          </button>
+          <button
+            onClick={() => handleClickDelete(category._id)}
+            title="Delete"
+            className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <MdDelete size={18} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
+  return (
+    <>
       <ConfirmModal
         isOpen={isOpenModal}
         title={"Confirm delete"}
@@ -262,125 +335,36 @@ export default function AdminCategoryTable({ enableMultiDel }) {
         </div>
       </FormModal>
 
-      <div className="flex-col border-b-2 border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
-        <div className="flex items-center gap-1 flex-col md:flex-row">
-          <label className="font-black uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
-            Search Categories
-          </label>
-          <div className="flex items-center relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Ex: Electronics..."
-              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
-            />
-            <IoSearch className="absolute right-3" size={20} />
-          </div>
-        </div>
-      </div>
-
-      <div className="overflow-y-auto h-[600px] py-3">
-        {isCategoryPending ? (
-          <div className="p-4">
-            <AdminTableSkeleton />
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="border-b border-black relative">
-              <tr>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
-                  Category Name
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
-                  Description
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Products Count
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Actions
-                </th>
-                {arrayCategories.length > 0 && enableMultiDel && (
-                  <th className="p-4 pb-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
-                    />
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black text-[16px]">
-              {filterdArrayCategories.length > 0 ? (
-                filterdArrayCategories.map((category) => (
-                  <tr
-                    key={category._id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="p-4 whitespace-nowrap uppercase tracking-tight text-black">
-                      {category?.categoryName}
-                    </td>
-
-                    <td className="p-4 text-gray-600 max-w-[300px] truncate">
-                      {category?.categoryDescription}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span className="px-3 py-1 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        {category?.products?.length} Products
-                      </span>
-                    </td>
-
-                    <td className="p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleOpenEditModal(category)}
-                          title="Edit"
-                          className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <CiEdit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleClickDelete(category._id)}
-                          title="Delete"
-                          className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <MdDelete size={18} />
-                        </button>
-                      </div>
-                    </td>
-                    {enableMultiDel && (
-                      <td className="p-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(category._id)}
-                          onChange={() => pushMultipleCate(category._id)}
-                          className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
-                        />
-                      </td>
-                    )}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="p-8 text-center font-black uppercase text-gray-400 tracking-widest"
-                  >
-                    no categories found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <ReusableTable
+        title="Category Table"
+        columns={columns}
+        data={categories}
+        isLoading={isCategoryPending}
+        search={{
+          value: localSearchTerm,
+          onChange: setLocalSearchTerm,
+          placeholder: "Ex: Electronics...",
+        }}
+        pagination={{
+          currentPage: currentPage, // Use the page from backend response for sync
+          totalPages: totalPages,
+          totalItems: totalItems,
+          onPageChange: setPage,
+        }}
+        selection={
+          enableMultiDel
+            ? {
+                selectedIds,
+                onSelect: handleSelect,
+                onSelectAll: handleSelectAll,
+              }
+            : undefined
+        }
+        emptyMessage="no categories found"
+      />
 
       {selectedIds && selectedIds.length > 0 && (
-        <div className="w-full flex gap-3 justify-end p-4 border-t border-black bg-gray-50">
+        <div className="w-full flex gap-3 justify-end p-4 border border-t-0 border-black bg-gray-50 rounded-b-[5px] mt-[-6px] relative z-10">
           <button
             onClick={cancelMultiDelete}
             className="px-6 py-2 border border-black bg-white font-black uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
@@ -395,6 +379,6 @@ export default function AdminCategoryTable({ enableMultiDel }) {
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }

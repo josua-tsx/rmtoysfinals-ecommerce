@@ -2,29 +2,50 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import SingleOrderList from "../../components/SingleOrderList";
-import { useState } from "react";
-import { IoSearch } from "react-icons/io5";
-
+import { useState, useEffect } from "react";
 import formatPrice from "../../reusable/formatPrice";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import ReusableTable from "../../reusable/ReusableTable";
+import useDebounce from "../../hooks/useDebounce";
 
-export default function AdminFailedTransactions({
-  failedCancelledData,
-  isFailedCancelledPending,
-  isFailedCancelledError,
-}) {
+export default function AdminFailedTransactions() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  // State for Table
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
 
   const queryClient = useQueryClient();
 
-  console.log(failedCancelledData);
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
 
-  const arrayCustomerFailed = Array.isArray(failedCancelledData)
-    ? failedCancelledData
-    : [];
+  // Fetch Data
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["failedCancelled", page, limit, debouncedSearchTerm],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page,
+        limit,
+      });
+      if (debouncedSearchTerm) params.append("search", debouncedSearchTerm);
+
+      const res = await axiosInstance.get(
+        `/order/get-failedCancelled?${params.toString()}`,
+      );
+      return res.data;
+    },
+    keepPreviousData: true,
+  });
+
+  const failedCancelledData = data?.orders || [];
+  const totalPages = data?.pagination?.totalPages || 0;
+  const totalItems = data?.pagination?.total || 0;
+  const currentPage = data?.pagination?.page || 1;
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -39,7 +60,7 @@ export default function AdminFailedTransactions({
     mutationFn: async (orderId) => {
       const res = await axiosInstance.put(
         `/order/cancel-success-transact`,
-        orderId
+        orderId,
       );
       return res.data;
     },
@@ -54,34 +75,135 @@ export default function AdminFailedTransactions({
   });
 
   const handleCancelSuccessTransact = (orderId) => {
-    cancelSuccessMutation({ orderId });
+    if (window.confirm("Are you sure you want to cancel this transaction?")) {
+      cancelSuccessMutation({ orderId });
+    }
   };
 
-  const handleOpenSingleOrder = (orderId) => {
-    setOrderId(orderId._id);
+  const handleOpenSingleOrder = (order) => {
+    setOrderId(order._id);
     setOpenModal(true);
   };
 
-  const filteredFailedOrder = arrayCustomerFailed.filter(
-    (failed) =>
-      failed._id.includes(searchTerm) ||
-      failed?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      failed.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      failed.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      failed.reason.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  if (isError) return <p>Error loading failed transactions.</p>;
 
-  if (isFailedCancelledError) return <p>Error.</p>;
+  // Columns
+  const columns = [
+    {
+      header: "ORDER ID",
+      className:
+        "px-4 py-4 border-r border-black font-mono text-black text-left",
+      render: (row) => `#${row._id.slice(-6).toUpperCase()}...`,
+    },
+    {
+      header: "CUSTOMER",
+      className: "px-4 py-4 border-r border-black text-left",
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="uppercase text-black truncate max-w-[150px]">
+            {row.userId ? row.userId.email : row.guestUser?.email}
+          </span>
+          <span className="text-[9px] font-bold text-gray-500 italic">
+            {row.userId ? "MEMBER" : "GUEST"}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "ORDER DATE",
+      className: "px-4 py-4 border-r border-black text-center text-black",
+      render: (row) => (
+        <span className="text-gray-600">
+          {new Date(row.createdAt).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      header: "FAILED DATE",
+      className: "px-4 py-4 border-r border-black text-center text-black",
+      render: (row) => (
+        <span className="text-gray-600">
+          {new Date(row.updatedAt).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      header: "AMOUNT",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => (
+        <span className="font-black text-xs text-indigo-700">
+          {formatPrice(row.totalPrice)} PHP
+        </span>
+      ),
+    },
+    {
+      header: "INFO",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => {
+        const totalItems =
+          row.orderItems?.reduce(
+            (sum, item) => sum + (item.quantity || 0),
+            0,
+          ) || 0;
+        return (
+          <div className="flex flex-col items-center">
+            <span className="font-black uppercase bg-indigo-50 px-2 rounded-full border border-indigo-200 text-black">
+              {totalItems} ITEMS
+            </span>
+            <span className="text-[10px] font-mono font-bold text-gray-500 mt-1">
+              {row.userId ? row.userId.phoneNumber : row.guestUser?.phone}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      header: "METHOD",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => (
+        <span className="font-black uppercase px-2 py-1 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+          {row.paymentMethod}
+        </span>
+      ),
+    },
+    {
+      header: "REASON",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => (
+        <div className="flex flex-col items-center gap-1">
+          <span className="font-black uppercase text-red-600">
+            {row.paymentStatus}
+          </span>
+          <p className="text-[10px] font-bold text-red-800 leading-tight max-w-[120px]">
+            {row.reason}
+          </p>
+        </div>
+      ),
+    },
+    {
+      header: "ACTION",
+      className: "px-4 py-4 text-center",
+      render: (row) => (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => handleOpenSingleOrder(row)}
+            className="bg-green-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            VIEW
+          </button>
+          <button
+            onClick={() => handleCancelSuccessTransact(row._id)}
+            className="bg-red-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            CANCEL
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-8 overflow-visible">
-      {/* Red Sticker Header for Failed Transactions */}
-      <div className="absolute -top-4 -left-3 bg-[#dc2626] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-        <h1 className="font-black uppercase tracking-widest text-sm ">
-          Failed Transactions
-        </h1>
-      </div>
-
+    <>
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -89,171 +211,26 @@ export default function AdminFailedTransactions({
         />
       )}
 
-      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4 pt-8 bg-gray-50/50">
-        <div className="hidden md:block">
-          <p className="text-[11px] font-black uppercase text-gray-500 tracking-widest pl-1">
-            Viewing history of failed or cancelled payments
-          </p>
-        </div>
-        <div className="flex items-center relative group w-full md:w-auto">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="SEARCH BY ID, EMAIL, METHOD..."
-            className="border border-black w-full md:w-[350px] rounded-[5px] py-2 pl-4 pr-10 focus:outline-none font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all placeholder:text-gray-300"
-          />
-          <IoSearch
-            className="absolute right-3 text-black group-focus-within:scale-110 transition-transform"
-            size={20}
-          />
-        </div>
-      </div>
-      <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
-        {isFailedCancelledPending ? (
-          <div className="flex justify-center items-center h-[400px]">
-            <LoadingSpinner />
-          </div>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead className="sticky top-0 bg-white z-10">
-              <tr className="border-b border-black">
-                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  ORDER ID
-                </th>
-                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  CUSTOMER
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  ORDER DATE
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  FAILED DATE
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  AMOUNT
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  INFO
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  METHOD
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  REASON
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest text-black">
-                  ACTION
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black text-[16px]">
-              {filteredFailedOrder?.length > 0 ? (
-                filteredFailedOrder.map((failed) => {
-                  const totalItems =
-                    failed.orderItems?.reduce(
-                      (sum, item) => sum + (item.quantity || 0),
-                      0
-                    ) || 0;
-
-                  return (
-                    <tr
-                      key={failed._id}
-                      className="hover:bg-gray-50 transition-colors group"
-                    >
-                      <td className="px-4 py-4 border-r border-black font-mono text-black">
-                        #{failed._id.slice(-6)}...
-                      </td>
-                      <td className="px-4 py-4 border-r border-black">
-                        <div className="flex flex-col">
-                          <span className="uppercase text-black truncate max-w-[150px]">
-                            {failed?.userId
-                              ? failed?.userId?.email
-                              : failed?.guestUser?.email}
-                          </span>
-                          <span className="text-[9px] font-bold text-gray-500 italic">
-                            {failed.userId ? "MEMBER" : "GUEST"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center text-black">
-                        <span className="text-gray-600">
-                          {new Date(failed.createdAt).toLocaleDateString()}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center text-black">
-                        <span className="text-gray-600">
-                          {new Date(failed.updatedAt).toLocaleDateString()}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <span className="font-black text-xs text-indigo-700">
-                          {formatPrice(failed.totalPrice)} PHP
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <div className="flex flex-col items-center">
-                          <span className="font-black uppercase bg-indigo-50 px-2 rounded-full border border-indigo-200 text-black">
-                            {totalItems} ITEMS
-                          </span>
-                          <span className="text-[10px] font-mono font-bold text-gray-500 mt-1">
-                            {failed.userId
-                              ? failed.userId?.phoneNumber
-                              : failed.guestUser.phone}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <span className="font-black uppercase px-2 py-1 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
-                          {failed.paymentMethod}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="font-black uppercase text-red-600">
-                            {failed.paymentStatus}
-                          </span>
-                          <p className="text-[10px] font-bold text-red-800 leading-tight max-w-[120px]">
-                            {failed.reason}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <div className="flex flex-col gap-2">
-                          <button
-                            onClick={() => handleOpenSingleOrder(failed)}
-                            className="bg-green-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                          >
-                            VIEW
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleCancelSuccessTransact(failed._id)
-                            }
-                            className="bg-red-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                          >
-                            CANCEL
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="9" className="p-12 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-gray-400 font-black uppercase tracking-widest text-xs">
-                        No failed transactions found
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
+      <ReusableTable
+        title="Failed Transactions"
+        subtitle="Viewing history of failed or cancelled payments"
+        headerColor="bg-[#dc2626]"
+        columns={columns}
+        data={failedCancelledData}
+        isLoading={isPending}
+        search={{
+          value: localSearchTerm,
+          onChange: setLocalSearchTerm,
+          placeholder: "SEARCH BY ID, EMAIL, METHOD...",
+        }}
+        pagination={{
+          currentPage,
+          totalPages,
+          totalItems,
+          onPageChange: setPage,
+        }}
+        emptyMessage="No failed transactions found"
+      />
+    </>
   );
 }

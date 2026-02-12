@@ -2,12 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-import { useState } from "react";
-import { IoSearch } from "react-icons/io5";
+import { useEffect, useState } from "react";
 import { CiEdit } from "react-icons/ci";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
-import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -18,6 +16,8 @@ import {
   passwordSchema,
 } from "../../schemas/auth.schema";
 import { jobDescriptionSchema } from "../../schemas/worker.schema";
+import ReusableTable from "../../reusable/ReusableTable";
+import useDebounce from "../../hooks/useDebounce";
 
 // Edit worker schema - password is optional for edits
 const editWorkerSchema = z.object({
@@ -30,7 +30,17 @@ const editWorkerSchema = z.object({
 
 export default function AdminWorkersTable() {
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // Search & Pagination State
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setIsSelectedId] = useState(null);
@@ -58,27 +68,33 @@ export default function AdminWorkersTable() {
   });
 
   const {
-    data: workers = [],
+    data,
     isPending: isWorkersPending,
     isError: isWorkersError,
   } = useQuery({
-    queryKey: ["validatorStaff"],
+    queryKey: ["validatorStaff", page, limit, debouncedSearchTerm],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/user/getAllWorkers`);
+      const params = new URLSearchParams({
+        page,
+        limit,
+      });
+
+      if (debouncedSearchTerm) {
+        params.append("search", debouncedSearchTerm);
+      }
+
+      const res = await axiosInstance.get(
+        `/user/getAllWorkers?${params.toString()}`,
+      );
       return res.data;
     },
+    keepPreviousData: true,
   });
 
-  const arrayWorkers = Array.isArray(workers) ? workers : [];
-
-  const filteredArrayWorkers = arrayWorkers?.filter(
-    (worker) =>
-      worker.jobDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      worker.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      worker.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      worker?.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      worker._id.includes(searchTerm),
-  );
+  const workers = data?.workers || [];
+  const totalPages = data?.totalPages || 0;
+  const totalItems = data?.total || 0;
+  const currentPage = data?.currentPage || 1;
 
   const { mutate: deleteWorkerMutation } = useMutation({
     mutationFn: async (workerId) => {
@@ -158,18 +174,90 @@ export default function AdminWorkersTable() {
   };
 
   if (isWorkersError) {
-    <p>Error</p>;
+    return <p>Error loading workers</p>;
   }
 
-  return (
-    <div className="font-main border rounded-[5px] text-sm md:text-normal border-black bg-card relative mt-6 overflow-visible">
-      {/* Green Sticker Header */}
-      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
-          Worker Table
-        </h1>
-      </div>
+  // Column Definitions
+  const columns = [
+    {
+      header: "ID",
+      className: "font-mono text-gray-400 text-left",
+      render: (worker) => worker._id.slice(-6),
+    },
+    {
+      header: "Email",
+      className: "text-black text-left",
+      accessor: "email",
+    },
+    {
+      header: "Username",
+      render: (worker) => (
+        <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+          {worker.username}
+        </span>
+      ),
+    },
+    {
+      header: "Phone",
+      className: "text-gray-600",
+      render: (worker) =>
+        !worker.phoneNumber ? (
+          <span className="text-red-500/70 italic">Pending</span>
+        ) : (
+          worker.phoneNumber
+        ),
+    },
+    {
+      header: "Address",
+      className: "text-gray-600",
+      render: (worker) => (
+        <span className="max-w-[200px] truncate block">
+          {!worker?.address[0]?.fullAddress ? (
+            <span className="text-red-500/70 italic">Pending</span>
+          ) : (
+            worker?.address[0]?.fullAddress
+          )}
+        </span>
+      ),
+    },
+    {
+      header: "Role",
+      render: (worker) => (
+        <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          {worker.role}
+        </span>
+      ),
+    },
+    {
+      header: "Job Description",
+      className: "text-gray-600",
+      accessor: "jobDescription",
+    },
+    {
+      header: "ACTIONS",
+      render: (worker) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => handleEditClick(worker)}
+            title="Edit"
+            className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <CiEdit size={18} />
+          </button>
+          <button
+            onClick={() => handleClickDelete(worker._id)}
+            title="Delete"
+            className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <MdDelete size={18} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
+  return (
+    <>
       <ConfirmModal
         isOpen={isModalOpen}
         title={"Confirm delete"}
@@ -301,131 +389,24 @@ export default function AdminWorkersTable() {
         </div>
       </FormModal>
 
-      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
-        <div className="flex items-center gap-1 flex-col md:flex-row">
-          <label className="font-black uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
-            Search Workers
-          </label>
-          <div className="flex items-center relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="search worker.."
-              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-all font-bold"
-            />
-            <IoSearch className="absolute right-3" size={20} />
-          </div>
-        </div>
-      </div>
-      <div className="overflow-y-auto  h-[600px] py-3">
-        {isWorkersPending ? (
-          <div className="p-4">
-            <AdminTableSkeleton />
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="border-b border-black relative">
-              <tr>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
-                  ID
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
-                  Email
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Username
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Phone
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
-                  Address
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Role
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Job Description
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  ACTIONS
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black text-[16px]">
-              {filteredArrayWorkers?.length > 0 ? (
-                filteredArrayWorkers?.map((worker) => (
-                  <tr
-                    key={worker._id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="p-4 whitespace-nowrap font-mono text-gray-400">
-                      {worker._id.slice(-6)}
-                    </td>
-
-                    <td className="p-4 whitespace-nowrap text-black">
-                      {worker.email}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
-                        {worker.username}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center text-gray-600">
-                      {!worker.phoneNumber ? (
-                        <span className="text-red-500/70 italic">Pending</span>
-                      ) : (
-                        worker.phoneNumber
-                      )}
-                    </td>
-
-                    <td className="p-4 text-gray-600 max-w-[200px] truncate">
-                      {!worker?.address[0]?.fullAddress ? (
-                        <span className="text-red-500/70 italic">Pending</span>
-                      ) : (
-                        worker?.address[0]?.fullAddress
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        {worker.role}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center text-gray-600">
-                      {worker.jobDescription}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleEditClick(worker)}
-                          title="Edit"
-                          className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <CiEdit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleClickDelete(worker._id)}
-                          title="Delete"
-                          className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <MdDelete size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <p className="text-center p-2">no worker found!</p>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
+      <ReusableTable
+        title="Worker Table"
+        columns={columns}
+        data={workers}
+        isLoading={isWorkersPending}
+        search={{
+          value: localSearchTerm,
+          onChange: setLocalSearchTerm,
+          placeholder: "search worker...",
+        }}
+        pagination={{
+          currentPage: currentPage,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          onPageChange: setPage,
+        }}
+        emptyMessage="no worker found!"
+      />
+    </>
   );
 }

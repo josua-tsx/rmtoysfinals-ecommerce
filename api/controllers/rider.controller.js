@@ -72,9 +72,52 @@ export const addRider = async (req, res, next) => {
 
 export const getRiders = async (req, res, next) => {
   try {
-    const riders = await Rider.find({ isArchived: { $ne: true } });
-    if (!riders) return next(handleMakeError(400, "No rider found!"));
-    res.status(200).json(riders);
+    const { 
+      page = 1, 
+      limit = 10, 
+      search 
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Base query: exclude archived
+    const query = { isArchived: { $ne: true } };
+
+    // Search logic
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      if (isObjectId) {
+         query.$or = [
+          { riderName: searchRegex },
+          { riderStatus: searchRegex },
+          { _id: search }
+        ];
+      } else {
+        query.$or = [
+          { riderName: searchRegex },
+          { riderStatus: searchRegex }
+        ];
+      }
+    }
+
+    const riders = await Rider.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await Rider.countDocuments(query);
+
+    res.status(200).json({
+      riders,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

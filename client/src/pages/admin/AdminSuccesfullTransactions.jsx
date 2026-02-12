@@ -1,18 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
 import toast from "react-hot-toast";
-import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import LoadingSpinner from "../../reusable/LoadingSpinner";
+import ReusableTable from "../../reusable/ReusableTable";
+import useDebounce from "../../hooks/useDebounce";
 
-export default function AdminSuccesfullTransactions({
-  successOrderData,
-  isSuccessPending,
-  isSuccessError,
-}) {
+export default function AdminSuccesfullTransactions() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
@@ -24,14 +20,43 @@ export default function AdminSuccesfullTransactions({
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelSelectedId, setIsCancelSelectedId] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  // State for Table
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
 
   const queryClient = useQueryClient();
 
-  const arraySuccessOrder = Array.isArray(successOrderData)
-    ? successOrderData
-    : [];
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
 
+  // Fetch Data
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["successOrder", page, limit, debouncedSearchTerm],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page,
+        limit,
+      });
+      if (debouncedSearchTerm) params.append("search", debouncedSearchTerm);
+
+      const res = await axiosInstance.get(
+        `/order/get-successOrder?${params.toString()}`,
+      );
+      return res.data;
+    },
+    keepPreviousData: true,
+  });
+
+  const successOrderData = data?.orders || [];
+  const totalPages = data?.pagination?.totalPages || 0;
+  const totalItems = data?.pagination?.total || 0;
+  const currentPage = data?.pagination?.page || 1;
+
+  // Single Order Query
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -41,8 +66,7 @@ export default function AdminSuccesfullTransactions({
     enabled: !!orderId,
   });
 
-  console.log(successOrderData);
-
+  // Mutations
   const { mutate: updateToRefundMutation } = useMutation({
     mutationFn: async (orderId) => {
       const res = await axiosInstance.put(`/order/refund-order`, orderId);
@@ -58,30 +82,11 @@ export default function AdminSuccesfullTransactions({
     },
   });
 
-  const handleRefundClick = (orderId) => {
-    setSelectedId(orderId);
-    setIsModalOpen(true);
-  };
-
-  const handleUpdateToRefunded = () => {
-    if (selectedId) {
-      {
-        updateToRefundMutation({ orderId: selectedId });
-        setIsModalOpen(false);
-      }
-    }
-  };
-
-  const handleCancel = () => {
-    setSelectedId(null);
-    setIsModalOpen(false);
-  };
-
   const { mutate: cancelSuccessMutation } = useMutation({
     mutationFn: async (orderId) => {
       const res = await axiosInstance.put(
         `/order/cancel-success-transact`,
-        orderId
+        orderId,
       );
       return res.data;
     },
@@ -95,23 +100,22 @@ export default function AdminSuccesfullTransactions({
     },
   });
 
-  const filteredSuccessOrder = arraySuccessOrder.filter(
-    (success) =>
-      success?.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      success?.userId?.fullName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      success?.userId?._id.includes(searchTerm) ||
-      success?._id.includes(searchTerm) ||
-      success?.paymentMethod.toLowerCase().includes(searchTerm) ||
-      success?.status.toLowerCase().includes(searchTerm)
-  );
+  // Handlers
+  const handleRefundClick = (orderId) => {
+    setSelectedId(orderId);
+    setIsModalOpen(true);
+  };
 
-  const handleCancelSuccessTransact = () => {
-    if (isCancelSelectedId) {
-      cancelSuccessMutation({ orderId: isCancelSelectedId });
-      handleCloseCancelSuccess();
+  const handleUpdateToRefunded = () => {
+    if (selectedId) {
+      updateToRefundMutation({ orderId: selectedId });
+      setIsModalOpen(false);
     }
+  };
+
+  const handleCancel = () => {
+    setSelectedId(null);
+    setIsModalOpen(false);
   };
 
   const handleOpenCancelSuccess = (orderId) => {
@@ -124,22 +128,146 @@ export default function AdminSuccesfullTransactions({
     setIsCancelSelectedId(null);
   };
 
-  const handleOpenSingleOrder = (orderId) => {
-    setOrderId(orderId._id);
+  const handleCancelSuccessTransact = () => {
+    if (isCancelSelectedId) {
+      cancelSuccessMutation({ orderId: isCancelSelectedId });
+      handleCloseCancelSuccess();
+    }
+  };
+
+  const handleOpenSingleOrder = (order) => {
+    setOrderId(order._id);
     setOpenModal(true);
   };
 
-  if (isSuccessError) return <p>Error</p>;
+  if (isError) return <p>Error loading success transactions</p>;
+
+  // Columns
+  const columns = [
+    {
+      header: "ORDER ID",
+      className:
+        "px-4 py-4 border-r border-black font-mono text-black text-left",
+      render: (row) => `#${row._id.slice(-6).toUpperCase()}...`,
+    },
+    {
+      header: "CUSTOMER",
+      className: "px-4 py-4 border-r border-black text-left",
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="uppercase truncate max-w-[150px] text-black">
+            {row.userId ? row.userId.email : row.guestUser?.email}
+          </span>
+          <span className="text-[9px] font-black uppercase text-gray-500">
+            {row.userId ? "MEMBER" : "GUEST"}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "DATE",
+      className: "px-4 py-4 border-r border-black text-center text-black",
+      render: (row) => (
+        <span className="text-gray-600">
+          {new Date(row.createdAt).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      header: "AMOUNT",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => (
+        <span className="font-black text-xs text-indigo-700">
+          {formatPrice(row.totalPrice)} PHP
+        </span>
+      ),
+    },
+    {
+      header: "INFO",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => {
+        const totalItemsBought =
+          row.orderItems?.reduce(
+            (sum, item) => sum + (item.quantity || 0),
+            0,
+          ) || 0;
+        return (
+          <div className="flex flex-col items-center">
+            <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full font-black uppercase text-[9px] text-black">
+              {totalItemsBought} ITEMS
+            </span>
+            <span className="text-[10px] font-mono text-gray-500 mt-1">
+              {row.userId ? row.userId.phoneNumber : row.guestUser?.phone}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      header: "METHOD",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => (
+        <span className="px-2 py-1 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-black text-[12px]">
+          {row.paymentMethod}
+        </span>
+      ),
+    },
+    {
+      header: "STATUS",
+      className: "px-4 py-4 border-r border-black text-center",
+      render: (row) => (
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-green-600 font-black uppercase text-[12px]">
+            {row.paymentStatus}
+          </span>
+          <span className="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-[9px]">
+            {row.status}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "ADDRESS",
+      className: "px-4 py-4 border-r border-black max-w-[200px] text-left",
+      render: (row) => (
+        <p className="truncate text-gray-500 italic text-[12px]">
+          {row.userId?.address?.[0]?.fullAddress || row.shippingAddress}
+        </p>
+      ),
+    },
+    {
+      header: "ACTION",
+      className: "px-4 py-4 text-center",
+      render: (row) => (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => handleOpenSingleOrder(row)}
+            className="bg-indigo-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            VIEW
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleOpenCancelSuccess(row._id)}
+              className="flex-1 bg-red-400 text-black border border-black py-1 px-2 rounded-[5px] font-black uppercase text-[9px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+            >
+              CANCEL
+            </button>
+            <button
+              onClick={() => handleRefundClick(row._id)}
+              className="flex-1 bg-amber-400 text-black border border-black py-1 px-2 rounded-[5px] font-black uppercase text-[9px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+            >
+              REFUND
+            </button>
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="font-main text-sm md:text-normal border rounded-[5px] border-black bg-card relative mt-8 overflow-visible">
-      {/* Green Sticker Header for Successful Transactions */}
-      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-        <h1 className="font-black uppercase tracking-widest text-sm ">
-          Successful Transactions
-        </h1>
-      </div>
-
+    <>
+      {/* Modals outside table */}
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -167,179 +295,25 @@ export default function AdminSuccesfullTransactions({
         onCancel={handleCloseCancelSuccess}
       />
 
-      <div className="border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4 pt-8 bg-gray-50/50">
-        <div className="hidden md:block">
-          <p className="text-[11px] font-black uppercase text-gray-500 tracking-widest pl-1">
-            History of completed payments and successful orders
-          </p>
-        </div>
-        <div className="flex items-center relative group w-full md:w-auto">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="SEARCH BY ID, EMAIL, METHOD..."
-            className="border border-black w-full md:w-[350px] rounded-[5px] py-2 pl-4 pr-10 focus:outline-none font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all placeholder:text-gray-300"
-          />
-          <IoSearch
-            className="absolute right-3 text-black group-focus-within:scale-110 transition-transform"
-            size={20}
-          />
-        </div>
-      </div>
-      <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
-        {isSuccessPending ? (
-          <div className="flex justify-center items-center h-[400px]">
-            <LoadingSpinner />
-          </div>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead className="sticky top-0 bg-white z-10">
-              <tr className="border-b border-black">
-                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  ORDER ID
-                </th>
-                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  CUSTOMER
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  DATE
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  AMOUNT
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  INFO
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  METHOD
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  STATUS
-                </th>
-                <th className="px-4 py-4 text-left font-black text-[16px] uppercase tracking-widest border-r border-black text-black">
-                  ADDRESS
-                </th>
-                <th className="px-4 py-4 text-center font-black text-[16px] uppercase tracking-widest text-black">
-                  ACTION
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black text-[16px]">
-              {filteredSuccessOrder.length > 0 ? (
-                filteredSuccessOrder.map((success) => {
-                  const totalItemsBought =
-                    success.orderItems?.reduce(
-                      (sum, item) => sum + (item.quantity || 0),
-                      0
-                    ) || 0;
-
-                  return (
-                    <tr
-                      key={success?._id}
-                      className="hover:bg-gray-50 transition-colors group"
-                    >
-                      <td className="px-4 py-4 border-r border-black font-mono text-black">
-                        #{success?._id.slice(-6)}...
-                      </td>
-                      <td className="px-4 py-4 border-r border-black">
-                        <div className="flex flex-col">
-                          <span className="uppercase truncate max-w-[150px] text-black">
-                            {success?.userId
-                              ? success?.userId?.email
-                              : success?.guestUser?.email}
-                          </span>
-                          <span className="text-[9px] font-black uppercase text-gray-500">
-                            {success.userId ? "MEMBER" : "GUEST"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center text-black">
-                        <span className="text-gray-600">
-                          {new Date(success.createdAt).toLocaleDateString()}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <span className="font-black text-xs text-indigo-700">
-                          {formatPrice(success.totalPrice)} PHP
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <div className="flex flex-col items-center">
-                          <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full font-black uppercase text-[9px] text-black">
-                            {totalItemsBought} ITEMS
-                          </span>
-                          <span className="text-[10px] font-mono text-gray-500 mt-1">
-                            {success.userId
-                              ? success.userId?.phoneNumber
-                              : success?.guestUser?.phone}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <span className="px-2 py-1 bg-white border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-black">
-                          {success.paymentMethod}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-green-600 font-black uppercase">
-                            {success.paymentStatus}
-                          </span>
-                          <span className="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-[9px]">
-                            {success.status}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 border-r border-black max-w-[200px]">
-                        <p className="truncate text-gray-500 italic">
-                          {success.userId?.address[0]?.fullAddress ||
-                            success.shippingAddress}
-                        </p>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <div className="flex flex-col gap-2">
-                          <button
-                            onClick={() => handleOpenSingleOrder(success)}
-                            className="bg-indigo-400 text-black border border-black py-1 px-3 rounded-[5px] font-black uppercase text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                          >
-                            VIEW
-                          </button>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                handleOpenCancelSuccess(success._id)
-                              }
-                              className="flex-1 bg-red-400 text-black border border-black py-1 px-2 rounded-[5px] font-black uppercase text-[9px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                            >
-                              CANCEL
-                            </button>
-                            <button
-                              onClick={() => handleRefundClick(success._id)}
-                              className="flex-1 bg-amber-400 text-black border border-black py-1 px-2 rounded-[5px] font-black uppercase text-[9px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                            >
-                              REFUND
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td
-                    colSpan="9"
-                    className="p-12 text-center text-gray-400 font-black uppercase tracking-widest text-xs"
-                  >
-                    No successful transactions found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
+      <ReusableTable
+        title="Successful Transactions"
+        subtitle="History of completed payments and successful orders"
+        columns={columns}
+        data={successOrderData}
+        isLoading={isPending}
+        search={{
+          value: localSearchTerm,
+          onChange: setLocalSearchTerm,
+          placeholder: "SEARCH BY ID, EMAIL, METHOD...",
+        }}
+        pagination={{
+          currentPage,
+          totalPages,
+          totalItems,
+          onPageChange: setPage,
+        }}
+        emptyMessage="No successful transactions found"
+      />
+    </>
   );
 }

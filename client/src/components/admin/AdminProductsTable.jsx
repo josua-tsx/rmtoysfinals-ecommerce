@@ -1,4 +1,3 @@
-import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import formatPrice from "../../reusable/formatPrice";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
+import useDebounce from "../../hooks/useDebounce";
+import ReusableTable from "../../reusable/ReusableTable";
 
 export default function AdminProductsTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
@@ -16,83 +16,113 @@ export default function AdminProductsTable({ enableMultiDel }) {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
 
-  const {
-    data: products = [],
-    isPending,
-    isError,
-  } = useQuery({
-    queryKey: ["products"],
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Debounced Search State
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
+
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["products", page, limit, debouncedSearchTerm],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/product/get-products`);
+      const params = new URLSearchParams({
+        page,
+        limit,
+      });
+
+      if (debouncedSearchTerm) {
+        params.append("search", debouncedSearchTerm);
+      }
+
+      const res = await axiosInstance.get(
+        `/product/get-products?${params.toString()}`,
+      );
       return res.data;
     },
+    keepPreviousData: true,
   });
 
-  const productArray = Array.isArray(products.products)
-    ? products.products
-    : [];
+  const products = data?.products || [];
+  const totalPages = data?.totalPages || 0;
+  const currentPage = data?.currentPage || 1;
+  const totalItems = data?.total || 0;
 
-  // --- ADD THESE LINES ---
-  const numSelected = selectedIds.length;
-  const numProducts = productArray.length;
+  // Select/Unselect logic for ReusableTable
+  const handleSelect = (productId) => {
+    setSelectedIds((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId],
+    );
+  };
 
-  // Checkbox is ticked only if all products are selected
-  const allSelected = numProducts > 0 && numSelected === numProducts;
+  const handleSelectAll = () => {
+    const allOnPageSelected =
+      products.length > 0 && products.every((p) => selectedIds.includes(p._id));
+
+    if (allOnPageSelected) {
+      // Unselect all on current page
+      const newSelected = selectedIds.filter(
+        (id) => !products.map((p) => p._id).includes(id),
+      );
+      setSelectedIds(newSelected);
+    } else {
+      // Select all on current page
+      const currentIds = products.map((p) => p._id);
+      const uniqueIds = [...new Set([...selectedIds, ...currentIds])];
+      setSelectedIds(uniqueIds);
+    }
+  };
 
   const { mutate: addToSlider } = useMutation({
     mutationFn: async (productId) => {
-      const res = await axiosInstance.put(
-        `/product/add-to-slider/${productId}`,
-      );
-      return res.data;
+      await axiosInstance.put(`/product/add-to-slider/${productId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Succesfully updated!");
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong!");
+      toast.error(err.response?.data?.message || "Something went wrong!");
     },
   });
 
   const { mutate: deleteProductMutation } = useMutation({
     mutationFn: async (productId) => {
-      const res = await axiosInstance.delete(
-        `/product/delete-product/${productId}`,
-      );
-      return res.data;
+      await axiosInstance.delete(`/product/delete-product/${productId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success("Successfully Deleted");
       setSelectedIds([]);
     },
     onError: (err) => {
-      toast.error(err.response.data.message || "something went wrong!");
+      toast.error(err.response?.data?.message || "Something went wrong!");
     },
   });
 
   const { mutate: deleteMultiProd } = useMutation({
-    mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/product/delete-multi-prod`, {
-        productIds: data,
+    mutationFn: async (ids) => {
+      await axiosInstance.post(`/product/delete-multi-prod`, {
+        productIds: ids,
       });
-      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      toast.success("Products are deleted successfully!");
+      toast.success("Products deleted successfully!");
       setSelectedIds([]);
     },
     onError: (err) => {
-      toast.error(err.response.data.message);
+      toast.error(err.response?.data?.message || "Something went wrong!");
     },
   });
 
@@ -107,32 +137,17 @@ export default function AdminProductsTable({ enableMultiDel }) {
     setIsConfirmModalOpen(true);
   };
 
-  const handleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(productArray.map((product) => product._id));
-    }
-  };
-
   const confirmDelete = () => {
     if (deleteProductId) {
       deleteProductMutation(deleteProductId);
-      cancelDelete();
+      setDeleteProductId(null);
+      setIsConfirmModalOpen(false);
     }
   };
 
   const cancelDelete = () => {
     setDeleteProductId(null);
     setIsConfirmModalOpen(false);
-  };
-
-  const pushMultipleProd = (productIds) => {
-    setSelectedIds((prev) =>
-      prev.includes(productIds)
-        ? prev.filter((id) => id !== productIds)
-        : [...prev, productIds],
-    );
   };
 
   const cancelMultiDel = () => {
@@ -154,28 +169,127 @@ export default function AdminProductsTable({ enableMultiDel }) {
     }
   };
 
-  const filteredProducts = productArray.filter(
-    (product) =>
-      product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product._id.includes(searchTerm),
-  );
-
   const navigateToeditPage = (editId) => {
     navigate(`/admin/editProduct/${editId}`);
   };
 
-  if (isError) return <p>Error loading filters</p>;
+  if (isError) return <p>Error loading products</p>;
+
+  // Column Definition
+  const columns = [
+    {
+      header: "Product Name",
+      className: "text-left",
+      render: (product) => (
+        <div className="flex items-center gap-3">
+          <img
+            src={product.productImages[0]}
+            alt="Product"
+            className="size-10 rounded-[5px] border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] object-cover bg-white"
+          />
+          <span className="text-[16px] tracking-tight text-black">
+            {product.productName}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "Category",
+      render: (product) => (
+        <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+          {product.category && product.category.categoryName}
+        </span>
+      ),
+    },
+    {
+      header: "Supplier",
+      render: (product) => (
+        <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+          {product.supplier?.supplierName || "N/A"}
+        </span>
+      ),
+    },
+    {
+      header: "Tax Status",
+      render: (product) => (
+        <span
+          className={`px-2 py-0.5 border border-black rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+            product.taxStatus === "vatable"
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {product.taxStatus || "N/A"}
+        </span>
+      ),
+    },
+    {
+      header: "Price",
+      className: "font-mono text-black",
+      render: (product) => formatPrice(product?.price),
+    },
+    {
+      header: "Status",
+      render: (product) => (
+        <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          {product.status}
+        </span>
+      ),
+    },
+    {
+      header: "Reviews",
+      accessor: "reviews",
+      render: (product) => product?.reviews?.length || 0,
+    },
+    {
+      header: "Sold",
+      className: "text-green-600",
+      accessor: "sold",
+    },
+    {
+      header: "Points",
+      accessor: "points",
+    },
+    {
+      header: "Created",
+      className: "text-gray-500 font-mono",
+      render: (product) => new Date(product.createdAt).toLocaleDateString(),
+    },
+    {
+      header: "Actions",
+      render: (product) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => navigateToeditPage(product._id)}
+            title="Edit"
+            className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <CiEdit size={18} className="stroke-[1px]" />
+          </button>
+          <button
+            onClick={() => handleDeleteClick(product._id)}
+            title="Delete"
+            className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <MdDelete size={18} />
+          </button>
+          <button
+            onClick={() => addToSlider(product._id)}
+            className={`px-3 py-1.5 border border-black rounded-[5px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all ${
+              !product?.isBestProduct
+                ? "bg-blue-500 text-white"
+                : "bg-white text-black"
+            }`}
+          >
+            {!product?.isBestProduct ? "Add Slider" : "Rem Slider"}
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible">
-      {/* Green Sticker Header */}
-      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
-          Products Table
-        </h1>
-      </div>
-
-      {/* Confirmation Modal */}
+    <>
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         title="Confirm Delete"
@@ -184,212 +298,36 @@ export default function AdminProductsTable({ enableMultiDel }) {
         onCancel={cancelDelete}
       />
 
-      <div className="flex-col border-b-2 border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
-        <div className="flex items-center gap-1 flex-col md:flex-row">
-          <label className="font-black  uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
-            Search Products
-          </label>
-          <div className="flex items-center relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Ex: Toy car..."
-              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
-            />
-            <IoSearch className="absolute right-3" size={20} />
-          </div>
-        </div>
-      </div>
+      <ReusableTable
+        title="Products Table"
+        columns={columns}
+        data={products}
+        isLoading={isPending}
+        search={{
+          value: localSearchTerm,
+          onChange: setLocalSearchTerm,
+          placeholder: "Ex: Toy car...",
+        }}
+        pagination={{
+          currentPage: page,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          onPageChange: setPage,
+        }}
+        selection={
+          enableMultiDel
+            ? {
+                selectedIds,
+                onSelect: handleSelect,
+                onSelectAll: handleSelectAll,
+              }
+            : undefined
+        }
+      />
 
-      <div className="overflow-y-auto h-[600px] py-3">
-        {isPending ? (
-          <div className="p-4">
-            <AdminTableSkeleton />
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="border-b border-black relative">
-              <tr>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-left">
-                  Product Name
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Category
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Supplier
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Supplier
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Tax Status
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Price
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Status
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Reviews
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Sold
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Points
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Created
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 pb-2 text-center">
-                  Actions
-                </th>
-                {productArray.length > 0 && enableMultiDel && (
-                  <th className="p-4 pb-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
-                    />
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black text-[13px]">
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
-                  <tr
-                    key={product._id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="p-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.productImages[0]}
-                          alt="Product img"
-                          className="size-10 rounded-[5px] border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] object-cover bg-white"
-                        />
-                        <span className=" text-[16px] tracking-tight text-black">
-                          {product.productName}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px]  text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
-                        {product.category && product.category.categoryName}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
-                        {product.supplier?.supplierName || "N/A"}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
-                        {product.supplier?.supplierName || "N/A"}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span
-                        className={`px-2 py-0.5 border border-black rounded-[3px] text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${product.taxStatus === "vatable" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
-                      >
-                        {product.taxStatus || "N/A"}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center font-mono  text-[16px] text-black">
-                      {formatPrice(product?.price)}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px]  text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        {product.status}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center  text-[16px]">
-                      {product?.reviews?.length}
-                    </td>
-
-                    <td className="p-4 text-center  text-[16px] text-green-600">
-                      {product?.sold}
-                    </td>
-
-                    <td className="p-4 text-center  text-[16px]">
-                      {product?.points}
-                    </td>
-
-                    <td className="p-4 text-center  text-[16px] text-gray-500 font-mono">
-                      {new Date(product.createdAt).toLocaleDateString()}
-                    </td>
-
-                    <td className="p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => navigateToeditPage(product._id)}
-                          title="Edit"
-                          className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <CiEdit size={18} className="stroke-[1px]" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(product._id)}
-                          title="Delete"
-                          className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <MdDelete size={18} />
-                        </button>
-                        <button
-                          onClick={() => addToSlider(product._id)}
-                          className={`px-3 py-1.5 border border-black rounded-[5px]  text-[16px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all ${
-                            !product?.isBestProduct
-                              ? "bg-blue-500 text-white"
-                              : "bg-white text-black"
-                          }`}
-                        >
-                          {!product?.isBestProduct
-                            ? "Add Slider"
-                            : "Rem Slider"}
-                        </button>
-                      </div>
-                    </td>
-                    {productArray.length > 0 && enableMultiDel && (
-                      <td className="p-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(product._id)}
-                          onChange={() => pushMultipleProd(product._id)}
-                          className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
-                        />
-                      </td>
-                    )}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="10"
-                    className="p-8 text-center  text-[16px] uppercase text-gray-400 tracking-widest"
-                  >
-                    no products found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-
+      {/* Multi Delete Floating Action */}
       {selectedIds && selectedIds.length > 0 && (
-        <div className="w-full flex gap-3 justify-end p-4 border-t border-black bg-gray-50">
+        <div className="w-full flex gap-3 justify-end p-4 border border-t-0 border-black bg-gray-50 rounded-b-[5px] mt-[-6px] relative z-10">
           <button
             onClick={cancelMultiDel}
             className="px-6 py-2 border border-black bg-white font-black text-[16px] uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
@@ -397,13 +335,13 @@ export default function AdminProductsTable({ enableMultiDel }) {
             Cancel
           </button>
           <button
-            onClick={() => handleMultiDelete()}
+            onClick={handleMultiDelete}
             className="px-6 py-2 border border-black bg-red-600 text-white font-black text-[16px] uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             Delete Selected ({selectedIds.length})
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IoFilter } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import { SiGooglegemini } from "react-icons/si";
@@ -8,6 +8,7 @@ import axiosInstance from "../lib/axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import ShopSideSkeleton from "./skeleton/ShopSideSkeleton";
+import useDebounce from "../hooks/useDebounce";
 
 export default function ShopSide({
   setSearchTerm,
@@ -22,6 +23,17 @@ export default function ShopSide({
   const [filterColor, setFilterColor] = useState("");
   const [isAiMode, setIsAiMode] = useState(false); // AI search toggle
   const [aiQuery, setAiQuery] = useState(""); // AI search input
+  const [localSearchTerm, setLocalSearchTerm] = useState(""); // Local state for immediate input feedback
+
+  // Debounce the search term to avoid excessive filtering updates
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
+
+  // Sync debounced term with parent state
+  useEffect(() => {
+    if (!isAiMode) {
+      setSearchTerm(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm, isAiMode, setSearchTerm]);
 
   const {
     data: categories = [],
@@ -64,7 +76,7 @@ export default function ShopSide({
 
   const handleSearchChange = (event) => {
     if (!isAiMode) {
-      setSearchTerm(event.target.value);
+      setLocalSearchTerm(event.target.value);
     } else {
       setAiQuery(event.target.value);
     }
@@ -107,6 +119,7 @@ export default function ShopSide({
   const handleToggleAiMode = () => {
     setIsAiMode((prev) => !prev);
     setAiQuery("");
+    setLocalSearchTerm("");
     setSearchTerm("");
     setAiSearchResults?.(null); // Clear AI results when toggling
   };
@@ -115,6 +128,7 @@ export default function ShopSide({
     e.preventDefault();
     setSelectedCategory(filterCategory);
     setSearchTerm(filterColor);
+    setLocalSearchTerm(filterColor); // Sync local state
     setSortBy(sortOption === "latest" ? "createdAt" : "oldest");
     setSortOrder(sortOption === "latest" ? "desc" : "asc");
     setShowFilter(false);
@@ -125,6 +139,7 @@ export default function ShopSide({
     setFilterCategory("");
     setFilterColor("");
     setSearchTerm("");
+    setLocalSearchTerm(""); // Reset local state
     setSortBy("createdAt");
     setSortOrder("desc");
     setSortOption("latest");
@@ -188,7 +203,7 @@ export default function ShopSide({
         <div className="flex-1 relative">
           <input
             type="text"
-            value={isAiMode ? aiQuery : undefined}
+            value={isAiMode ? aiQuery : localSearchTerm}
             placeholder={
               isAiMode
                 ? "Describe what you need..."

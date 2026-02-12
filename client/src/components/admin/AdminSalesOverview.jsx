@@ -36,70 +36,78 @@ export default function AdminSalesOverview() {
   });
 
   // GET TOTAL VAT TO REMIT FROM SUCCESS ORDER
-  const { data: successOrderData = [] } = useQuery({
+  const { data: successOrderData } = useQuery({
     queryKey: ["successOrder"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-successOrder`);
+      // Fetch all success orders (high limit) to calculate total revenue/VAT
+      const res = await axiosInstance.get(
+        `/order/get-successOrder?limit=1000000`,
+      );
       return res.data;
     },
   });
 
-  // Calculate total VAT to remit
-  const totalVatToRemit = Array.isArray(successOrderData)
-    ? successOrderData.reduce((totalVat, order) => {
-        const orderVat =
-          order.orderItems?.reduce((orderTotal, item) => {
-            if (!item?.productId) return orderTotal;
-            const vatPerUnit =
-              item.productId.price - item.productId.preVatPrice;
-            return orderTotal + vatPerUnit * item.quantity;
-          }, 0) || 0;
+  const successOrders = successOrderData?.orders || [];
 
-        return totalVat + orderVat;
-      }, 0)
-    : 0;
+  // Calculate total VAT to remit
+  const totalVatToRemit = successOrders.reduce((totalVat, order) => {
+    const orderVat =
+      order.orderItems?.reduce((orderTotal, item) => {
+        if (!item?.productId) return orderTotal;
+        const vatPerUnit = item.productId.price - item.productId.preVatPrice;
+        return orderTotal + vatPerUnit * item.quantity;
+      }, 0) || 0;
+
+    return totalVat + orderVat;
+  }, 0);
 
   // TOTAL CUSTOMER
   const {
-    data: totalCustomer = [],
+    data: customerData,
     isPending: isCustomerPending,
     isError: isCustomerError,
   } = useQuery({
     queryKey: ["totalCustomer"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/user/getAllCustomer`);
+      // Limit 1 is enough to get the total count from metadata
+      const res = await axiosInstance.get(`/user/getAllCustomer?limit=1`);
       return res.data;
     },
   });
 
+  const totalCustomerCount = customerData?.total || 0;
+
   // GET ALL WORKERS
-  const { data: totalWorkers = [] } = useQuery({
+  const { data: workerData } = useQuery({
     queryKey: ["totalWorkers"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/user/getAllWorkers`);
+      const res = await axiosInstance.get(`/user/getAllWorkers?limit=1`);
       return res.data;
     },
   });
+
+  const totalWorkerCount = workerData?.total || 0;
 
   // GET TOTAL COST IN STOCKS
 
   const {
-    data: stocks = [],
+    data: stocksData,
     isLoading: isStocksPending,
     isError: isStocksError,
   } = useQuery({
     queryKey: ["stocks"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stock`);
+      // Need all stocks to sum up total cost
+      const res = await axiosInstance.get(`/stocks/get-stock?limit=1000000`);
       return res.data;
     },
   });
 
-  const totalExpenses = Array.isArray(stocks)
-    ? stocks.reduce((total, item) => {
-        return total + item?.totalCost;
-      }, 0)
-    : 0;
+  const stockList = stocksData?.stocks || [];
+
+  const totalExpenses = stockList.reduce((total, item) => {
+    return total + (item?.totalCost || 0);
+  }, 0);
 
   // GET ALL ORDERS (PENDING SO ON)
 
@@ -115,7 +123,7 @@ export default function AdminSalesOverview() {
     },
   });
 
-  const totalRevenue = successOrderData.reduce((sum, item) => {
+  const totalRevenue = successOrders.reduce((sum, item) => {
     return sum + item.totalPrice;
   }, 0);
 
@@ -213,10 +221,8 @@ export default function AdminSalesOverview() {
         ) : (
           <AdminStatCard
             title={"TOTAL CUSTOMERS"}
-            value={totalCustomer?.length > 0 ? totalCustomer?.length : 0}
-            value2={`TOTAL WORKERS ${
-              totalWorkers.length > 0 ? totalWorkers?.length : 0
-            }`}
+            value={totalCustomerCount}
+            value2={`TOTAL WORKERS ${totalWorkerCount}`}
           />
         )}
 

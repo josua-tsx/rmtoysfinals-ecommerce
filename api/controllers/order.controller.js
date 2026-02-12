@@ -26,6 +26,7 @@ import {
   emailSchema,
 } from "../utils/validations.js";
 import { z } from "zod";
+import { checkAndSendStockAlerts } from "../services/stockAlert.service.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // MUST be initialized
 
@@ -176,6 +177,9 @@ export const userPlaceOrder = async (req, res, next) => {
         { new: true, runValidators: true, session }
       );
     }
+
+    // Trigger stock alerts (fire and forget)
+    checkAndSendStockAlerts();
 
     // Clear cart
     const userCart = await Cart.findOne({ userId }).session(session);
@@ -662,6 +666,9 @@ export const checkOutSuccess = async (req, res, next) => {
       );
     }
 
+    // Trigger stock alerts (fire and forget)
+    checkAndSendStockAlerts();
+
     // Clear cart for registered users
     if (userId && userId !== "guest") {
 
@@ -957,6 +964,9 @@ export const placeOrderGcashQR = async (req, res, next) => {
       );
     }
 
+    // Trigger stock alerts (fire and forget)
+    checkAndSendStockAlerts();
+
     // Clear cart if authenticated
     if (userId) {
       const userCart = await Cart.findOne({ userId }).session(session);
@@ -1066,13 +1076,37 @@ export const getAllOrder = async (req, res, next) => {
 
 export const getUsersOrder = async (req, res, next) => {
   try {
-    // Fetch all orders
-    const orders = await Order.find({
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+
+    const query = {
       status: {
         $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
       },
       isGuest: false,
-    })
+    };
+
+    if (search) {
+      // Find users matching search first
+      const users = await User.find({
+          $or: [
+              { email: { $regex: search, $options: "i" } },
+              { fullName: { $regex: search, $options: "i" } }
+          ]
+      }).select('_id');
+      
+      const userIds = users.map(u => u._id);
+      
+      query.$or = [
+          { _id: search }, // Will fail if search is not valid ObjectId type. We should check.
+          { paymentMethod: { $regex: search, $options: "i" } },
+          { paymentStatus: { $regex: search, $options: "i" } },
+          { userId: { $in: userIds } }
+      ];
+    }
+
+    const total = await Order.countDocuments(query);
+    const orders = await Order.find(query)
       .populate({
         path: "orderItems.productId",
         select: "price preVatPrice",
@@ -1081,29 +1115,49 @@ export const getUsersOrder = async (req, res, next) => {
         path: "userId",
         select: "fullName email phoneNumber",
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    // If no orders are found, return an empty array
-    if (orders.length === 0) {
-      return res.status(200).json([]);
-    }
 
-    // If orders are found, return them
-    res.status(200).json(orders);
+    res.status(200).json({
+        orders,
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: parseInt(page),
+        hasMore: total > page * limit
+    });
   } catch (error) {
-    next(error); // Pass the error to the next middleware for error handling
+    next(error); 
   }
 };
 
 export const getGuestOrder = async (req, res, next) => {
   try {
-    // Fetch all orders
-    const orders = await Order.find({
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+
+    const query = {
       status: {
         $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
       },
       isGuest: true,
-    })
+    };
+
+    if (search) {
+      query.$or = [
+          { _id: search },
+          { paymentMethod: { $regex: search, $options: "i" } },
+          { paymentStatus: { $regex: search, $options: "i" } },
+          { "guestUser.name": { $regex: search, $options: "i" } },
+          { "guestUser.email": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const total = await Order.countDocuments(query);
+    
+    // Fetch all orders
+    const orders = await Order.find(query)
       .populate({
         path: "orderItems.productId",
         select: "price preVatPrice",
@@ -1112,15 +1166,17 @@ export const getGuestOrder = async (req, res, next) => {
         path: "userId",
         select: "fullName email",
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    // If no orders are found, return an empty array
-    if (orders.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    // If orders are found, return them
-    res.status(200).json(orders);
+    res.status(200).json({
+        orders,
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: parseInt(page),
+        hasMore: total > page * limit
+    });
   } catch (error) {
     next(error);
   }
@@ -1128,10 +1184,32 @@ export const getGuestOrder = async (req, res, next) => {
 
 export const getAllSuccess = async (req, res, next) => {
   try {
-    // Fetch all orders
-    const orders = await Order.find({
-      status: ["Delivered"],
-    })
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+
+    let dbQuery = { status: "Delivered" };
+    
+    if (search) {
+       // Find users matching search first
+       const users = await User.find({
+           $or: [
+               { email: { $regex: search, $options: "i" } },
+               { fullName: { $regex: search, $options: "i" } }
+           ]
+       }).select('_id');
+       
+       const userIds = users.map(u => u._id);
+       
+       dbQuery.$or = [
+           { _id: search }, // Will fail if search is not valid ObjectId type. We should check.
+           { paymentMethod: { $regex: search, $options: "i" } },
+           { "guestUser.email": { $regex: search, $options: "i" } },
+           { userId: { $in: userIds } }
+       ];
+    }
+
+    const total = await Order.countDocuments(dbQuery);
+    const orders = await Order.find(dbQuery)
       .populate({
         path: "orderItems.productId",
         select: "price preVatPrice",
@@ -1144,27 +1222,53 @@ export const getAllSuccess = async (req, res, next) => {
           select: "fullAddress",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    // If no orders are found, return an empty array
-    if (orders.length === 0) {
-      return res.status(200).json([]);
-    }
+    res.status(200).json({
+        orders,
+        pagination: {
+            total,
+            page: parseInt(page),
+            totalPages: Math.ceil(total / limit)
+        }
+    });
 
-    // If orders are found, return them
-    res.status(200).json(orders);
   } catch (error) {
-    next(error); // Pass the error to the next middleware for error handling
+    next(error); 
   }
 };
 
 export const getAllFailed = async (req, res, next) => {
   try {
-    // Fetch all orders
-    const orders = await Order.find({
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+
+    let dbQuery = {
       paymentStatus: "Failed",
       status: "Cancelled",
-    })
+    };
+
+    if (search) {
+       const users = await User.find({
+           $or: [
+               { email: { $regex: search, $options: "i" } },
+               { fullName: { $regex: search, $options: "i" } }
+           ]
+       }).select('_id');
+       const userIds = users.map(u => u._id);
+       
+       dbQuery.$or = [
+           { _id: search },
+           { paymentMethod: { $regex: search, $options: "i" } },
+           { "guestUser.email": { $regex: search, $options: "i" } },
+           { userId: { $in: userIds } }
+       ];
+    }
+
+    const total = await Order.countDocuments(dbQuery);
+    const orders = await Order.find(dbQuery)
       .populate({
         path: "userId",
         select: "fullName email phoneNumber",
@@ -1173,26 +1277,58 @@ export const getAllFailed = async (req, res, next) => {
           select: "fullAddress",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    // If no orders are found, return an empty array
-    if (orders.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    // If orders are found, return them
-    res.status(200).json(orders);
+    res.status(200).json({
+        orders,
+        pagination: {
+            total,
+            page: parseInt(page),
+            totalPages: Math.ceil(total / limit)
+        }
+    });
   } catch (error) {
-    next(error); // Pass the error to the next middleware for error handling
+    next(error); 
   }
 };
 
 export const getAllRefunded = async (req, res, next) => {
   try {
-    // Fetch all orders
-    const orders = await Order.find({
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+
+    let dbQuery = {
       $or: [{ paymentStatus: "Refunded" }, { status: "Refunded" }],
-    })
+    };
+
+    if (search) {
+       const users = await User.find({
+           $or: [
+               { email: { $regex: search, $options: "i" } },
+               { fullName: { $regex: search, $options: "i" } }
+           ]
+       }).select('_id');
+       const userIds = users.map(u => u._id);
+       
+       dbQuery = {
+         $and: [
+           dbQuery,
+           {
+             $or: [
+               { _id: search },
+               { paymentMethod: { $regex: search, $options: "i" } },
+               { "guestUser.email": { $regex: search, $options: "i" } },
+               { userId: { $in: userIds } }
+             ]
+           }
+         ]
+       };
+    }
+
+    const total = await Order.countDocuments(dbQuery);
+    const orders = await Order.find(dbQuery)
       .populate({
         path: "userId",
         select: "fullName email phoneNumber",
@@ -1201,25 +1337,54 @@ export const getAllRefunded = async (req, res, next) => {
           select: "fullAddress",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    // If no orders are found, return an empty array
-    if (orders.length === 0) {
-      return res.status(200).json([]);
-    }
+    res.status(200).json({
+        orders,
+        pagination: {
+            total,
+            page: parseInt(page),
+            totalPages: Math.ceil(total / limit)
+        }
+    });
 
-    // If orders are found, return them
-    res.status(200).json(orders);
   } catch (error) {
-    next(error); // Pass the error to the next middleware for error handling
+    next(error); 
   }
 };
 
 export const getAllCancelled = async (req, res, next) => {
   try {
-    const orders = await Order.find({
-      status: "Cancelled",
-    })
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+    
+    // Original logic: just status cancelled.
+    // NOTE: getAllFailed also checks status Cancelled + paymentStatus Failed.
+    // This one checks purely status Cancelled.
+    
+    let dbQuery = { status: "Cancelled" };
+
+    if (search) {
+       const users = await User.find({
+           $or: [
+               { email: { $regex: search, $options: "i" } },
+               { fullName: { $regex: search, $options: "i" } }
+           ]
+       }).select('_id');
+       const userIds = users.map(u => u._id);
+       
+       dbQuery.$or = [
+           { _id: search },
+           { paymentMethod: { $regex: search, $options: "i" } },
+           { "guestUser.email": { $regex: search, $options: "i" } },
+           { userId: { $in: userIds } }
+       ];
+    }
+
+    const total = await Order.countDocuments(dbQuery);
+    const orders = await Order.find(dbQuery)
       .populate({
         path: "userId",
         select: "fullName email phoneNumber",
@@ -1228,15 +1393,18 @@ export const getAllCancelled = async (req, res, next) => {
           select: "fullAddress",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    // If no orders are found, return an empty array
-    if (orders.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    // If orders are found, return them
-    res.status(200).json(orders);
+    res.status(200).json({
+        orders,
+        pagination: {
+            total,
+            page: parseInt(page),
+            totalPages: Math.ceil(total / limit)
+        }
+    });
   } catch (error) {
     next(error);
   }

@@ -48,9 +48,52 @@ export const addNewFaqs = async (req, res, next) => {
 
 export const getAllFaqs = async (req, res, next) => {
   try {
-    const getFaqs = await Faqs.find();
-    if (!getFaqs) return next(handleMakeError(400, "no faqs found!"));
-    res.status(200).json(getFaqs);
+    const { 
+      page = 1, 
+      limit = 10, 
+      search 
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Base query
+    const query = {};
+
+    // Search logic
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      if (isObjectId) {
+         query.$or = [
+          { title: searchRegex },
+          { answer: searchRegex },
+          { _id: search }
+        ];
+      } else {
+        query.$or = [
+          { title: searchRegex },
+          { answer: searchRegex }
+        ];
+      }
+    }
+
+    const getFaqs = await Faqs.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await Faqs.countDocuments(query);
+
+    res.status(200).json({
+      faqs: getFaqs,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

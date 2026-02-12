@@ -3,17 +3,22 @@ import axiosInstance from "../../lib/axios";
 import SingleOrderList from "../../components/SingleOrderList";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { IoSearch } from "react-icons/io5";
 import formatPrice from "../../reusable/formatPrice";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import ToShipModal from "../../modals/ToShipModal";
-import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
+import ReusableTable from "../../reusable/ReusableTable";
+import useDebounce from "../../hooks/useDebounce";
 
 export default function AdminOrderStatusTable() {
   const queryClient = useQueryClient();
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [newStatus, setNewStatus] = useState("");
@@ -21,29 +26,23 @@ export default function AdminOrderStatusTable() {
   const [selectedRiderId, setSelectedRiderId] = useState(null);
 
   const {
-    data: allOrders = [],
+    data,
     isPending: isOrdersPending,
     isError: isOrdersError,
   } = useQuery({
-    queryKey: ["order"],
+    queryKey: ["order", page, debouncedSearch],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-orders`);
+      const res = await axiosInstance.get(
+        `/order/get-orders?page=${page}&limit=${limit}&search=${debouncedSearch}`,
+      );
       return res.data;
     },
   });
 
-  const arrayAllOrders = Array.isArray(allOrders) ? allOrders : [];
-
-  const filteredArrayAllOrders = arrayAllOrders.filter(
-    (order) =>
-      (order?._id && order._id.includes(searchTerm)) ||
-      (order?.userId?.email &&
-        order.userId.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (order?.paymentMethod &&
-        order.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (order?.paymentStatus &&
-        order.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase())),
-  );
+  const orders = data?.orders || [];
+  const totalPages = data?.totalPages || 1;
+  const totalItems = data?.total || 0;
+  const currentPage = data?.currentPage || 1;
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -76,10 +75,6 @@ export default function AdminOrderStatusTable() {
   });
 
   const confirmOrderStatus = () => {
-    // if (newStatus === "Shipped" && selectedRiderId === null) {"You must pick a rider to update status to shipped."
-    //   return toast.error("You must pick a rider to update status to shipped.");
-    // }
-
     updateStatusMutation({
       id: selectedId,
       status: newStatus,
@@ -88,18 +83,13 @@ export default function AdminOrderStatusTable() {
     cancelConfirmModal();
   };
 
-  console.log(selectedRiderId);
-
-  // New signature:
   const handleOpenConfirmModal = (id, e) => {
     setSelectedId(id);
     setNewStatus(e.target.value);
 
     if (e.target.value === "Shipped") {
-      // For Shipped, only open rider selection modal first
       setOpenToShipModal(true);
     } else {
-      // For other statuses, open confirm modal directly
       setOpenConfirmModal(true);
     }
   };
@@ -124,21 +114,151 @@ export default function AdminOrderStatusTable() {
 
   const handleConfirmToShipModal = () => {
     setOpenToShipModal(false);
-    // After rider is selected, NOW open the confirmation modal
     setOpenConfirmModal(true);
   };
+
+  const columns = [
+    {
+      header: "Order ID",
+      accessor: "_id",
+      className: "text-left border-r border-black font-mono",
+      render: (item) => (
+        <div className="flex flex-col">
+          <span className="text-black">ID: {item._id.slice(-6)}</span>
+          <span className="text-[9px] text-gray-400 truncate max-w-[80px]">
+            {item._id}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "Customer",
+      accessor: "userId",
+      className: "text-left border-r border-black",
+      render: (item) => (
+        <div className="flex flex-col">
+          <span className="text-black truncate max-w-[150px]">
+            {item?.userId?.fullName}
+          </span>
+          <span className="text-[10px] text-gray-500 truncate max-w-[150px]">
+            {item?.userId?.email}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "Phone",
+      accessor: "phone",
+      className: "text-center border-r border-black font-mono text-black",
+      render: (item) => item?.userId?.phoneNumber,
+    },
+    {
+      header: "Date",
+      accessor: "createdAt",
+      className: "text-center border-r border-black text-black",
+      render: (item) => new Date(item.createdAt).toLocaleDateString(),
+    },
+    {
+      header: "Total",
+      accessor: "totalPrice",
+      className:
+        "text-center border-r border-black font-mono font-black text-indigo-700",
+      render: (item) => formatPrice(item.totalPrice),
+    },
+    {
+      header: "Points",
+      accessor: "totalPoints",
+      className:
+        "text-center border-r border-black font-mono font-bold text-green-600",
+      render: (item) => `+${formatPrice(item.totalPoints)}`,
+    },
+    {
+      header: "Used",
+      accessor: "usedCredits",
+      className:
+        "text-center border-r border-black font-mono font-bold text-red-500",
+      render: (item) =>
+        `-${item?.usedCredits ? formatPrice(item.usedCredits) : 0}`,
+    },
+    {
+      header: "Payment",
+      accessor: "paymentMethod",
+      className: "text-center border-r border-black",
+      render: (item) => (
+        <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
+          {item.paymentMethod}
+        </span>
+      ),
+    },
+    {
+      header: "Pay Status",
+      accessor: "paymentStatus",
+      className: "text-center border-r border-black",
+      render: (item) => (
+        <span
+          className={`px-2 py-0.5 border border-black rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+            item?.paymentStatus === "Failed" ||
+            item?.paymentStatus === "Refunded"
+              ? "bg-red-100 text-red-700"
+              : "bg-blue-100 text-blue-700"
+          }`}
+        >
+          {item.paymentStatus}
+        </span>
+      ),
+    },
+    {
+      header: "Order Status",
+      accessor: "status",
+      className: "text-center border-r border-black",
+      render: (item) => (
+        <span
+          className={`px-2 py-0.5 border border-black rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+            item?.status === "Cancelled"
+              ? "bg-red-100 text-red-700"
+              : "bg-green-100 text-green-700"
+          }`}
+        >
+          {item.status}
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: "actions",
+      className: "text-center",
+      render: (item) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => handleOpenSingleOrder(item)}
+            title="View Details"
+            className="px-3 py-1.5 border border-black bg-white text-black font-black uppercase rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            View
+          </button>
+          <select
+            name="status"
+            id="status"
+            onChange={(e) => handleOpenConfirmModal(item._id, e)}
+            value={item.status}
+            className="border border-black p-1 font-black uppercase outline-none rounded-[5px] bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all cursor-pointer"
+          >
+            <option value="Pending">Pending</option>
+            <option value="Processing">Processing</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Out for Delivery">Delivery</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      ),
+    },
+  ];
 
   if (isOrdersError) return <p>error.</p>;
 
   return (
-    <div className="font-main border rounded-[5px] text-sm md:text-normal border-black bg-card relative mt-8 overflow-visible">
-      {/* Green Sticker Header */}
-      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-        <h1 className="font-black uppercase tracking-widest text-sm ">
-          Member Orders
-        </h1>
-      </div>
-
+    <>
       {openModal && singleUserOrder && (
         <SingleOrderList
           order={singleUserOrder}
@@ -162,192 +282,26 @@ export default function AdminOrderStatusTable() {
         onCancel={handleCancelOpenShipModal}
       />
 
-      <div className="flex-col border-b border-black rounded-t-[5px] flex md:flex-row items-center justify-between p-4 pt-8 gap-4 bg-gray-50/50">
-        <div className="hidden md:block">
-          <p className="text-[11px] font-black uppercase text-gray-500 tracking-widest pl-1">
-            Managing registered member orders and tracking delivery status
-          </p>
-        </div>
-        <div className="flex items-center gap-1 flex-col md:flex-row">
-          <div className="flex items-center relative group w-full md:w-auto">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="SEARCH BY ID, EMAIL..."
-              className="border border-black w-full md:w-[350px] rounded-[5px] py-2 pl-4 pr-10 focus:outline-none font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all placeholder:text-gray-300"
-            />
-            <IoSearch
-              className="absolute right-3 text-black group-focus-within:scale-110 transition-transform"
-              size={20}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto overflow-y-auto h-[600px]">
-        {isOrdersPending ? (
-          <div className="p-4">
-            <AdminTableSkeleton />
-          </div>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead className="border-b bg-white border-black sticky top-0 z-10">
-              <tr>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-left border-r border-black">
-                  Order ID
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-left border-r border-black">
-                  Customer
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center border-r border-black">
-                  Phone
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-left border-r border-black">
-                  Date
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center border-r border-black">
-                  Total
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center border-r border-black">
-                  Points
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center border-r border-black">
-                  Used
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center border-r border-black">
-                  Payment
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center border-r border-black">
-                  Pay Status
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center border-r border-black">
-                  Order Status
-                </th>
-                <th className="font-black text-[16px] uppercase tracking-widest text-black p-4 text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black text-[16px]">
-              {filteredArrayAllOrders?.length > 0 ? (
-                filteredArrayAllOrders?.map((data) => (
-                  <tr
-                    key={data._id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="p-4 border-r border-black font-mono">
-                      <div className="flex flex-col">
-                        <span className="text-black">
-                          ID: {data._id.slice(-6)}
-                        </span>
-                        <span className="text-[9px] text-gray-400 truncate max-w-[80px]">
-                          {data._id}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4 border-r border-black">
-                      <div className="flex flex-col">
-                        <span className="text-black truncate max-w-[150px]">
-                          {data?.userId?.fullName}
-                        </span>
-                        <span className="text-[10px] text-gray-500 truncate max-w-[150px]">
-                          {data?.userId?.email}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="p-4 text-center border-r border-black font-mono text-black">
-                      {data?.userId?.phoneNumber}
-                    </td>
-
-                    <td className="p-4 border-r border-black text-black">
-                      {new Date(data?.createdAt).toLocaleDateString()}
-                    </td>
-
-                    <td className="p-4 text-center border-r border-black font-mono font-black text-indigo-700">
-                      {formatPrice(data?.totalPrice)}
-                    </td>
-                    <td className="p-4 text-center border-r border-black font-mono font-bold text-green-600">
-                      +{formatPrice(data?.totalPoints)}
-                    </td>
-                    <td className="p-4 text-center border-r border-black font-mono font-bold text-red-500">
-                      -{data?.usedCredits ? formatPrice(data?.usedCredits) : 0}
-                    </td>
-
-                    <td className="p-4 text-center border-r border-black">
-                      <span className="px-2 py-0.5 border border-black bg-white rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
-                        {data?.paymentMethod}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center border-r border-black">
-                      <span
-                        className={`px-2 py-0.5 border border-black rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
-                          data?.paymentStatus === "Failed" ||
-                          data?.paymentStatus === "Refunded"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-blue-100 text-blue-700"
-                        }`}
-                      >
-                        {data?.paymentStatus}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center border-r border-black">
-                      <span
-                        className={`px-2 py-0.5 border border-black rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
-                          data?.status === "Cancelled"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-green-100 text-green-700"
-                        }`}
-                      >
-                        {data?.status}
-                      </span>
-                    </td>
-
-                    <td className="p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleOpenSingleOrder(data)}
-                          title="View Details"
-                          className="px-3 py-1.5 border border-black bg-white text-black font-black uppercase rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          View
-                        </button>
-
-                        <select
-                          name="status"
-                          id="status"
-                          onChange={(e) => handleOpenConfirmModal(data._id, e)}
-                          value={data.status}
-                          className="border border-black p-1 font-black uppercase outline-none rounded-[5px] bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all cursor-pointer"
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Out for Delivery">Delivery</option>
-                          <option value="Delivered">Delivered</option>
-                          <option value="Cancelled">Cancelled</option>
-                        </select>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="11"
-                    className="p-8 text-center font-black uppercase text-gray-400 tracking-widest"
-                  >
-                    no order found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
+      <ReusableTable
+        title="Member Orders"
+        subtitle="Managing registered member orders and tracking delivery status"
+        headerColor="bg-[#22c55e]"
+        columns={columns}
+        data={orders}
+        isLoading={isOrdersPending}
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "SEARCH BY ID, EMAIL...",
+        }}
+        pagination={{
+          currentPage: currentPage,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          onPageChange: setPage,
+        }}
+        emptyMessage="NO ORDER FOUND"
+      />
+    </>
   );
 }

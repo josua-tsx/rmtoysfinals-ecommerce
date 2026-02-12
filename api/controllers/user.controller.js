@@ -141,14 +141,56 @@ export const getAll = async (req, res, next) => {
 
 export const getAllCustomer = async (req, res, next) => {
   try {
-    const findAllCustomer = await User.find({ role: "customer" })
+    const { 
+      page = 1, 
+      limit = 10, 
+      search 
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = { role: "customer" };
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      if (isObjectId) {
+        query.$or = [
+          { email: searchRegex },
+          { username: searchRegex },
+          { status: searchRegex },
+          { _id: search }
+        ];
+      } else {
+        query.$or = [
+          { email: searchRegex },
+          { username: searchRegex },
+          { status: searchRegex }
+        ];
+      }
+    }
+
+    const findAllCustomer = await User.find(query)
       .populate({
         path: "address",
         select: "fullAddress isActive",
       })
-      .sort({ createdAt: -1 });
-    if (!findAllCustomer) return next(handleMakeError(400, "Not found!"));
-    res.status(200).json(findAllCustomer);
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await User.countDocuments(query);
+
+    res.status(200).json({
+      users: findAllCustomer,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }
@@ -156,25 +198,61 @@ export const getAllCustomer = async (req, res, next) => {
 
 export const getAllWorkers = async (req, res, next) => {
   try {
-    const workers = await User.find({
-      // $nin: fetch those are not in (the array)
-      role: { 
-        $nin: ["admin", "customer"]
-       },
-       isArchived: { $ne: true },
-    })
+    const { 
+      page = 1, 
+      limit = 10, 
+      search 
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = {
+      role: { $nin: ["admin", "customer"] },
+      isArchived: { $ne: true },
+    };
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      if (isObjectId) {
+         query.$or = [
+          { email: searchRegex },
+          { username: searchRegex },
+          { role: searchRegex },
+          { jobDescription: searchRegex },
+          { _id: search }
+        ];
+      } else {
+        query.$or = [
+          { email: searchRegex },
+          { username: searchRegex },
+          { role: searchRegex },
+          { jobDescription: searchRegex }
+        ];
+      }
+    }
+
+    const workers = await User.find(query)
       .populate({
         path: "address",
         select: "fullAddress isActive",
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
 
-    // Check if no workers were found
-    if (workers.length === 0) {
-      return res.json([]);
-    }
+    const totalCount = await User.countDocuments(query);
 
-    res.status(200).json(workers);
+    res.status(200).json({
+      workers,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

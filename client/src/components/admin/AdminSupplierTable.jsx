@@ -1,30 +1,42 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CiEdit } from "react-icons/ci";
-import { IoSearch } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 import FormModal from "../../reusable/FormModal";
-import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createSupplierSchema } from "../../schemas/supplier.schema";
 import ValidatedInput from "../../reusable/ValidatedInput";
+import ReusableTable from "../../reusable/ReusableTable";
+import useDebounce from "../../hooks/useDebounce";
 
 export default function AdminSupplierTable({ enableMultiDel }) {
   const queryClient = useQueryClient();
 
-  const [searchTerm, setSearchTerm] = useState("");
+  // Search & Pagination State
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
 
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+
+  // Selection State
   const [selectedIds, setSelectedIds] = useState([]);
 
   // Edit Modal State
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
 
   // Edit Form Setup
   const {
@@ -48,26 +60,35 @@ export default function AdminSupplierTable({ enableMultiDel }) {
   const enableNotifications = watch("enableNotifications");
 
   const {
-    data: suppliers = [],
+    data,
     isPending: isSupplierPending,
     isError: isSupplierError,
   } = useQuery({
-    queryKey: ["supplier"],
+    queryKey: ["supplier", page, limit, debouncedSearchTerm],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/supplier/get-suppliers`);
+      const params = new URLSearchParams({
+        page,
+        limit,
+      });
+
+      if (debouncedSearchTerm) {
+        params.append("search", debouncedSearchTerm);
+      }
+
+      const res = await axiosInstance.get(
+        `/supplier/get-suppliers?${params.toString()}`,
+      );
       return res.data;
     },
+    keepPreviousData: true,
   });
 
-  const arraySuppliers = Array.isArray(suppliers) ? suppliers : [];
+  const suppliers = data?.suppliers || [];
+  const totalPages = data?.totalPages || 0;
+  const totalItems = data?.total || 0;
+  const currentPage = data?.currentPage || 1;
 
-  const numSelected = selectedIds.length;
-  const numProducts = arraySuppliers.length;
-
-  // Checkbox is ticked only if all products are selected
-  const allSelected = numProducts > 0 && numSelected === numProducts;
-
-  // --- EDIT MUTATION ---
+  // --- MUTATIONS ---
   const { mutate: editSupplierMutation, isPending: isEditPending } =
     useMutation({
       mutationFn: async (data) => {
@@ -122,11 +143,60 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     },
   });
 
+  const { mutate: toggleNotificationMutation } = useMutation({
+    mutationFn: async ({ supplierId, enableNotifications }) => {
+      const res = await axiosInstance.patch(
+        `/supplier/toggle-notification/${supplierId}`,
+        { enableNotifications },
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["supplier"] });
+      toast.success("Notification setting updated!");
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to update setting");
+    },
+  });
+
   useEffect(() => {
     if (!enableMultiDel) {
       setSelectedIds([]);
     }
   }, [enableMultiDel]);
+
+  // Selection Logic for ReusableTable
+  const handleSelect = (supplierId) => {
+    setSelectedIds((prev) =>
+      prev.includes(supplierId)
+        ? prev.filter((id) => id !== supplierId)
+        : [...prev, supplierId],
+    );
+  };
+
+  const handleSelectAll = () => {
+    const allOnPageSelected =
+      suppliers.length > 0 &&
+      suppliers.every((s) => selectedIds.includes(s._id));
+
+    if (allOnPageSelected) {
+      // Unselect all on current page
+      const newSelected = selectedIds.filter(
+        (id) => !suppliers.map((s) => s._id).includes(id),
+      );
+      setSelectedIds(newSelected);
+    } else {
+      // Select all on current page
+      const currentIds = suppliers.map((s) => s._id);
+      const uniqueIds = [...new Set([...selectedIds, ...currentIds])];
+      setSelectedIds(uniqueIds);
+    }
+  };
+
+  const cancelMultiDel = () => {
+    setSelectedIds([]);
+  };
 
   const handleMultiDelete = () => {
     if (selectedIds.length === 0) {
@@ -146,26 +216,6 @@ export default function AdminSupplierTable({ enableMultiDel }) {
   const handleClickDelete = (supplierId) => {
     setSelectedId(supplierId);
     setIsModalOpen(true);
-  };
-
-  const handleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(arraySuppliers.map((category) => category._id));
-    }
-  };
-
-  const cancelMultiDel = () => {
-    setSelectedIds([]);
-  };
-
-  const pushMultipleSup = (supplierId) => {
-    setSelectedIds((prev) =>
-      prev.includes(supplierId)
-        ? prev.filter((id) => id !== supplierId)
-        : [...prev, supplierId],
-    );
   };
 
   const handleConfirm = () => {
@@ -197,23 +247,6 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     editSupplierMutation(data);
   };
 
-  const { mutate: toggleNotificationMutation } = useMutation({
-    mutationFn: async ({ supplierId, enableNotifications }) => {
-      const res = await axiosInstance.patch(
-        `/supplier/toggle-notification/${supplierId}`,
-        { enableNotifications },
-      );
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["supplier"] });
-      toast.success("Notification setting updated!");
-    },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || "Failed to update setting");
-    },
-  });
-
   const handleToggleNotification = (supplier) => {
     const newStatus = supplier.enableNotifications === false; // Toggle logic
     toggleNotificationMutation({
@@ -222,24 +255,92 @@ export default function AdminSupplierTable({ enableMultiDel }) {
     });
   };
 
-  const filteredArraySuppliers = arraySuppliers.filter(
-    (supplier) =>
-      supplier.supplierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier._id.includes(searchTerm),
-  );
-
   if (isSupplierError) {
-    <p>loading....</p>;
+    return <p>Error loading suppliers</p>;
   }
-  return (
-    <div className="font-main border text-sm md:text-normal rounded-[5px] border-black bg-card relative mt-6 overflow-visible">
-      {/* Green Sticker Header */}
-      <div className="absolute -top-4 -left-3 bg-[#22c55e] text-black border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-        <h1 className="font-black text-[16px] uppercase tracking-widest text-sm ">
-          Supplier Table
-        </h1>
-      </div>
 
+  // Column Definitions
+  const columns = [
+    {
+      header: "Supplier Name",
+      className: "text-left",
+      render: (supplier) => (
+        <div className="flex flex-col">
+          <span className="font-black uppercase tracking-tight text-black">
+            {supplier.supplierName}
+          </span>
+          <span className="text-[9px] font-mono text-gray-400">
+            ID: {supplier._id.slice(-6)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "Contact Person",
+      className: "font-black text-gray-600",
+      accessor: "contactPerson",
+    },
+    {
+      header: "Phone",
+      className: "font-mono font-black text-gray-600",
+      accessor: "contactNumber",
+    },
+    {
+      header: "Address",
+      className: "font-black text-gray-600",
+      render: (supplier) => (
+        <span className="max-w-[250px] truncate block">
+          {supplier?.supplierAddress}
+        </span>
+      ),
+    },
+    {
+      header: "Notify",
+      render: (supplier) => (
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            className="sr-only peer"
+            checked={supplier.enableNotifications !== false}
+            onChange={() => handleToggleNotification(supplier)}
+          />
+          <div className="w-9 h-5 bg-gray-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+        </label>
+      ),
+    },
+    {
+      header: "Products",
+      render: (supplier) => (
+        <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          {supplier?.product ? supplier?.product.length : 0}
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      render: (supplier) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => handleOpenEditModal(supplier)}
+            title="Edit"
+            className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <CiEdit size={18} />
+          </button>
+          <button
+            onClick={() => handleClickDelete(supplier._id)}
+            title="Delete"
+            className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+          >
+            <MdDelete size={18} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <>
       <ConfirmModal
         isOpen={isModalOpen}
         title={"Confirm delete"}
@@ -360,159 +461,36 @@ export default function AdminSupplierTable({ enableMultiDel }) {
         </div>
       </FormModal>
 
-      <div className="flex-col border-b-2 border-black rounded-t-[5px] flex md:flex-row items-center justify-end p-4 pt-8 gap-4">
-        <div className="flex items-center gap-1 flex-col md:flex-row">
-          <label className="font-black uppercase text-[11px] tracking-widest text-gray-500 md:mb-0 mb-1 ml-1">
-            Search Suppliers
-          </label>
-          <div className="flex items-center relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Ex: Toy Kingdom..."
-              className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-colors font-bold"
-            />
-            <IoSearch className="absolute right-3" size={20} />
-          </div>
-        </div>
-      </div>
-
-      <div className="overflow-y-auto h-[600px] py-3">
-        {isSupplierPending ? (
-          <div className="p-4">
-            <AdminTableSkeleton />
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="border-b border-black relative">
-              <tr>
-                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-left">
-                  Supplier Name
-                </th>
-                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
-                  Contact Person
-                </th>
-                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
-                  Phone
-                </th>
-                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-left">
-                  Address
-                </th>
-                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
-                  Notify
-                </th>
-                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
-                  Products
-                </th>
-                <th className="font-black uppercase text-[11px] tracking-widest text-black p-4 pb-2 text-center">
-                  Actions
-                </th>
-                {arraySuppliers.length > 0 && enableMultiDel && (
-                  <th className="p-4 pb-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
-                    />
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black text-[11px]">
-              {filteredArraySuppliers.length > 0 ? (
-                filteredArraySuppliers.map((supplier) => (
-                  <tr
-                    key={supplier._id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="p-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="font-black uppercase tracking-tight text-black">
-                          {supplier.supplierName}
-                        </span>
-                        <span className="text-[9px] font-mono text-gray-400">
-                          ID: {supplier._id.slice(-6)}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="p-4 text-center font-black text-gray-600">
-                      {supplier.contactPerson}
-                    </td>
-
-                    <td className="p-4 text-center font-mono font-black text-gray-600">
-                      {supplier.contactNumber}
-                    </td>
-                    <td className="p-4 font-black text-gray-600 max-w-[250px] truncate">
-                      {supplier?.supplierAddress}
-                    </td>
-                    {/* TOGGLE NOTIFY COLUMN */}
-                    <td className="p-4 text-center">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={supplier.enableNotifications !== false}
-                          onChange={() => handleToggleNotification(supplier)}
-                        />
-                        <div className="w-9 h-5 bg-gray-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-0.5 border border-black bg-indigo-50 text-indigo-800 rounded-[3px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        {supplier?.product ? supplier?.product.length : 0}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleOpenEditModal(supplier)}
-                          title="Edit"
-                          className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <CiEdit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleClickDelete(supplier._id)}
-                          title="Delete"
-                          className="p-2 border border-black bg-red-500 text-white rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                        >
-                          <MdDelete size={18} />
-                        </button>
-                      </div>
-                    </td>
-                    {enableMultiDel && (
-                      <td className="p-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(supplier._id)}
-                          onChange={() => pushMultipleSup(supplier._id)}
-                          className="w-4 h-4 border border-black rounded-[3px] checked:bg-black transition-all cursor-pointer"
-                        />
-                      </td>
-                    )}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="8"
-                    className="p-8 text-center font-black uppercase text-gray-400 tracking-widest"
-                  >
-                    no suppliers found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <ReusableTable
+        title="Supplier Table"
+        columns={columns}
+        data={suppliers}
+        isLoading={isSupplierPending}
+        search={{
+          value: localSearchTerm,
+          onChange: setLocalSearchTerm,
+          placeholder: "Ex: Toy Kingdom...",
+        }}
+        pagination={{
+          currentPage: currentPage,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          onPageChange: setPage,
+        }}
+        selection={
+          enableMultiDel
+            ? {
+                selectedIds,
+                onSelect: handleSelect,
+                onSelectAll: handleSelectAll,
+              }
+            : undefined
+        }
+        emptyMessage="no suppliers found"
+      />
 
       {selectedIds && selectedIds.length > 0 && (
-        <div className="w-full flex gap-3 justify-end p-4 border-t border-black bg-gray-50">
+        <div className="w-full flex gap-3 justify-end p-4 border border-t-0 border-black bg-gray-50 rounded-b-[5px] mt-[-6px] relative z-10">
           <button
             onClick={cancelMultiDel}
             className="px-6 py-2 border border-black bg-white font-black uppercase text-xs rounded-[5px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
@@ -527,6 +505,6 @@ export default function AdminSupplierTable({ enableMultiDel }) {
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }

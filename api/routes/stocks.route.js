@@ -22,7 +22,7 @@ const router = express.Router();
 
 
 router.post("/order-stock", requireAuth, requireAdmin, validateResource(orderStockSchema), OrderStocks);
-router.get("/get-stock", requireAuth, requireAdmin, getStocks);
+router.get("/get-stocks", requireAuth, requireAdmin, getStocks);
 router.get("/get-stock-levels", requireAuth, requireAdmin, getStockLevels);
 router.get("/get-pending", requireAuth, requireAdmin, getPendingDeliveries);
 router.get("/get-single-stock/:stockId", requireAuth, requireAdmin, getSingleStock);

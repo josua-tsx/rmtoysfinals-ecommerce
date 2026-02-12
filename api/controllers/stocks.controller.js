@@ -13,6 +13,7 @@ import { sendSMS } from "../utils/smsService.js";
 import { orderStockLogs } from "./orderStockHistory.contoller.js";
 import { sendGrid } from "../sendGrid/sendGrid.js";
 import { orderStockSchema, stockBodyBase } from "../schema/stock.schema.js";
+import { checkAndSendStockAlerts } from "../services/stockAlert.service.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -408,6 +409,10 @@ export const updateStockQuantity = async (req, res, next) => {
       },
       { new: true }
     );
+
+    // Fire and forget alerts
+    checkAndSendStockAlerts();
+
     res.status(200).json(updateQuantity);
   } catch (error) {
     next(error);
@@ -440,177 +445,102 @@ export const getPendingDeliveries = async (req, res, next) => {
 
 export const getStocks = async (req, res, next) => {
   try {
-    // Find all stocks and populate product, supplier, and category
-    const getStocks = await Stocks.find({ deliveryStatus: "delivered" })
-      .populate({
-        path: "product", // Populate the product field
-        select: "productImages productName price", // Include fields to select from product
-        populate: [
-          // Use an array for nested populations
-          {
-            path: "category",
-            select: "categoryName",
-          },
-        ],
-      })
-      .populate({
-        path: "vat",
-        select: "vatPercent vatValue vatName",
-      })
-      .populate({
-        path: "supplier",
-        select: "supplierName contactNumber",
-      })
-      .sort({ createdAt: -1 });
+    const { 
+      page = 1, 
+      limit = 10, 
+      search 
+    } = req.query;
 
-    // Threshold configuration
-    const STOCK_LEVELS = {
-      LOW: 30,
-      OUT: 0,
-    };
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
 
-    // Notification cooldowns (in milliseconds)
-    const NOTIFICATION_COOLDOWNS = {
-      LOW: 1 * 60 * 1000, // 10 minutes for low stock
-      OUT: 5 * 60 * 1000, // 5 minutes for out-of-stock
-    };
+    // Build the aggregation pipeline
+    const pipeline = [
+      { $match: { deliveryStatus: "delivered" } },
+      
+      // Lookup relations
+      {
+        $lookup: {
+          from: "products",
+          localField: "product",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
 
-    // const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER;
+      {
+        $lookup: {
+          from: "suppliers",
+          localField: "supplier",
+          foreignField: "_id",
+          as: "supplier",
+        },
+      },
+      { $unwind: { path: "$supplier", preserveNullAndEmptyArrays: true } },
 
-    // Classify stocks and check notification needs
-    const stockAlerts = {
-      low: getStocks.filter((stock) => {
-        return (
-          stock.quantity <= STOCK_LEVELS.LOW &&
-          stock.quantity > STOCK_LEVELS.OUT &&
-          (!stock.lastLowStockNotification ||
-            Date.now() - stock.lastLowStockNotification >
-              NOTIFICATION_COOLDOWNS.LOW)
-        );
-      }),
-
-      out: getStocks.filter((stock) => {
-        return (
-          stock.quantity === STOCK_LEVELS.OUT &&
-          (!stock.lastOutOfStockNotification ||
-            Date.now() - stock.lastOutOfStockNotification >
-              NOTIFICATION_COOLDOWNS.OUT)
-        );
-      }),
-    };
-
-    if (stockAlerts.low.length > 0) {
-      await sendSMS(
-        ADMIN_PHONENUMBER,
-        `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length}) \n
-        URGENT! The following items are critically low:\n\n${stockAlerts.low
-          .map(
-            (item) =>
-              `- ${item.product?.productName}: ${item.quantity} remaining`
-          )
-          .join("\n")}\n\nRestock immediately!`
-      );
-
-      // Group alerts by supplier to avoid sending multiple SMS
-      const supplierAlerts = {};
-
-      stockAlerts.low.forEach((item) => {
-        // CHECK ENABLE NOTIFICATIONS HERE
-        if (
-          item.supplier &&
-          item.supplier.contactNumber &&
-          item.supplier.enableNotifications !== false // Default to true if undefined
-        ) {
-          if (!supplierAlerts[item.supplier._id]) {
-            supplierAlerts[item.supplier._id] = {
-              supplier: item.supplier,
-              products: [],
-            };
-          }
-          supplierAlerts[item.supplier._id].products.push({
-            name: item.product?.productName,
-            quantity: item.quantity,
-          });
+      {
+        $lookup: {
+           from: "categories",
+           localField: "product.category",
+           foreignField: "_id",
+           as: "product.category"
         }
+      },
+      { $unwind: { path: "$product.category", preserveNullAndEmptyArrays: true } },
+
+      {
+        $lookup: {
+          from: "vats",
+          localField: "vat",
+          foreignField: "_id",
+          as: "vat",
+        },
+      },
+      { $unwind: { path: "$vat", preserveNullAndEmptyArrays: true } },
+    ];
+
+    // Search Match Stage
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      pipeline.push({
+        $match: {
+          $or: [
+            { deliveryId: searchRegex },
+            { "product.productName": searchRegex },
+            { "supplier.supplierName": searchRegex },
+            { "product.category.categoryName": searchRegex },
+          ],
+        },
       });
-
-      // Send one SMS per supplier with all their low stock products
-      await Promise.all(
-        Object.values(supplierAlerts).map(async ({ supplier, products }) => {
-          const message =
-            `Low Stock Alert for ${supplier.supplierName}:\n\n` +
-            `The following products are running low:\n` +
-            products
-              .map((p) => `- ${p.name} (${p.quantity} units left)`)
-              .join("\n") +
-            `\n\nPlease arrange restocking soon. FROM: RM TOYS`;
-
-          await sendSMS(supplier.contactNumber, message);
-        })
-      );
-
-      await Promise.all(
-        stockAlerts.low.map((item) =>
-          Stocks.findByIdAndUpdate(item._id, {
-            lastLowStockNotification: Date.now(),
-          })
-        )
-      );
     }
 
-    if (stockAlerts.out.length > 0) {
-      await sendSMS(
-        ADMIN_PHONENUMBER,
-        `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length}) \n
-        CRITICAL! The following items are completely out of stock:\n\n${stockAlerts.out
-          .map((item) => `- ${item.product?.productName}`)
-          .join("\n")}\n\nTake immediate action! FROM: RM TOYS`
-      );
+    // Sort
+    pipeline.push({ $sort: { createdAt: -1 } });
 
-      // SMS to each supplier about their out-of-stock products
-      const supplierAlerts = {};
-      stockAlerts.out.forEach((item) => {
-        // CHECK ENABLE NOTIFICATIONS HERE
-        if (
-          item.supplier &&
-          item.supplier.contactNumber &&
-          item.supplier.enableNotifications !== false
-        ) {
-          if (!supplierAlerts[item.supplier._id]) {
-            supplierAlerts[item.supplier._id] = {
-              supplier: item.supplier,
-              products: [],
-            };
-          }
-          supplierAlerts[item.supplier._id].products.push(
-            item.product?.productName
-          );
-        }
-      });
+    // Pagination Facet
+    const facetPipeline = [
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: skip }, { $limit: limitNum }],
+        },
+      },
+    ];
 
-      await Promise.all(
-        Object.values(supplierAlerts).map(async ({ supplier, products }) => {
-          const message = `URGENT: ${
-            supplier.supplierName
-          },\n\nThe following products you supply are OUT OF STOCK:\n\n${products.join(
-            "\n"
-          )}\n\nImmediate restocking is required to avoid business disruption.`;
+    const result = await Stocks.aggregate([...pipeline, ...facetPipeline]);
 
-          await sendSMS(supplier.contactNumber, message);
-        })
-      );
-
-      await Promise.all(
-        stockAlerts.out.map((item) =>
-          Stocks.findByIdAndUpdate(item._id, {
-            lastOutOfStockNotification: Date.now(),
-          })
-        )
-      );
-    }
-
-    res.status(200).json(getStocks);
+    const data = result[0].data;
+    const totalCount = result[0].metadata[0]?.total || 0;
+    
+    res.status(200).json({
+      stocks: data,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

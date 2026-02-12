@@ -72,11 +72,50 @@ export const addSupplier = async (req, res, next) => {
 
 export const getSuppliers = async (req, res, next) => {
   try {
-    // Exclude archived suppliers by default
-    const getSuppliers = await Supplier.find({ isArchived: { $ne: true } }).sort({ createdAt: -1 });
-    if (!getSuppliers)
-      return next(handleMakeError(400, "no suppliers availabe"));
-    res.status(200).json(getSuppliers);
+    const { 
+      page = 1, 
+      limit = 10, 
+      search 
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Base query: exclude archived
+    const query = { isArchived: { $ne: true } };
+
+    // Search logic
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      if (isObjectId) {
+        query.$or = [
+          { supplierName: searchRegex },
+          { _id: search }
+        ];
+      } else {
+        query.supplierName = searchRegex;
+      }
+    }
+
+    // Fetch suppliers with pagination
+    const suppliers = await Supplier.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    // Get total count for pagination
+    const totalCount = await Supplier.countDocuments(query);
+
+    res.status(200).json({
+      suppliers,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

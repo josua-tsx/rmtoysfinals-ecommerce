@@ -14,41 +14,66 @@ import AdminLatestReviewSkeleton from "../skeleton/AdminLatestReviewSkeleton";
 export default function AdminProductOverview() {
   const navigate = useNavigate();
 
+  /* 
+    CATEGORIES 
+    - Need all categories for Pie Chart distribution.
+    - Fetch with high limit to get all.
+  */
   const {
-    data: allCategories = [],
+    data: categoriesData,
     isPending: isCategoriesPending,
     isError: isCategoriesError,
   } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/category/get-categories`);
+      // Fetch all categories for the pie chart
+      const res = await axiosInstance.get(
+        `/category/get-categories?limit=1000`,
+      );
       return res.data;
     },
   });
 
+  const allCategories = categoriesData?.categories || [];
+  const totalCategories = categoriesData?.total || 0;
+
+  /* 
+    PRODUCTS 
+    - Only need TOTAL count for the card.
+    - Fetch with limit=1 to save bandwidth.
+  */
   const {
-    data: allProducts = [],
+    data: productsData,
     isPending: isProductPending,
     isError: isProductError,
   } = useQuery({
     queryKey: ["allProducts"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/product/get-products`);
+      const res = await axiosInstance.get(`/product/get-products?limit=1`);
       return res.data;
     },
   });
 
+  const totalProducts = productsData?.total || 0;
+
+  /* 
+    SUPPLIERS 
+    - Only need TOTAL count for the card.
+    - Fetch with limit=1.
+  */
   const {
-    data: allSuppliers = [],
+    data: suppliersData,
     isPending: isSupplierPending,
     isError: isSupplierError,
   } = useQuery({
     queryKey: ["allSuppliers"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/supplier/get-suppliers`);
+      const res = await axiosInstance.get(`/supplier/get-suppliers?limit=1`);
       return res.data;
     },
   });
+
+  const totalSuppliers = suppliersData?.total || 0;
 
   const {
     data: singleBestRatingProduct = [],
@@ -136,7 +161,7 @@ export default function AdminProductOverview() {
     isReviewsError ||
     isLatestReviewError
   )
-    return <p>Error loading categories</p>;
+    return <p>Error loading dashboard data</p>;
 
   return (
     <div className="flex flex-col text-sm md:text-normal bg-yellow gap-16">
@@ -144,32 +169,19 @@ export default function AdminProductOverview() {
         {isProductPending ? (
           <AdminStatCardSkeleton />
         ) : (
-          <AdminStatCard
-            title={"TOTAL PRODUCTS"}
-            value={
-              allProducts?.products?.length > 0
-                ? allProducts?.products?.length
-                : 0
-            }
-          />
+          <AdminStatCard title={"TOTAL PRODUCTS"} value={totalProducts} />
         )}
 
         {isCategoriesPending ? (
           <AdminStatCardSkeleton />
         ) : (
-          <AdminStatCard
-            title={"TOTAL CATEGORIES"}
-            value={allCategories.length > 0 ? allCategories.length : 0}
-          />
+          <AdminStatCard title={"TOTAL CATEGORIES"} value={totalCategories} />
         )}
 
         {isSupplierPending ? (
           <AdminStatCardSkeleton />
         ) : (
-          <AdminStatCard
-            title={"TOTAL SUPPLIERS"}
-            value={allSuppliers.length > 0 ? allSuppliers.length : 0}
-          />
+          <AdminStatCard title={"TOTAL SUPPLIERS"} value={totalSuppliers} />
         )}
 
         {isReviewsPending ? (

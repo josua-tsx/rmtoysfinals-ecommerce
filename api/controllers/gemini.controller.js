@@ -647,11 +647,16 @@ Analyze the user's search query and find the most relevant products from the lis
 === INSTRUCTIONS ===
 1. Understand the user's INTENT (age group, price range, product type, occasion, etc.)
 2. Match products that fit the criteria
-3. Return a JSON array of matching product indices with relevance scores
+3. EXTRACT any price constraints to the "filters" field if explicitly mentioned (e.g. "under 500", "budget 1000", "cheap")
+4. Return a JSON array of matching product indices with relevance scores
 
 === RESPONSE FORMAT ===
 Return ONLY valid JSON, no markdown or extra text:
 {
+  "filters": {
+    "maxPrice": null, // Extract maximum price if user sets a limit (e.g. "under 500" -> 500)
+    "minPrice": null  // Extract minimum price if user sets a limit (e.g. "above 200" -> 200)
+  },
   "matches": [
     { "index": 0, "score": 95, "reason": "Brief reason why this matches" },
     { "index": 3, "score": 80, "reason": "Brief reason why this matches" }
@@ -665,7 +670,7 @@ Return ONLY valid JSON, no markdown or extra text:
 - Only include products with score >= 50
 - If no products match, return empty matches array
 - Keep reasons short (under 50 characters)
-- If query mentions price (e.g., "under 500"), filter by price
+- IMPORTANT: If the user specifies a price limit (e.g. "under 600"), DO NOT include products above that price in the matches, even if they are relevant otherwise.
 - If query mentions age, match products with appropriate age ranges
 - Consider product names, descriptions, and details
 
@@ -718,9 +723,11 @@ Return ONLY valid JSON, no markdown or extra text:
     }
 
     // ========================================================================
-    // STEP 8: Map AI Results to Actual Products
+    // STEP 8: Map AI Results to Actual Products & Apply Strict Filtering
     // ========================================================================
-    const matchedProducts = (parsedResult.matches || [])
+    const filters = parsedResult.filters || {};
+
+    let matchedProducts = (parsedResult.matches || [])
       .filter(match => match.index >= 0 && match.index < products.length)
       .map(match => ({
         ...products[match.index],
@@ -728,10 +735,20 @@ Return ONLY valid JSON, no markdown or extra text:
         matchReason: match.reason,
       }));
 
+    // Strict filtering based on AI-extracted constraints
+    if (filters.maxPrice !== null && filters.maxPrice !== undefined) {
+       matchedProducts = matchedProducts.filter(p => p.price <= filters.maxPrice);
+    }
+    
+    if (filters.minPrice !== null && filters.minPrice !== undefined) {
+       matchedProducts = matchedProducts.filter(p => p.price >= filters.minPrice);
+    }
+
     res.json({
       success: true,
       products: matchedProducts,
       interpretation: parsedResult.interpretation || "AI-powered search results",
+      filters: filters, 
       totalMatches: matchedProducts.length,
     });
 
