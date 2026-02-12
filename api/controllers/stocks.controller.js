@@ -501,16 +501,16 @@ export const getStocks = async (req, res, next) => {
     };
 
     if (stockAlerts.low.length > 0) {
-      // await sendSMS(
-      //   ADMIN_PHONENUMBER,
-      //   `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length}) \n
-      //   URGENT! The following items are critically low:\n\n${stockAlerts.low
-      //     .map(
-      //       (item) =>
-      //         `- ${item.product?.productName}: ${item.quantity} remaining`
-      //     )
-      //     .join("\n")}\n\nRestock immediately!`
-      // );
+      await sendSMS(
+        ADMIN_PHONENUMBER,
+        `ALERT: LOW STOCK ITEMS (${stockAlerts.low.length}) \n
+        URGENT! The following items are critically low:\n\n${stockAlerts.low
+          .map(
+            (item) =>
+              `- ${item.product?.productName}: ${item.quantity} remaining`
+          )
+          .join("\n")}\n\nRestock immediately!`
+      );
 
       // Group alerts by supplier to avoid sending multiple SMS
       const supplierAlerts = {};
@@ -546,7 +546,7 @@ export const getStocks = async (req, res, next) => {
               .join("\n") +
             `\n\nPlease arrange restocking soon. FROM: RM TOYS`;
 
-          // await sendSMS(supplier.contactNumber, message);
+          await sendSMS(supplier.contactNumber, message);
         })
       );
 
@@ -560,13 +560,13 @@ export const getStocks = async (req, res, next) => {
     }
 
     if (stockAlerts.out.length > 0) {
-      // await sendSMS(
-      //   ADMIN_PHONENUMBER,
-      //   `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length}) \n
-      //   CRITICAL! The following items are completely out of stock:\n\n${stockAlerts.out
-      //     .map((item) => `- ${item.product?.productName}`)
-      //     .join("\n")}\n\nTake immediate action! FROM: RM TOYS`
-      // );
+      await sendSMS(
+        ADMIN_PHONENUMBER,
+        `EMERGENCY: OUT-OF-STOCK ITEMS (${stockAlerts.out.length}) \n
+        CRITICAL! The following items are completely out of stock:\n\n${stockAlerts.out
+          .map((item) => `- ${item.product?.productName}`)
+          .join("\n")}\n\nTake immediate action! FROM: RM TOYS`
+      );
 
       // SMS to each supplier about their out-of-stock products
       const supplierAlerts = {};
@@ -597,7 +597,7 @@ export const getStocks = async (req, res, next) => {
             "\n"
           )}\n\nImmediate restocking is required to avoid business disruption.`;
 
-          // await sendSMS(supplier.contactNumber, message);
+          await sendSMS(supplier.contactNumber, message);
         })
       );
 

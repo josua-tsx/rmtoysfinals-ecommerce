@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 import { handleMakeError } from "../middleware/handleError.js";
 import Cart from "../models/cart.model.js";
 import Order from "../models/order.model.js";
@@ -1502,11 +1503,11 @@ export const updatePaymentStatus = async (req, res, next) => {
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
       Please check your order history failed to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      // await sendSMS(
-      //   paymentStatusOrderPhoneNumber,
-      //   failedSubject,
-      //   failedMessage
-      // );
+      await sendSMS(
+        paymentStatusOrderPhoneNumber,
+        failedSubject,
+        failedMessage
+      );
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {
@@ -1556,11 +1557,11 @@ export const updatePaymentStatus = async (req, res, next) => {
       const failedMessage = `We were unable to process your payment for the order due to an issue with the transaction. 
       Please check your order history refunded to see the reason. if you need assistance or would like more information, feel free to contact our support team.`;
 
-      // await sendSMS(
-      //   paymentStatusOrderPhoneNumber,
-      //   failedSubject,
-      //   failedMessage
-      // );
+      await sendSMS(
+        paymentStatusOrderPhoneNumber,
+        failedSubject,
+        failedMessage
+      );
 
       // Update stock for each item in the order
       for (const item of order.orderItems) {
@@ -2023,7 +2024,26 @@ export const getLatestCancelledOrder = async (req, res, next) => {
 
 export const searchOrders = async (req, res, next) => {
   try {
-    const { phoneNumber } = req.body;
+    const { phoneNumber, otpToken } = req.body;
+
+    // Check if user is authenticated and searching for their own number
+    const isOwnNumber = req.user && req.user.phoneNumber === phoneNumber;
+
+    if (!isOwnNumber) {
+      // ── OTP Token Verification (Privacy Protection) ──
+      if (!otpToken) {
+        return next(handleMakeError(400, "Phone verification is required to view orders."));
+      }
+
+      try {
+        const decoded = jwt.verify(otpToken, process.env.ACCESS_TOKEN_SECRET);
+        if (!decoded.verified || decoded.phoneNumber !== phoneNumber) {
+          return next(handleMakeError(400, "Phone verification failed. Please verify again."));
+        }
+      } catch (jwtError) {
+        return next(handleMakeError(400, "Verification expired. Please verify your phone number again."));
+      }
+    }
 
     // Find user by phoneNumber (may not exist for guests)
     const user = await User.findOne({ phoneNumber });
@@ -2042,7 +2062,7 @@ export const searchOrders = async (req, res, next) => {
     // Fetch orders
     const allOrders = await Order.find({isTracked: false, $or: query }).populate({
       path: "orderItems.productId",
-      select: "productName price "
+      select: "productName productImages price "
     }).sort({createdAt: -1})
 
     if (!allOrders || allOrders.length === 0) {
@@ -2068,7 +2088,7 @@ export const trackSingleOrder = async(req, res, next) => {
     const order = await Order.findOne({ _id: orderId })
       .populate({
         path: "orderItems.productId",
-        select: "productName price quantity category productImages",
+        select: "productName productImages price quantity category productImages",
         populate: {
           path: "category",
           select: "categoryName",
@@ -2091,8 +2111,23 @@ export const trackSingleOrder = async(req, res, next) => {
 
 export const validateGuestOrder = async (req, res, next) => {
   try {
-    const { guestUser } = req.body;
+    const { guestUser, otpToken } = req.body;
 
+    // ── OTP Token Verification ──
+    if (!otpToken) {
+      return next(handleMakeError(400, "Phone verification is required. Please verify your phone number first."));
+    }
+
+    try {
+      const decoded = jwt.verify(otpToken, process.env.ACCESS_TOKEN_SECRET);
+      if (!decoded.verified || decoded.phoneNumber !== guestUser?.phone) {
+        return next(handleMakeError(400, "Phone verification failed. Please verify again."));
+      }
+    } catch (jwtError) {
+      return next(handleMakeError(400, "Verification expired. Please verify your phone number again."));
+    }
+
+    // ── Existing Validation ──
     // Define Zod schema for guest validation
     const guestOrderSchema = z.object({
       name: fullNameSchema,

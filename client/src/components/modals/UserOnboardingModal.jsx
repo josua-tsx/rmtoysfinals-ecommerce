@@ -5,8 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axiosInstance from "../../lib/axios";
 import { toast } from "react-hot-toast";
-import { useUserStore } from "../../stores/useUserStore";
-import { useMutation } from "@tanstack/react-query";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listRegions,
   listProvinces,
@@ -26,7 +26,9 @@ const onboardingSchema = z.object({
 });
 
 export default function UserOnboardingModal({ isOpen, onClose }) {
-  const { checkAuth, currentUser } = useUserStore();
+  const queryClient = useQueryClient();
+  // ⚡ React Query — reactive user data
+  const { data: currentUser } = useCurrentUser();
   const [step, setStep] = useState(1);
 
   // PSGC State
@@ -135,7 +137,7 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
     },
     onSuccess: async () => {
       toast.success("Welcome aboard! Profile updated.");
-      await checkAuth(); // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] }); // Refresh user data
       onClose(); // Close modal on success
     },
     onError: (error) => {
@@ -404,7 +406,7 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
                       disabled={loading}
                       className="flex-1 py-3 rounded-xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all disabled:opacity-50"
                     >
-                      {loading ? "Saving..." : "Complete Setup 🎉"}
+                      {loading ? "Saving..." : "Continue"}
                     </button>
                   </div>
                 )}

@@ -93,7 +93,8 @@ export const fullNameSchema = z
   .string({ required_error: "Full name is required" })
   .trim()
   .min(2, "Full name must be at least 2 characters")
-  .regex(/^[a-zA-Z\s'-]+$/, "Full name can only contain letters, spaces, hyphens, and apostrophes");
+  .regex(/^[a-zA-Z\s'-]+$/, "Full name can only contain letters, spaces, hyphens, and apostrophes")
+  .refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed");
 
 /**
  * Legacy-style validation wrapper functions.

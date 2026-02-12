@@ -15,7 +15,8 @@ export const createSupplierSchema = z.object({
       .min(3, "Supplier name must be 3-50 characters long")
       .max(50, "Supplier name must be 3-50 characters long")
       .regex(/^[A-Za-z0-9\s\-',.&()]+$/, "Supplier name contains invalid characters")
-      .refine((val) => !/^[-']|[-']$/.test(val), "Supplier name cannot start or end with hyphens/apostrophes"),
+      .refine((val) => !/^[-']|[-']$/.test(val), "Supplier name cannot start or end with hyphens/apostrophes")
+      .refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
     contactNumber: phMobileSchema,
     contactPerson: fullNameSchema,
     supplierAddress: z
@@ -24,6 +25,7 @@ export const createSupplierSchema = z.object({
       .min(5, "Address must be 5-200 characters long")
       .max(200, "Address must be 5-200 characters long")
       .regex(/^[A-Za-z0-9\s.,'#-]+$/, "Address contains invalid characters")
+      .refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed")
       .optional(),
   }),
 });

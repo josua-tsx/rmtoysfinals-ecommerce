@@ -25,6 +25,8 @@ export default function SingleOrderList({ order, onClose }) {
 
   const navigate = useNavigate();
 
+  console.log(order);
+
   // Download Invoice PDF
   // Download Invoice PDF
   const handleDownloadInvoice = async () => {
@@ -329,7 +331,7 @@ export default function SingleOrderList({ order, onClose }) {
                     >
                       <div className="size-16 bg-gray-50 border border-black rounded-[5px] overflow-hidden flex-shrink-0">
                         <img
-                          src={item?.productId?.productImages[0]}
+                          src={item?.productId?.productImages?.[0]}
                           alt="product"
                           className="w-full h-full object-contain p-1"
                         />

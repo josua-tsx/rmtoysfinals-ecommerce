@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   FaGamepad,
   FaTrophy,
@@ -11,7 +11,7 @@ import {
   FaExclamationTriangle,
 } from "react-icons/fa";
 import PlayGameModal from "./PlayGameModal";
-import { useUserStore } from "../stores/useUserStore";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
@@ -25,7 +25,7 @@ export default function FreeCredits() {
   // const [timeLeft, setTimeLeft] = useState("");
   const [openPlayModal, setOpenPlayModal] = useState(false);
 
-  const currentUser = useUserStore((state) => state.currentUser);
+  const { data: currentUser } = useCurrentUser();
 
   const { data: singleUser } = useQuery({
     queryKey: ["user"],
@@ -43,6 +43,7 @@ export default function FreeCredits() {
     onSuccess: (data) => {
       if (data.unlocked) {
         queryClient.invalidateQueries({ queryKey: ["user"] });
+        queryClient.invalidateQueries({ queryKey: ["currentUser"] });
         setOpenPlayModal(true);
         setOpenModal(false);
         toast.success("Play lock reset! You can play now.");
@@ -76,7 +77,7 @@ export default function FreeCredits() {
 
             if (!currentUser.isSubscribed || !currentUser.isEmailVerified) {
               return toast.error(
-                "You need to subscribe your email first to play."
+                "You need to subscribe your email first to play.",
               );
             }
 

@@ -2,14 +2,12 @@ import express from "express";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 import {
   getSubscribedEmails,
-  subscribeEmail,
-  unsubscribeEmail,
+  toggleSubscription,
 } from "../controllers/subscribe.controller.js";
 
 const router = express.Router();
 
-router.post(`/subscribe-email`, requireAuth, subscribeEmail);
+router.patch(`/toggle`, requireAuth, toggleSubscription);
 router.get(`/get-subscribedEmails`, getSubscribedEmails);
-router.delete(`/unsubscribe`, requireAuth, unsubscribeEmail);
 
 export default router;

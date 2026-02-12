@@ -31,6 +31,7 @@ import storeInfoRoute from "../api/routes/storeInfo.route.js";
 import invoiceRoute from "../api/routes/invoice.route.js";
 import reportRoute from "../api/routes/report.route.js";
 import adminRoute from "../api/routes/admin.route.js";
+import otpRoute from "../api/routes/otp.route.js";
 
 
 // Load environment variables from .env file
@@ -90,6 +91,7 @@ app.use(`/api/store-info`, storeInfoRoute);
 app.use(`/api/invoice`, invoiceRoute);
 app.use(`/api/report`, reportRoute);
 app.use(`/api/admin`, adminRoute);
+app.use(`/api/otp`, otpRoute);
 
 
 

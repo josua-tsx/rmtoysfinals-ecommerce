@@ -5,6 +5,7 @@ import AdminNotificationPanel from "../components/admin/AdminNotificationPanel";
 import CustomerNotificationPanel from "../components/CustomerNotificationPanel";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useEffect, useState } from "react";
 import useOrderStore from "../stores/useOrderStore";
 import FooterSection from "../components/FooterSection";
@@ -14,9 +15,10 @@ import { useSocketNotifications } from "../hooks/useSocketNotifications";
 import UserOnboardingModal from "../components/modals/UserOnboardingModal";
 
 const RootLayout = () => {
-  // 🧠 User store
+  // 🧠 User store — keep checkAuth to populate Zustand for other components
   const { checkAuth } = useUserStore();
-  const currentUser = useUserStore((state) => state.currentUser);
+  // ⚡ React Query — reactive user data for this component
+  const { data: currentUser } = useCurrentUser();
 
   // State for onboarding modal
   const [showOnboarding, setShowOnboarding] = useState(false);

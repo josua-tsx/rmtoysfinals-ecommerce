@@ -58,3 +58,16 @@ export const guestChatLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Guest order limiter (prevent spam/enumeration on guest checkout)
+export const guestOrderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 requests per hour for guests
+  skip: (req) => !!req.user, // Skip if user is authenticated
+  message: {
+    success: false,
+    message: "Too many guest order attempts. Please try again later or create an account.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

@@ -58,7 +58,7 @@ export const addWorkerSchema = z.object({
     role: z.enum(["admin", "validatorStaff", "rider", "supplier"], {
       required_error: "Please select role",
     }),
-    jobDescription: z.string({ required_error: "Please input job description" }).trim().min(1, "Please input job description"),
+    jobDescription: z.string({ required_error: "Please input job description" }).trim().min(1, "Please input job description").refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
   }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
@@ -78,7 +78,7 @@ export const editWorkerSchema = z.object({
     role: z.enum(["admin", "validatorStaff", "rider", "supplier"], {
       required_error: "Please select role",
     }),
-    jobDescription: z.string({ required_error: "Please input job description" }).trim().min(1, "Please input job description"),
+    jobDescription: z.string({ required_error: "Please input job description" }).trim().min(1, "Please input job description").refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
   }),
 });
 /**
@@ -108,11 +108,11 @@ export const onboardingSchema = z.object({
       .min(2, "Full name must be at least 2 characters"),
     phoneNumber: phMobileSchema,
     address: z.object({
-      region: z.string({ required_error: "Region is required" }).trim().min(1, "Region is required"),
-      stateProvince: z.string({ required_error: "State/Province is required" }).trim().min(1, "State/Province is required"),
-      city: z.string({ required_error: "City is required" }).trim().min(1, "City is required"),
-      barangay: z.string({ required_error: "Barangay is required" }).trim().min(1, "Barangay is required"),
-      streetBuildingHouseNum: z.string({ required_error: "Street/Building/House number is required" }).trim().min(1, "Street address is required"),
+      region: z.string({ required_error: "Region is required" }).trim().min(1, "Region is required").refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
+      stateProvince: z.string({ required_error: "State/Province is required" }).trim().min(1, "State/Province is required").refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
+      city: z.string({ required_error: "City is required" }).trim().min(1, "City is required").refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
+      barangay: z.string({ required_error: "Barangay is required" }).trim().min(1, "Barangay is required").refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
+      streetBuildingHouseNum: z.string({ required_error: "Street/Building/House number is required" }).trim().min(1, "Street address is required").refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed"),
     }),
   }),
 });

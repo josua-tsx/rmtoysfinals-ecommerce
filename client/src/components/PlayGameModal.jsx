@@ -69,6 +69,7 @@ export default function PlayGameModal({ user, closeModal }) {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["users", "user"] });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       setComputerChoice(data.computerChoice);
       setRenderResult(data.result);
       setRenderWinCount(data.winCount);
@@ -85,7 +86,7 @@ export default function PlayGameModal({ user, closeModal }) {
     if (!userChoice) return null;
 
     const findComponent = choices.find(
-      (data) => data.name === userChoice
+      (data) => data.name === userChoice,
     ).icon2;
     return findComponent;
   };
@@ -94,7 +95,7 @@ export default function PlayGameModal({ user, closeModal }) {
     if (!computerChoice) return null;
 
     const findComponent = choices.find(
-      (data) => data.name === computerChoice
+      (data) => data.name === computerChoice,
     ).icon2;
     return findComponent;
   };

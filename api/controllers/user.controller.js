@@ -138,6 +138,25 @@ export const updateProfile = async (req, res, next) => {
     }
   }
 
+  // Check for duplicate phone number across User, Rider, and Supplier collections
+  if (phoneNumber !== undefined) {
+    const [phoneExistsInUser, phoneExistsInRider, phoneExistsInSupplier] = await Promise.all([
+      User.findOne({ phoneNumber, _id: { $ne: id } }),
+      Rider.findOne({ riderPhoneNumber: phoneNumber }),
+      Supplier.findOne({ contactNumber: phoneNumber })
+    ]);
+
+    if (phoneExistsInUser) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+    if (phoneExistsInRider) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+    if (phoneExistsInSupplier) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+  }
+
   try {
     let hashedPassword;
     if (password) {

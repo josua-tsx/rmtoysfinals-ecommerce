@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { guestSelectedCarts } from "../../lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -35,15 +35,102 @@ export default function GuestSummaryModal({ onClose }) {
   const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
   const navigate = useNavigate();
   // const [notes, setNotes] = useState(""); // Managed by RHF now
-  const [taxes, setTaxes] = useState(0);
-  const [shippingFee, setShippingFee] = useState(35);
+  const [taxes] = useState(0);
+  const [shippingFee] = useState(35);
   const [cartItems, setCartItems] = useState([]);
-  const [cart, setCart] = useState(guestSelectedCarts());
+  const [cart] = useState(guestSelectedCarts());
+
+  // ── OTP State ──
+  const [otpToken, setOtpToken] = useState(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0); // seconds remaining for resend
+  const [otpExpiry, setOtpExpiry] = useState(0); // seconds remaining before OTP expires
+  const cooldownRef = useRef(null);
+  const expiryRef = useRef(null);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+      if (expiryRef.current) clearInterval(expiryRef.current);
+    };
+  }, []);
+
+  // Start cooldown timer (60s between sends)
+  const startCooldown = useCallback(() => {
+    setOtpCooldown(60);
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    cooldownRef.current = setInterval(() => {
+      setOtpCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  // Start expiry timer (5 min = 300s)
+  const startExpiry = useCallback(() => {
+    setOtpExpiry(300);
+    if (expiryRef.current) clearInterval(expiryRef.current);
+    expiryRef.current = setInterval(() => {
+      setOtpExpiry((prev) => {
+        if (prev <= 1) {
+          clearInterval(expiryRef.current);
+          setOtpSent(false);
+          toast.error("OTP expired. Please request a new one.");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  // ── OTP Mutations ──
+  const { mutate: sendOtp, isPending: isSendingOtp } = useMutation({
+    mutationFn: async (phoneNumber) => {
+      const res = await axiosInstance.post("/otp/send", { phoneNumber });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("OTP sent to your phone!");
+      setOtpSent(true);
+      startCooldown();
+      startExpiry();
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to send OTP.");
+    },
+  });
+
+  const { mutate: verifyOtp, isPending: isVerifyingOtp } = useMutation({
+    mutationFn: async ({ phoneNumber, otp }) => {
+      const res = await axiosInstance.post("/otp/verify", { phoneNumber, otp });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success("Phone number verified!");
+      setOtpToken(data.otpToken);
+      setIsPhoneVerified(true);
+      setOtpSent(false);
+      setOtpCode("");
+      if (expiryRef.current) clearInterval(expiryRef.current);
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Invalid OTP.");
+    },
+  });
 
   // React Hook Form Setup
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(guestOrderSchema),
@@ -56,6 +143,8 @@ export default function GuestSummaryModal({ onClose }) {
       notes: "",
     },
   });
+
+  const watchedPhone = watch("phoneNumber");
 
   const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -162,10 +251,13 @@ export default function GuestSummaryModal({ onClose }) {
     }
 
     try {
-      const res = await axiosInstance.post("/order/validate-guest", orderData);
+      // Include otpToken for backend verification
+      const res = await axiosInstance.post("/order/validate-guest", {
+        ...orderData,
+        otpToken,
+      });
 
       if (res.status === 200) {
-        // Proceed if no lock or lock expired
         localStorage.setItem("manual-order-backup", JSON.stringify(orderData));
         setCurrentOrder(orderData);
         navigate("/payment-gcash");
@@ -176,6 +268,11 @@ export default function GuestSummaryModal({ onClose }) {
   };
 
   const onOrderSubmit = (data) => {
+    if (!isPhoneVerified) {
+      toast.error("Please verify your phone number first.");
+      return;
+    }
+
     const {
       fullName,
       email,
@@ -215,23 +312,21 @@ export default function GuestSummaryModal({ onClose }) {
       notes,
       quantity: cartItems?.quantity,
       totalPoints,
+      otpToken, // Include OTP verification token
     };
 
     if (paymentMethod === "GcashQR" && cartItems.length > 0) {
       handleGcashQRpaymentMethod(orderData);
-      console.log(orderData);
     }
 
     if (paymentMethod === "Online Payment") {
       const stripeOrderData = {
         orderItems: cartItems.map((item) => ({
-          // For backend processing
           productId: {
             _id: item._id,
             productName: item.productName,
             price: item.price,
           },
-          // For Stripe line items
           _id: item._id,
           productName: item.productName,
           productImages: item.productImages,
@@ -255,10 +350,10 @@ export default function GuestSummaryModal({ onClose }) {
         totalPrice: totalPrice.toString(),
         notes: notes || "",
         totalPoints,
-        usedCredits: 0, // Explicitly set for guest checkout
+        usedCredits: 0,
+        otpToken, // Include OTP verification token
       };
 
-      console.log("Sending to Stripe:", stripeOrderData);
       placeStripeOrder(stripeOrderData);
     }
   };
@@ -318,8 +413,112 @@ export default function GuestSummaryModal({ onClose }) {
                     error={errors.phoneNumber}
                     placeholder="Ex: 09xxxxxxxxx"
                     maxLength={11}
+                    disabled={isPhoneVerified}
                   />
                 </div>
+              </div>
+
+              {/* ── OTP Verification Section ── */}
+              <div className="mt-3 p-3 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                {!isPhoneVerified ? (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Phone Verification{" "}
+                        {otpSent && otpExpiry > 0 && (
+                          <span className="text-xs text-orange-500 ml-1">
+                            (expires in {Math.floor(otpExpiry / 60)}:
+                            {String(otpExpiry % 60).padStart(2, "0")})
+                          </span>
+                        )}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const phone = watchedPhone;
+                          if (!phone || phone.length < 11) {
+                            toast.error(
+                              "Enter a valid 11-digit phone number first.",
+                            );
+                            return;
+                          }
+                          sendOtp(phone);
+                        }}
+                        disabled={
+                          isSendingOtp || otpCooldown > 0 || isPhoneVerified
+                        }
+                        className="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isSendingOtp
+                          ? "Sending..."
+                          : otpCooldown > 0
+                            ? `Resend in ${otpCooldown}s`
+                            : otpSent
+                              ? "Resend OTP"
+                              : "Send OTP"}
+                      </button>
+                    </div>
+
+                    {otpSent && (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={otpCode}
+                          onChange={(e) => {
+                            const val = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 6);
+                            setOtpCode(val);
+                          }}
+                          placeholder="Enter 6-digit OTP"
+                          maxLength={6}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-center text-lg tracking-[0.5em] font-mono outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (otpCode.length !== 6) {
+                              toast.error("Enter the full 6-digit OTP.");
+                              return;
+                            }
+                            verifyOtp({
+                              phoneNumber: watchedPhone,
+                              otp: otpCode,
+                            });
+                          }}
+                          disabled={isVerifyingOtp || otpCode.length !== 6}
+                          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                        >
+                          {isVerifyingOtp ? "Verifying..." : "Verify"}
+                        </button>
+                      </div>
+                    )}
+
+                    {!otpSent && (
+                      <p className="text-xs text-gray-500">
+                        Enter your phone number above, then click {'"Send OTP"'}{" "}
+                        to verify.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2 text-green-600">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      Phone number verified ✓
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="mt-3">
@@ -375,10 +574,14 @@ export default function GuestSummaryModal({ onClose }) {
             <div className="flex flex-row-reverse w-full gap-4 mt-4">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isPhoneVerified}
                 className="flex-1 py-4 border-2 border-black bg-[#10b981] text-white rounded-[5px] font-black uppercase tracking-widest text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] active:scale-95 transition-all outline-none disabled:opacity-50"
               >
-                {isSubmitting ? "Processing..." : "Place Order"}
+                {isSubmitting
+                  ? "Processing..."
+                  : !isPhoneVerified
+                    ? "Verify Phone First"
+                    : "Place Order"}
               </button>
               <button
                 type="button"

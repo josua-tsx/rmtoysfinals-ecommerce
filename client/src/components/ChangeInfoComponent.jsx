@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FaCheckCircle, FaCamera, FaExclamationTriangle } from "react-icons/fa";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Buttons from "../reusable/Buttons";
 import PasswordInput from "../reusable/PasswordInput";
 import ValidatedInput from "../reusable/ValidatedInput";
@@ -20,7 +20,7 @@ import {
   getDownloadURL,
   getStorage,
 } from "firebase/storage";
-import { useUserStore } from "../stores/useUserStore";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
@@ -43,8 +43,8 @@ export default function ChangeInfoComponent() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [changePassword, setChangePassword] = useState(false);
 
-  const currentUser = useUserStore((state) => state.currentUser);
-  const setCurrentUser = useUserStore((state) => state.setCurrentUser);
+  const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
 
   const fileRef = useRef(null);
 
@@ -87,7 +87,7 @@ export default function ChangeInfoComponent() {
       return res.data;
     },
     onSuccess: (data) => {
-      setCurrentUser(data);
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       toast.success("Profile Updated Successfully");
       setChangePassword(false);
       reset({ ...data, password: "" });

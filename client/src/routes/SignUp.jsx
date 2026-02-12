@@ -1,7 +1,7 @@
 import Buttons from "../reusable/Buttons";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosInstance from "../lib/axios";
 import { FaUserPlus } from "react-icons/fa";
@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 /* replace-imports-end */
 
 export default function SignUp() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { checkAuth } = useUserStore();
 
@@ -44,6 +45,7 @@ export default function SignUp() {
       sessionStorage.removeItem("snoozeOnboarding");
       navigate(`/`);
       toast.success("Account created Successfully");
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "Something went wrong");

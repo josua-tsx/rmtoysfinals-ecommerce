@@ -3,6 +3,8 @@ import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
 import { createSupplierSchema } from "../schema/supplier.schema.js";
 import Stocks from "../models/stocks.model.js";
+import User from "../models/user.models.js";
+import Rider from "../models/rider.models.js";
 
 
 export const addSupplier = async (req, res, next) => {
@@ -24,6 +26,23 @@ export const addSupplier = async (req, res, next) => {
   */
 
   try {
+    // Check for duplicate phone number across User, Rider, and Supplier collections
+    const [phoneExistsInUser, phoneExistsInRider, phoneExistsInSupplier] = await Promise.all([
+      User.findOne({ phoneNumber: contactNumber }),
+      Rider.findOne({ riderPhoneNumber: contactNumber }),
+      Supplier.findOne({ contactNumber })
+    ]);
+
+    if (phoneExistsInUser) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+    if (phoneExistsInRider) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+    if (phoneExistsInSupplier) {
+      return next(handleMakeError(400, "Phone number is already in use by another account"));
+    }
+
     const newSupplier = new Supplier({
       supplierName,
       contactPerson,
@@ -250,6 +269,25 @@ export const editSupplier = async (req, res, next) => {
   */
 
   try {
+    // Check for duplicate phone number across User, Rider, and Supplier collections
+    if (contactNumber !== undefined) {
+      const [phoneExistsInUser, phoneExistsInRider, phoneExistsInSupplier] = await Promise.all([
+        User.findOne({ phoneNumber: contactNumber }),
+        Rider.findOne({ riderPhoneNumber: contactNumber }),
+        Supplier.findOne({ contactNumber, _id: { $ne: supplierId } }) // Exclude current supplier
+      ]);
+
+      if (phoneExistsInUser) {
+        return next(handleMakeError(400, "Phone number is already in use by another account"));
+      }
+      if (phoneExistsInRider) {
+        return next(handleMakeError(400, "Phone number is already in use by another account"));
+      }
+      if (phoneExistsInSupplier) {
+        return next(handleMakeError(400, "Phone number is already in use by another account"));
+      }
+    }
+
     const updateSupplier = await Supplier.findByIdAndUpdate(supplierId, {
       supplierName,
       contactPerson,

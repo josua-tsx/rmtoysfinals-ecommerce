@@ -1,6 +1,7 @@
 import express from "express";
 import { validateResource } from "../middleware/validateResource.js";
 import { placeOrderSchema, updateOrderStatusSchema } from "../schema/order.schema.js";
+import { guestOrderLimiter } from "../middleware/rateLimiter.js";
 import {
   optionalAuth,
   requireAdmin,
@@ -53,11 +54,11 @@ router.get("/analytics", requireAuth, requireAdmin, getSalesAnalytics);
 
 router.post(`/place-order`, requireAuth, validateResource(placeOrderSchema), userPlaceOrder);
 
-router.post(`/place-order-stripe`, optionalAuth, placeOrderStripe);
+router.post(`/place-order-stripe`, optionalAuth, guestOrderLimiter, placeOrderStripe);
 
-router.post(`/place-order-gcashQR`, optionalAuth, placeOrderGcashQR);
+router.post(`/place-order-gcashQR`, optionalAuth, guestOrderLimiter, placeOrderGcashQR);
 
-router.post("/validate-guest", validateGuestOrder)
+router.post("/validate-guest", guestOrderLimiter, validateGuestOrder)
 
 router.post(`/checkout-success`, optionalAuth, checkOutSuccess);
 
@@ -92,7 +93,7 @@ router.get(`/latest/refunded`, getLatestRefundedOrder);
 
 router.get(`/latest/cancelled`, getLatestCancelledOrder);
 
-router.post("/search-order", searchOrders)
+router.post("/search-order", optionalAuth, guestOrderLimiter, searchOrders);
 
 router.put(
   `/:orderId/paymentStatus`,

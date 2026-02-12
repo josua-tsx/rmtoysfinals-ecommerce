@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useUserStore } from "../stores/useUserStore";
 import toast from "react-hot-toast";
@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { setCurrentUser } = useUserStore();
 
@@ -50,6 +51,7 @@ export default function SignIn() {
       localStorage.setItem("rememberMe", rememberMe);
 
       setCurrentUser(userData);
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       navigate(`/`);
     },
     onError: (err) => {

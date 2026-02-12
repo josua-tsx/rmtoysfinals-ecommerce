@@ -20,7 +20,8 @@ export const passwordSchema = z
   .regex(/[a-z]/, "Password must contain at least one lowercase letter")
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
   .regex(/[0-9]/, "Password must contain at least one number")
-  .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
+  .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character")
+  .refine((val) => !/\s/.test(val), "Password cannot contain spaces");
 
 // PH Mobile Number validation.
 export const phMobileSchema = z
@@ -32,6 +33,7 @@ export const fullNameSchema = z
   .string({ required_error: "Full name is required" })
   .trim()
   .min(2, "Full name must be at least 2 characters")
-  .regex(/^[a-zA-Z\s'-]+$/, "Full name can only contain letters, spaces, hyphens, and apostrophes");
+  .regex(/^[a-zA-Z\s'-]+$/, "Full name can only contain letters, spaces, hyphens, and apostrophes")
+  .refine((val) => !/\s{2,}/.test(val), "No consecutive spaces allowed");
 
 export const objectIdSchema = z.string().min(1, "Invalid ID format");
