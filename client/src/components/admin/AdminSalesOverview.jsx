@@ -98,7 +98,7 @@ export default function AdminSalesOverview() {
     queryKey: ["stocks"],
     queryFn: async () => {
       // Need all stocks to sum up total cost
-      const res = await axiosInstance.get(`/stocks/get-stock?limit=1000000`);
+      const res = await axiosInstance.get(`/stocks/get-stocks?limit=1000000`);
       return res.data;
     },
   });

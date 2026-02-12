@@ -9,16 +9,19 @@ import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
 
 export default function AdminStocks() {
   const {
-    data: stocks = [],
+    data,
     isLoading: isStocksPending,
     isError: isStocksError,
   } = useQuery({
-    queryKey: ["stocks"],
+    queryKey: ["stocks", "all"], // Differentiate from table query
     queryFn: async () => {
-      const res = await axiosInstance.get(`/stocks/get-stock`);
+      // Fetch all stocks for statistics
+      const res = await axiosInstance.get(`/stocks/get-stocks?limit=1000000`);
       return res.data;
     },
   });
+
+  const stocks = data?.stocks || [];
 
   const totalExpectedRevenue = Array.isArray(stocks)
     ? stocks.reduce((total, item) => {
@@ -78,11 +81,7 @@ export default function AdminStocks() {
               />
             </div>
 
-            <AdminStocksTable
-              stocks={stocks}
-              isStocksPending={isStocksPending}
-              isStocksError={isStocksError}
-            />
+            <AdminStocksTable />
           </>
         )}
       </div>
