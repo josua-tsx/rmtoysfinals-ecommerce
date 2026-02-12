@@ -44,7 +44,23 @@ export const orderStockLogs = async (
 
 export const getOrderStockHistory = async (req, res, next) => {
   try {
-    const getHistory = await OrderStockHistory.find()
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Build base query
+    const query = {};
+
+    if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
+      query.$or = [
+        { deliveryId: searchRegex },
+        { action: searchRegex },
+      ];
+    }
+
+    const total = await OrderStockHistory.countDocuments(query);
+
+    const history = await OrderStockHistory.find(query)
       .populate({
         path: "userId",
         select: "username",
@@ -57,10 +73,17 @@ export const getOrderStockHistory = async (req, res, next) => {
         path: "supplier",
         select: "supplierName",
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    if (!getHistory) return next(handleMakeError(400, "No history found!"));
-    res.status(200).json(getHistory);
+    res.status(200).json({
+      history,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+      hasMore: total > page * limit,
+    });
   } catch (error) {
     next(error);
   }
