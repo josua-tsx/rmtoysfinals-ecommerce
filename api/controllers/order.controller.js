@@ -46,6 +46,23 @@ export const userPlaceOrder = async (req, res, next) => {
     totalVatAmount,
   } = req.body;
 
+  // VERIFICATION CHECK
+  if (req.user) {
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(handleMakeError(404, "User not found"));
+    }
+
+    if (!user.isPhoneVerified) {
+      return next(
+        handleMakeError(
+          400,
+          "Please verify your phone number in your profile before placing an order."
+        )
+      );
+    }
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -375,6 +392,23 @@ export const placeOrderStripe = async (req, res, next) => {
       }
     }
 
+    // VERIFICATION CHECK FOR LOGGED-IN USERS
+    if (userId) {
+      const user = await User.findById(userId);
+      if (!user) {
+        return next(handleMakeError(404, "User not found"));
+      }
+
+      if (!user.isPhoneVerified) {
+        return next(
+          handleMakeError(
+            400,
+            "Please verify your phone number in your profile before placing an order."
+          )
+        );
+      }
+    }
+
     // Add user/guest specific data
     if (!userId && guestUser) {
       guestUser = {
@@ -679,6 +713,23 @@ export const placeOrderGcashQR = async (req, res, next) => {
     totalVatAmount,
     guestUser, // Added guest user details
   } = req.body;
+
+  // VERIFICATION CHECK FOR LOGGED-IN USERS
+  if (userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(handleMakeError(404, "User not found"));
+    }
+
+    if (!user.isPhoneVerified) {
+      return next(
+        handleMakeError(
+          400,
+          "Please verify your phone number in your profile before placing an order."
+        )
+      );
+    }
+  }
 
   const session = await mongoose.startSession();
   session.startTransaction();

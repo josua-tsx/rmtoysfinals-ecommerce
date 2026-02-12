@@ -20,7 +20,7 @@ export default function ProfileComponent({ setActiveComponent }) {
     queryKey: ["address", currentUser._id],
     queryFn: async () => {
       const res = await axiosInstance.get(
-        `/address/user/${currentUser._id}/address`
+        `/address/user/${currentUser._id}/address`,
       );
       return res.data;
     },
@@ -30,7 +30,7 @@ export default function ProfileComponent({ setActiveComponent }) {
     mutationFn: async (addressId) => {
       const res = await axiosInstance.patch(
         `/address/update-currentAddress`,
-        addressId
+        addressId,
       );
       return res.data;
     },
@@ -116,11 +116,25 @@ export default function ProfileComponent({ setActiveComponent }) {
               <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Phone Number
               </label>
-              <p className="font-medium text-gray-900">
-                {currentUser.phoneNumber || (
-                  <span className="text-gray-400 italic">Not set</span>
-                )}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-gray-900">
+                  {currentUser.phoneNumber || (
+                    <span className="text-gray-400 italic">Not set</span>
+                  )}
+                </p>
+                {currentUser.phoneNumber &&
+                  (currentUser.isPhoneVerified ? (
+                    <RiVerifiedBadgeFill
+                      className="text-blue-500"
+                      size={16}
+                      title="Verified"
+                    />
+                  ) : (
+                    <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                      Unverified
+                    </span>
+                  ))}
+              </div>
             </div>
 
             <div className="space-y-1">

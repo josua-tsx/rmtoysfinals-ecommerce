@@ -119,6 +119,11 @@ const UserModelSchema = new mongoose.Schema(
       default: false,
     },
 
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+
     isArchived: {
       type: Boolean,
       default: false,

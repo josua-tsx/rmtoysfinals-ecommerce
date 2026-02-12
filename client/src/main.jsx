@@ -95,9 +95,6 @@ const ResetPassword = lazy(() => import("./routes/ResetPassword.jsx"));
 const GuestCartPage = lazy(
   () => import("./components/Guestt/GuestCartPage.jsx"),
 );
-const VerifyEmailComponent = lazy(
-  () => import("./components/VerifyEmailComponent.jsx"),
-);
 const AdminFaqs = lazy(() => import("./components/admin/AdminFaqs.jsx"));
 const AdminRider = lazy(() => import("./components/admin/AdminRider.jsx"));
 const TrackerPage = lazy(() => import("./pages/TrackerPage.jsx"));
@@ -175,10 +172,6 @@ const router = createBrowserRouter([
       {
         path: "/reset-password",
         element: <ResetPassword />,
-      },
-      {
-        path: "/verify-email",
-        element: <VerifyEmailComponent />,
       },
       {
         path: "/tracker-orders",

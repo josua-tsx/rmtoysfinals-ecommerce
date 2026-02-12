@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Buttons from "../reusable/Buttons";
 import PasswordInput from "../reusable/PasswordInput";
 import ValidatedInput from "../reusable/ValidatedInput";
+import VerifyOtpWidget from "./VerifyOtpWidget";
 import {
   emailSchema,
   usernameSchema,
@@ -21,6 +22,7 @@ import {
   getStorage,
 } from "firebase/storage";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useUserStore } from "../stores/useUserStore";
 
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
@@ -45,6 +47,7 @@ export default function ChangeInfoComponent() {
 
   const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser();
+  const checkAuth = useUserStore((state) => state.checkAuth);
 
   const fileRef = useRef(null);
 
@@ -86,8 +89,9 @@ export default function ChangeInfoComponent() {
       );
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      await checkAuth(); // Update local Zustand store
       toast.success("Profile Updated Successfully");
       setChangePassword(false);
       reset({ ...data, password: "" });
@@ -97,21 +101,8 @@ export default function ChangeInfoComponent() {
     },
   });
 
-  const { mutate: verifyEmailMutation, isPending: isVerifying } = useMutation({
-    mutationFn: async (email) => {
-      const res = await axiosInstance.post(`/user/verify-email`, { email });
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success("Verification email sent");
-    },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || "Failed to send email");
-    },
-  });
-
-  const handleVerifyEmail = (email) => {
-    verifyEmailMutation(email);
+  const handleRefreshUser = () => {
+    queryClient.invalidateQueries({ queryKey: ["currentUser"] });
   };
 
   const onSubmit = (data) => {
@@ -276,20 +267,12 @@ export default function ChangeInfoComponent() {
                     placeholder="name@example.com"
                   />
                   <div className="absolute right-8 top-8">
-                    {currentUser?.isEmailVerified ? (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                        Verified
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled={isVerifying}
-                        onClick={() => handleVerifyEmail(currentUser.email)}
-                        className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-md font-medium transition-colors"
-                      >
-                        {isVerifying ? "Sending..." : "Verify Now"}
-                      </button>
-                    )}
+                    <VerifyOtpWidget
+                      identifier={currentUser?.email}
+                      channel="email"
+                      isVerified={currentUser?.isEmailVerified}
+                      onVerified={handleRefreshUser}
+                    />
                   </div>
                 </div>
 
@@ -313,14 +296,26 @@ export default function ChangeInfoComponent() {
                 />
 
                 {/* Phone Number Field */}
-                <ValidatedInput
-                  label="Phone Number"
-                  id="phoneNumber"
-                  {...register("phoneNumber")}
-                  error={errors.phoneNumber}
-                  placeholder="09xxxxxxxxx"
-                  errorText="Must be a valid 11-digit number starting with 09"
-                />
+                <div className="space-y-2 relative">
+                  <ValidatedInput
+                    label="Phone Number"
+                    id="phoneNumber"
+                    {...register("phoneNumber")}
+                    error={errors.phoneNumber}
+                    placeholder="09xxxxxxxxx"
+                    errorText="Must be a valid 11-digit number starting with 09"
+                  />
+                  {currentUser?.phoneNumber && (
+                    <div className="absolute right-8 top-8">
+                      <VerifyOtpWidget
+                        identifier={currentUser?.phoneNumber}
+                        channel="sms"
+                        isVerified={currentUser?.isPhoneVerified}
+                        onVerified={handleRefreshUser}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

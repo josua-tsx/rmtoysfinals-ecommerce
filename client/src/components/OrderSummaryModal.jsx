@@ -46,8 +46,6 @@ export default function OrderSummaryModal({ onClose }) {
     },
   });
 
-  // console.log(cart);
-  console.log(cartItems);
   const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
   const {
@@ -57,7 +55,6 @@ export default function OrderSummaryModal({ onClose }) {
     totalVatAmount,
     totalPoints,
     totalPrice,
-    shippingVat,
   } = useMemo(() => {
     // Convert shipping to number safely
     const shippingGross = Number(shippingFee || 0);
@@ -217,6 +214,13 @@ export default function OrderSummaryModal({ onClose }) {
       }
     }
 
+    if (!currentUser?.isPhoneVerified) {
+      toast.error(
+        "Please verify your phone number in your profile before placing an order.",
+      );
+      return;
+    }
+
     // Proceed if no lock or lock expired
     setCurrentOrder(orderData);
     navigate("/payment-gcash");
@@ -243,7 +247,13 @@ export default function OrderSummaryModal({ onClose }) {
     }
     if (!currentAddress) {
       return toast.error(
-        "Shipping address is required. Please set one in your profile."
+        "Shipping address is required. Please set one in your profile.",
+      );
+    }
+
+    if (!currentUser?.isPhoneVerified) {
+      return toast.error(
+        "Please verify your phone number in your profile before placing an order.",
       );
     }
 
@@ -396,25 +406,45 @@ export default function OrderSummaryModal({ onClose }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm  text-black mb-1">
+                  <label className="block text-sm text-black mb-1">
                     Phone Number
                   </label>
                   <div className="flex flex-col gap-2">
-                    <input
-                      type="tel"
-                      name="phoneNumber"
-                      className={`w-full p-2 border ${
-                        currentUser?.phoneNumber ? "" : "border-red-700"
-                      } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
-                      value={currentUser?.phoneNumber || ""}
-                      // disabled
-                    />
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        name="phoneNumber"
+                        className={`w-full p-2 border ${
+                          currentUser?.phoneNumber ? "" : "border-red-700"
+                        } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary pr-20`} // Added pr-20 for space for badge
+                        value={currentUser?.phoneNumber || ""}
+                        readOnly // Make it read-only if it's coming from profile
+                        // disabled
+                      />
+                      <div className="absolute top-1/2 right-2 -translate-y-1/2">
+                        {currentUser?.isPhoneVerified ? (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full border border-green-200 font-medium whitespace-nowrap">
+                            Verified
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full border border-red-200 font-medium whitespace-nowrap">
+                            Not Verified
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     {!currentUser?.phoneNumber && (
                       <span className="text-sm text-red-700">
                         You don&apos;t have a phone number. Update it in your
                         profile page.
                       </span>
                     )}
+                    {!currentUser?.isPhoneVerified &&
+                      currentUser?.phoneNumber && (
+                        <span className="text-xs text-red-600">
+                          Verification required for checkout. Go to Profile.
+                        </span>
+                      )}
                   </div>
                 </div>
               </div>

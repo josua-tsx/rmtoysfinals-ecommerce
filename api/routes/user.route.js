@@ -5,7 +5,6 @@ import {
   adminUpdateUserStatus,
   checkIfAdminExists,
   completeOnboarding,
-  confirmVerifyEmail,
   deleteWorker,
   editWorker,
   getAll,
@@ -13,7 +12,6 @@ import {
   getAllWorkers,
   getSingleUser,
   updateProfile,
-  verifyUserEmail,
   restoreWorker,
   getArchivedWorkers,
 } from "../controllers/user.controller.js";
@@ -23,8 +21,6 @@ import { validateResource } from "../middleware/validateResource.js";
 const router = express.Router();
 
 router.post(`/update/:id`, requireAuth, validateResource(updateUserSchema), updateProfile);
-router.post(`/verify-email`, authLimiter, verifyUserEmail);
-router.post(`/confirm-email`, confirmVerifyEmail);
 router.post(`/onboarding`, requireAuth, authLimiter, validateResource(onboardingSchema), completeOnboarding);
 router.get(`/getAll`, getAll);
 router.get(`/getAllCustomer`, getAllCustomer);

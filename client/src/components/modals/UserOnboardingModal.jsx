@@ -6,6 +6,7 @@ import { z } from "zod";
 import axiosInstance from "../../lib/axios";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useUserStore } from "../../stores/useUserStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listRegions,
@@ -29,6 +30,7 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
   // ⚡ React Query — reactive user data
   const { data: currentUser } = useCurrentUser();
+  const checkAuth = useUserStore((state) => state.checkAuth);
   const [step, setStep] = useState(1);
 
   // PSGC State
@@ -138,6 +140,7 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
     onSuccess: async () => {
       toast.success("Welcome aboard! Profile updated.");
       queryClient.invalidateQueries({ queryKey: ["currentUser"] }); // Refresh user data
+      await checkAuth(); // Update local Zustand store
       onClose(); // Close modal on success
     },
     onError: (error) => {

@@ -1,10 +1,15 @@
 import mongoose from "mongoose";
 
 const otpSchema = new mongoose.Schema({
-  phoneNumber: {
+  identifier: {
     type: String,
     required: true,
     index: true,
+  },
+  channel: {
+    type: String,
+    enum: ["sms", "email"],
+    required: true,
   },
   otp: {
     type: String,

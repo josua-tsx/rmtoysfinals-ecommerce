@@ -94,7 +94,10 @@ export default function TrackerPage() {
 
   const { mutate: sendOtp, isPending: isSendingOtp } = useMutation({
     mutationFn: async (phoneNumber) => {
-      const res = await axiosInstance.post("/otp/send", { phoneNumber });
+      const res = await axiosInstance.post("/otp/send", {
+        identifier: phoneNumber,
+        channel: "sms",
+      });
       return res.data;
     },
     onSuccess: () => {
@@ -110,7 +113,10 @@ export default function TrackerPage() {
 
   const { mutate: verifyOtp, isPending: isVerifyingOtp } = useMutation({
     mutationFn: async ({ phoneNumber, otp }) => {
-      const res = await axiosInstance.post("/otp/verify", { phoneNumber, otp });
+      const res = await axiosInstance.post("/otp/verify", {
+        identifier: phoneNumber,
+        otp,
+      });
       return res.data;
     },
     onSuccess: (data) => {
