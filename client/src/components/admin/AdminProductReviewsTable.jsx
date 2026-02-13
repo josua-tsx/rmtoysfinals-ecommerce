@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import ReusableTable from "../../reusable/ReusableTable";
-import { useDebounce } from "../../hooks/useDebounce";
+import useDebounce from "../../hooks/useDebounce";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
 
 export default function AdminProductReviewsTable() {
