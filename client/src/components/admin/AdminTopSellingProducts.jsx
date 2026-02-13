@@ -17,6 +17,8 @@ export default function AdminTopSellingProducts() {
     },
   });
 
+  const products = Array.isArray(topProducts) ? topProducts : [];
+
   const getRankStyle = (index) => {
     switch (index) {
       case 0:
@@ -68,13 +70,13 @@ export default function AdminTopSellingProducts() {
       <div className="bg-card border border-black rounded-[5px] p-8 pt-10 min-h-[300px]">
         {isPending ? (
           <AdminTopSellingProductsSkeleton />
-        ) : topProducts.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="flex flex-col justify-center items-center h-[200px] text-gray-500">
             <p>No sales data yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {topProducts.map((product, index) => {
+            {products.map((product, index) => {
               const style = getRankStyle(index);
               return (
                 <div

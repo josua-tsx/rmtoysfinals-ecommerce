@@ -34,7 +34,9 @@ export default function AdminProductOverview() {
     },
   });
 
-  const allCategories = categoriesData?.categories || [];
+  const allCategories = Array.isArray(categoriesData?.categories)
+    ? categoriesData.categories
+    : [];
   const totalCategories = categoriesData?.total || 0;
 
   /* 
@@ -89,12 +91,14 @@ export default function AdminProductOverview() {
 
   const topSingleBestRatingProduct = singleBestRatingProduct[0];
 
-  const sumOfRating = topSingleBestRatingProduct?.reviews?.reduce(
-    (sum, review) => sum + review.rating,
+  const reviews = Array.isArray(topSingleBestRatingProduct?.reviews)
+    ? topSingleBestRatingProduct.reviews
+    : [];
+  const sumOfRating = reviews.reduce(
+    (sum, review) => sum + (review.rating || 0),
     0,
   );
-  const averageRating =
-    sumOfRating / topSingleBestRatingProduct?.reviews?.length;
+  const averageRating = reviews.length > 0 ? sumOfRating / reviews.length : 0;
 
   //   TOP 4 MOST REVIEWS PRODUCTS
 
@@ -139,7 +143,7 @@ export default function AdminProductOverview() {
   });
 
   // Construct the pieData
-  const pieData = allCategories.map((category) => {
+  const pieData = (allCategories || []).map((category) => {
     const productCount = Array.isArray(category?.products)
       ? category.products.length
       : 0;

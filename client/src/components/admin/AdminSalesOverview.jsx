@@ -58,12 +58,15 @@ export default function AdminSalesOverview() {
     },
   });
 
-  const successOrders = successOrderData?.orders || [];
+  const successOrders = Array.isArray(successOrderData?.orders)
+    ? successOrderData.orders
+    : [];
 
   // Calculate total VAT to remit
   const totalVatToRemit = successOrders.reduce((totalVat, order) => {
+    const orderItems = Array.isArray(order.orderItems) ? order.orderItems : [];
     const orderVat =
-      order.orderItems?.reduce((orderTotal, item) => {
+      orderItems.reduce((orderTotal, item) => {
         if (!item?.productId) return orderTotal;
         const vatPerUnit = item.productId.price - item.productId.preVatPrice;
         return orderTotal + vatPerUnit * item.quantity;
@@ -114,7 +117,7 @@ export default function AdminSalesOverview() {
     },
   });
 
-  const stockList = stocksData?.stocks || [];
+  const stockList = Array.isArray(stocksData?.stocks) ? stocksData.stocks : [];
 
   const totalExpenses = stockList.reduce((total, item) => {
     return total + (item?.totalCost || 0);
@@ -135,12 +138,15 @@ export default function AdminSalesOverview() {
   });
 
   const totalRevenue = successOrders.reduce((sum, item) => {
-    return sum + item.totalPrice;
+    return sum + (item.totalPrice || 0);
   }, 0);
 
   // Helper to get sales for a specific date (YYYY-MM-DD)
   const getSalesForDate = (dateStr) => {
-    const entry = analyticsData.daily.find((d) => d._id === dateStr);
+    const dailyData = Array.isArray(analyticsData.daily)
+      ? analyticsData.daily
+      : [];
+    const entry = dailyData.find((d) => d._id === dateStr);
     return entry ? entry.totalSales : 0;
   };
 
