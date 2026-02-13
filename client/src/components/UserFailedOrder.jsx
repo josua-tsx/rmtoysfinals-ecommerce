@@ -3,22 +3,30 @@ import { useState } from "react";
 import axiosInstance from "../lib/axios";
 import SingleOrderList from "./SingleOrderList";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
+import Pagination from "../reusable/Pagination";
 
 export default function UserFailedOrder() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [page, setPage] = useState(1);
 
   const {
-    data: userFailed = [],
+    data: failedData,
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["userFailed"],
+    queryKey: ["userFailed", page],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-userFailed`);
+      const res = await axiosInstance.get(`/order/get-userFailed`, {
+        params: { page, limit: 5 },
+      });
       return res.data;
     },
   });
+
+  const userFailed = failedData?.orders || [];
+  const totalPages = failedData?.totalPages || 0;
+  const totalItems = failedData?.total || 0;
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -111,6 +119,17 @@ export default function UserFailedOrder() {
         <div className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed border-gray-300 rounded-[5px] bg-gray-50 text-gray-400">
           <p className="font-bold text-lg">No failed orders</p>
         </div>
+      )}
+
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={setPage}
+          isLoading={isPending}
+        />
       )}
     </div>
   );

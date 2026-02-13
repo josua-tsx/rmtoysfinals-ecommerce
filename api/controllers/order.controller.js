@@ -1578,19 +1578,23 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
 export const getUserDelivered = async (req, res, next) => {
   const userId = req.user.id;
+  const { page = 1, limit = 5 } = req.query;
 
   try {
-    const orders = await Order.find({
-      userId,
-      status: "Delivered",
-    }).sort({ createdAt: -1 });
+    const query = { userId, status: "Delivered" };
+    const total = await Order.countDocuments(query);
 
-    if (!orders)
-      return next(
-        handleMakeError(400, "No Delivered or Cancelled orders found!")
-      );
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
 
-    res.status(200).json(orders);
+    res.status(200).json({
+      orders,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+    });
   } catch (error) {
     next(error);
   }
@@ -1617,20 +1621,28 @@ export const getFiveUserDelivered = async (req, res, next) => {
 
 export const getUserCancelled = async (req, res, next) => {
   const userId = req.user.id;
+  const { page = 1, limit = 5 } = req.query;
 
   try {
-    const orders = await Order.find({
+    const query = {
       userId,
       status: "Cancelled",
       paymentStatus: { $ne: "Failed" },
-    }).sort({ createdAt: -1 });
+    };
 
-    if (!orders)
-      return next(
-        handleMakeError(400, "No Delivered or Cancelled orders found!")
-      );
+    const total = await Order.countDocuments(query);
 
-    res.status(200).json(orders);
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    res.status(200).json({
+      orders,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+    });
   } catch (error) {
     next(error);
   }
@@ -2027,18 +2039,27 @@ export const adminOrderRefund = async (req, res, next) => {
 
 export const getUserRefund = async (req, res, next) => {
   const userId = req.user.id;
+  const { page = 1, limit = 5 } = req.query;
 
   try {
-    const order = await Order.find({
+    const query = {
       userId: userId,
       $or: [{ paymentStatus: "Refunded" }, { status: "Refunded" }],
+    };
+
+    const total = await Order.countDocuments(query);
+
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    res.status(200).json({
+      orders,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
     });
-
-    if (order.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    res.status(200).json(order);
   } catch (error) {
     next(error);
   }
@@ -2046,19 +2067,28 @@ export const getUserRefund = async (req, res, next) => {
 
 export const getUserFailed = async (req, res, next) => {
   const userId = req.user.id;
+  const { page = 1, limit = 5 } = req.query;
 
   try {
-    const order = await Order.find({
+    const query = {
       userId,
       paymentStatus: "Failed",
       status: "Cancelled",
+    };
+
+    const total = await Order.countDocuments(query);
+
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    res.status(200).json({
+      orders,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
     });
-
-    if (order.length === 0) {
-      return res.json([]);
-    }
-
-    res.status(200).json(order);
   } catch (error) {
     next(error);
   }

@@ -5,25 +5,31 @@ import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
 import { generateInvoicePDF } from "../lib/generateReport";
 import toast from "react-hot-toast";
+import Pagination from "../reusable/Pagination";
 
 export default function UserDeliveredOrder() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [page, setPage] = useState(1);
 
   const {
-    data: userDelivered = [],
+    data: deliveredData,
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["userDelivered"],
+    queryKey: ["userDelivered", page],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-userDelivered`);
+      const res = await axiosInstance.get(`/order/get-userDelivered`, {
+        params: { page, limit: 5 },
+      });
       return res.data;
     },
   });
 
-  console.log(userDelivered);
+  const userDelivered = deliveredData?.orders || [];
+  const totalPages = deliveredData?.totalPages || 0;
+  const totalItems = deliveredData?.total || 0;
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -144,6 +150,17 @@ export default function UserDeliveredOrder() {
         <div className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed border-gray-300 rounded-[5px] bg-gray-50 text-gray-400">
           <p className="font-bold text-lg">No delivered orders yet</p>
         </div>
+      )}
+
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={setPage}
+          isLoading={isPending}
+        />
       )}
     </div>
   );

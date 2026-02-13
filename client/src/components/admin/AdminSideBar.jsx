@@ -40,13 +40,10 @@ export default function AdminSideBar() {
     },
     {
       name: "Product Maintenance",
+      path: "/admin/products",
       icon: <FaPuzzlePiece size={20} />,
       allowedRoles: ["admin"],
       inner: [
-        {
-          name: "Products Table",
-          path: "/admin/products",
-        },
         {
           name: "Add Product",
           path: "/admin/addProducts",
@@ -92,13 +89,10 @@ export default function AdminSideBar() {
     },
     {
       name: "User Maintenance",
+      path: "/admin/user",
       icon: <FaUsers size={20} />,
       allowedRoles: ["admin"],
       inner: [
-        {
-          name: "User Table",
-          path: "/admin/user",
-        },
         {
           name: "Worker Table",
           path: "/admin/worker",
@@ -134,13 +128,10 @@ export default function AdminSideBar() {
 
     {
       name: "Stocks",
+      path: "/admin/stocks",
       icon: <FaWarehouse size={20} />,
       allowedRoles: ["admin", "validatorStaff"],
       inner: [
-        {
-          name: "Stocks Table",
-          path: "/admin/stocks",
-        },
         {
           name: "Pending Stocks",
           path: "/admin/pendingStocks",
