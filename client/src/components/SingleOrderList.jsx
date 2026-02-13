@@ -103,10 +103,10 @@ export default function SingleOrderList({ order, onClose }) {
           {/* Header Sticker */}
           <div className="bg-primary text-white border-b border-black p-4 flex justify-between items-center relative z-10">
             <div>
-              <h1 className="font-black uppercase tracking-widest text-sm">
+              <h1 className="font-black uppercase tracking-widest text-base">
                 Order Summary
               </h1>
-              <p className="font-mono text-[10px] opacity-80">#{order._id}</p>
+              <p className="text-sm opacity-80">#{order._id}</p>
             </div>
             <div className="flex items-center gap-2">
               {/* Download Invoice Button - Only for Delivered orders */}

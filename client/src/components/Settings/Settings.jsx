@@ -5,10 +5,11 @@ import { CgProfile } from "react-icons/cg";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { FaSignOutAlt } from "react-icons/fa";
 import { useUserStore } from "../../stores/useUserStore";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 
 export default function Settings({ toggle, openSetting }) {
+  const queryClient = useQueryClient();
   const currentUser = useUserStore((state) => state.currentUser);
   const { clearUser } = useUserStore();
 
@@ -19,6 +20,7 @@ export default function Settings({ toggle, openSetting }) {
     onSuccess: () => {
       navigate("/sign-in");
       clearUser();
+      queryClient.clear();
     },
   });
 

@@ -218,48 +218,62 @@ export default function TicketModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <section className="inset-0 z-50 fixed overflow-y-auto backdrop-blur-sm p-3">
+    <section className="inset-0 z-50 font-main fixed overflow-y-auto md:overflow-y-hidden backdrop-blur-sm p-3">
       <div className="min-h-screen relative flex flex-col justify-center items-center py-10">
-        <div className="border border-black w-full max-w-[600px] relative bg-card rounded-[5px]">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute border border-black text-card bg-primary rounded-[5px] px-5 right-0 -top-8 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            <IoIosClose size={25} />
-          </button>
+        <div className="border relative p-0 flex flex-col gap-0 border-black w-full max-w-[600px] bg-card rounded-[5px] max-h-[90vh] overflow-hidden">
+          {/* Header Sticker */}
+          <div className="bg-primary text-white border-b border-black p-4 flex justify-between items-center relative z-10">
+            <div>
+              <h1 className="font-black uppercase tracking-widest text-base">
+                Submit Support Ticket
+              </h1>
+              <p className="text-sm opacity-80">
+                We&apos;ll help you resolve your issue
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Close Button */}
+              <button
+                onClick={onClose}
+                type="button"
+                className="bg-red-600 text-white border border-black size-8 flex items-center justify-center rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all group"
+              >
+                <IoIosClose
+                  size={24}
+                  className="group-hover:rotate-90 transition-transform"
+                />
+              </button>
+            </div>
+          </div>
 
-          <div className="p-4 md:p-6">
-            <h2 className="text-xl font-bold mb-4 text-center">
-              Submit a Support Ticket
-            </h2>
-            <p className="text-sm text-gray-600 mb-6 text-center">
-              Have an issue? Let us know and we&apos;ll get back to you as soon
-              as possible.
-            </p>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="flex flex-col h-full overflow-y-auto p-4 md:p-6 gap-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="">
               {/* Issue Type Selection */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Issue Type *
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {ISSUE_TYPES.map((type) => {
                     const Icon = type.icon;
+                    const isSelected = watchedIssueType === type.value;
                     return (
                       <button
                         key={type.value}
                         type="button"
                         onClick={() => setValue("issueType", type.value)}
-                        className={`p-3 border border-black hover:bg-primary/50 bg-primary rounded-[5px] text-sm flex flex-col items-center gap-1 transition-all ${
-                          watchedIssueType === type.value
-                            ? " text-card bg-primary/50 "
-                            : ""
+                        className={`p-4 border border-black rounded-[5px] text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-2 transition-all duration-200 ${
+                          isSelected
+                            ? "bg-primary text-black shadow-none translate-x-[2px] translate-y-[2px]"
+                            : "bg-white text-gray-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] hover:bg-gray-50"
                         }`}
                       >
-                        <Icon className="text-xl text-black" />
-                        <span className="text-black">{type.label}</span>
+                        <Icon
+                          className={`text-2xl ${
+                            isSelected ? "text-black" : "text-primary"
+                          }`}
+                        />
+                        <span className="text-center">{type.label}</span>
                       </button>
                     );
                   })}
@@ -270,9 +284,8 @@ export default function TicketModal({ isOpen, onClose }) {
                   </p>
                 )}
               </div>
-
               {/* Name & Email Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <ValidatedInput
                     label="Full Name *"
@@ -293,9 +306,8 @@ export default function TicketModal({ isOpen, onClose }) {
                   />
                 </div>
               </div>
-
               {/* Phone & Order Number Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <ValidatedInput
                     label="Phone Number"
@@ -316,9 +328,8 @@ export default function TicketModal({ isOpen, onClose }) {
                   />
                 </div>
               </div>
-
               {/* Subject */}
-              <div>
+              <div className="mt-4">
                 <ValidatedInput
                   label="Subject *"
                   id="subject"
@@ -327,9 +338,8 @@ export default function TicketModal({ isOpen, onClose }) {
                   placeholder="Brief description of your issue"
                 />
               </div>
-
               {/* Message */}
-              <div>
+              <div className="mt-4">
                 <label className="block text-sm font-medium mb-1">
                   Message *
                 </label>
@@ -347,9 +357,8 @@ export default function TicketModal({ isOpen, onClose }) {
                   </p>
                 )}
               </div>
-
               {/* Image Attachments */}
-              <div>
+              <div className="mt-4">
                 <label className="block text-sm font-medium mb-2">
                   Attach Images (optional)
                 </label>
@@ -397,9 +406,8 @@ export default function TicketModal({ isOpen, onClose }) {
                     : "Add images (max 5)"}
                 </button>
               </div>
-
               {/* Priority (optional) */}
-              <div>
+              <div className="mt-4">
                 <label className="block text-sm font-medium mb-1">
                   Priority
                 </label>
@@ -412,19 +420,20 @@ export default function TicketModal({ isOpen, onClose }) {
                   <option value="High">High</option>
                 </select>
               </div>
-
               {/* Submit Button */}
-              <Buttons
-                buttonType="submit"
-                isLoading={isPending || isUploading || isSubmitting}
-                loadingText={
-                  isUploading ? "Uploading images..." : "Submitting..."
-                }
-                buttonName="Submit Ticket"
-                icon={<FaPaperPlane size={18} />}
-                animateIcon={true}
-                className="w-full py-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              />
+              <div className="mt-6">
+                <Buttons
+                  buttonType="submit"
+                  isLoading={isPending || isUploading || isSubmitting}
+                  loadingText={
+                    isUploading ? "Uploading images..." : "Submitting..."
+                  }
+                  buttonName="Submit Ticket"
+                  icon={<FaPaperPlane size={18} />}
+                  animateIcon={true}
+                  className="w-full py-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                />
+              </div>
             </form>
           </div>
         </div>
