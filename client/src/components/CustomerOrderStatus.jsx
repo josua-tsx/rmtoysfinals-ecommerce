@@ -6,22 +6,30 @@ import { useState } from "react";
 import { ConfirmModal } from "../reusable/ConfirmModal";
 
 import LoadingSpinner from "../reusable/LoadingSpinner";
+import Pagination from "../reusable/Pagination";
 
 export default function CustomerOrderStatus() {
   const [orderId, setOrderId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelOrderId, setCancelOrderId] = useState(null);
+  const [page, setPage] = useState(1);
 
   const queryClient = useQueryClient();
 
-  const { data: userOrder = [], isPending } = useQuery({
-    queryKey: ["order"],
+  const { data: orderData, isPending } = useQuery({
+    queryKey: ["order", page],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/order/get-userOrder`);
+      const res = await axiosInstance.get(`/order/get-userOrder`, {
+        params: { page, limit: 5 },
+      });
       return res.data;
     },
   });
+
+  const userOrder = orderData?.orders || [];
+  const totalPages = orderData?.totalPages || 0;
+  const totalItems = orderData?.total || 0;
 
   const { data: singleUserOrder } = useQuery({
     queryKey: ["order", orderId],
@@ -170,6 +178,15 @@ export default function CustomerOrderStatus() {
           </div>
         )}
       </div>
+
+      {totalItems > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={setPage}
+        />
+      )}
     </>
   );
 }

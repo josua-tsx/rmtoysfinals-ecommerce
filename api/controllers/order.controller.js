@@ -998,20 +998,27 @@ export const placeOrderGcashQR = async (req, res, next) => {
 
 export const getUserOrder = async (req, res, next) => {
   const userId = req.user.id;
+  const { page = 1, limit = 5 } = req.query;
 
   try {
-    const userOrders = await Order.find({
+    const query = {
       userId,
       status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
-    }).sort({ createdAt: -1 });
+    };
 
-    if (!userOrders || userOrders.length === 0) {
-      return res
-        .status(200)
-        .json({ message: "No orders found for this user." });
-    }
+    const total = await Order.countDocuments(query);
 
-    res.status(200).json(userOrders);
+    const userOrders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    res.status(200).json({
+      orders: userOrders,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+    });
   } catch (error) {
     next(error);
   }
