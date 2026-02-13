@@ -6,7 +6,7 @@ config();
 // Create Brevo (Sendinblue) transporter
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
-  port: 587,
+  port: 2525, // Changed from 587 to bypass common blocks
   secure: false,
   auth: {
     user: process.env.BREVO_EMAIL,      // Brevo SMTP login (e.g., xxx@smtp-brevo.com)
