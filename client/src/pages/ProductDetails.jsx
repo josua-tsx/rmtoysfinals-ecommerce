@@ -15,6 +15,8 @@ import { FaCartPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { MdRateReview } from "react-icons/md";
 import { SiGooglegemini } from "react-icons/si";
 
+import { addToGuestCart } from "../lib/utils.jsx";
+
 export default function ProductDetails() {
   const params = useParams();
   const queryClient = useQueryClient();
@@ -42,7 +44,7 @@ export default function ProductDetails() {
     queryKey: ["reviewSummary", params.productId],
     queryFn: async () => {
       const res = await axiosInstance.get(
-        `/gemini/summarize-reviews/${params.productId}`
+        `/gemini/summarize-reviews/${params.productId}`,
       );
       return res.data;
     },
@@ -68,13 +70,18 @@ export default function ProductDetails() {
     if (currentUser) {
       addToCartMutation({ productId });
     } else {
-      console.log("etits");
+      try {
+        addToGuestCart(singleProduct);
+        toast.success("Added to cart!");
+      } catch (error) {
+        toast.error(error.message);
+      }
     }
   };
 
   const sumOfRating = singleProduct?.reviews.reduce(
     (sum, review) => sum + review.rating,
-    0
+    0,
   );
   const averageRating = sumOfRating / singleProduct?.reviews.length;
 
@@ -323,7 +330,7 @@ export default function ProductDetails() {
                                     {detail.value}
                                   </span>
                                 </div>
-                              )
+                              ),
                             )
                           : singleProduct.productDetails.length > 0 &&
                             singleProduct.productDetails.map(
@@ -335,7 +342,7 @@ export default function ProductDetails() {
                                   <p className="uppercase">{detail.label}:</p>
                                   <span>{detail.value}</span>
                                 </div>
-                              )
+                              ),
                             )}
                       </div>
                     </div>
