@@ -40,10 +40,6 @@ export default function Navbar() {
     setOpenSetting((prev) => !prev);
   };
 
-  const navItemsWithoutSupport = currentUser
-    ? navItems
-    : navItems.filter((item) => item.name !== "Support");
-
   return (
     <header className=" bg-yellow fixed p-4 py-4 top-0 left-0 right-0 z-40">
       <nav className="flex justify-between max-w-[1280px] mx-auto relative">
@@ -83,7 +79,7 @@ export default function Navbar() {
 
           {/* RENDER NAVBAR LIST ITEMS */}
           <ul className=" p-3 font-main lg:flex relative  gap-7 h-screen flex flex-col  justify-start text-xl shadow-lg">
-            {navItemsWithoutSupport.map((item) => {
+            {navItems.map((item) => {
               // exclude support if no user and do not display it in navbar
 
               return (
@@ -152,7 +148,7 @@ export default function Navbar() {
           </div>
 
           <ul className="hidden font-main lg:flex gap-5 z-50 flex-row">
-            {navItemsWithoutSupport.map((item) => (
+            {navItems.map((item) => (
               <li key={item.name}>
                 <Link to={`${item.path}`}>
                   <button className="hover:bg-primary p-1 hover:text-white  text-lg ">

@@ -15,8 +15,9 @@ import {
   IoAttach,
   IoClose,
 } from "react-icons/io5";
-import { useNavigate, useParams } from "react-router-dom";
-import { useUserStore } from "../stores/useUserStore";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+import { IoLockClosedOutline } from "react-icons/io5";
 import {
   getDownloadURL,
   getStorage,
@@ -47,7 +48,7 @@ const STATUS_CONFIG = {
 };
 
 export default function CustomerTicketsPage() {
-  const user = useUserStore((state) => state.currentUser);
+  const { data: user, isLoading: isUserLoading } = useCurrentUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -211,6 +212,30 @@ export default function CustomerTicketsPage() {
       images: imageUrls,
     });
   };
+
+  // Login required gate
+  if (!isUserLoading && !user)
+    return (
+      <div className="font-main min-h-screen flex items-center justify-center px-4">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="w-32 h-32 mx-auto bg-primary border border-black rounded-full flex items-center justify-center">
+            <IoLockClosedOutline size={60} className="text-black" />
+          </div>
+          <h2 className="text-2xl font-black text-black">Login Required</h2>
+          <p className="text-black text-base">
+            <IoLockClosedOutline className="inline mr-1 mb-0.5" size={14} />
+            This page requires you to be logged in. Please sign in to access
+            your support tickets.
+          </p>
+          <Link
+            to="/sign-in"
+            className="inline-block bg-primary text-white border border-black px-6 py-2.5 rounded-[5px] font-bold text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
 
   if (isError)
     return (

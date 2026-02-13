@@ -222,7 +222,7 @@ export default function ShippingAddressComponent() {
   if (isError) return <p>loading...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto">
       {openModal && singleAddressEdit && (
         <EditAddress
           address={singleAddressEdit}

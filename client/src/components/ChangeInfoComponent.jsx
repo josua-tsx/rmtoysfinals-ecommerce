@@ -178,7 +178,7 @@ export default function ChangeInfoComponent() {
   }, [file]);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto">
       <div className="border-b border-gray-100 pb-6">
         <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
         <p className="text-gray-500 mt-1">
@@ -257,7 +257,7 @@ export default function ChangeInfoComponent() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Email Field */}
-                <div className="space-y-2 relative">
+                <div className="space-y-2 flex items-center gap-2 relative">
                   <ValidatedInput
                     label="Email Address"
                     id="email"
@@ -266,7 +266,7 @@ export default function ChangeInfoComponent() {
                     error={errors.email}
                     placeholder="name@example.com"
                   />
-                  <div className="absolute right-8 top-8">
+                  <div className="">
                     <VerifyOtpWidget
                       identifier={currentUser?.email}
                       channel="email"
@@ -275,16 +275,6 @@ export default function ChangeInfoComponent() {
                     />
                   </div>
                 </div>
-
-                {/* Username Field */}
-                <ValidatedInput
-                  label="Username"
-                  id="username"
-                  {...register("username")}
-                  error={errors.username}
-                  placeholder="johndoe123"
-                  errorText="3-30 characters, no special characters"
-                />
 
                 {/* Full Name Field */}
                 <ValidatedInput
@@ -295,10 +285,20 @@ export default function ChangeInfoComponent() {
                   placeholder="John Doe"
                 />
 
+                {/* Username Field */}
+                <ValidatedInput
+                  label="Username"
+                  id="username"
+                  {...register("username")}
+                  error={errors.username}
+                  placeholder="johndoe123"
+                  errorText="3-30 characters, no special characters"
+                />
                 {/* Phone Number Field */}
-                <div className="space-y-2 relative">
+                <div className="space-y-2 flex items-center gap-2 relative">
                   <ValidatedInput
                     label="Phone Number"
+                    className=""
                     id="phoneNumber"
                     {...register("phoneNumber")}
                     error={errors.phoneNumber}
@@ -306,7 +306,7 @@ export default function ChangeInfoComponent() {
                     errorText="Must be a valid 11-digit number starting with 09"
                   />
                   {currentUser?.phoneNumber && (
-                    <div className="absolute right-8 top-8">
+                    <div className="">
                       <VerifyOtpWidget
                         identifier={currentUser?.phoneNumber}
                         channel="sms"

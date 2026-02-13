@@ -163,7 +163,7 @@ export default function VerifyOtpWidget({
           type="button"
           disabled={isSending || !identifier}
           onClick={handleSend}
-          className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 border border-black px-3 py-1.5 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
         >
           {isSending
             ? "Sending..."

@@ -52,7 +52,7 @@ export default function ProfileComponent({ setActiveComponent }) {
   if (isCurrentUserAddressError) return <p>loading...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto">
       <div className="border-b border-gray-100 pb-6">
         <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
         <p className="text-gray-500 mt-1">
