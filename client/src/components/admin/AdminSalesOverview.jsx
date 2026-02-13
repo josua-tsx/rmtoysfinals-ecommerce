@@ -24,7 +24,7 @@ import AdminChartSkeleton from "../skeleton/AdminChartSkeleton.jsx";
 export default function AdminSalesOverview() {
   const [chartView, setChartView] = useState("monthly");
   const {
-    data: analyticsData = { daily: [], monthly: [], yearly: [] },
+    data: rawAnalyticsData,
     isPending: isAnalyticsPending,
     isError: isAnalyticsError,
   } = useQuery({
@@ -34,6 +34,17 @@ export default function AdminSalesOverview() {
       return res.data;
     },
   });
+
+  // Defensive: ensure all sub-fields are arrays even if API omits them
+  const analyticsData = {
+    daily: Array.isArray(rawAnalyticsData?.daily) ? rawAnalyticsData.daily : [],
+    monthly: Array.isArray(rawAnalyticsData?.monthly)
+      ? rawAnalyticsData.monthly
+      : [],
+    yearly: Array.isArray(rawAnalyticsData?.yearly)
+      ? rawAnalyticsData.yearly
+      : [],
+  };
 
   // GET TOTAL VAT TO REMIT FROM SUCCESS ORDER
   const { data: successOrderData } = useQuery({
@@ -95,7 +106,7 @@ export default function AdminSalesOverview() {
     isLoading: isStocksPending,
     isError: isStocksError,
   } = useQuery({
-    queryKey: ["stocks"],
+    queryKey: ["stocks", "salesOverviewStats"],
     queryFn: async () => {
       // Need all stocks to sum up total cost
       const res = await axiosInstance.get(`/stocks/get-stocks?limit=1000000`);
@@ -155,11 +166,11 @@ export default function AdminSalesOverview() {
 
   const processChartData = (view) => {
     if (view === "monthly") {
-      return analyticsData.monthly;
+      return Array.isArray(analyticsData.monthly) ? analyticsData.monthly : [];
     } else {
       const last5Years = getLast5Years();
       return last5Years.map((year) => {
-        const found = analyticsData.yearly.find((d) => d._id === year);
+        const found = (analyticsData.yearly || []).find((d) => d._id === year);
         return {
           _id: year,
           totalSales: found ? found.totalSales : 0,
@@ -231,7 +242,7 @@ export default function AdminSalesOverview() {
         ) : (
           <AdminStatCard
             title={"TOTAL PENDING ORDERS"}
-            value={`${allPendings.length > 0 ? allPendings.length : 0}`}
+            value={`${Array.isArray(allPendings) ? allPendings.length : allPendings?.total || 0}`}
           />
         )}
       </div>
