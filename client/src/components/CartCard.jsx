@@ -58,7 +58,7 @@ export default function CartCard({ productCart }) {
     mutationFn: async (data) => {
       const res = await axiosInstance.put(
         `/cart/update-select/${productCart.productId._id}`,
-        data
+        data,
       );
       return res.data;
     },
@@ -127,25 +127,28 @@ export default function CartCard({ productCart }) {
 
       <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:w-[200px]">
         <img
-          src={productCart.productId.productImages[0]}
+          src={
+            productCart?.productId?.productImages?.[0] ||
+            "/placeholder-image.png"
+          }
           alt="product images"
-          className="size-[50px] border-none rounded-[5px]"
+          className="size-[50px] border-none rounded-[5px] object-cover"
         />
         <div className="flex gap-10 justify-between items-center">
           <p>
             <span className="text-indigo-500">
-              {formatPrice(productCart?.productId?.price)} PHP
+              {formatPrice(productCart?.productId?.price || 0)} PHP
             </span>
           </p>
         </div>
       </div>
       <div className="flex-col gap-1 lg:flex-row justify-around lg:items-center flex  w-full">
-        <h1>{productCart.productId.productName}</h1>
+        <h1>{productCart?.productId?.productName || "Product Unavailable"}</h1>
         <div className="my-1 flex flex-col md:flex-row md:gap-5">
           <p className="text-sm truncate w-[160px]">
             Description:{" "}
             <span className="text-indigo-500">
-              {productCart.productId.productDescription}
+              {productCart?.productId?.productDescription || "No description"}
             </span>
           </p>
         </div>

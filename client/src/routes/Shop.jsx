@@ -13,6 +13,7 @@ export default function Shop() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [aiSearchResults, setAiSearchResults] = useState(null); // AI search results
@@ -27,7 +28,14 @@ export default function Shop() {
     isError,
     error,
   } = useInfiniteQuery({
-    queryKey: ["products", selectedCategory, sortBy, sortOrder],
+    queryKey: [
+      "products",
+      selectedCategory,
+      selectedColor,
+      sortBy,
+      sortOrder,
+      searchTerm,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       const res = await axiosInstance.get(`/product/get-products`, {
         params: {
@@ -36,6 +44,8 @@ export default function Shop() {
           categoryName: selectedCategory,
           sortBy,
           sortOrder,
+          ...(searchTerm && { search: searchTerm }),
+          ...(selectedColor && { color: selectedColor }),
         },
       });
       return res.data;
@@ -46,32 +56,19 @@ export default function Shop() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  console.log(data);
-
   // Flatten pages to products array
   const products = useMemo(
     () => data?.pages.flatMap((page) => page.products) || [],
     [data],
   );
 
-  // Filter products based on search term OR use AI search results
-  const filteredArrayProducts = useMemo(() => {
-    // If AI search results are available, use them
+  // Use AI search results if available, otherwise use server-filtered products
+  const displayProducts = useMemo(() => {
     if (aiSearchResults && aiSearchResults.length > 0) {
       return aiSearchResults;
     }
-
-    // Otherwise, use regular text search
-    return products.filter(
-      (product) =>
-        product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.productDetails?.some((detail) =>
-          detail.value.toLowerCase().includes(searchTerm.toLowerCase()),
-        ) ||
-        (product.discount &&
-          product.discount.toString().includes(searchTerm.toLowerCase())),
-    );
-  }, [products, searchTerm, aiSearchResults]);
+    return products;
+  }, [products, aiSearchResults]);
 
   // Throttled scroll handler
   const handleScroll = useCallback(() => {
@@ -129,6 +126,7 @@ export default function Shop() {
           <ShopSide
             setSearchTerm={setSearchTerm}
             setSelectedCategory={setSelectedCategory}
+            setSelectedColor={setSelectedColor}
             setSortBy={setSortBy}
             setSortOrder={setSortOrder}
             setAiSearchResults={setAiSearchResults}
@@ -168,14 +166,14 @@ export default function Shop() {
                   <ShopProductCardSkeleton key={i} />
                 ))}
               </div>
-            ) : filteredArrayProducts.length === 0 ? (
+            ) : displayProducts.length === 0 ? (
               <p className="text-center py-10">
                 No products found matching your criteria.
               </p>
             ) : (
               <>
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filteredArrayProducts.map((product) => (
+                  {displayProducts.map((product) => (
                     <ShopProductCards key={product._id} product={product} />
                   ))}
                 </div>
@@ -188,7 +186,7 @@ export default function Shop() {
                   </div>
                 )}
 
-                {!hasNextPage && filteredArrayProducts.length > 0 && (
+                {!hasNextPage && displayProducts.length > 0 && (
                   <p className="text-center pt-5 text-gray-500">
                     You&apos;ve reached the end of products.
                   </p>

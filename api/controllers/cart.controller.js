@@ -71,6 +71,7 @@ export const updateSelect = async (req, res, next) => {
 
 export const getCarts = async (req, res, next) => {
   const userId = req.user.id;
+  const { page = 1, limit = 5 } = req.query;
 
   try {
     const carts = await Cart.findOne({ userId }).populate({
@@ -90,10 +91,43 @@ export const getCarts = async (req, res, next) => {
     });
 
     if (!carts || !carts.items) {
-      return res.status(200).json([]);
+      return res.status(200).json({
+        items: [],
+        total: 0,
+        totalPages: 0,
+        currentPage: 1,
+        grandTotal: 0,
+        totalPoints: 0,
+      });
     }
 
-    res.status(200).json(carts);
+    // Defensive check: filter out items with null productId (deleted products)
+    const validItems = carts.items.filter((item) => item.productId);
+
+    // Calculate totals for the ENTIRE cart (not just the page)
+    const grandTotal = validItems.reduce((total, item) => {
+      return total + (item.productId.price || 0) * item.quantity;
+    }, 0);
+
+    const totalPoints = validItems.reduce((total, item) => {
+      return total + (item.productId.points || 0) * item.quantity;
+    }, 0);
+
+    // Pagination Logic
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+    const paginatedItems = validItems.slice(startIndex, endIndex);
+
+    res.status(200).json({
+      items: paginatedItems,
+      total: validItems.length,
+      totalPages: Math.ceil(validItems.length / limitNum),
+      currentPage: pageNum,
+      grandTotal,
+      totalPoints,
+    });
   } catch (error) {
     next(error);
   }

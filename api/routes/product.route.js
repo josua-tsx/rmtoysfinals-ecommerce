@@ -17,6 +17,7 @@ import {
   // getDrafts,
   // getNoStocksProducts,
   getProducts,
+  getProductColors,
   getSingleProduct,
   getStockStatusPendings,
   mostReviewsProducts,
@@ -34,6 +35,7 @@ const router = express.Router();
 
 router.post(`/add-product`, requireAuth, requireAdmin, validateResource(createProductSchema), addProduct);
 router.get(`/get-products`, getProducts);
+router.get(`/get-product-colors`, getProductColors);
 router.get(`/get-archived-products`, requireAuth, requireAdmin, getArchivedProducts);
 
 router.post(`/delete-multi-prod`, requireAuth, requireAdmin, deleteMultiProduct)

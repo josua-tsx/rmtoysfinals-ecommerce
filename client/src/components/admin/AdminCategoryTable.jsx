@@ -76,9 +76,13 @@ export default function AdminCategoryTable({ enableMultiDel }) {
     keepPreviousData: true,
   });
 
-  const categories = data?.categories || [];
-  const totalPages = data?.totalPages || 0;
-  const totalItems = data?.total || 0;
+  const categories = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.categories)
+      ? data.categories
+      : [];
+  const totalPages = data?.totalPages || 1;
+  const totalItems = data?.total || categories.length;
   const currentPage = data?.currentPage || 1;
 
   // --- EDIT MUTATION ---

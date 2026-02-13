@@ -13,6 +13,7 @@ import useDebounce from "../hooks/useDebounce";
 export default function ShopSide({
   setSearchTerm,
   setSelectedCategory,
+  setSelectedColor,
   setSortBy,
   setSortOrder,
   setAiSearchResults, // New prop for AI search results
@@ -20,7 +21,7 @@ export default function ShopSide({
   const [showFilter, setShowFilter] = useState(false);
   const [sortOption, setSortOption] = useState("latest");
   const [filterCategory, setFilterCategory] = useState([]);
-  const [filterColor, setFilterColor] = useState("");
+  const [filterColor, setFilterColor] = useState([]);
   const [isAiMode, setIsAiMode] = useState(false); // AI search toggle
   const [aiQuery, setAiQuery] = useState(""); // AI search input
   const [localSearchTerm, setLocalSearchTerm] = useState(""); // Local state for immediate input feedback
@@ -36,43 +37,36 @@ export default function ShopSide({
   }, [debouncedSearchTerm, isAiMode, setSearchTerm]);
 
   const {
-    data: categories = [],
+    data: categoriesData = [],
     isPending: isCategoryPending,
     isError: isCategoryError,
   } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories", "shopSide"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/category/get-categories`);
+      const res = await axiosInstance.get(
+        `/category/get-categories?limit=1000`,
+      );
       return res.data;
     },
   });
 
+  const categories = Array.isArray(categoriesData)
+    ? categoriesData
+    : Array.isArray(categoriesData?.categories)
+      ? categoriesData.categories
+      : [];
+
   const {
-    data: products = [],
-    isPending,
-    isError,
+    data: productColors = [],
+    isPending: isColorsPending,
+    isError: isColorsError,
   } = useQuery({
-    queryKey: ["colors"],
+    queryKey: ["productColors"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/product/get-products`);
-      return res.data.products;
+      const res = await axiosInstance.get(`/product/get-product-colors`);
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
-
-  // Now we can map through the products and extract the color from productDetails
-  const productColors = [
-    ...new Set(
-      products
-        .flatMap((product) => {
-          // Find the color detail from productDetails
-          const colorDetail = product.productDetails?.find(
-            (detail) => detail.label === "color",
-          );
-          return colorDetail ? colorDetail.value : null; // Return color value if found, otherwise null
-        })
-        .filter((color) => color !== null), // Remove null values if no color found
-    ),
-  ];
 
   const handleSearchChange = (event) => {
     if (!isAiMode) {
@@ -126,18 +120,18 @@ export default function ShopSide({
 
   const handleSubmitFilter = (e) => {
     e.preventDefault();
-    setSelectedCategory(filterCategory);
-    setSearchTerm(filterColor);
-    setLocalSearchTerm(filterColor); // Sync local state
-    setSortBy(sortOption === "latest" ? "createdAt" : "oldest");
+    setSelectedCategory(filterCategory.join(","));
+    setSelectedColor(filterColor.join(","));
+    setSortBy("createdAt");
     setSortOrder(sortOption === "latest" ? "desc" : "asc");
     setShowFilter(false);
   };
 
   const handleResetFilter = () => {
     setSelectedCategory("");
-    setFilterCategory("");
-    setFilterColor("");
+    setFilterCategory([]);
+    setFilterColor([]);
+    setSelectedColor("");
     setSearchTerm("");
     setLocalSearchTerm(""); // Reset local state
     setSortBy("createdAt");
@@ -148,11 +142,11 @@ export default function ShopSide({
     setAiSearchResults?.(null);
   };
 
-  if (isPending || isCategoryPending) {
+  if (isColorsPending || isCategoryPending) {
     return <ShopSideSkeleton />;
   }
 
-  if (isError || isCategoryError) {
+  if (isColorsError || isCategoryError) {
     return <p>Error loading filters...</p>;
   }
 
@@ -311,7 +305,14 @@ export default function ShopSide({
                         id={category.categoryName}
                         value={category.categoryName}
                         checked={filterCategory.includes(category.categoryName)}
-                        onChange={(e) => setFilterCategory(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFilterCategory((prev) =>
+                            prev.includes(value)
+                              ? prev.filter((c) => c !== value)
+                              : [...prev, value],
+                          );
+                        }}
                       />
                       <label htmlFor={category.categoryName} className="">
                         {category.categoryName}
@@ -332,7 +333,14 @@ export default function ShopSide({
                       className=""
                       value={color}
                       checked={filterColor.includes(color)}
-                      onChange={(e) => setFilterColor(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFilterColor((prev) =>
+                          prev.includes(value)
+                            ? prev.filter((c) => c !== value)
+                            : [...prev, value],
+                        );
+                      }}
                     />
                     <span className="">{color}</span>
                   </label>

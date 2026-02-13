@@ -61,7 +61,7 @@ export const deleteGuestCart = (productId) => {
     for (const c of cartInItems) {
       if (c._id.toString() === productId && c.isSelected) {
         throw new Error(
-          "You can not delete this cart since it is checked. try to uncheck it first"
+          "You can not delete this cart since it is checked. try to uncheck it first",
         );
       }
     }
@@ -87,7 +87,7 @@ export const updateQuantity = (productId, newQuantity) => {
   const updatedCart = {
     ...cart,
     items: cart.items.map((item, index) =>
-      index === updateQuantity ? { ...item, quantity: newQuantity } : item
+      index === updateQuantity ? { ...item, quantity: newQuantity } : item,
     ),
   };
 
@@ -105,7 +105,7 @@ export const updateSelected = (productId, isSelected) => {
   const updatedCart = {
     ...cart,
     items: cart.items.map((item) =>
-      item._id === productId ? { ...item, isSelected } : item
+      item._id === productId ? { ...item, isSelected } : item,
     ),
   };
 

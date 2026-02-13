@@ -7,12 +7,15 @@ import { FaShoppingCart } from "react-icons/fa";
 import formatPrice from "../../reusable/formatPrice";
 import Buttons from "../../reusable/Buttons";
 import GuestCard from "./GuestCard";
+import Pagination from "../../reusable/Pagination";
 
 import GuestSummaryModal from "./GuestSummaryModal";
 
 export default function GuestCartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
   const [cart, setCart] = useState(getGuestCart());
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
 
   const navigate = useNavigate();
 
@@ -33,7 +36,10 @@ export default function GuestCartPage() {
     setCart(getGuestCart());
   };
 
-  console.log(cart);
+  const totalItems = cart?.items?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedItems =
+    cart?.items?.slice((page - 1) * itemsPerPage, page * itemsPerPage) || [];
 
   return (
     <section className="pt-[130px] bg-yellow  text-sm md:text-normal font-main p-3">
@@ -57,8 +63,8 @@ export default function GuestCartPage() {
           <div className="flex flex-col  gap-3  rounded-[5px]  h-[400px] md:h-[550px]  overflow-y-auto md:flex-1 ">
             {/* PRODUCTS GOES HERE */}
 
-            {cart?.items?.length > 0 ? (
-              cart?.items.map((item) => (
+            {paginatedItems.length > 0 ? (
+              paginatedItems.map((item) => (
                 <GuestCard
                   key={item._id}
                   refreshCart={updateCart}
@@ -83,6 +89,18 @@ export default function GuestCartPage() {
                   Browse products
                 </button>
               </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalItems > 0 && (
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                onPageChange={setPage}
+                isLoading={false}
+                currentItemsCount={paginatedItems.length}
+              />
             )}
           </div>
 

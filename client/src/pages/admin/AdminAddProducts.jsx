@@ -68,16 +68,24 @@ export default function AdminAddProducts() {
   const watchedImages = watch("productImages");
 
   const {
-    data: categories = [],
+    data: categoriesData = [],
     isPending: isCategoryPending,
     isError: isCategoryError,
   } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/category/get-categories`);
+      const res = await axiosInstance.get(
+        `/category/get-categories?limit=1000`,
+      );
       return res.data;
     },
   });
+
+  const categoriesList = Array.isArray(categoriesData)
+    ? categoriesData
+    : Array.isArray(categoriesData?.categories)
+      ? categoriesData.categories
+      : [];
 
   const { data: vatOptions = [] } = useQuery({
     queryKey: ["vat"],
@@ -492,7 +500,7 @@ export default function AdminAddProducts() {
                     {...register("category")}
                   >
                     <option value="">Select Category</option>
-                    {categories.map((cat) => (
+                    {categoriesList.map((cat) => (
                       <option key={cat._id} value={cat._id}>
                         {cat.categoryName}
                       </option>

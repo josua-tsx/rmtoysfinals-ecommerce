@@ -10,13 +10,20 @@ import toast from "react-hot-toast";
 import formatPrice from "../../reusable/formatPrice";
 import { MdToggleOff, MdToggleOn } from "react-icons/md";
 import { ConfirmModal } from "../../reusable/ConfirmModal";
-import AdminTableSkeleton from "../../components/skeleton/AdminTableSkeleton";
+import ReusableTable from "../../reusable/ReusableTable";
+import useDebounce from "../../hooks/useDebounce";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function AdminStocksPending() {
   const currentUser = useUserStore((state) => state.currentUser);
   const queryClient = useQueryClient();
+
+  // Search & Pagination State
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
 
   const [productToDelete, setProductToDelete] = useState(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -68,6 +75,11 @@ export default function AdminStocksPending() {
     setValue("totalCost", totalCost);
   }, [totalCost, setValue]);
 
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
+
   const handleDeleteClick = (productId) => {
     setProductToDelete(productId);
     setIsConfirmOpen(true);
@@ -83,24 +95,46 @@ export default function AdminStocksPending() {
 
   // Queries
   const {
-    data: products = [],
+    data,
     isPending: isProductsPending,
     isError: isProductsError,
   } = useQuery({
-    queryKey: ["pendingProducts"],
+    queryKey: ["pendingProducts", page, limit, debouncedSearchTerm],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/product/get-stockStatus-pendings`);
+      const params = new URLSearchParams({ page, limit });
+      if (debouncedSearchTerm) {
+        params.append("search", debouncedSearchTerm);
+      }
+      const res = await axiosInstance.get(
+        `/product/get-stockStatus-pendings?${params.toString()}`,
+      );
+      return res.data;
+    },
+    keepPreviousData: true,
+  });
+
+  const products = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.products)
+      ? data.products
+      : [];
+  const totalPages = data?.totalPages || 1;
+  const totalItems = data?.total || products.length;
+  const currentPage = data?.currentPage || 1;
+
+  const { data: suppliersData = [] } = useQuery({
+    queryKey: ["suppliers", "pendingStocksDropdown"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/supplier/get-suppliers?limit=1000`);
       return res.data;
     },
   });
 
-  const { data: suppliers = [] } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/supplier/get-suppliers`);
-      return res.data;
-    },
-  });
+  const suppliers = Array.isArray(suppliersData)
+    ? suppliersData
+    : Array.isArray(suppliersData?.suppliers)
+      ? suppliersData.suppliers
+      : [];
 
   // Calculate VAT Details
   const productVatPercent = selectedProduct?.vat?.vatPercent || 0;
@@ -179,7 +213,6 @@ export default function AdminStocksPending() {
   };
 
   const onSubmit = (data) => {
-    // Add notifySubscribedUser from state
     addNewDeliver({
       ...data,
       notifySubscribedUser: toggleNotify,
@@ -199,103 +232,92 @@ export default function AdminStocksPending() {
     return <p>Error loading pending stocks.</p>;
   }
 
+  // Column Definitions for ReusableTable
+  const columns = [
+    {
+      header: "Image",
+      className: "text-left",
+      render: (product) => (
+        <img
+          src={product?.productImages?.[0]}
+          alt={product?.productName}
+          className="h-[50px] w-[50px] object-cover rounded-[5px] border border-gray-300"
+        />
+      ),
+    },
+    {
+      header: "Product Name",
+      className: "text-left",
+      render: (product) => (
+        <span className="font-medium">{product?.productName}</span>
+      ),
+    },
+    {
+      header: "Category",
+      className: "text-left",
+      render: (product) => <span>{product?.category?.categoryName}</span>,
+    },
+    {
+      header: "Description",
+      className: "text-left",
+      render: (product) => (
+        <span
+          className="max-w-[300px] truncate block"
+          title={product?.productDescription}
+        >
+          {product?.productDescription}
+        </span>
+      ),
+    },
+    {
+      header: "Action",
+      className: "text-center",
+      render: (product) => (
+        <div className="flex gap-2 justify-center">
+          {currentUser.role !== "validatorStaff" && (
+            <>
+              <button
+                onClick={() => handleOpenModal(product)}
+                className="border bg-primary hover:bg-primary/90 rounded-[5px] text-white px-3 py-1 border-black transition-colors"
+              >
+                Order Stock
+              </button>
+              <button
+                onClick={() => handleDeleteClick(product._id)}
+                className="border bg-red-600 hover:bg-red-700 rounded-[5px] text-white px-3 py-1 border-black transition-colors"
+              >
+                Remove
+              </button>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <section className="bg-yellow text-sm md:text-normal h-screen font-main pb-20 overflow-y-auto">
       <AdminHeader title={"PENDING STOCKS"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
-        {/* Table Container */}
-        <div className="relative border border-black flex flex-col rounded-[5px] w-full h-full mx-auto bg-card mt-6 overflow-visible">
-          {/* Green Sticker Header */}
-          <div className="absolute -top-4 -left-3 bg-[#22c55e] text-white border-2 border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-            <h1 className="font-black uppercase tracking-widest text-sm ">
-              Pending Stocks
-            </h1>
-          </div>
-
-          <div className="absolute bg-card -top-7 right-0 w-[80px] border border-black h-[20px] rounded-full"></div>
-
-          <div className=" flex flex-col overflow-x-auto gap-4 h-[600px] overflow-y-auto pt-6">
-            {isProductsPending ? (
-              <div className="p-4">
-                <AdminTableSkeleton />
-              </div>
-            ) : (
-              <table className="w-full divide-y divide-gray-700 min-w-[800px]">
-                <thead>
-                  <tr>
-                    <th className="font-normal p-2 pb-5 text-left">Image</th>
-                    <th className="font-normal p-2 pb-5 text-left">
-                      Product Name
-                    </th>
-                    <th className="font-normal p-2 pb-5 text-left">Category</th>
-                    <th className="font-normal p-2 pb-5 text-left">
-                      Description
-                    </th>
-                    <th className="font-normal p-2 pb-5 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {products.length > 0 ? (
-                    products.map((product) => (
-                      <tr key={product._id}>
-                        <td className="p-2">
-                          <img
-                            src={product?.productImages[0]}
-                            alt={product?.productName}
-                            className="h-[50px] w-[50px] object-cover rounded-[5px] border border-gray-300"
-                          />
-                        </td>
-                        <td className="p-2 font-medium">
-                          {product?.productName}
-                        </td>
-                        <td className="p-2">
-                          {product?.category?.categoryName}
-                        </td>
-                        <td
-                          className="p-2 max-w-[300px] truncate"
-                          title={product?.productDescription}
-                        >
-                          {product?.productDescription}
-                        </td>
-                        <td className="p-2 text-center flex gap-2 justify-center">
-                          <button
-                            disabled={currentUser.role === "validatorStaff"}
-                            onClick={() => handleOpenModal(product)}
-                            className={`border bg-primary hover:bg-primary/90 rounded-[5px] text-white px-3 py-1 border-black transition-colors ${
-                              currentUser.role === "validatorStaff"
-                                ? "opacity-50 cursor-not-allowed hidden"
-                                : ""
-                            }`}
-                          >
-                            Order Stock
-                          </button>
-                          <button
-                            disabled={currentUser.role === "validatorStaff"}
-                            onClick={() => handleDeleteClick(product._id)}
-                            className={`border bg-red-600 hover:bg-red-700 rounded-[5px] text-white px-3 py-1 border-black transition-colors ${
-                              currentUser.role === "validatorStaff"
-                                ? "opacity-50 cursor-not-allowed hidden"
-                                : ""
-                            }`}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center p-4">
-                        No pending stocks found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
+        <ReusableTable
+          title="Pending Stocks"
+          columns={columns}
+          data={products}
+          isLoading={isProductsPending}
+          search={{
+            value: localSearchTerm,
+            onChange: setLocalSearchTerm,
+            placeholder: "Search products...",
+          }}
+          pagination={{
+            currentPage: currentPage,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            onPageChange: setPage,
+          }}
+          emptyMessage="No pending stocks found."
+        />
       </div>
 
       {/* Order Stock Modal */}

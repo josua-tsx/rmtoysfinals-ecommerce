@@ -135,6 +135,22 @@ export const addProduct = async (req, res, next) => {
   }
 };
 
+export const getProductColors = async (req, res, next) => {
+  try {
+    const colors = await Product.aggregate([
+      { $match: { status: "published", isArchived: { $ne: true } } },
+      { $unwind: "$productDetails" },
+      { $match: { "productDetails.label": "color" } },
+      { $group: { _id: "$productDetails.value" } },
+      { $sort: { _id: 1 } },
+    ]);
+
+    res.status(200).json(colors.map((c) => c._id));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getProducts = async (req, res, next) => {
   try {
     // Get query parameters for pagination, search, and sorting
@@ -143,6 +159,7 @@ export const getProducts = async (req, res, next) => {
       limit = 10,
       search,
       categoryName,
+      color,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
@@ -171,13 +188,35 @@ export const getProducts = async (req, res, next) => {
       }
     }
 
-    // If categoryName is provided, first find the category ObjectId
+    // Filter by color if provided (supports comma-separated for multi-select)
+    if (color) {
+      const colors = color.split(",").map((c) => c.trim()).filter(Boolean);
+      if (colors.length === 1) {
+        query.productDetails = {
+          $elemMatch: { label: "color", value: new RegExp(`^${colors[0]}$`, "i") },
+        };
+      } else if (colors.length > 1) {
+        query.$and = [
+          ...(query.$and || []),
+          {
+            $or: colors.map((c) => ({
+              productDetails: {
+                $elemMatch: { label: "color", value: new RegExp(`^${c}$`, "i") },
+              },
+            })),
+          },
+        ];
+      }
+    }
+
+    // If categoryName is provided, find the category ObjectId(s)
+    // Supports comma-separated values for multi-select
     if (categoryName) {
-      const category = await Category.findOne({ categoryName: categoryName });
-      if (category) {
-        query["category"] = category._id; // Filter by the ObjectId of the category
+      const categoryNames = categoryName.split(",").map((n) => n.trim()).filter(Boolean);
+      const categories = await Category.find({ categoryName: { $in: categoryNames } });
+      if (categories.length > 0) {
+        query["category"] = { $in: categories.map((c) => c._id) };
       } else {
-        // If the category is not found, send a response with no products
         return res.status(200).json({
           products: [],
           hasMore: false,
@@ -250,7 +289,29 @@ export const getArchivedProducts = async (req, res, next) => {
 
 export const getStockStatusPendings = async (req, res, next) => {
   try {
-    const products = await Product.find({ status: "pending", isArchived: { $ne: true } })
+    const {
+      page = 1,
+      limit = 10,
+      search,
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Base query: pending & not archived
+    const query = { status: "pending", isArchived: { $ne: true } };
+
+    // Search logic
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      query.$or = [
+        { productName: searchRegex },
+        { productDescription: searchRegex },
+      ];
+    }
+
+    const products = await Product.find(query)
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -266,9 +327,19 @@ export const getStockStatusPendings = async (req, res, next) => {
       .populate({
         path: "vat",
         select: "vatPercent vatValue",
-      });
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
 
-    res.status(200).json(products);
+    const totalCount = await Product.countDocuments(query);
+
+    res.status(200).json({
+      products,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+    });
   } catch (error) {
     next(error);
   }

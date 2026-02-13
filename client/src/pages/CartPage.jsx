@@ -10,9 +10,11 @@ import { useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaArrowRight, FaSearch } from "react-icons/fa";
 import useOrderStore from "../stores/useOrderStore";
 import LoadingSpinner from "../reusable/LoadingSpinner";
+import Pagination from "../reusable/Pagination";
 
 export default function CartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
+  const [page, setPage] = useState(1);
 
   const navigate = useNavigate();
 
@@ -26,26 +28,27 @@ export default function CartPage() {
   }, [currentOrder, clearOrder]);
 
   const {
-    data: cart = [],
+    data: cartData,
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["cart"],
+    queryKey: ["cart", page],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/cart/get`);
+      const res = await axiosInstance.get(`/cart/get`, {
+        params: { page, limit: 10 },
+      });
       return res.data;
     },
   });
 
-  console.log(cart);
+  // Defensive coding: ensure items is always an array
+  const cartItems = Array.isArray(cartData?.items) ? cartData.items : [];
+  const totalPages = cartData?.totalPages || 1;
+  const grandTotal = cartData?.grandTotal || 0;
+  const totalPoints = cartData?.totalPoints || 0;
+  const totalItemsCount = cartData?.total || 0;
 
-  const totalPrice = cart?.items?.reduce((total, item) => {
-    return total + item.productId.price * item.quantity;
-  }, 0);
-
-  const totalPoints = cart?.items?.reduce((total, item) => {
-    return total + item.productId.points * item.quantity;
-  }, 0);
+  // Manual total calculations REMOVED - using API values now
 
   if (isPending) return <LoadingSpinner fullScreen />;
   if (isError) return <div>Error loading cart.</div>;
@@ -60,20 +63,20 @@ export default function CartPage() {
         <div className="flex  w-full flex-col  mb-5 ">
           <h1 className="text-3xl md:text-4xl">Cart</h1>
           <p className="text-gray-600 mt-2">
-            {cart?.items?.length > 1
-              ? cart?.items?.length + " items in your cart"
-              : cart?.items?.length + " item in your cart"}
+            {totalItemsCount > 1
+              ? totalItemsCount + " items in your cart"
+              : totalItemsCount + " item in your cart"}
           </p>
         </div>
 
         <CreditPointsAuto />
 
         <form className="flex flex-col md:flex-row pb-10 w-full bg-yellow gap-4">
-          <div className="flex flex-col  gap-3  rounded-[5px]  h-[400px] md:h-[550px]  overflow-y-auto md:flex-1 ">
+          <div className="flex flex-col  gap-3  rounded-[5px]  h-[400px] md:h-[650px]  overflow-y-auto md:flex-1 ">
             {/* PRODUCTS GOES HERE */}
 
-            {cart?.items?.length > 0 ? (
-              cart?.items.map((item) => (
+            {cartItems.length > 0 ? (
+              cartItems.map((item) => (
                 <CartCard key={item?._id} productCart={item} />
               ))
             ) : (
@@ -96,9 +99,21 @@ export default function CartPage() {
                 />
               </div>
             )}
+
+            {/* Pagination Controls */}
+            {totalItemsCount > 0 && (
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                totalItems={totalItemsCount}
+                onPageChange={setPage}
+                isLoading={isPending}
+                currentItemsCount={cartItems.length}
+              />
+            )}
           </div>
 
-          {cart?.items?.length > 0 && (
+          {cartItems.length > 0 && (
             <div className="border w-full md:w-[320px] gap-4 flex flex-col bg-card rounded-lg p-6 border-black ">
               <h1 className="text-2xl font-black uppercase tracking-widest border-b border-black pb-2">
                 Order Summary
@@ -129,7 +144,7 @@ export default function CartPage() {
                   <span className="text-xs font-black uppercase text-gray-400">
                     Total Items
                   </span>
-                  <span className="font-bold">{cart?.items?.length}</span>
+                  <span className="font-bold">{totalItemsCount}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-black uppercase text-blue-600">
@@ -146,7 +161,7 @@ export default function CartPage() {
                   </span>
                   <div className="text-right">
                     <span className="text-2xl font-black block leading-none text-indigo-600">
-                      {cart?.items ? formatPrice(totalPrice) : "0.00"}
+                      {formatPrice(grandTotal)}
                     </span>
                     <span className="text-[10px] font-black uppercase text-gray-400">
                       Philippine Peso
