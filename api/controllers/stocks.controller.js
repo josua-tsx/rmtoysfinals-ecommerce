@@ -5,7 +5,7 @@ import Stocks from "../models/stocks.model.js";
 import Supplier from "../models/supplier.model.js";
 import User from "../models/user.models.js";
 import Vat from "../models/vat.models.js";
-import { sendEmail } from "../nodemailer/nodemailer.js";
+import { stockNotificationEmail } from "../template/stockEmailTemplates.js";
 
 
 
@@ -19,8 +19,6 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 export const OrderStocks = async (req, res, next) => {
   const userId = req.user.id;
-  const session = await mongoose.startSession();
-  session.startTransaction();
 
   const {
     product,
@@ -29,21 +27,25 @@ export const OrderStocks = async (req, res, next) => {
     shopPrice,
     quantity,
     shippingPrice,
-    totalCost,
     deliveryId,
     dateDelivery,
     vat,
-    vatShopPrice,
     notifySubscribedUser,
   } = req.body;
+
+  // ✅ Fetch subscribed emails OUTSIDE the transaction (not transactional data)
+  const subscribedEmails = await User.find({
+    isSubscribed: true,
+  }).distinct("email");
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
     // ✅ Fetch Product FIRST to check Tax Status
     const productExists = await Product.findById(product).session(session);
     if (!productExists) {
-      await session.abortTransaction();
-      session.endSession();
-      return next(handleMakeError(404, "Product not found"));
+      throw handleMakeError(404, "Product not found");
     }
 
     // ✅ Handle VAT Logic
@@ -51,37 +53,26 @@ export const OrderStocks = async (req, res, next) => {
 
     if (productExists.taxStatus === "vatable") {
       if (!vat || !mongoose.Types.ObjectId.isValid(vat)) {
-        await session.abortTransaction();
-        session.endSession();
-        return next(
-          handleMakeError(400, "VAT ID is required for vatable products")
-        );
+        throw handleMakeError(400, "VAT ID is required for vatable products");
       }
       vatExists = await Vat.findById(vat).session(session);
       if (!vatExists) {
-        await session.abortTransaction();
-        session.endSession();
-        return next(handleMakeError(404, "VAT not found"));
+        throw handleMakeError(404, "VAT not found");
       }
     }
 
     const supplierExists = await Supplier.findById(supplier).session(session);
     if (!supplierExists) {
-      await session.abortTransaction();
-      session.endSession();
-      return next(handleMakeError(404, "Supplier not found"));
+      throw handleMakeError(404, "Supplier not found");
     }
 
-    // ✅ Get subscribed users (OPTIMIZED: returns array of strings)
-    const subscribedEmails = await User.find({
-      isSubscribed: true,
-    }).distinct("email");
-
-    // ✅ Calculate VAT values server-side
+    // ✅ Calculate ALL values server-side (never trust client for financial data)
     const vatPercent = vatExists ? vatExists.vatPercent : 0;
     const calculatedVatShopPrice = Number(shopPrice) * (1 + vatPercent / 100);
     const calculatedVatToRemit =
       (calculatedVatShopPrice - Number(shopPrice)) * Number(quantity);
+    const calculatedTotalCost =
+      Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
 
     // ✅ Create and save new delivery
     const newDelivery = new Stocks({
@@ -91,7 +82,7 @@ export const OrderStocks = async (req, res, next) => {
       shopPrice: Number(shopPrice),
       quantity: Number(quantity),
       shippingPrice: Number(shippingPrice),
-      totalCost: Number(totalCost),
+      totalCost: calculatedTotalCost,
       deliveryStatus: "delivered",
       deliveryId,
       dateDelivery: new Date(dateDelivery),
@@ -102,14 +93,14 @@ export const OrderStocks = async (req, res, next) => {
 
     await newDelivery.save({ session });
 
-    // ✅ Fixed orderStockLogs with proper data types
+    // ✅ Log the stock order
     await orderStockLogs(
       {
         action: "admin_ordered_stock",
         userId,
         deliveryId,
         supplier,
-        category: productExists.category || null, // Use actual category from product
+        category: productExists.category || null,
         quantityOrdered: Number(quantity),
         supplierPrice: Number(supplierPrice) || 0,
         shippingPrice: Number(shippingPrice),
@@ -117,47 +108,47 @@ export const OrderStocks = async (req, res, next) => {
         shopPrice: Number(shopPrice),
         receivedDate: new Date(dateDelivery),
         receivedQuantity: Number(quantity),
-        totalCost: Number(totalCost),
+        totalCost: calculatedTotalCost,
       },
       session
-    ); // Pass session to logs if supported
+    );
 
-    // ✅ Update related documents
-    await Promise.all([
-      // NOTE: Using $push for stocks array history as requested
+    // ✅ Update related documents (conditionally built array)
+    const updateOps = [
       Product.findByIdAndUpdate(
         product,
         {
           status: "published",
           price: calculatedVatShopPrice,
           preVatPrice: Number(shopPrice),
-          $push: { stocks: newDelivery._id }, // Keeping history!
+          $push: { stocks: newDelivery._id },
           taxStatus: vatPercent > 0 ? "vatable" : "exempt",
           totalVat: vatPercent,
-          supplier: supplier, // ✅ Update supplier when ordering stock
+          supplier: supplier,
         },
         { new: true, runValidators: true, session }
       ),
       Supplier.findByIdAndUpdate(
         supplier,
-        {
-          $addToSet: { product: newDelivery.product }, // Use $addToSet to avoid duplicates
-        },
+        { $addToSet: { product: newDelivery.product } },
         { session }
       ),
-      vatExists &&
+    ];
+
+    if (vatExists) {
+      updateOps.push(
         Vat.findByIdAndUpdate(
           vat,
-          {
-            $addToSet: { productId: newDelivery.product },
-          },
+          { $addToSet: { productId: newDelivery.product } },
           { session }
-        ),
-    ]);
+        )
+      );
+    }
+
+    await Promise.all(updateOps);
 
     // ✅ Commit Transaction
     await session.commitTransaction();
-    session.endSession();
 
     // ✅ Send response FIRST to prevent lag
     res.status(201).json({
@@ -171,7 +162,6 @@ export const OrderStocks = async (req, res, next) => {
 
     // ✅ Process emails in BACKGROUND after response
     if (notifySubscribedUser === true && subscribedEmails.length > 0) {
-      // Pass emails array directly
       processEmailsInBackground(
         subscribedEmails,
         productExists,
@@ -189,70 +179,55 @@ export const OrderStocks = async (req, res, next) => {
     }
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
     console.error("OrderStocks error:", error);
     next(error);
+  } finally {
+    // ✅ Session cleanup ALWAYS runs — no more repetitive endSession() calls
+    session.endSession();
   }
 };
 
+
+
 // ✅ Background email processing function
 const processEmailsInBackground = async (
-  subscribedUser,
+  emails,
   product,
   newDelivery,
   quantity
 ) => {
-  const results = {
-    successful: 0,
-    failed: 0,
-    errors: [],
-  };
+  const results = { successful: 0, failed: 0, errors: [] };
 
   console.log(
-    `🔄 Starting background email sending to ${subscribedUser.length} users`
+    `🔄 Starting background email sending to ${emails.length} users`
   );
 
-  for (let i = 0; i < subscribedUser.length; i++) {
-    const user = subscribedUser[i];
+  const emailSubject = `New Stock Arrival Notification - ${product.productName}`;
+  const emailBody = stockNotificationEmail(product, newDelivery, quantity);
+
+  for (let i = 0; i < emails.length; i++) {
+    const email = emails[i];
 
     try {
-      const emailSubject = `New Stock Arrival Notification - ${product.productName}`;
-      const emailBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">🚀 New Stock Just Arrived!</h2>
-          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
-            <p><strong>Product:</strong> ${product.productName}</p>
-            <p><strong>Price:</strong> ₱${newDelivery.shopPrice}</p>
-            <p><strong>Available Quantity:</strong> ${quantity} units</p>
-            <p><strong>Arrival Date:</strong> ${new Date(
-              newDelivery.dateDelivery
-            ).toLocaleDateString()}</p>
-          </div>
-          <p style="margin-top: 20px;">Happy shopping!</p>
-          <p><em>RM Toys Team</em></p>
-        </div>
-      `;
-
-      
-      await sendGrid(user.email, emailSubject, emailBody);
+      await sendGrid(email, emailSubject, emailBody);
       results.successful++;
       console.log(
-        `✅ Email sent to ${user.email} (${i + 1}/${subscribedUser.length})`
+        `✅ Email sent to ${email} (${i + 1}/${emails.length})`
       );
 
       // ✅ Add small delay to avoid rate limiting
-      if (i < subscribedUser.length - 1) {
+      if (i < emails.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, 200));
       }
     } catch (error) {
       results.failed++;
-      results.errors.push({ email: user.email, error: error.message });
-      console.error(`❌ Failed to send email to ${user.email}:`, error.message);
+      results.errors.push({ email, error: error.message });
+      console.error(`❌ Failed to send email to ${email}:`, error.message);
     }
   }
 
   console.log(
-    `📧 Email summary: ${results.successful} sent, ${ sults.failed} failed`
+    `📧 Email summary: ${results.successful} sent, ${results.failed} failed`
   );
   return results;
 };

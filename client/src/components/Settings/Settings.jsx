@@ -20,6 +20,7 @@ export default function Settings({ toggle, openSetting }) {
     onSuccess: () => {
       navigate("/sign-in");
       clearUser();
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       queryClient.clear();
     },
   });

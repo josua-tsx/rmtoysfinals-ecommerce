@@ -12,6 +12,7 @@ import bcrypt from "bcryptjs/dist/bcrypt.js";
 
 import crypto from "crypto";
 import { sendGrid } from "../sendGrid/sendGrid.js";
+import { passwordResetEmail } from "../template/authEmailTemplates.js";
 
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -341,11 +342,7 @@ export const forgetPassword = async (req, res, next) => {
     await sendGrid(
       validUser.email,
       `Password Reset Request`,
-      `Hello ${validUser.username},\n\n` +
-        `You requested a password reset. Visit this link to set a new password (expires in 15 minutes):\n\n` +
-        `${resetLink}\n\n` +
-        `(If the link doesn't work, copy and paste it into your browser)\n\n` +
-        `If you didn't request this, please ignore this email.`
+      passwordResetEmail(validUser.username, resetLink)
     );
     res.status(200).json({
       success: true,

@@ -1,5 +1,6 @@
 import { handleMakeError } from "../middleware/handleError.js";
 import { sendGrid } from "../sendGrid/sendGrid.js";
+import { contactFormEmail } from "../template/contactEmailTemplates.js";
 
 export const sendContactEmail = async (req, res, next) => {
   const { senderEmail, message, website } = req.body;
@@ -26,7 +27,7 @@ export const sendContactEmail = async (req, res, next) => {
     }
 
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    await sendGrid(ADMIN_EMAIL," A user sent an email ", `Hello, this is ${senderEmail}, ${message}`);
+    await sendGrid(ADMIN_EMAIL, "A user sent an email", contactFormEmail(senderEmail, cleanMessage));
 
     res.status(200).json({ senderEmail, message });
   } catch (error) {
