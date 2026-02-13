@@ -338,7 +338,7 @@ export const forgetPassword = async (req, res, next) => {
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-    await sendGrid(
+    sendGrid(
       validUser.email,
       `Password Reset Request`,
       `Hello ${validUser.username},\n\n` +
@@ -346,7 +346,9 @@ export const forgetPassword = async (req, res, next) => {
         `${resetLink}\n\n` +
         `(If the link doesn't work, copy and paste it into your browser)\n\n` +
         `If you didn't request this, please ignore this email.`
-    );
+    ).catch((err) => {
+      console.error("Failed to send password reset email:", err);
+    });
     res.status(200).json({
       success: true,
       message: "Recovery password sent to your email.",
