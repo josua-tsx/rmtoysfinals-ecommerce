@@ -36,7 +36,7 @@ export const apiLimiter = rateLimit({
 // Ultra-strict limiter for sensitive operations (e.g., password reset email)
 export const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 requests per hour
+  max: 5, // 3 requests per hour
   message: {
     success: false,
     message: "Rate limit exceeded. Please try again in an hour.",
