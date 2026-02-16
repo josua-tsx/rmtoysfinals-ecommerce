@@ -23,6 +23,9 @@ const RootLayout = () => {
   // State for onboarding modal
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // 🔔 Enable real-time notifications for customers (and admins if they use this layout)
+  useSocketNotifications(currentUser);
+
   // 🔍 Check auth on mount
   useEffect(() => {
     checkAuth();
@@ -170,7 +173,8 @@ const RequiredAuthGcashPage = ({ children }) => {
 
 const AdminLayout = () => {
   // Enable real-time notifications for admins
-  useSocketNotifications(true);
+  const { data: currentUser } = useCurrentUser();
+  useSocketNotifications(currentUser);
 
   return (
     <div className="flex bg-yellow h-full">

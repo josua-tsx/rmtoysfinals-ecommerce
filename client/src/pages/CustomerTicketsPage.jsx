@@ -127,12 +127,6 @@ export default function CustomerTicketsPage() {
     const handleAdminReply = (data) => {
       // Invalidate queries to update list and current ticket view
       queryClient.invalidateQueries({ queryKey: ["userTickets"] });
-
-      // Show notification
-      toast.success(`New reply from ${data.adminName}: ${data.replyPreview}`, {
-        duration: 4000,
-        icon: "💬",
-      });
     };
 
     socket.on("admin-reply", handleAdminReply);
