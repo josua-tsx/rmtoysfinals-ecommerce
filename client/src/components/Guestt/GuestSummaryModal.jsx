@@ -26,7 +26,7 @@ const guestOrderSchema = z.object({
     .string()
     .min(5, "Address MUST be at least 5 characters")
     .max(200, "Address cannot exceed 200 characters"),
-  paymentMethod: z.enum(["GcashQR", "Online Payment"]),
+  paymentMethod: z.enum(["GcashQR"]), //, "Online Payment"]),
   notes: z.string().max(200, "Notes cannot exceed 200 characters").optional(),
 });
 
@@ -228,21 +228,21 @@ export default function GuestSummaryModal({ onClose }) {
     }
   }, [cart]);
 
-  const { mutate: placeStripeOrder } = useMutation({
-    mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/order/place-order-stripe`, data);
-      return res.data;
-    },
-    onSuccess: (data) => {
-      console.log(data);
-      if (data.url) {
-        window.location.href = data.url; // redirect to Stripe checkout
-      }
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "Stripe checkout failed");
-    },
-  });
+  // const { mutate: placeStripeOrder } = useMutation({
+  //   mutationFn: async (data) => {
+  //     const res = await axiosInstance.post(`/order/place-order-stripe`, data);
+  //     return res.data;
+  //   },
+  //   onSuccess: (data) => {
+  //     console.log(data);
+  //     if (data.url) {
+  //       window.location.href = data.url; // redirect to Stripe checkout
+  //     }
+  //   },
+  //   onError: (error) => {
+  //     toast.error(error?.response?.data?.message || "Stripe checkout failed");
+  //   },
+  // });
 
   const handleGcashQRpaymentMethod = async (orderData) => {
     if (orderData.orderItems.length === 0) {
@@ -319,43 +319,43 @@ export default function GuestSummaryModal({ onClose }) {
       handleGcashQRpaymentMethod(orderData);
     }
 
-    if (paymentMethod === "Online Payment") {
-      const stripeOrderData = {
-        orderItems: cartItems.map((item) => ({
-          productId: {
-            _id: item._id,
-            productName: item.productName,
-            price: item.price,
-          },
-          _id: item._id,
-          productName: item.productName,
-          productImages: item.productImages,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        isGuest: true,
-        guestUser: {
-          name: fullName.trim(),
-          phone: phoneNumber.trim(),
-          email: email.trim(),
-        },
-        shippingAddress: currentAddress,
-        paymentMethod,
-        taxPrice: taxes,
-        shippingPrice: shippingFee,
-        vatableSalesNet,
-        vatExemptSales,
-        totalVatAmount,
-        subtotal,
-        totalPrice: totalPrice.toString(),
-        notes: notes || "",
-        totalPoints,
-        usedCredits: 0,
-        otpToken, // Include OTP verification token
-      };
+    // if (paymentMethod === "Online Payment") {
+    //   const stripeOrderData = {
+    //     orderItems: cartItems.map((item) => ({
+    //       productId: {
+    //         _id: item._id,
+    //         productName: item.productName,
+    //         price: item.price,
+    //       },
+    //       _id: item._id,
+    //       productName: item.productName,
+    //       productImages: item.productImages,
+    //       price: item.price,
+    //       quantity: item.quantity,
+    //     })),
+    //     isGuest: true,
+    //     guestUser: {
+    //       name: fullName.trim(),
+    //       phone: phoneNumber.trim(),
+    //       email: email.trim(),
+    //     },
+    //     shippingAddress: currentAddress,
+    //     paymentMethod,
+    //     taxPrice: taxes,
+    //     shippingPrice: shippingFee,
+    //     vatableSalesNet,
+    //     vatExemptSales,
+    //     totalVatAmount,
+    //     subtotal,
+    //     totalPrice: totalPrice.toString(),
+    //     notes: notes || "",
+    //     totalPoints,
+    //     usedCredits: 0,
+    //     otpToken, // Include OTP verification token
+    //   };
 
-      placeStripeOrder(stripeOrderData);
-    }
+    //   placeStripeOrder(stripeOrderData);
+    // }
   };
 
   return (
@@ -542,7 +542,7 @@ export default function GuestSummaryModal({ onClose }) {
                 className="w-full p-2 border outline-none border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               >
                 <option value="GcashQR">GCash QR</option>
-                <option value="Online Payment">Credit/Debit Card (TEST)</option>
+                {/* <option value="Online Payment">Credit/Debit Card (TEST)</option> */}
               </select>
               {errors.paymentMethod && (
                 <p className="text-red-500 text-xs mt-1">

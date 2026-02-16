@@ -145,9 +145,9 @@ export const sendOrderNotification = async (
     Cancelled: `Your order ${order._id} has been cancelled.`,
   };
 
-  // if (smsMessages[status]) {
-  //   await sendSMS(orderUserPhone, smsMessages[status]);
-  // }
+  if (smsMessages[status]) {
+    await sendSMS(orderUserPhone, smsMessages[status]);
+  }
 
   if (!isGuestOrder && userId) {
     await logAuditTrail({

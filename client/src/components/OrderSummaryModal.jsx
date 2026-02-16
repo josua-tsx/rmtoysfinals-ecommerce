@@ -163,21 +163,21 @@ export default function OrderSummaryModal({ onClose }) {
     },
   });
 
-  const { mutate: placeStripeOrder } = useMutation({
-    mutationFn: async (data) => {
-      const res = await axiosInstance.post(`/order/place-order-stripe`, data);
-      return res.data;
-    },
-    onSuccess: (data) => {
-      console.log(data);
-      if (data.url) {
-        window.location.href = data.url; // redirect to Stripe checkout
-      }
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "Stripe checkout failed");
-    },
-  });
+  // const { mutate: placeStripeOrder } = useMutation({
+  //   mutationFn: async (data) => {
+  //     const res = await axiosInstance.post(`/order/place-order-stripe`, data);
+  //     return res.data;
+  //   },
+  //   onSuccess: (data) => {
+  //     console.log(data);
+  //     if (data.url) {
+  //       window.location.href = data.url; // redirect to Stripe checkout
+  //     }
+  //   },
+  //   onError: (error) => {
+  //     toast.error(error?.response?.data?.message || "Stripe checkout failed");
+  //   },
+  // });
 
   const handleGcashQRpaymentMethod = (orderData) => {
     if (!orderData.orderItems?.length) {
@@ -287,30 +287,30 @@ export default function OrderSummaryModal({ onClose }) {
       handleGcashQRpaymentMethod(orderData);
     }
 
-    if (paymentMethod === "Online Payment") {
-      const stripeOrderData = {
-        orderItems: cartItems.map((item) => ({
-          productId: item.productId,
-          productName: item.productId.productName,
-          productImages: item.productId.productImages[0],
-          price: item.productId.price,
-          quantity: item.quantity,
-        })),
-        shippingAddress: currentAddress,
-        paymentMethod,
-        shippingPrice: shippingFee,
-        subtotal,
-        totalPrice: deductedPrice.toString(),
-        notes,
-        vatableSalesNet,
-        vatExemptSales,
-        totalVatAmount,
-        totalPoints,
-        usedCredits: useCredits === "yes" ? usedCredits : 0,
-      };
+    // if (paymentMethod === "Online Payment") {
+    //   const stripeOrderData = {
+    //     orderItems: cartItems.map((item) => ({
+    //       productId: item.productId,
+    //       productName: item.productId.productName,
+    //       productImages: item.productId.productImages[0],
+    //       price: item.productId.price,
+    //       quantity: item.quantity,
+    //     })),
+    //     shippingAddress: currentAddress,
+    //     paymentMethod,
+    //     shippingPrice: shippingFee,
+    //     subtotal,
+    //     totalPrice: deductedPrice.toString(),
+    //     notes,
+    //     vatableSalesNet,
+    //     vatExemptSales,
+    //     totalVatAmount,
+    //     totalPoints,
+    //     usedCredits: useCredits === "yes" ? usedCredits : 0,
+    //   };
 
-      placeStripeOrder(stripeOrderData);
-    }
+    //   placeStripeOrder(stripeOrderData);
+    // }
   };
 
   if (isActivePending || isCartPending)
@@ -483,7 +483,7 @@ export default function OrderSummaryModal({ onClose }) {
               >
                 <option value="Cod">Cash on Delivery</option>
                 <option value="GcashQR">GCash QR</option>
-                <option value="Online Payment">Credit/Debit Card (TEST)</option>
+                {/* <option value="Online Payment">Credit/Debit Card (TEST)</option> */}
               </select>
             </div>
 

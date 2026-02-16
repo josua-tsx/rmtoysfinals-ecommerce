@@ -274,7 +274,6 @@ export const getAllOneStarReview = async (req, res, next) => {
       path: "userId",
       select: "avatar username email",
     });
-    if (review.length === 0) res.status(200).json([]);
     res.status(200).json(review);
   } catch (error) {
     next(error);
@@ -287,7 +286,6 @@ export const getAllTwoStarReview = async (req, res, next) => {
       path: "userId",
       select: "avatar username email",
     });
-    if (review.length === 0) res.status(200).json([]);
     res.status(200).json(review);
   } catch (error) {
     next(error);
@@ -300,7 +298,6 @@ export const getAllThreeStarReview = async (req, res, next) => {
       path: "userId",
       select: "avatar username email",
     });
-    if (review.length === 0) res.status(200).json([]);
     res.status(200).json(review);
   } catch (error) {
     next(error);
@@ -313,7 +310,6 @@ export const getAllFourStarReview = async (req, res, next) => {
       path: "userId",
       select: "avatar username email",
     });
-    if (review.length === 0) res.status(200).json([]);
     res.status(200).json(review);
   } catch (error) {
     next(error);
@@ -326,7 +322,6 @@ export const getAllFiveStarReview = async (req, res, next) => {
       path: "userId",
       select: "avatar username email",
     });
-    if (review.length === 0) res.status(200).json([]);
     res.status(200).json(review);
   } catch (error) {
     next(error);

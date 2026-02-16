@@ -11,7 +11,8 @@ import {
   addReason,
   adminOrderRefund,
   cancelSuccessTransact,
-  checkOutSuccess,
+
+  // checkOutSuccess,
   deleteAllOrders,
   getAllCancelled,
   getAllFailed,
@@ -36,7 +37,7 @@ import {
   getUserRefund,
   getUsersOrder,
   placeOrderGcashQR,
-  placeOrderStripe,
+  // placeOrderStripe,
   searchOrders,
   trackSingleOrder,
   updateDeliveryStatus,
@@ -54,13 +55,13 @@ router.get("/analytics", requireAuth, requireAdmin, getSalesAnalytics);
 
 router.post(`/place-order`, requireAuth, validateResource(placeOrderSchema), userPlaceOrder);
 
-router.post(`/place-order-stripe`, optionalAuth, guestOrderLimiter, placeOrderStripe);
+// router.post(`/place-order-stripe`, optionalAuth, guestOrderLimiter, placeOrderStripe);
 
 router.post(`/place-order-gcashQR`, optionalAuth, guestOrderLimiter, placeOrderGcashQR);
 
 router.post("/validate-guest", guestOrderLimiter, validateGuestOrder)
 
-router.post(`/checkout-success`, optionalAuth, checkOutSuccess);
+// router.post(`/checkout-success`, optionalAuth, checkOutSuccess);
 
 router.put(`/add-reason/:orderId`, requireAuth, requireAdmin, addReason);
 
