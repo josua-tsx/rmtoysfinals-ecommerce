@@ -123,8 +123,35 @@ export const getSuppliers = async (req, res, next) => {
 
 export const getArchivedSuppliers = async (req, res, next) => {
   try {
-    const suppliers = await Supplier.find({ isArchived: true }).sort({ updatedAt: -1 });
-    res.status(200).json(suppliers);
+    const { 
+      page = 1, 
+      limit = 10,
+      search = ""
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = { 
+      isArchived: true,
+      ...(search && { supplierName: { $regex: search, $options: "i" } }),
+    };
+
+    const suppliers = await Supplier.find(query)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await Supplier.countDocuments(query);
+
+    res.status(200).json({
+      suppliers,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

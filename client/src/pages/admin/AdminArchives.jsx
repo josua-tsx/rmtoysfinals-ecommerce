@@ -34,20 +34,12 @@ export default function AdminArchives() {
         </div>
 
         {/* Content */}
-        <div className="bg-card border border-black rounded-[5px] relative mt-4">
-          <div className="absolute -top-4 -left-3 bg-red-500 text-white border border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
-            <h1 className="font-black text-[16px] uppercase tracking-widest text-sm">
-              Archived {activeTab}
-            </h1>
-          </div>
-
-          <div className="p-8 pt-12 overflow-x-auto">
-            {activeTab === "products" && <ArchivedProductsTable />}
-            {activeTab === "categories" && <ArchivedCategoriesTable />}
-            {activeTab === "suppliers" && <ArchivedSuppliersTable />}
-            {activeTab === "workers" && <ArchivedWorkersTable />}
-            {activeTab === "riders" && <ArchivedRidersTable />}
-          </div>
+        <div className="mt-4">
+          {activeTab === "products" && <ArchivedProductsTable />}
+          {activeTab === "categories" && <ArchivedCategoriesTable />}
+          {activeTab === "suppliers" && <ArchivedSuppliersTable />}
+          {activeTab === "workers" && <ArchivedWorkersTable />}
+          {activeTab === "riders" && <ArchivedRidersTable />}
         </div>
       </div>
     </section>

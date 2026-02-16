@@ -91,8 +91,35 @@ export const getCategories = async (req, res, next) => {
 
 export const getArchivedCategories = async (req, res, next) => {
   try {
-    const categories = await Category.find({ isArchived: true }).sort({ updatedAt: -1 });
-    res.status(200).json(categories);
+    const { 
+      page = 1, 
+      limit = 10,
+      search = ""
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = { 
+      isArchived: true,
+      ...(search && { categoryName: { $regex: search, $options: "i" } }),
+    };
+
+    const categories = await Category.find(query)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await Category.countDocuments(query);
+
+    res.status(200).json({
+      categories,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

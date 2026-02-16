@@ -176,6 +176,13 @@ export default function AdminSideBar() {
     },
 
     {
+      name: "Archives",
+      icon: <FaMotorcycle size={20} />,
+      allowedRoles: ["admin"],
+      path: "/admin/archives",
+    },
+
+    {
       name: "Return to shop",
       path: "/shop",
       icon: <MdKeyboardReturn size={20} />,

@@ -324,12 +324,46 @@ export const restoreWorker = async (req, res, next) => {
 
 export const getArchivedWorkers = async (req, res, next) => {
   try {
-    const workers = await User.find({
+    const { 
+      page = 1, 
+      limit = 10,
+      search = ""
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const searchFilter = search
+      ? {
+          $or: [
+            { username: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { fullName: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const query = {
       role: { $nin: ["admin", "customer"] },
       isArchived: true,
-    }).sort({ updatedAt: -1 });
+      ...searchFilter,
+    };
 
-    res.status(200).json(workers);
+    const workers = await User.find(query)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await User.countDocuments(query);
+
+    res.status(200).json({
+      workers,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

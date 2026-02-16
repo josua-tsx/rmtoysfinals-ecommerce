@@ -308,8 +308,44 @@ export const restoreRider = async (req, res, next) => {
 
 export const getArchivedRiders = async (req, res, next) => {
   try {
-    const riders = await Rider.find({ isArchived: true }).sort({ updatedAt: -1 });
-    res.status(200).json(riders);
+    const { 
+      page = 1, 
+      limit = 10,
+      search = ""
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const searchFilter = search
+      ? {
+          $or: [
+            { riderName: { $regex: search, $options: "i" } },
+            { riderPhoneNumber: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const query = { 
+      isArchived: true,
+      ...searchFilter,
+    };
+
+    const riders = await Rider.find(query)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await Rider.countDocuments(query);
+
+    res.status(200).json({
+      riders,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

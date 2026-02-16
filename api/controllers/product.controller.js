@@ -274,14 +274,39 @@ export const getProducts = async (req, res, next) => {
 
 export const getArchivedProducts = async (req, res, next) => {
   try {
-    const products = await Product.find({ isArchived: true })
+    const { 
+      page = 1, 
+      limit = 10,
+      search = ""
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = { 
+      isArchived: true,
+      ...(search && { productName: { $regex: search, $options: "i" } }),
+    };
+
+    const products = await Product.find(query)
       .populate({ path: "supplier", select: "supplierName" })
       .populate({ path: "category", select: "categoryName" })
       .populate({ path: "stocks", select: "quantity" })
       .populate({ path: "vat", select: "vatPercent vatValue" })
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
 
-    res.status(200).json(products);
+    const totalCount = await Product.countDocuments(query);
+
+    res.status(200).json({
+      products,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
   } catch (error) {
     next(error);
   }

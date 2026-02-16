@@ -1,19 +1,34 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useState } from "react";
 import { MdRestore } from "react-icons/md";
 import axiosInstance from "../../../lib/axios";
-import AdminTableSkeleton from "../../skeleton/AdminTableSkeleton";
+import ReusableTable from "../../../reusable/ReusableTable";
 import toast from "react-hot-toast";
 
 export default function ArchivedRidersTable() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
 
-  const { data: riders = [], isPending } = useQuery({
-    queryKey: ["archivedRiders"],
+  const { data, isPending } = useQuery({
+    queryKey: ["archivedRiders", page, search],
     queryFn: async () => {
-      const res = await axiosInstance.get("/rider/get-archived-riders");
+      const res = await axiosInstance.get(
+        `/rider/get-archived-riders?page=${page}&limit=5&search=${search}`,
+      );
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
+
+  const riders = data?.riders || [];
+  const total = data?.total || 0;
+  const totalPages = data?.totalPages || 0;
 
   const { mutate: restoreRider } = useMutation({
     mutationFn: async (id) => {
@@ -34,63 +49,68 @@ export default function ArchivedRidersTable() {
     }
   };
 
-  if (isPending) {
-    return (
-      <div className="p-4">
-        <AdminTableSkeleton />
-      </div>
-    );
-  }
+  const columns = [
+    {
+      header: "Name",
+      accessor: "riderName",
+      className: "font-bold",
+    },
+    {
+      header: "Phone Number",
+      accessor: "riderPhoneNumber",
+      className: "font-mono",
+    },
+    {
+      header: "Status",
+      accessor: "riderStatus",
+      render: (item) => (
+        <span
+          className={`px-2 py-1 rounded text-xs border border-black uppercase font-bold ${
+            item.riderStatus === "available" ? "bg-green-200" : "bg-red-200"
+          }`}
+        >
+          {item.riderStatus}
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: "actions",
+      className: "text-center",
+      render: (item) => (
+        <div className="flex justify-center">
+          <button
+            onClick={() => handleRestore(item._id)}
+            className="bg-green-500 text-white p-2 rounded border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+            title="Restore"
+          >
+            <MdRestore size={20} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <table className="w-full text-left border-collapse">
-      <thead>
-        <tr className="border-b-2 border-black">
-          <th className="p-4 font-black uppercase">Name</th>
-          <th className="p-4 font-black uppercase">Phone Number</th>
-          <th className="p-4 font-black uppercase">Status</th>
-          <th className="p-4 font-black uppercase text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-black">
-        {riders.length > 0 ? (
-          riders.map((item) => (
-            <tr key={item._id} className="hover:bg-gray-50">
-              <td className="p-4 font-bold">{item.riderName}</td>
-              <td className="p-4 font-mono">{item.riderPhoneNumber}</td>
-              <td className="p-4">
-                <span
-                  className={`px-2 py-1 rounded text-xs border border-black uppercase font-bold ${
-                    item.riderStatus === "available"
-                      ? "bg-green-200"
-                      : "bg-red-200"
-                  }`}
-                >
-                  {item.riderStatus}
-                </span>
-              </td>
-              <td className="p-4 text-center">
-                <button
-                  onClick={() => handleRestore(item._id)}
-                  className="bg-green-500 text-white p-2 rounded border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-                  title="Restore"
-                >
-                  <MdRestore size={20} />
-                </button>
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td
-              colSpan="4"
-              className="p-8 text-center text-gray-500 uppercase tracking-widest font-bold"
-            >
-              No archived riders found
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+    <ReusableTable
+      title="Archived Riders"
+      subtitle="Manage your archived riders"
+      headerColor="bg-red-500"
+      columns={columns}
+      data={riders}
+      isLoading={isPending}
+      search={{
+        value: search,
+        onChange: setSearch,
+        placeholder: "Search riders...",
+      }}
+      pagination={{
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: total,
+        onPageChange: setPage,
+      }}
+      emptyMessage="No archived riders found"
+    />
   );
 }
