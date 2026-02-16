@@ -107,6 +107,21 @@ export default function CustomerTicketsPage() {
     }
   }, [ticketId, tickets]);
 
+  // Connect socket and join customer room for real-time updates
+  useEffect(() => {
+    if (!user?._id) return;
+
+    // Connect socket if not already connected
+    if (!socket.connected) {
+      socket.connect();
+    }
+    socket.emit("join-customer-room", user._id);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user?._id]);
+
   // Real-time chat update listener
   useEffect(() => {
     if (!selectedTicket) return;
