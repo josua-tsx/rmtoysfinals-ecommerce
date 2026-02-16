@@ -16,6 +16,7 @@ import {
   FaMoneyBillWave,
   FaTruck,
   FaMotorcycle,
+  FaArchive,
 } from "react-icons/fa";
 import { BiSupport } from "react-icons/bi";
 import { AiOutlineAudit } from "react-icons/ai";
@@ -177,7 +178,7 @@ export default function AdminSideBar() {
 
     {
       name: "Archives",
-      icon: <FaMotorcycle size={20} />,
+      icon: <FaArchive size={20} />,
       allowedRoles: ["admin"],
       path: "/admin/archives",
     },
