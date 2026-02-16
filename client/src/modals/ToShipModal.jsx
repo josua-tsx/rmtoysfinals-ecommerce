@@ -22,6 +22,8 @@ export default function ToShipModal({
     },
   });
 
+  console.log(getRiders);
+
   const handleSelectRider = (id) => {
     setSelectedRiderId(id);
   };
@@ -59,8 +61,8 @@ export default function ToShipModal({
             Select a rider to start the shipping process for this order.
           </p>
           <div className="flex flex-col gap-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
-            {getRiders.length > 0 ? (
-              getRiders.map((rider) => (
+            {getRiders?.riders?.length > 0 ? (
+              getRiders.riders.map((rider) => (
                 <div
                   key={rider._id}
                   onClick={() =>
