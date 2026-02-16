@@ -124,13 +124,15 @@ export default function CustomerTicketsPage() {
 
   // Real-time chat update listener
   useEffect(() => {
-    if (!selectedTicket) return;
-
     const handleAdminReply = (data) => {
-      if (data.ticketId === selectedTicket._id) {
-        // Just refetch to get clean state
-        queryClient.invalidateQueries({ queryKey: ["userTickets"] });
-      }
+      // Invalidate queries to update list and current ticket view
+      queryClient.invalidateQueries({ queryKey: ["userTickets"] });
+
+      // Show notification
+      toast.success(`New reply from ${data.adminName}: ${data.replyPreview}`, {
+        duration: 4000,
+        icon: "💬",
+      });
     };
 
     socket.on("admin-reply", handleAdminReply);
@@ -138,7 +140,7 @@ export default function CustomerTicketsPage() {
     return () => {
       socket.off("admin-reply", handleAdminReply);
     };
-  }, [selectedTicket, queryClient]);
+  }, [queryClient]);
 
   const handleViewTicket = (ticket) => {
     navigate(`/my-tickets/${ticket._id}`);
