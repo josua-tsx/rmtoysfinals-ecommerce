@@ -2298,7 +2298,7 @@ export const searchOrders = async (req, res, next) => {
 
       try {
         const decoded = jwt.verify(otpToken, process.env.ACCESS_TOKEN_SECRET);
-        if (!decoded.verified || decoded.phoneNumber !== phoneNumber) {
+        if (!decoded.verified || decoded.identifier !== phoneNumber) {
           return next(handleMakeError(400, "Phone verification failed. Please verify again."));
         }
       } catch (jwtError) {
@@ -2381,7 +2381,7 @@ export const validateGuestOrder = async (req, res, next) => {
 
     try {
       const decoded = jwt.verify(otpToken, process.env.ACCESS_TOKEN_SECRET);
-      if (!decoded.verified || decoded.phoneNumber !== guestUser?.phone) {
+      if (!decoded.verified || decoded.identifier !== guestUser?.phone) {
         return next(handleMakeError(400, "Phone verification failed. Please verify again."));
       }
     } catch (jwtError) {

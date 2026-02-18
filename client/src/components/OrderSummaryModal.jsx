@@ -442,7 +442,15 @@ export default function OrderSummaryModal({ onClose }) {
                     {!currentUser?.isPhoneVerified &&
                       currentUser?.phoneNumber && (
                         <span className="text-xs text-red-600">
-                          Verification required for checkout. Go to Profile.
+                          Verification required for checkout. You don&apos;t
+                          have a phone number. Update it in your
+                          <Link
+                            to={"/profile"}
+                            className="underline text-blue-700"
+                          >
+                            {" "}
+                            Profile Page
+                          </Link>
                         </span>
                       )}
                   </div>
