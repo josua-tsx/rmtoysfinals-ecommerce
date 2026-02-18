@@ -8,6 +8,11 @@ export const addToCart = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
+    const product = await Product.findById(productId);
+    if (!product || product.isArchived) {
+      return next(handleMakeError(400, "Product not found"));
+    }
+
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
@@ -142,7 +147,7 @@ export const getSelectedCart = async (req, res, next) => {
     }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages taxStatus",
+        "productName price points productDescription productImages taxStatus isArchived",
       populate: [
         {
           path: "stocks",
@@ -159,7 +164,7 @@ export const getSelectedCart = async (req, res, next) => {
       return res.status(200).json([]);
     }
 
-    const selectedItems = carts.items.filter((item) => item.isSelected);
+    const selectedItems = carts.items.filter((item) => item.isSelected && item.productId && !item.productId.isArchived);
 
     res.status(200).json(selectedItems);
   } catch (error) {

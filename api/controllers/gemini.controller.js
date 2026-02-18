@@ -605,7 +605,7 @@ export const searchProductsWithAI = async (req, res) => {
     // ========================================================================
     // STEP 3: Fetch Products from Database
     // ========================================================================
-    const products = await Product.find({ status: "published" })
+    const products = await Product.find({ status: "published", isArchived: { $ne: true } })
       .populate("category", "categoryName")
       .select("productName price productDescription productDetails productImages category sold")
       .lean();

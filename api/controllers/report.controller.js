@@ -155,7 +155,7 @@ export const getOrdersReportPdf = async (req, res, next) => {
 export const getInventoryReportPdf = async (req, res, next) => {
   try {
     // Fetch all products with stock info
-    const products = await Product.find({ status: 'published' })
+    const products = await Product.find({ status: 'published', isArchived: { $ne: true } })
       .populate('category', 'categoryName')
       .populate('stocks', 'quantity')
       .sort({ 'stocks.quantity': 1 })
