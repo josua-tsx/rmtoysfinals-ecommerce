@@ -274,7 +274,7 @@ export const handleChat = async (req, res) => {
     // 3. FAQs - Common questions and answers
     // 4. StoreInfo - Owner, policies, contact info (NEW!)
     const [products, categories, faqs, storeInfo] = await Promise.all([
-      Product.find({ status: "published" })
+      Product.find({ status: "published", isArchived: { $ne: true } })
         .select("productName price productDescription")
         .limit(20)
         .lean(),

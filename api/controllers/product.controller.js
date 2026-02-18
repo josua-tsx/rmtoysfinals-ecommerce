@@ -377,7 +377,7 @@ export const getBestSoldProducts = async (req, res, next) => {
     const sortOptions = { sold: -1 }; // Sort by sold in descending order
 
     // Find the top 4 products, populated with supplier, category, stocks, and reviews
-    const bestSoldProducts = await Product.find({ status: "published" })
+    const bestSoldProducts = await Product.find({ status: "published", isArchived: false })
       .populate({
         path: "supplier",
         select: "supplierName",
@@ -410,7 +410,7 @@ export const getBestRatedProducts = async (req, res, next) => {
     // But since we can't calculate average directly in the query without aggregation,
     // we will fetch products and manually calculate the average rating afterward.
 
-    const bestRatedProducts = await Product.find({ status: "published" })
+    const bestRatedProducts = await Product.find({ status: "published", isArchived: { $ne: true } })
       .populate({
         path: "supplier",
         select: "supplierName", // Populate supplierName
@@ -453,6 +453,7 @@ export const getBestRatedProducts = async (req, res, next) => {
 export const mostReviewsProducts = async (req, res, next) => {
   try {
     const topReviewedProducts = await Product.aggregate([
+      { $match: { isArchived: { $ne: true } } },
       { $unwind: "$reviews" }, // Unwind the reviews array to work with individual reviews
       {
         $group: {
@@ -538,6 +539,36 @@ export const restoreProduct = async (req, res, next) => {
 
     if (!product.isArchived) {
       return next(handleMakeError(400, "Product is not archived"));
+    }
+
+    // Validate that category and supplier are active before restoring
+    const archivedDeps = [];
+
+    if (product.category) {
+      const category = await Category.findById(product.category);
+      if (!category) {
+        archivedDeps.push("Category no longer exists");
+      } else if (category.isArchived) {
+        archivedDeps.push(`Category "${category.categoryName}" is archived`);
+      }
+    }
+
+    if (product.supplier) {
+      const supplier = await Supplier.findById(product.supplier);
+      if (!supplier) {
+        archivedDeps.push("Supplier no longer exists");
+      } else if (supplier.isArchived) {
+        archivedDeps.push(`Supplier "${supplier.supplierName}" is archived`);
+      }
+    }
+
+    if (archivedDeps.length > 0) {
+      return next(
+        handleMakeError(
+          400,
+          `Cannot restore product. Restore these first: ${archivedDeps.join(", ")}`
+        )
+      );
     }
 
     await Product.findByIdAndUpdate(productId, { isArchived: false });
@@ -690,6 +721,14 @@ export const editProduct = async (req, res, next) => {
       }
     }
 
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) {
+      return next(handleMakeError(400, "Product Not Found!"));
+    }
+    if (existingProduct.isArchived) {
+      return next(handleMakeError(400, "Cannot edit an archived product. Restore it first."));
+    }
+
     const updateProduct = await Product.findByIdAndUpdate(
       id,
       {
@@ -785,7 +824,7 @@ export const getSingleProduct = async (req, res, next) => {
         select: "vatPercent vatValue",
       });
 
-    if (!getSingleProduct)
+    if (!getSingleProduct || getSingleProduct.isArchived)
       return next(handleMakeError(400, "Product not found"));
 
     res.status(200).json(getSingleProduct);
@@ -925,6 +964,10 @@ export const toggleBestProduct = async (req, res, next) => {
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.isArchived) {
+      return res.status(400).json({ message: "Cannot mark an archived product as best product. Restore it first." });
     }
 
     if (!product.isBestProduct) {

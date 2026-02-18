@@ -445,6 +445,9 @@ export const getStocks = async (req, res, next) => {
       },
       { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
 
+      // Exclude stocks for archived products
+      { $match: { "product.isArchived": { $ne: true } } },
+
       {
         $lookup: {
           from: "suppliers",
@@ -523,13 +526,17 @@ export const getStocks = async (req, res, next) => {
 
 export const getStockLevels = async (req, res, next) => {
   try {
+    // Helper to filter out stocks for archived products
+    const filterArchived = (stocks) =>
+      stocks.filter((s) => s.product && !s.product.isArchived);
+
     // Query for stocks based on the stock levels
     const highStock = await Stocks.find({
       quantity: { $gte: 50 },
     })
       .populate({
         path: "product",
-        select: "productImages productName",
+        select: "productImages productName isArchived",
       })
       .sort({ createdAt: -1 });
 
@@ -538,7 +545,7 @@ export const getStockLevels = async (req, res, next) => {
     })
       .populate({
         path: "product",
-        select: "productImages productName",
+        select: "productImages productName isArchived",
       })
       .sort({ createdAt: -1 });
 
@@ -546,22 +553,22 @@ export const getStockLevels = async (req, res, next) => {
     const lowStock = await Stocks.find({ quantity: { $gte: 1, $lt: 30 } }) 
       .populate({
         path: "product",
-        select: "productImages productName",
+        select: "productImages productName isArchived",
       })
       .sort({ createdAt: -1 });
 
     const outOfStock = await Stocks.find({ quantity: 0 })
       .populate({
         path: "product",
-        select: "productImages productName",
+        select: "productImages productName isArchived",
       })
       .sort({ createdAt: -1 });
 
     res.status(200).json({
-      highStock,
-      mediumStock,
-      lowStock,
-      outOfStock,
+      highStock: filterArchived(highStock),
+      mediumStock: filterArchived(mediumStock),
+      lowStock: filterArchived(lowStock),
+      outOfStock: filterArchived(outOfStock),
     });
   } catch (error) {
     next(error);

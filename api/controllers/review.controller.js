@@ -5,6 +5,12 @@ import Product from "../models/product.model.js";
 import { logAuditTrail } from "./audit.controller.js";
 import { hasProfanity, hasThreat } from "../utils/profanityFilter.js";
 
+// Helper: get IDs of archived products to exclude their reviews
+const getArchivedProductIds = async () => {
+  const archivedProducts = await Product.find({ isArchived: true }).select('_id').lean();
+  return archivedProducts.map(p => p._id);
+};
+
 export const userAddReview = async (req, res, next) => {
   const userId = req.user.id;
   const { productId } = req.params;
@@ -42,6 +48,10 @@ export const userAddReview = async (req, res, next) => {
     }
 
     const findProduct = await Product.findById(productId);
+
+    if (!findProduct || findProduct.isArchived) {
+      return next(handleMakeError(400, "Product not found"));
+    }
 
     if (!findProduct.userId.includes(userId)) {
       return next(
@@ -101,7 +111,8 @@ export const getReviews = async (req, res, next) => {
     const { page = 1, limit = 10, search } = req.query;
     const skip = (page - 1) * limit;
 
-    const query = {};
+    const archivedProductIds = await getArchivedProductIds();
+    const query = { productId: { $nin: archivedProductIds } };
 
     if (search) {
         query.$or = [
@@ -137,7 +148,8 @@ export const getReviews = async (req, res, next) => {
 
 export const getRecentReview = async (req, res, next) => {
   try {
-    const reviews = await Review.findOne()
+    const archivedProductIds = await getArchivedProductIds();
+    const reviews = await Review.findOne({ productId: { $nin: archivedProductIds } })
       .populate({
         path: "userId",
         select: "avatar username email",
@@ -255,12 +267,14 @@ export const getSingleReview = async (req, res, next) => {
     const review = await Review.findOne({
       _id: reviewId,
       userId: userId,
+    }).populate({
+      path: "productId",
+      select: "isArchived",
     });
 
-    // // If the review is not found or doesn't belong to the logged-in user, return an error
-    // if (!review) {
-    //   return next(handleMakeError(400, "You can only edit yours!"));
-    // }
+    if (!review || review.productId?.isArchived) {
+      return next(handleMakeError(400, "Review not found"));
+    }
 
     return res.status(200).json(review);
   } catch (error) {
@@ -270,7 +284,8 @@ export const getSingleReview = async (req, res, next) => {
 
 export const getAllOneStarReview = async (req, res, next) => {
   try {
-    const review = await Review.find({ rating: 1 }).populate({
+    const archivedProductIds = await getArchivedProductIds();
+    const review = await Review.find({ rating: 1, productId: { $nin: archivedProductIds } }).populate({
       path: "userId",
       select: "avatar username email",
     });
@@ -282,7 +297,8 @@ export const getAllOneStarReview = async (req, res, next) => {
 
 export const getAllTwoStarReview = async (req, res, next) => {
   try {
-    const review = await Review.find({ rating: 2 }).populate({
+    const archivedProductIds = await getArchivedProductIds();
+    const review = await Review.find({ rating: 2, productId: { $nin: archivedProductIds } }).populate({
       path: "userId",
       select: "avatar username email",
     });
@@ -294,7 +310,8 @@ export const getAllTwoStarReview = async (req, res, next) => {
 
 export const getAllThreeStarReview = async (req, res, next) => {
   try {
-    const review = await Review.find({ rating: 3 }).populate({
+    const archivedProductIds = await getArchivedProductIds();
+    const review = await Review.find({ rating: 3, productId: { $nin: archivedProductIds } }).populate({
       path: "userId",
       select: "avatar username email",
     });
@@ -306,7 +323,8 @@ export const getAllThreeStarReview = async (req, res, next) => {
 
 export const getAllFourStarReview = async (req, res, next) => {
   try {
-    const review = await Review.find({ rating: 4 }).populate({
+    const archivedProductIds = await getArchivedProductIds();
+    const review = await Review.find({ rating: 4, productId: { $nin: archivedProductIds } }).populate({
       path: "userId",
       select: "avatar username email",
     });
@@ -318,7 +336,8 @@ export const getAllFourStarReview = async (req, res, next) => {
 
 export const getAllFiveStarReview = async (req, res, next) => {
   try {
-    const review = await Review.find({ rating: 5 }).populate({
+    const archivedProductIds = await getArchivedProductIds();
+    const review = await Review.find({ rating: 5, productId: { $nin: archivedProductIds } }).populate({
       path: "userId",
       select: "avatar username email",
     });
