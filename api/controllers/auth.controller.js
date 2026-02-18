@@ -123,55 +123,21 @@ export const signin = async (req, res, next) => {
 
     if (validUser && (await validUser.comparePassword(password))) {
       const { accessToken } = generateTokens(validUser._id);
-      // await storeRefreshToken(validUser._id, refreshToken);
       setCookies(res, accessToken);
 
-      // EXCLUDING THE PASSWORD WITH THIS METHOD INSTEAD OF .select("-password") is wild
-      // JOKES ON YOU I CANT USE .select("-password") in this messy code because if i put that after User.FindOne -
-      // now i cant compare my password because it wouldnt work because there is no password to compare
+      // Update isLoggedIn for staff/admin BEFORE sending response
+      if (validUser.role === "validatorStaff" || validUser.role === "admin") {
+        await User.findByIdAndUpdate(
+          validUser._id,
+          { $set: { isLoggedIn: true } },
+          { new: true }
+        );
+      }
+
       const { password: pass, ...rest } = validUser._doc;
-
-      // for mobile app
-      // res.json({
-      //   accessToken,
-      //   user: rest,
-      // });
-
       res.json(rest);
     } else {
       next(handleMakeError(400, "Invalid Credentials"));
-    }
-
-    if (validUser.role === "validatorStaff" || validUser.role === "admin") {
-      const validUserEmail = validUser.email;
-      const validUserRole = validUser.role;
-
-      await User.findByIdAndUpdate(
-        validUser._id,
-        {
-          $set: {
-            isLoggedIn: true,
-          },
-        },
-        { new: true }
-      );
-
-      // await sendEmail(
-      //   ADMIN_EMAIL,
-      //   "attendance"`${validUserEmail} (${validUserRole}) logged in on ${new Date().toLocaleString(
-      //     "en-US",
-      //     {
-      //       weekday: "long",
-      //       year: "numeric",
-      //       month: "long",
-      //       day: "numeric",
-      //       hour: "2-digit",
-      //       minute: "2-digit",
-      //       second: "2-digit",
-      //       timeZoneName: "short",
-      //     }
-      //   )}`
-      // );
     }
   } catch (error) {
     next(error);

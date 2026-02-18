@@ -67,32 +67,32 @@ router.put(`/add-reason/:orderId`, requireAuth, requireAdmin, addReason);
 
 router.get(`/get-userOrder`, requireAuth, getUserOrder);
 
-router.get(`/get-all-orders`, getAllOrder);
+router.get(`/get-all-orders`, requireAuth, getAllOrder);
 
-router.get(`/get-orders`, getUsersOrder);
+router.get(`/get-orders`, requireAuth, getUsersOrder);
 
-router.get(`/get-guest-orders`, getGuestOrder);
+router.get(`/get-guest-orders`, requireAuth, getGuestOrder);
 
-router.get(`/get-successOrder`, getAllSuccess);
+router.get(`/get-successOrder`, requireAuth,  getAllSuccess);
 
-router.get(`/get-failedCancelled`, getAllFailed);
+router.get(`/get-failedCancelled`, requireAuth,  getAllFailed);
 
-router.get(`/get-refundedCancelled`, getAllRefunded);
+router.get(`/get-refundedCancelled`, requireAuth, getAllRefunded);
 
-router.get(`/get-cancelled`, getAllCancelled);
+router.get(`/get-cancelled`, requireAuth,  getAllCancelled);
 
 // Validator Dashboard - Orders needing payment validation
 router.get(`/get-pending-payments`, requireAuth, requireAdmin, getPendingPayments);
 
 // router.get(`/monthly/sales`, getMonthlySales);
 
-router.get(`/latest/success`, getLatestSuccessOrder);
+router.get(`/latest/success`, requireAuth,  getLatestSuccessOrder);
 
-router.get(`/latest/failed`, getLatestFailedOrder);
+router.get(`/latest/failed`, requireAuth, getLatestFailedOrder);
 
-router.get(`/latest/refunded`, getLatestRefundedOrder);
+router.get(`/latest/refunded`, requireAuth, getLatestRefundedOrder);
 
-router.get(`/latest/cancelled`, getLatestCancelledOrder);
+router.get(`/latest/cancelled`, requireAuth,  getLatestCancelledOrder);
 
 router.post("/search-order", optionalAuth, guestOrderLimiter, searchOrders);
 
@@ -110,7 +110,7 @@ router.put(
   cancelSuccessTransact
 );
 
-router.put(`/refund-order`, adminOrderRefund);
+router.put(`/refund-order`, requireAuth, adminOrderRefund);
 
 router.put(`/user/cancel-order`, requireAuth, userCancelOrder);
 
@@ -124,22 +124,22 @@ router.get(`/get-userRefunded`, requireAuth, getUserRefund);
 
 router.get(`/get-userFailed`, requireAuth, getUserFailed);
 
-router.get("/get-untracked-orders", getAllUntracked)
+router.get("/get-untracked-orders", requireAuth, getAllUntracked)
 
 router.put(
   `/:orderId/status`, 
-  optionalAuth,
+  requireAuth,
   requireAdmin,
   validateResource(updateOrderStatusSchema),
   updateDeliveryStatus
 ); 
 
-router.put("/update-track-status/:orderId", updateTrackStatus)
+router.put("/update-track-status/:orderId", requireAuth, updateTrackStatus)
 
 router.delete("/delete-orders", requireAuth, requireAdmin, deleteAllOrders)
 
 // router.get(`/:orderId`, requireAuth, requireAdmin , getSingleUserOrder);
-router.get(`/:orderId`, getSingleUserOrder);
+router.get(`/:orderId`, optionalAuth, getSingleUserOrder);
 
 router.post("/track-order/:orderId", trackSingleOrder)
 

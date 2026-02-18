@@ -755,29 +755,31 @@ export const editProduct = async (req, res, next) => {
       return next(handleMakeError(400, "Product Not Found!"));
     }
 
-    const stocksToUpdate = await Stocks.findOne({ product: id });
+    const stocksToUpdate = await Stocks.find({ product: id });
 
-    if (stocksToUpdate) {
+    if (stocksToUpdate.length > 0) {
       // Use the product's VAT (which we just updated)
       const vatPercent = updateProduct.vat?.vatPercent || 0;
       const vatAmountPerUnit = price * (vatPercent / 100);
       const newVatShopPrice = price + vatAmountPerUnit;
-      const newVatToRemit = vatAmountPerUnit * stocksToUpdate.quantity;
 
-      await Stocks.findByIdAndUpdate(
-        stocksToUpdate._id,
-        {
-          $set: {
-            shopPrice: price,
-            vatShopPrice: newVatShopPrice,
-            vatToRemit: newVatToRemit,
-            vat: updateProduct.vat, // Sync VAT from product
+      const updatePromises = stocksToUpdate.map((stock) => {
+        const newVatToRemit = vatAmountPerUnit * stock.quantity;
+        return Stocks.findByIdAndUpdate(
+          stock._id,
+          {
+            $set: {
+              shopPrice: price,
+              vatShopPrice: newVatShopPrice,
+              vatToRemit: newVatToRemit,
+              vat: updateProduct.vat, // Sync VAT from product
+            },
           },
-        },
-        {
-          new: true,
-        }
-      );
+          { new: true }
+        );
+      });
+
+      await Promise.all(updatePromises);
     }
 
     await logAuditTrail({

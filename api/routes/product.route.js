@@ -68,7 +68,7 @@ router.patch(
 router.put(`/edit-product/:id`, requireAuth, requireAdmin, validateResource(updateProductSchema), editProduct);
 router.get(`/get-product/:id`, getSingleProduct);
 
-router.put(`/add-to-slider/:productId`, toggleBestProduct)
+router.put(`/add-to-slider/:productId`, requireAuth, requireAdmin, toggleBestProduct)
 router.get(`/get-bestProducts`, getBestProducts)
 
 
