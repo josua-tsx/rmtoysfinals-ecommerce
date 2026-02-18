@@ -43,7 +43,7 @@ export const requireAuth = async (req, res, next) => {
 
 
 export const requireAdmin = (req, res, next) => {
-    if (req.user && req.user.role === "admin" || req.user.role === "validatorStaff") {
+    if (req.user && (req.user.role === "admin" || req.user.role === "validatorStaff")) {
         next()
     } else {
         return next(handleMakeError(401, "Only admin can access this"))

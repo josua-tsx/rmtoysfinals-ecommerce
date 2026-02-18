@@ -1,5 +1,5 @@
 import express from "express";
-import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
+import { optionalAuth, requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 import { authLimiter } from "../middleware/rateLimiter.js";
 import {
   adminUpdateUserStatus,
@@ -22,9 +22,9 @@ const router = express.Router();
 
 router.post(`/update/:id`, requireAuth, validateResource(updateUserSchema), updateProfile);
 router.post(`/onboarding`, requireAuth, authLimiter, validateResource(onboardingSchema), completeOnboarding);
-router.get(`/getAll`, getAll);
-router.get(`/getAllCustomer`, getAllCustomer);
-router.get(`/getAllWorkers`, getAllWorkers);
+router.get(`/getAll`, requireAuth, requireAdmin, getAll);
+router.get(`/getAllCustomer`, requireAuth, requireAdmin, getAllCustomer);
+router.get(`/getAllWorkers`, requireAuth, requireAdmin, getAllWorkers);
 router.get(`/check-admin`, checkIfAdminExists);
 
 router.delete(
@@ -52,7 +52,7 @@ router.put(
   adminUpdateUserStatus
 );
 
-router.get(`/get-user/:userId`, getSingleUser);
+router.get(`/get-user/:userId`, optionalAuth, getSingleUser);
 
 export default router;
 

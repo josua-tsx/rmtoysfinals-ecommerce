@@ -19,6 +19,10 @@ import {
 
 const router = express.Router();
 
+// Admin routes (must be before /:ticketId to avoid conflicts)
+router.get("/", requireAuth, requireAdmin, getAllTickets);
+router.get("/stats/overview", requireAuth, requireAdmin, getTicketStats);
+
 // Public routes
 router.post("/create", optionalAuth, createTicket);
 router.get("/user/:email", getUserTickets); // For guests to check by email
@@ -28,9 +32,7 @@ router.get("/user", requireAuth, getUserTickets);
 router.get("/:ticketId", optionalAuth, getSingleTicket);
 router.post("/:ticketId/customer-reply", requireAuth, customerReplyToTicket);
 
-// Admin routes
-router.get("/", requireAuth, requireAdmin, getAllTickets);
-router.get("/stats/overview", requireAuth, requireAdmin, getTicketStats);
+// Admin routes (with params)
 router.put("/:ticketId/status", requireAuth, requireAdmin, updateTicketStatus);
 router.post("/:ticketId/reply", requireAuth, requireAdmin, addReplyToTicket);
 router.put("/:ticketId/assign", requireAuth, requireAdmin, assignTicket);
