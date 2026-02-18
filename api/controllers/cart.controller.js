@@ -77,7 +77,7 @@ export const getCarts = async (req, res, next) => {
     const carts = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages discount taxStatus",
+        "productName price points productDescription productImages discount taxStatus isArchived",
       populate: [
         {
           path: "stocks",
@@ -101,8 +101,8 @@ export const getCarts = async (req, res, next) => {
       });
     }
 
-    // Defensive check: filter out items with null productId (deleted products)
-    const validItems = carts.items.filter((item) => item.productId);
+    // Defensive check: filter out items with null productId (deleted products) and archived products
+    const validItems = carts.items.filter((item) => item.productId && !item.productId.isArchived);
 
     // Calculate totals for the ENTIRE cart (not just the page)
     const grandTotal = validItems.reduce((total, item) => {
