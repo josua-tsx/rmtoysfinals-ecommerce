@@ -130,17 +130,22 @@ export default function AdminProductOverview() {
 
   //   GET ALL REVIEWS
 
+  //   GET ALL REVIEWS (Count only)
+
   const {
-    data: allReviews = [],
+    data: reviewsData,
     isPending: isReviewsPending,
     isError: isReviewsError,
   } = useQuery({
     queryKey: ["allReviews"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/review/get-reviews`);
+      // We only need the total count for the dashboard card
+      const res = await axiosInstance.get(`/review/get-reviews?limit=1`);
       return res.data;
     },
   });
+
+  const totalReviews = reviewsData?.total || 0;
 
   // Construct the pieData
   const pieData = (allCategories || []).map((category) => {
@@ -193,7 +198,7 @@ export default function AdminProductOverview() {
         ) : (
           <AdminStatCard
             title={"TOTAL PRODUCTS REVIEWS"}
-            value={allReviews.length > 0 ? allReviews.length : 0}
+            value={totalReviews}
           />
         )}
       </div>
