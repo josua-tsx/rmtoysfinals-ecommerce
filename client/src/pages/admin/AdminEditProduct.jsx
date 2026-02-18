@@ -106,8 +106,9 @@ export default function AdminEditProducts() {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/category/get-categories`);
-      return res.data;
+      // Fetching with a high limit to get all categories for the dropdown
+      const res = await axiosInstance.get(`/category/get-categories?limit=100`);
+      return res.data.categories || [];
     },
   });
 
