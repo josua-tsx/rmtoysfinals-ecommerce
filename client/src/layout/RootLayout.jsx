@@ -13,6 +13,7 @@ import TopProgressBar from "../reusable/TopProgressBar";
 import ChatWidget from "../components/ChatWidget";
 import { useSocketNotifications } from "../hooks/useSocketNotifications";
 import UserOnboardingModal from "../components/modals/UserOnboardingModal";
+import CookieConsent from "../reusable/CookieConsent";
 
 const RootLayout = () => {
   // 🧠 User store — keep checkAuth to populate Zustand for other components
@@ -96,6 +97,7 @@ const RootLayout = () => {
           },
         }}
       />
+      <CookieConsent />
     </div>
   );
 };
