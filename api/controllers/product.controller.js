@@ -956,7 +956,10 @@ export const toggleBestProduct = async (req, res, next) => {
 
 export const getBestProducts = async (req, res, next) => {
   try {
-    const product = await Product.find({ isBestProduct: true });
+    const product = await Product.find({
+      isBestProduct: true,
+      isArchived: false,
+    });
     if (product.length === 0) return res.status(200).json([]);
     res.status(200).json(product);
   } catch (error) {
