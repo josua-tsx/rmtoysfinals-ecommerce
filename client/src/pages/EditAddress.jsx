@@ -318,6 +318,7 @@ const EditAddress = ({ address, onClose }) => {
                         : "Select City first"
                     }
                     disabled={!selectedCityCode}
+                    maxLength={100}
                   />
                 )}
                 {errors.barangay && (
@@ -335,6 +336,7 @@ const EditAddress = ({ address, onClose }) => {
                 placeholder="Street Name, Building, House No."
                 type="text"
                 id="streetBuildingHouseNum"
+                maxLength={200}
               />
               {errors.streetBuildingHouseNum && (
                 <p className="text-red-500 text-xs mt-1">

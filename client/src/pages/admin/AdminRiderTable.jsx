@@ -299,6 +299,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
               placeholder="Ex: Brendon Mae"
               {...register("riderName")}
               error={errors.riderName}
+              maxLength={100}
             />
           </div>
           <div className="flex flex-col gap-2 w-full justify-between">
@@ -314,6 +315,7 @@ export default function AdminRiderTable({ enableMultiDel }) {
               placeholder="Ex: 09*******83"
               {...register("riderPhoneNumber")}
               error={errors.riderPhoneNumber}
+              maxLength={11}
             />
           </div>
         </div>

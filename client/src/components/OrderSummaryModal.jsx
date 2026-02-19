@@ -394,6 +394,7 @@ export default function OrderSummaryModal({ onClose }) {
                         currentUser?.fullName ? "" : "border-red-700"
                       } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary`}
                       value={currentUser?.fullName || ""}
+                      maxLength={100}
                       // disabled
                     />
                     {!currentUser?.fullName && (
@@ -418,6 +419,7 @@ export default function OrderSummaryModal({ onClose }) {
                           currentUser?.phoneNumber ? "" : "border-red-700"
                         } border-gray-300 outline-none rounded-md focus:ring-primary focus:border-primary pr-20`} // Added pr-20 for space for badge
                         value={currentUser?.phoneNumber || ""}
+                        maxLength={11}
                         readOnly // Make it read-only if it's coming from profile
                         // disabled
                       />
@@ -469,6 +471,7 @@ export default function OrderSummaryModal({ onClose }) {
                       activeAddress?.fullAddress ? "" : "border-red-700"
                     } border-gray-300 rounded-md outline-none focus:ring-primary focus:border-primary`}
                     value={activeAddress?.fullAddress || ""}
+                    maxLength={200}
                     // disabled
                   />
                   {!activeAddress?.fullAddress && (
@@ -565,6 +568,7 @@ export default function OrderSummaryModal({ onClose }) {
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full p-2 border border-gray-300 resize-none rounded-md outline-none focus:ring-primary focus:border-primary"
                 rows="3"
+                maxLength={500}
                 placeholder="Special instructions, delivery notes, etc."
               ></textarea>
             </div>

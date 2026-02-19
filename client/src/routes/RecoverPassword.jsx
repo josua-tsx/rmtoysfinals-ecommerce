@@ -16,9 +16,10 @@ export default function RecoverPassword() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = useForm({
     resolver: zodResolver(forgetPasswordSchema),
+    mode: "onChange",
     defaultValues: {
       email: "",
     },
@@ -87,7 +88,9 @@ export default function RecoverPassword() {
             placeholder="Ex: example@domain.com"
             {...register("email")}
             error={errors.email}
+            isValid={!errors.email && dirtyFields.email}
             required
+            maxLength={254}
           />
 
           <div className="flex justify-center w-full">

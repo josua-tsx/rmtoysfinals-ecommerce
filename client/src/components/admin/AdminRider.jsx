@@ -118,6 +118,7 @@ export default function AdminRider() {
                 placeholder="Ex: Juan Dela Cruz"
                 {...register("riderName")}
                 error={errors.riderName}
+                maxLength={100}
                 required
               />
             </div>
@@ -134,6 +135,7 @@ export default function AdminRider() {
                 placeholder="Ex: 0917XXXXXXX"
                 {...register("riderPhoneNumber")}
                 error={errors.riderPhoneNumber}
+                maxLength={11}
                 required
               />
             </div>

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import { RiVerifiedBadgeFill } from "react-icons/ri";
+import { useUserStore } from "../stores/useUserStore";
 
 /**
  * Reusable OTP verification widget.
@@ -21,6 +22,9 @@ export default function VerifyOtpWidget({
   onVerified,
   className = "",
 }) {
+  const queryClient = useQueryClient();
+  const checkAuth = useUserStore((state) => state.checkAuth);
+
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpExpiry, setOtpExpiry] = useState(0);
@@ -90,7 +94,7 @@ export default function VerifyOtpWidget({
       });
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // Now confirm identity with the server
       confirmIdentityMutation({ otpToken: data.otpToken });
     },
@@ -115,6 +119,9 @@ export default function VerifyOtpWidget({
         setOtpCode("");
         if (expiryRef.current) clearInterval(expiryRef.current);
         onVerified?.();
+        // Update user state after successful verification
+        checkAuth();
+        queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       },
       onError: (error) => {
         toast.error(

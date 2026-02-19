@@ -1,5 +1,7 @@
 import express from "express";
 import { requireAuth, requireAdmin } from "../middleware/auth.middleware.js";
+import { validateResource } from "../middleware/validateResource.js";
+import { addReviewSchema, editReviewSchema } from "../schema/review.schema.js";
 import {
   adminDeleteReview,
   getAllFiveStarReview,
@@ -17,7 +19,7 @@ import {
 
 const router = express.Router();
 
-router.post(`/add-review/:productId`, requireAuth, userAddReview);
+router.post(`/add-review/:productId`, requireAuth, validateResource(addReviewSchema), userAddReview);
 router.get(`/get-reviews`, getReviews);
 router.delete(`/delete/:reviewId`, requireAuth, userDeleteReview);
 router.delete(
@@ -26,7 +28,7 @@ router.delete(
   requireAdmin,
   adminDeleteReview
 );
-router.put(`/edit/:reviewId`, requireAuth, userEditReview);
+router.put(`/edit/:reviewId`, requireAuth, validateResource(editReviewSchema), userEditReview);
 router.get(`/singleReview/:reviewId`, requireAuth, getSingleReview);
 
 router.get(`/get-latest-review`, getRecentReview);

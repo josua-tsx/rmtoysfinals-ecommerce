@@ -24,15 +24,12 @@ export const createTicket = async (req, res, next) => {
       images,
     } = req.body;
 
-    // Validation
-    if (!email || !name || !issueType || !subject || !message) {
-      return next(
-        handleMakeError(
-          400,
-          "Please provide all required fields: email, name, issueType, subject, and message"
-        )
-      );
-    }
+    /* 
+      VALIDATION REFACTOR NOTE:
+      Manual validations for email, name, issueType, subject, and message 
+      have been removed. These are now handled by Zod middleware 
+      in routes/ticket.route.js
+    */
 
     // Get userId if user is authenticated
     const userId = req.user?._id || null;
@@ -179,7 +176,7 @@ export const getAllTickets = async (req, res, next) => {
 export const getUserTickets = async (req, res, next) => {
   try {
     const userId = req.user?._id;
-    const { email } = req.query;
+    const { email, search } = req.query;
 
     if (!userId && !email) {
       return next(
@@ -191,7 +188,20 @@ export const getUserTickets = async (req, res, next) => {
     }
 
     // Build filter
-    const filter = userId ? { userId } : { email: email.toLowerCase() };
+    let filter = userId ? { userId } : { email: email.toLowerCase() };
+
+    if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
+      filter.$or = [
+        { subject: searchRegex },
+        { issueType: searchRegex },
+      ];
+
+      // If search is a valid ObjectId, add it to the search criteria
+      if (search.match(/^[0-9a-fA-F]{24}$/)) {
+        filter.$or.push({ _id: search });
+      }
+    }
 
     const tickets = await Ticket.find(filter)
       .sort({ createdAt: -1 })

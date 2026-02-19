@@ -747,28 +747,13 @@ export const placeOrderGcashQR = async (req, res, next) => {
   session.startTransaction();
 
   try {
-    // Validate order items
-    if (!Array.isArray(orderItems) || orderItems.length === 0) {
-      await session.abortTransaction();
-      return next(handleMakeError(400, "Invalid or empty products array"));
-    }
+    /*
+      VALIDATION NOTE:
+      Order items array check and quantity limits (<=0 or >5) 
+      are now handled by Zod middleware.
+    */
 
-    // Validate stock and quantities
     for (const item of orderItems) {
-      if (item.quantity <= 0) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, "Item quantity must be greater than zero")
-        );
-      }
-
-      if (item.quantity > 5) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, "Maximum 5 items per product allowed")
-        );
-      }
-
       const productStock = await Stocks.findOne({
         product: item.productId,
       }).session(session);
@@ -780,50 +765,18 @@ export const placeOrderGcashQR = async (req, res, next) => {
       }
     }
 
-    // Validate GCash QR payment details
-    if (paymentMethod === "GcashQR") {
-      if (
-        !gcashQRmethod?.gcashPhoneNumber ||
-        !gcashQRmethod?.proofOfPaymentImage || !gcashQRmethod.gcashName
-      ) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(
-            400,
-            "GCash QR payment requires phone number and proof of payment"
-          )
-        );
-      }
+    /*
+      VALIDATION NOTE:
+      GCash fields and phone/name format validation 
+      are now handled by Zod schema (phMobileSchema).
+    */
 
-      if (gcashQRmethod?.gcashPhoneNumber){
-        const phoneNumberCheck = validatePHMobile(gcashQRmethod?.gcashPhoneNumber);
-        if (!phoneNumberCheck.valid) {
-          return next(handleMakeError(400, phoneNumberCheck.message));
-        }
-      }
 
-      if (gcashQRmethod.gcashName) {
-        const fullNameCheck = validateFullName(gcashQRmethod.gcashName);
-        if (!fullNameCheck.valid) {
-          return next(handleMakeError(400, fullNameCheck.message));
-        }
-      }
-
-    }
-
-    // For guest orders, validate guest information
-    if (!userId) {
-      if (!guestUser?.name || !guestUser?.phone || !guestUser.email) {
-        await session.abortTransaction();
-        return next(
-          handleMakeError(400, "Guest orders require name and phone number")
-        );
-      }
 
      
    
 
-    }
+
 
     // For guest orders, validate guest information
     if (!userId) {

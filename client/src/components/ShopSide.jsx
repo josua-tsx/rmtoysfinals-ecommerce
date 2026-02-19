@@ -204,6 +204,7 @@ export default function ShopSide({
                 : "Search for product name..."
             }
             onChange={handleSearchChange}
+            maxLength={100}
             onKeyDown={(e) => {
               if (isAiMode && e.key === "Enter") {
                 e.preventDefault();

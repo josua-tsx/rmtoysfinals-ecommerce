@@ -12,16 +12,20 @@ import { z } from "zod";
 const restockSchema = z.object({
   supplierPrice: z.coerce
     .number({ required_error: "Supplier price is required" })
-    .min(0, "Price must be positive"),
+    .min(0, "Price must be positive")
+    .max(1000000, "Supplier price cannot exceed 1 Million"),
   shopPrice: z.coerce
     .number({ required_error: "Shop price is required" })
-    .min(0, "Price must be positive"),
+    .min(0, "Price must be positive")
+    .max(1000000, "Shop price cannot exceed 1 Million"),
   shippingPrice: z.coerce
     .number({ required_error: "Shipping price is required" })
-    .min(0, "Price must be positive"),
+    .min(0, "Price must be positive")
+    .max(100000, "Shipping price cannot exceed 100k"),
   quantity: z.coerce
     .number({ required_error: "Quantity is required" })
-    .min(1, "Quantity must be at least 1"),
+    .min(1, "Quantity must be at least 1")
+    .max(1000, "Quantity cannot exceed 1000"),
   dateDelivery: z.string().min(1, "Delivery date is required"),
 });
 
@@ -55,9 +59,10 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
   // VAT from stock
   const selectedVatValue = singleStock?.vat?.vatPercent || null;
 
-  // Calculate derived values
-  const totalCost =
+  // Calculate derived values — clamp to prevent layout-breaking numbers
+  const rawTotalCost =
     Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
+  const totalCost = Math.min(rawTotalCost, 999999999);
   const totalPriceWithVAT =
     Number(shopPrice) +
     Number(shopPrice) * (selectedVatValue ? selectedVatValue / 100 : 0);
@@ -202,6 +207,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               className={`border ${errors.supplierPrice ? "border-red-500" : "border-black"} rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-mono font-bold`}
               type="number"
               min={0}
+              max={1000000}
               id="supplierPrice"
               {...register("supplierPrice")}
             />
@@ -222,6 +228,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               className={`border ${errors.shopPrice ? "border-red-500" : "border-black"} rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-mono font-bold`}
               type="number"
               min={0}
+              max={1000000}
               id="shopPrice"
               step="any"
               {...register("shopPrice")}
@@ -257,6 +264,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               className={`border ${errors.shippingPrice ? "border-red-500" : "border-black"} rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors font-mono font-bold`}
               type="number"
               min={0}
+              max={100000}
               id="shippingPrice"
               {...register("shippingPrice")}
             />
@@ -278,6 +286,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
               type="number"
               id="quantity"
               min={0}
+              max={1000}
               {...register("quantity")}
             />
             {errors.quantity && (
@@ -293,7 +302,7 @@ export default function AdminOrderRestockModal({ singleStock, onClose }) {
             <span className="font-black uppercase text-[10px] tracking-widest text-indigo-700">
               Total Cost Estimate
             </span>
-            <span className="font-mono font-black text-xl text-indigo-900">
+            <span className="font-mono font-black text-xl text-indigo-900 truncate max-w-[200px]">
               ₱{formatPrice(totalCost)}
             </span>
           </div>

@@ -24,13 +24,9 @@ import {
 import app from "../../firebase/firebase";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import ValidatedInput from "../../reusable/ValidatedInput";
-import {
-  emailSchema,
-  fullNameSchema,
-  phMobileSchema,
-} from "../../schemas/common.schema";
+
+import { createTicketSchema } from "../../schemas/ticket.schema";
 
 const ISSUE_TYPES = [
   {
@@ -57,17 +53,7 @@ const ISSUE_TYPES = [
   { value: "Other", label: "Other", icon: HiOutlineChatBubbleLeftEllipsis },
 ];
 
-// Ticket Schema
-const ticketSchema = z.object({
-  name: fullNameSchema,
-  email: emailSchema,
-  phone: phMobileSchema.optional().or(z.literal("")),
-  orderNumber: z.string().optional(),
-  issueType: z.string().min(1, "Please select an issue type"),
-  subject: z.string().min(3, "Subject must be at least 3 characters"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-  priority: z.enum(["Low", "Medium", "High"]),
-});
+// Ticket Schema (REMOVED: Using shared schema)
 
 export default function TicketModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
@@ -82,7 +68,7 @@ export default function TicketModal({ isOpen, onClose }) {
     watch,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(ticketSchema),
+    resolver: zodResolver(createTicketSchema),
     defaultValues: {
       name: user?.fullName || "",
       email: user?.email || "",
@@ -293,6 +279,7 @@ export default function TicketModal({ isOpen, onClose }) {
                     {...register("name")}
                     error={errors.name}
                     placeholder="Your name"
+                    maxLength={100}
                   />
                 </div>
                 <div>
@@ -303,6 +290,7 @@ export default function TicketModal({ isOpen, onClose }) {
                     {...register("email")}
                     error={errors.email}
                     placeholder="your@email.com"
+                    maxLength={100}
                   />
                 </div>
               </div>
@@ -316,6 +304,7 @@ export default function TicketModal({ isOpen, onClose }) {
                     {...register("phone")}
                     error={errors.phone}
                     placeholder="09xxxxxxxxx"
+                    maxLength={13}
                   />
                 </div>
                 <div>
@@ -325,6 +314,7 @@ export default function TicketModal({ isOpen, onClose }) {
                     {...register("orderNumber")}
                     error={errors.orderNumber}
                     placeholder="Order ID"
+                    maxLength={50}
                   />
                 </div>
               </div>
@@ -336,6 +326,7 @@ export default function TicketModal({ isOpen, onClose }) {
                   {...register("subject")}
                   error={errors.subject}
                   placeholder="Brief description of your issue"
+                  maxLength={100}
                 />
               </div>
               {/* Message */}
@@ -349,6 +340,7 @@ export default function TicketModal({ isOpen, onClose }) {
                   className={`w-full border ${
                     errors.message ? "border-red-500" : "border-black"
                   } rounded-[5px] p-2 focus:outline-none focus:border-primary resize-none`}
+                  maxLength={1000}
                   placeholder="Please describe your issue in detail..."
                 />
                 {errors.message && (

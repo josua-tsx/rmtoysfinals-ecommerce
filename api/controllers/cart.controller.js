@@ -240,10 +240,10 @@ export const updateQuantity = async (req, res, next) => {
     const userId = req.user.id;
     const { productId, quantity } = req.body;
 
-    // Validate input
-    if (typeof quantity !== "number" || quantity < 0) {
-      return next(handleMakeError(400, "Quantity must be a positive number"));
-    }
+    // Validate input (REMOVED: Handled by Zod)
+    // if (typeof quantity !== "number" || quantity < 0) {
+    //   return next(handleMakeError(400, "Quantity must be a positive number"));
+    // }
 
     // Check product stock
     const productStocks = await Stocks.findOne({ product: productId });

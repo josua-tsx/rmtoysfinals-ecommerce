@@ -344,6 +344,7 @@ export default function AdminEditProducts() {
                   className="text-lg font-bold"
                   placeholder="Enter product name"
                   required
+                  maxLength={50}
                 />
                 <p className="text-[11px] pt-2  uppercase tracking-tight">
                   (Product name must be 5-50 characters. Double spaces are not
@@ -369,6 +370,7 @@ export default function AdminEditProducts() {
                   className="h-[120px] leading-relaxed"
                   placeholder="Enter product description"
                   required
+                  maxLength={200}
                 />
               </div>
 
@@ -519,6 +521,8 @@ export default function AdminEditProducts() {
                     type="number"
                     className="p-3 rounded-[5px] border border-black outline-none bg-white font-bold"
                     id="price"
+                    min={0}
+                    max={1000000}
                     {...register("price")}
                   />
                   {errors.price && (

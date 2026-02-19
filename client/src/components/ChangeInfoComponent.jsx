@@ -265,6 +265,7 @@ export default function ChangeInfoComponent() {
                     {...register("email")}
                     error={errors.email}
                     placeholder="name@example.com"
+                    maxLength={254}
                   />
                   <div className="">
                     <VerifyOtpWidget
@@ -283,6 +284,7 @@ export default function ChangeInfoComponent() {
                   {...register("fullName")}
                   error={errors.fullName}
                   placeholder="John Doe"
+                  maxLength={100}
                 />
 
                 {/* Username Field */}
@@ -293,6 +295,7 @@ export default function ChangeInfoComponent() {
                   error={errors.username}
                   placeholder="johndoe123"
                   errorText="3-30 characters, no special characters"
+                  maxLength={30}
                 />
                 {/* Phone Number Field */}
                 <div className="space-y-2 flex items-center gap-2 relative">
@@ -304,6 +307,7 @@ export default function ChangeInfoComponent() {
                     error={errors.phoneNumber}
                     placeholder="09xxxxxxxxx"
                     errorText="Must be a valid 11-digit number starting with 09"
+                    maxLength={11}
                   />
                   {currentUser?.phoneNumber && (
                     <div className="">
@@ -345,6 +349,7 @@ export default function ChangeInfoComponent() {
                     placeholder="Enter new password"
                     className="!bg-white"
                     errorText="Must be at least 8 characters with 1 lowercase, 1 uppercase, 1 symbol, and 1 number"
+                    maxLength={128}
                   />
 
                   <div className="flex justify-end pt-2">

@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { FaExclamationCircle } from "react-icons/fa";
+import { FaExclamationCircle, FaCheckCircle } from "react-icons/fa";
 
 /**
  * ValidatedInput
@@ -18,6 +18,7 @@ const ValidatedInput = forwardRef(
       placeholder,
       className = "",
       error, // Error object from react-hook-form
+      isValid = false, // explicit success state
       required = false,
       ...props
     },
@@ -54,7 +55,9 @@ const ValidatedInput = forwardRef(
             className={`w-full outline-none p-3 bg-white border rounded-[5px] transition-all duration-200 ${
               hasError
                 ? "border-red-500 focus:ring-1 focus:ring-red-200"
-                : "border-[#313031] focus:ring-1 focus:ring-indigo-200"
+                : isValid
+                  ? "border-green-500 focus:ring-1 focus:ring-green-200"
+                  : "border-[#313031] focus:ring-1 focus:ring-indigo-200"
             }`}
             {...props}
           />
@@ -63,6 +66,9 @@ const ValidatedInput = forwardRef(
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center transition-all duration-300">
             {hasError && (
               <FaExclamationCircle className="text-red-500 animate-in shake duration-300" />
+            )}
+            {!hasError && isValid && (
+              <FaCheckCircle className="text-green-500 animate-in fade-in duration-300" />
             )}
           </div>
         </div>

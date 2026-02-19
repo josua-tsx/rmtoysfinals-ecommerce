@@ -32,19 +32,19 @@ export const addProduct = async (req, res, next) => {
     Zod middleware located in routes/product.route.js
   */
 
-  // Lowercase labels/values logic is KEPT as it is a transformation (sanitization),
-  // not just pure validation, although Zod could handle this too. 
-  // For now, let's keep the transformation logic here or move to Zod transform later.
-  if (productDetails && Array.isArray(productDetails)) {
-    for (let i = 0; i < productDetails.length; i++) {
-        if (typeof productDetails[i].label === "string") {
-          productDetails[i].label = productDetails[i].label.toLowerCase();
-        }
-        if (typeof productDetails[i].value === "string") {
-          productDetails[i].value = productDetails[i].value.toLowerCase();
+  /*
+    // Lowercase labels/values logic (REMOVED: Handled by Zod transform)
+    if (productDetails && Array.isArray(productDetails)) {
+        for (let i = 0; i < productDetails.length; i++) {
+            if (typeof productDetails[i].label === "string") {
+            productDetails[i].label = productDetails[i].label.toLowerCase();
+            }
+            if (typeof productDetails[i].value === "string") {
+            productDetails[i].value = productDetails[i].value.toLowerCase();
+            }
         }
     }
-  }
+  */
 
   try {
     // Check if product exists (Active, Draft, or Archived)
@@ -709,7 +709,8 @@ export const editProduct = async (req, res, next) => {
       Zod middleware in routes/product.route.js
     */
 
-    // Lowercasing all labels and values in the productDetails array
+    /*
+    // Lowercasing all labels and values in the productDetails array (REMOVED: Handled by Zod transform)
     if (productDetails && Array.isArray(productDetails)) {
       for (let i = 0; i < productDetails.length; i++) {
         if (typeof productDetails[i].label === "string") {
@@ -720,6 +721,7 @@ export const editProduct = async (req, res, next) => {
         }
       }
     }
+    */
 
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {

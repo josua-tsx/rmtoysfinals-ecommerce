@@ -107,6 +107,7 @@ export default function AdminWorker() {
                 error={errors.email}
                 placeholder="Ex: worker@example.com"
                 required
+                maxLength={254}
               />
             </div>
 
@@ -124,6 +125,7 @@ export default function AdminWorker() {
                 error={errors.username}
                 placeholder="Ex: JuanDelaCruz"
                 required
+                maxLength={30}
               />
             </div>
 
@@ -141,6 +143,7 @@ export default function AdminWorker() {
                 error={errors.password}
                 placeholder="••••••••"
                 required
+                maxLength={128}
               />
             </div>
 
@@ -158,6 +161,7 @@ export default function AdminWorker() {
                 error={errors.confirmPassword}
                 placeholder="••••••••"
                 required
+                maxLength={128}
               />
             </div>
 
@@ -192,6 +196,7 @@ export default function AdminWorker() {
                 error={errors.jobDescription}
                 placeholder="Ex: Customer Support & Verification"
                 required
+                maxLength={200}
               />
             </div>
           </div>

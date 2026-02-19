@@ -304,6 +304,7 @@ export default function AdminAddProducts() {
                   className="text-lg font-bold"
                   placeholder="Enter product name"
                   required
+                  maxLength={50}
                 />
 
                 <p className="text-[11px] pt-2  uppercase tracking-tight">
@@ -331,6 +332,7 @@ export default function AdminAddProducts() {
                   className="h-[120px] leading-relaxed"
                   placeholder="Enter product description"
                   required
+                  maxLength={200}
                 />
               </div>
 

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import axiosInstance from "../lib/axios";
 import TicketModal from "../components/ticket/TicketModal";
 import toast from "react-hot-toast";
@@ -27,6 +27,7 @@ import {
 import app from "../firebase/firebase";
 import { socket } from "../lib/socket";
 import TicketListSkeleton from "../components/skeleton/TicketListSkeleton";
+import useDebounce from "../hooks/useDebounce";
 
 const STATUS_CONFIG = {
   Pending: {
@@ -58,6 +59,9 @@ export default function CustomerTicketsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
   const { ticketId } = useParams();
 
   const {
@@ -65,9 +69,11 @@ export default function CustomerTicketsPage() {
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["userTickets"],
+    queryKey: ["userTickets", debouncedSearch],
     queryFn: async () => {
-      const res = await axiosInstance.get("/ticket/user");
+      const res = await axiosInstance.get(
+        `/ticket/user?search=${debouncedSearch}`,
+      );
       return res.data;
     },
     enabled: !!user,
@@ -93,7 +99,7 @@ export default function CustomerTicketsPage() {
     },
   });
 
-  const tickets = ticketsData?.tickets || [];
+  const tickets = useMemo(() => ticketsData?.tickets || [], [ticketsData]);
 
   // Sync selectedTicket with URL param
   useEffect(() => {
@@ -124,7 +130,7 @@ export default function CustomerTicketsPage() {
 
   // Real-time chat update listener
   useEffect(() => {
-    const handleAdminReply = (data) => {
+    const handleAdminReply = () => {
       // Invalidate queries to update list and current ticket view
       queryClient.invalidateQueries({ queryKey: ["userTickets"] });
     };
@@ -278,12 +284,6 @@ export default function CustomerTicketsPage() {
           <div className="p-4 border-b border-black space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => navigate(-1)}
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <IoArrowBack size={20} />
-                </button>
                 <h1 className="text-xl font-bold text-gray-900">
                   Support Tickets
                 </h1>
@@ -302,7 +302,10 @@ export default function CustomerTicketsPage() {
               <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
               <input
                 type="text"
-                placeholder="Search tickets..."
+                placeholder="Search tickets by subject or ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                maxLength={100}
                 className="w-full pl-9 pr-4 py-2 bg-gray-200 border border-black rounded-[5px] text-sm focus:bg-white outline-none transition-colors placeholder:text-gray-500"
               />
             </div>
@@ -572,6 +575,7 @@ export default function CustomerTicketsPage() {
                         }}
                         placeholder="Type your reply here..."
                         rows={1}
+                        maxLength={1000}
                         className="flex-1 bg-gray-200 border border-black rounded-[5px] px-4 py-3 focus:bg-white transition-all resize-none max-h-32 min-h-[46px] outline-none placeholder:text-gray-500"
                         style={{ height: "auto", minHeight: "46px" }}
                       />

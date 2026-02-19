@@ -21,7 +21,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
     mutationFn: async (data) => {
       const res = await axiosInstance.post(
         `/review/add-review/${singleProduct._id}`,
-        data
+        data,
       );
       return res.data;
     },
@@ -180,6 +180,7 @@ export default function ReviewModal({ singleProduct, closeModal }) {
                         value={commentReview}
                         placeholder="Type your feedback here..."
                         onChange={(e) => setCommentReview(e.target.value)}
+                        maxLength={500}
                         className="border h-[150px] p-4 border-black rounded-[5px] w-full resize-none outline-none shadow-inner bg-gray-50 focus:bg-white transition-colors"
                       ></textarea>
 

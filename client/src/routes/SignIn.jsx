@@ -88,7 +88,7 @@ export default function SignIn() {
               type="text"
               placeholder="Ex: example@domain.com or johndoe123"
               id="loginId"
-              maxLength={246}
+              maxLength={254}
               {...register("loginId")}
               className={`outline-none p-3 bg-white border-black border rounded-[5px] ${errors.loginId ? "border-red-500" : ""}`}
             />
@@ -106,6 +106,7 @@ export default function SignIn() {
             {...register("password")}
             errorText={errors.password?.message}
             className={errors.password ? "border-red-500" : ""}
+            maxLength={128}
           />
 
           <div className="flex items-center gap-2 mb-4">

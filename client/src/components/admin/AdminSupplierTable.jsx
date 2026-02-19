@@ -374,6 +374,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               error={errors.supplierName}
               placeholder="Ex: Toy Kingdom"
               required
+              maxLength={50}
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
               (3-50 chars, no double spaces or numbers)
@@ -393,6 +394,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               error={errors.contactPerson}
               placeholder="Ex: Juan Dela Cruz"
               required
+              maxLength={100}
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
               (No double spaces allowed)
@@ -413,6 +415,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               error={errors.contactNumber}
               placeholder="Ex: 09123456789"
               required
+              maxLength={11}
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
               (Starts with 09, exactly 11 digits)
@@ -434,6 +437,7 @@ export default function AdminSupplierTable({ enableMultiDel }) {
               placeholder="Ex: 123 Toy St., Manila City"
               className="h-[100px]"
               required
+              maxLength={200}
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
               (5-200 chars, no double spaces)
