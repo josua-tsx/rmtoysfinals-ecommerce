@@ -29,7 +29,7 @@ export const stockBodyBase = z.object({
     
     totalCost: z.coerce.number().optional(),
     
-    vat: objectIdSchema.optional().or(z.literal(null)), // VAT ID or null
+    vat: objectIdSchema.optional().or(z.literal(null)).or(z.literal("")), // VAT ID, null, or empty string (exempt)
     notifySubscribedUser: z.boolean().optional(),
   });
 

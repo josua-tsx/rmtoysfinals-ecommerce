@@ -8,6 +8,8 @@ import formatPrice from "../../reusable/formatPrice";
 import Buttons from "../../reusable/Buttons";
 import GuestCard from "./GuestCard";
 import Pagination from "../../reusable/Pagination";
+import axiosInstance from "../../lib/axios";
+import toast from "react-hot-toast";
 
 import GuestSummaryModal from "./GuestSummaryModal";
 
@@ -27,6 +29,85 @@ export default function GuestCartPage() {
       clearOrder();
     }
   }, [currentOrder, clearOrder]);
+
+  // Validate guest cart items against the server on mount
+  // Removes items that have been deleted/archived by admin
+  useEffect(() => {
+    const validateCart = async () => {
+      const currentCart = getGuestCart();
+      if (!currentCart?.items?.length) return;
+
+      const productIds = currentCart.items.map((item) => item._id);
+
+      try {
+        const res = await axiosInstance.post(`/product/validate-cart-items`, {
+          productIds,
+        });
+
+        const { invalidIds, products: validProducts } = res.data;
+
+        if (invalidIds.length > 0) {
+          // Remove invalid items from localStorage
+          const removedNames = currentCart.items
+            .filter((item) => invalidIds.includes(item._id))
+            .map((item) => item.productName);
+
+          const cleanedItems = currentCart.items.filter(
+            (item) => !invalidIds.includes(item._id),
+          );
+
+          // Also update stock quantities from server for remaining items
+          const updatedItems = cleanedItems.map((item) => {
+            const serverProduct = validProducts.find((p) => p._id === item._id);
+            if (serverProduct) {
+              return {
+                ...item,
+                price: serverProduct.price,
+                productImages: serverProduct.productImages,
+                stocks: serverProduct.stocks,
+              };
+            }
+            return item;
+          });
+
+          localStorage.setItem(
+            "guestCart",
+            JSON.stringify({ ...currentCart, items: updatedItems }),
+          );
+          setCart({ ...currentCart, items: updatedItems });
+
+          toast.error(
+            `${removedNames.length} item(s) removed from your cart because they are no longer available: ${removedNames.join(", ")}`,
+            { duration: 5000 },
+          );
+        } else {
+          // Update stock/price for all valid items
+          const updatedItems = currentCart.items.map((item) => {
+            const serverProduct = validProducts.find((p) => p._id === item._id);
+            if (serverProduct) {
+              return {
+                ...item,
+                price: serverProduct.price,
+                productImages: serverProduct.productImages,
+                stocks: serverProduct.stocks,
+              };
+            }
+            return item;
+          });
+
+          localStorage.setItem(
+            "guestCart",
+            JSON.stringify({ ...currentCart, items: updatedItems }),
+          );
+          setCart({ ...currentCart, items: updatedItems });
+        }
+      } catch (error) {
+        console.error("Failed to validate guest cart:", error);
+      }
+    };
+
+    validateCart();
+  }, []);
 
   const totalPrice = cart?.items?.reduce((total, item) => {
     if (item.isSelected) {
@@ -96,7 +177,7 @@ export default function GuestCartPage() {
             ) : (
               <div className="bg-white rounded-[5px] p-12 text-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center justify-center gap-6">
                 <div className="bg-gray-100 p-6 rounded-full border-2 border-black">
-                  <FaShoppingCart className="text-5xl text-gray-400" />
+                  <FaShoppingCart className="text-5xl text-primary" />
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-black">

@@ -194,7 +194,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/guest-cart",
-        element: <GuestCartPage />,
+        element: <PublicRoute element={<GuestCartPage />} />,
       },
       {
         path: "/profile",
