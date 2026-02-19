@@ -112,6 +112,12 @@ const CustomerTicketsPage = lazy(
 
 import GlobalErrorBoundary from "./reusable/GlobalErrorBoundary.jsx";
 
+// Auto-reload on stale dynamic import chunks (e.g. after a new deployment)
+window.addEventListener("vite:preloadError", (event) => {
+  event.preventDefault();
+  window.location.reload();
+});
+
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
