@@ -2456,10 +2456,54 @@ export const updateTrackStatus = async (req, res, next) => {
 
 export const getSalesAnalytics = async (req, res, next) => {
   try {
+    const now = new Date();
+
+    // Last 7 days cutoff (weekly)
+    const weeklyStart = new Date(now);
+    weeklyStart.setDate(weeklyStart.getDate() - 6);
+    weeklyStart.setHours(0, 0, 0, 0);
+
+    // Last 30 days cutoff
+    const thirtyDaysStart = new Date(now);
+    thirtyDaysStart.setDate(thirtyDaysStart.getDate() - 29);
+    thirtyDaysStart.setHours(0, 0, 0, 0);
+
     const dailySales = await Order.aggregate([
       {
         $match: {
           paymentStatus: "Paid",
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          totalSales: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const weeklySales = await Order.aggregate([
+      {
+        $match: {
+          paymentStatus: "Paid",
+          createdAt: { $gte: weeklyStart },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          totalSales: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const thirtyDaysSales = await Order.aggregate([
+      {
+        $match: {
+          paymentStatus: "Paid",
+          createdAt: { $gte: thirtyDaysStart },
         },
       },
       {
@@ -2504,6 +2548,8 @@ export const getSalesAnalytics = async (req, res, next) => {
     res.status(200).json({
       success: true,
       daily: dailySales,
+      weekly: weeklySales,
+      thirtyDays: thirtyDaysSales,
       monthly: monthlySales,
       yearly: yearlySales,
     });

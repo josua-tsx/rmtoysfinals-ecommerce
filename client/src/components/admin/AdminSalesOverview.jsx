@@ -38,6 +38,12 @@ export default function AdminSalesOverview() {
   // Defensive: ensure all sub-fields are arrays even if API omits them
   const analyticsData = {
     daily: Array.isArray(rawAnalyticsData?.daily) ? rawAnalyticsData.daily : [],
+    weekly: Array.isArray(rawAnalyticsData?.weekly)
+      ? rawAnalyticsData.weekly
+      : [],
+    thirtyDays: Array.isArray(rawAnalyticsData?.thirtyDays)
+      ? rawAnalyticsData.thirtyDays
+      : [],
     monthly: Array.isArray(rawAnalyticsData?.monthly)
       ? rawAnalyticsData.monthly
       : [],
@@ -158,7 +164,17 @@ export default function AdminSalesOverview() {
   const todaySales = getSalesForDate(todayStr);
   const yesterdaySales = getSalesForDate(yesterdayStr);
 
-  // Helper to generate last 12 months (YYYY-MM)
+  // Helper to generate last N days as YYYY-MM-DD strings
+  const getLastNDays = (n) => {
+    const days = [];
+    const today = new Date();
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().split("T")[0]);
+    }
+    return days;
+  };
 
   // Helper to generate last 5 years (YYYY)
   const getLast5Years = () => {
@@ -171,7 +187,27 @@ export default function AdminSalesOverview() {
   };
 
   const processChartData = (view) => {
-    if (view === "monthly") {
+    if (view === "weekly") {
+      const last7Days = getLastNDays(7);
+      return last7Days.map((day) => {
+        const found = (analyticsData.weekly || []).find((d) => d._id === day);
+        return {
+          _id: day,
+          totalSales: found ? found.totalSales : 0,
+        };
+      });
+    } else if (view === "thirtyDays") {
+      const last30Days = getLastNDays(30);
+      return last30Days.map((day) => {
+        const found = (analyticsData.thirtyDays || []).find(
+          (d) => d._id === day,
+        );
+        return {
+          _id: day,
+          totalSales: found ? found.totalSales : 0,
+        };
+      });
+    } else if (view === "monthly") {
       return Array.isArray(analyticsData.monthly) ? analyticsData.monthly : [];
     } else {
       const last5Years = getLast5Years();
@@ -183,6 +219,14 @@ export default function AdminSalesOverview() {
         };
       });
     }
+  };
+
+  // Color map for each chart view
+  const chartColors = {
+    weekly: "#f59e0b",
+    thirtyDays: "#8b5cf6",
+    monthly: "#22c55e",
+    yearly: "#3b82f6",
   };
 
   const chartData = processChartData(chartView);
@@ -267,27 +311,25 @@ export default function AdminSalesOverview() {
 
           {/* Sales Chart with Toggle */}
           <div className="p-6 pt-10 w-full h-[500px] relative bg-card border border-black rounded-[5px]">
-            <div className="flex absolute top-2 right-2  gap-2 mb-4">
-              <button
-                onClick={() => setChartView("monthly")}
-                className={`border rounded-[5px] px-4 py-2 font-bold text-xs uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
-                  chartView === "monthly"
-                    ? "bg-primary text-white border-black"
-                    : "bg-white text-black border-black hover:bg-gray-100"
-                }`}
-              >
-                Monthly Sales
-              </button>
-              <button
-                onClick={() => setChartView("yearly")}
-                className={`border rounded-[5px] px-4 py-2 font-bold text-xs uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
-                  chartView === "yearly"
-                    ? "bg-primary text-white border-black"
-                    : "bg-white text-black border-black hover:bg-gray-100"
-                }`}
-              >
-                Yearly Sales
-              </button>
+            <div className="flex flex-wrap absolute top-2 right-2 gap-2 mb-4">
+              {[
+                { key: "weekly", label: "Weekly" },
+                { key: "thirtyDays", label: "30 Days" },
+                { key: "monthly", label: "Monthly" },
+                { key: "yearly", label: "Yearly" },
+              ].map((btn) => (
+                <button
+                  key={btn.key}
+                  onClick={() => setChartView(btn.key)}
+                  className={`border rounded-[5px] px-4 py-2 font-bold text-xs uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] ${
+                    chartView === btn.key
+                      ? "bg-primary text-white border-black"
+                      : "bg-white text-black border-black hover:bg-gray-100"
+                  }`}
+                >
+                  {btn.label}
+                </button>
+              ))}
             </div>
 
             {isAnalyticsPending ? (
@@ -328,10 +370,10 @@ export default function AdminSalesOverview() {
                   <Line
                     type="monotone"
                     dataKey="totalSales"
-                    stroke={chartView === "monthly" ? "#22c55e" : "#3b82f6"}
+                    stroke={chartColors[chartView]}
                     strokeWidth={3}
                     dot={{
-                      fill: chartView === "monthly" ? "#22c55e" : "#3b82f6",
+                      fill: chartColors[chartView],
                       stroke: "#000",
                       strokeWidth: 2,
                       r: 6,
