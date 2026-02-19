@@ -1363,3 +1363,35 @@ export const batchUploadProducts = async (req, res, next) => {
     next(error);
   }
 };
+
+// Validate an array of product IDs for guest cart cleanup
+// Returns which IDs are still valid (published, not archived) with latest data
+export const validateCartItems = async (req, res, next) => {
+  try {
+    const { productIds } = req.body;
+
+    if (!Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(200).json({ validIds: [], invalidIds: [], products: [] });
+    }
+
+    // Only return products that are published and not archived
+    const validProducts = await Product.find({
+      _id: { $in: productIds },
+      status: "published",
+      isArchived: { $ne: true },
+    })
+      .populate({ path: "stocks", select: "quantity" })
+      .select("_id productName price productImages");
+
+    const validIds = validProducts.map((p) => p._id.toString());
+    const invalidIds = productIds.filter((id) => !validIds.includes(id));
+
+    res.status(200).json({
+      validIds,
+      invalidIds,
+      products: validProducts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

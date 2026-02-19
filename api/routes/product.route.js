@@ -25,6 +25,7 @@ import {
   toggleBestProduct,
   getProductCsvTemplate,
   batchUploadProducts,
+  validateCartItems,
 } from "../controllers/product.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.middleware.js";
 
@@ -81,5 +82,8 @@ router.get(`/get-bestProducts`, getBestProducts)
 // BATCH UPLOAD
 router.get(`/csv-template`, requireAuth, requireAdmin, getProductCsvTemplate);
 router.post("/batch-upload", requireAuth, requireAdmin, csvUpload.single("file"), batchUploadProducts);
+
+// GUEST CART VALIDATION (no auth - guests need this)
+router.post(`/validate-cart-items`, validateCartItems);
 
 export default router;
