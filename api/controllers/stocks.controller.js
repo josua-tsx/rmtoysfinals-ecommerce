@@ -362,35 +362,85 @@ export const reorderStock = async (req, res, next) => {
 
 export const updateStockQuantity = async (req, res, next) => {
   const { stockId } = req.params;
-  const { quantity } = req.body;
+  const { quantity, reason } = req.body;
+  const userId = req.user.id;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    // const existingTotalCosty
+    const existingStock = await Stocks.findById(stockId).session(session);
+    if (!existingStock) {
+      throw handleMakeError(404, "No stock entry found with this ID.");
+    }
 
-    const existingStock = await Stocks.findById(stockId);
+    // 1. Identity Guard: Prevent redundant updates
+    if (quantity === existingStock.quantity) {
+      throw handleMakeError(400, "The new quantity is identical to the current quantity. No changes made.");
+    }
 
-    if (!existingStock) return next(handleMakeError(400, "No stock found!"));
+    // 2. Reduction Guard: "If reduce count is equal to stock, do not allow it"
+    // This effectively means the stock cannot be reduced to exactly 0 via this adjustment.
+    const reductionAmount = existingStock.quantity - quantity;
+    if (reductionAmount === existingStock.quantity) {
+      throw handleMakeError(400, "Manual adjustments cannot reduce stock to zero. Please archive the stock or set a non-zero value.");
+    }
 
-    const existingSupplierPrice = existingStock.supplierPrice;
-    const existingShippingPrice = existingStock.shippingPrice;
-    const existingShopPrice = existingStock.shopPrice;
-    const existingVatPrice = existingStock.vatShopPrice;
+    // 3. Industry Best Practice: Ensure we aren't creating negative stock (schema handles this too)
+    if (quantity < 0) {
+      throw handleMakeError(400, "Inventory levels cannot be negative.");
+    }
 
-    const updateQuantity = await Stocks.findByIdAndUpdate(
+    const { supplierPrice, shippingPrice, shopPrice, vatShopPrice, product, supplier, category, deliveryId, vat, vatPercentApplied } = existingStock;
+
+    // 4. Update the stock entry
+    const updatedStock = await Stocks.findByIdAndUpdate(
       stockId,
       {
         quantity,
-        totalCost: existingSupplierPrice * quantity + existingShippingPrice,
-        vatToRemit: (existingVatPrice - existingShopPrice) * quantity,
+        totalCost: (supplierPrice * quantity) + shippingPrice,
+        vatToRemit: (vatShopPrice - shopPrice) * quantity,
       },
-      { new: true }
+      { new: true, session }
     );
 
-    // Fire and forget alerts
+    // 5. Audit Logging: Record the manual adjustment
+    await orderStockLogs(
+      {
+        action: "manual_adjustment",
+        userId,
+        deliveryId: deliveryId || "MANUAL_ADJ",
+        supplier: supplier || null,
+        category: category || null,
+        quantityOrdered: existingStock.quantity, // Old quantity
+        supplierPrice: supplierPrice || 0,
+        shippingPrice: shippingPrice || 0,
+        vatPercentApplied: vatPercentApplied || 0,
+        shopPrice: shopPrice || 0,
+        receivedDate: new Date().toISOString(),
+        receivedQuantity: quantity, // New quantity
+        totalCost: updatedStock.totalCost,
+        reason: reason || "Quantity updated by admin",
+      },
+      session
+    );
+
+    await session.commitTransaction();
+
+    // Fire and forget alerts (async)
     checkAndSendStockAlerts();
 
-    res.status(200).json(updateQuantity);
+    res.status(200).json({
+      message: "Stock quantity adjusted successfully.",
+      previousQuantity: existingStock.quantity,
+      newQuantity: updatedStock.quantity,
+      updatedStock
+    });
   } catch (error) {
+    await session.abortTransaction();
     next(error);
+  } finally {
+    session.endSession();
   }
 };
 

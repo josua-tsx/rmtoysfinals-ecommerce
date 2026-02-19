@@ -16,6 +16,7 @@ export const orderStockLogs = async (
     receivedDate,
     receivedQuantity,
     totalCost,
+    reason,
   },
   session = null
 ) => {
@@ -34,6 +35,7 @@ export const orderStockLogs = async (
       receivedDate,
       receivedQuantity,
       totalCost,
+      reason,
     });
 
     await newOrderStockHistory.save({ session });

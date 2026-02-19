@@ -83,5 +83,6 @@ export const updateStockQuantitySchema = z.object({
   body: z.object({
     quantity: z.coerce.number({ required_error: "Quantity is required" })
         .nonnegative("Quantity cannot be negative"),
+    reason: z.string().min(3, "Reason must be at least 3 characters").max(200, "Reason is too long").optional(),
   }),
 });
