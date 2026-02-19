@@ -29,7 +29,7 @@ export default function SettingsMobile({ toggle }) {
             to={`${currentUser?.role === "admin" ? `/admin` : `/validator`}`}
             onClick={toggle}
           >
-            <button className="hover:bg-primary w-full p-1 hover:text-white text-lg flex justify-between items-center">
+            <button className="hover:bg-primary w-full p-1 px-4 hover:text-white text-lg flex justify-between items-center">
               Dashboard
               <TbLayoutDashboardFilled size={20} />
             </button>
@@ -39,7 +39,7 @@ export default function SettingsMobile({ toggle }) {
 
       <li>
         <Link to={`/profile`} onClick={toggle}>
-          <button className="hover:bg-primary w-full p-1 hover:text-white text-lg flex justify-between items-center">
+          <button className="hover:bg-primary w-full p-1 px-4 hover:text-white text-lg flex justify-between items-center">
             Profile
             <CgProfile size={20} />
           </button>
@@ -53,7 +53,7 @@ export default function SettingsMobile({ toggle }) {
             console.log("sign out");
             if (toggle) toggle();
           }}
-          className="hover:bg-primary w-full p-1 hover:text-white text-lg flex justify-between items-center"
+          className="hover:bg-primary w-full p-1 px-4 hover:text-white text-lg flex justify-between items-center"
         >
           Sign out
           <FaSignOutAlt size={20} />
