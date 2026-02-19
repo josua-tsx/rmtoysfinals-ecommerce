@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import PlayGameModal from "./PlayGameModal";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useUserStore } from "../stores/useUserStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
@@ -35,15 +36,18 @@ export default function FreeCredits() {
     },
   });
 
+  const checkAuth = useUserStore((state) => state.checkAuth);
+
   const { mutate: resetPlayLockMutation } = useMutation({
     mutationFn: async () => {
       const res = await axiosInstance.post(`/random/reset`);
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.unlocked) {
         queryClient.invalidateQueries({ queryKey: ["user"] });
         queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+        await checkAuth(); // Sync local store
         setOpenPlayModal(true);
         setOpenModal(false);
         toast.success("Play lock reset! You can play now.");
