@@ -1045,9 +1045,27 @@ export const getUsersOrder = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const query = {
-      status: {
-        $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
-      },
+      $and: [
+        {
+          $or: [
+            // COD orders: show all active statuses including Pending
+            {
+              paymentMethod: { $ne: "GcashQR" },
+              status: {
+                $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
+              },
+            },
+            // GcashQR orders: only show if payment has been approved (Paid)
+            {
+              paymentMethod: "GcashQR",
+              paymentStatus: "Paid",
+              status: {
+                $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
+              },
+            },
+          ],
+        },
+      ],
       isGuest: false,
     };
 
@@ -1062,12 +1080,14 @@ export const getUsersOrder = async (req, res, next) => {
       
       const userIds = users.map(u => u._id);
       
-      query.$or = [
-          { _id: search }, // Will fail if search is not valid ObjectId type. We should check.
+      query.$and.push({
+        $or: [
+          { _id: search },
           { paymentMethod: { $regex: search, $options: "i" } },
           { paymentStatus: { $regex: search, $options: "i" } },
           { userId: { $in: userIds } }
-      ];
+        ]
+      });
     }
 
     const total = await Order.countDocuments(query);
