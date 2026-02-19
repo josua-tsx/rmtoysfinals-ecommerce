@@ -93,12 +93,14 @@ export default function Navbar() {
                 <Link to={`${item.path}`}>
                   <button
                     onClick={() => setIsExpanded(false)}
-                    className={`hover:bg-primary w-full p-1 flex justify-between items-center hover:text-white ${
-                      currentPath === item.path ? "bg-primary text-white" : ""
+                    className={`w-full px-4 py-1 flex justify-between items-center  transition-all duration-200 border-2 border-transparent rounded-[4px] ${
+                      currentPath === item.path
+                        ? "bg-primary text-white border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                        : "hover:bg-primary/10 text-black px-4 "
                     }`}
                   >
-                    {item.name}
-                    {item.icon && <item.icon />}
+                    <span className="text-lg">{item.name}</span>
+                    {item.icon && <item.icon size={22} />}
                   </button>
                 </Link>
               </li>
@@ -158,8 +160,10 @@ export default function Navbar() {
               <li key={item.name}>
                 <Link to={`${item.path}`}>
                   <button
-                    className={`hover:bg-primary p-1 hover:text-white text-lg ${
-                      currentPath === item.path ? "bg-primary text-white" : ""
+                    className={`px-2 py-1.5 text-base  transition-all hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] duration-200 rounded-[4px] border-2 border-transparent ${
+                      currentPath === item.path
+                        ? "bg-primary text-white border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                        : "hover:bg-primary hover:text-white hover:-translate-y-0.5"
                     }`}
                   >
                     {item.name}
