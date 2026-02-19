@@ -235,7 +235,7 @@ export default function AdminStocksTable() {
               currentUser.role === "validatorStaff" ? "hidden" : "block"
             } border border-black p-1.5 px-3 rounded-[5px] bg-red-500 text-white font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all disabled:opacity-50`}
           >
-            Reduce
+            Adjust Stock
           </button>
         </div>
       ),

@@ -60,6 +60,9 @@ const AdminWorker = lazy(() => import("./pages/admin/AdminWorker.jsx"));
 const AdminOrderStatus = lazy(
   () => import("./pages/admin/AdminOrderStatus.jsx"),
 );
+const AdminSubscribedUser = lazy(
+  () => import("./pages/admin/AdminSubscribedUser.jsx"),
+);
 const AdminOrderTransact = lazy(
   () => import("./pages/admin/AdminOrderTransact.jsx"),
 );
@@ -297,6 +300,10 @@ const router = createBrowserRouter([
       {
         path: "worker",
         element: <AdminWorker />,
+      },
+      {
+        path: "subscribed-users",
+        element: <AdminSubscribedUser />,
       },
 
       {

@@ -27,7 +27,7 @@ router.get("/get-stock-levels", requireAuth, requireAdmin, getStockLevels);
 router.get("/get-pending", requireAuth, requireAdmin, getPendingDeliveries);
 router.get("/get-single-stock/:stockId", requireAuth, requireAdmin, getSingleStock);
 router.post("/reorder-stock/:stockId", requireAuth, requireAdmin, validateResource(reorderStockSchema), reorderStock);
-router.put("/update-stock-quantity/:stockId", requireAuth, requireAdmin, validateResource(updateStockQuantitySchema), updateStockQuantity);
+router.patch("/update-stock-quantity/:stockId", requireAuth, requireAdmin, validateResource(updateStockQuantitySchema), updateStockQuantity);
 
 // Batch Routes
 router.get("/csv-template", requireAuth, requireAdmin, getStockCsvTemplate);

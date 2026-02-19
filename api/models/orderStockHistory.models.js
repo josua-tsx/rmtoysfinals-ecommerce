@@ -55,6 +55,9 @@ const OrderStockHistorySchemaModel = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    reason: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

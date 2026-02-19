@@ -9,13 +9,14 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
   const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState(0);
+  const [reason, setReason] = useState("");
 
   const { mutate: reduceQuantityMutation, isPending: isReducingPending } =
     useMutation({
       mutationFn: async (data) => {
         const res = await axiosInstance.patch(
-          `/stock/reduce-quantity/${singleStock._id}`,
-          data
+          `/stocks/update-stock-quantity/${singleStock._id}`,
+          data,
         );
         return res.data;
       },
@@ -23,6 +24,7 @@ export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
         toast.success("Stock quantity reduced successfully");
         queryClient.invalidateQueries(["allStocks"]);
         onClose();
+        setReason("");
       },
       onError: (err) => {
         toast.error(err.response?.data?.message || "Something went wrong");
@@ -31,10 +33,13 @@ export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (quantity <= 0) {
-      return toast.error("Quantity must be greater than 0");
+    if (quantity < 0) {
+      return toast.error("Quantity must be 0 or greater");
     }
-    reduceQuantityMutation({ quantity });
+    if (!reason || reason.trim().length < 3) {
+      return toast.error("Please provide a valid reason (min 3 chars)");
+    }
+    reduceQuantityMutation({ quantity, reason });
   };
 
   if (!isOpen) return null;
@@ -45,7 +50,7 @@ export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
         {/* Red Sticker Header */}
         <div className="absolute -top-5 -left-4 bg-red-600 text-white border border-black px-6 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
           <h1 className="font-black uppercase tracking-widest text-sm italic">
-            Reduce Stock
+            Adjust Stock
           </h1>
         </div>
 
@@ -84,6 +89,23 @@ export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
             <p className="text-[10px] font-bold text-gray-400 italic text-center uppercase tracking-tighter mt-1">
               Adjust the value above to decrease or modify inventory levels.
             </p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              className="font-black uppercase text-[11px] tracking-widest text-gray-500 ml-1"
+              htmlFor="reason"
+            >
+              Reason for Adjustment
+            </label>
+            <textarea
+              id="reason"
+              placeholder="Ex: Damaged in transit, incorrect initial count..."
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              maxLength={200}
+              className="border-2 border-black w-full rounded-lg p-3 outline-none bg-gray-50 focus:bg-white transition-colors text-sm font-bold min-h-[80px] resize-none shadow-[inner_4px_4px_0px_0px_rgba(0,0,0,0.05)]"
+            />
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 mt-4">

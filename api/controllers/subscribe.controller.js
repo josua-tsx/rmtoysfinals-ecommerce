@@ -79,3 +79,46 @@ export const getSubscribedEmails = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAllSubscribedUsers = async (req, res, next) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = { isSubscribed: true };
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      query.$or = [
+        { email: searchRegex },
+        { username: searchRegex },
+        { fullName: searchRegex },
+      ];
+    }
+
+    const subscribers = await User.find(query)
+      .select("username email fullName avatar isSubscribed createdAt")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalCount = await User.countDocuments(query);
+
+    res.status(200).json({
+      users: subscribers,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limitNum),
+      currentPage: pageNum,
+      hasMore: totalCount > pageNum * limitNum,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

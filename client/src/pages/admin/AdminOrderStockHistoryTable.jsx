@@ -60,6 +60,16 @@ export default function AdminOrderStockHistoryTable() {
       ),
     },
     {
+      header: "Reason",
+      accessor: "reason",
+      className: "text-left",
+      render: (item) => (
+        <span className="text-[11px] text-gray-600 italic max-w-[150px] truncate block">
+          {item?.reason || "—"}
+        </span>
+      ),
+    },
+    {
       header: "Qty Ordered",
       accessor: "quantityOrdered",
       className: "text-center font-mono",
