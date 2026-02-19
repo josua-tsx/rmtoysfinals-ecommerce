@@ -211,7 +211,7 @@ export default function ShopSide({
                 handleAiSearch();
               }
             }}
-            className={`border-2 w-full outline-none rounded-[8px] border-black p-2.5 pr-10 bg-white shadow-sm font-main focus:ring-2 transition-all text-sm ${
+            className={`border w-full outline-none rounded-[8px] border-black p-2.5 pr-10 bg-white shadow-sm font-main focus:ring-2 transition-all text-sm ${
               isAiMode
                 ? "focus:ring-violet-500/50 focus:border-violet-600"
                 : "focus:ring-primary/20"
@@ -231,10 +231,10 @@ export default function ShopSide({
             type="button"
             onClick={handleAiSearch}
             disabled={isAiSearching || aiQuery.trim().length < 2}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-2.5 rounded-[8px] border-2 border-black font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-2.5 rounded-[8px] border border-black font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             {isAiSearching ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-5 h-5 border border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <SiGooglegemini size={20} />
             )}
