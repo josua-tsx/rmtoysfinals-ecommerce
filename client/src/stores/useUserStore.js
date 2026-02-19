@@ -49,6 +49,7 @@ const getInitialUser = () => {
 export const useUserStore = create(persist(
     (set) => ({
         currentUser: getInitialUser(), // Initialize synchronously from storage
+        isCheckingAuth: false,
         setCurrentUser: (user) => set({ currentUser: user }),
         clearUser: () => {
             set({ currentUser: null });
@@ -58,12 +59,15 @@ export const useUserStore = create(persist(
             sessionStorage.removeItem("snoozeOnboarding"); // Clear snoozing preference on logout
         },
         checkAuth: async () => {
+            set({ isCheckingAuth: true });
             try {
                 const response = await axiosInstance.get('/auth/getMe');
                 set({ currentUser: response.data });
             } catch (error) {
                 console.error('Authentication check failed:', error);
                 set({ currentUser: null });
+            } finally {
+                set({ isCheckingAuth: false });
             }
         },
     }),
