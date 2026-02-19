@@ -54,10 +54,6 @@ export default function AdminSideBar() {
           path: "/admin/batch-upload",
         },
 
-        // {
-        //   name: "Products Draft",
-        //   path: "/admin/draftProducts",
-        // },
         {
           name: "Products Reviews",
           path: "/admin/productReviews",
@@ -97,6 +93,10 @@ export default function AdminSideBar() {
         {
           name: "Worker Table",
           path: "/admin/worker",
+        },
+        {
+          name: "Subscribed Users",
+          path: "/admin/subscribed-users",
         },
       ],
     },
