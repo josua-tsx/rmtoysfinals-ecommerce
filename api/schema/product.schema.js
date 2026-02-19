@@ -51,8 +51,8 @@ export const productBodyBase = z.object({
     productDetails: z
       .array(
         z.object({
-          label: z.string(),
-          value: z.string(),
+          label: z.string().transform((val) => val.toLowerCase()),
+          value: z.string().transform((val) => val.toLowerCase()),
         })
       )
       .max(10, "Maximum 10 product details allowed")

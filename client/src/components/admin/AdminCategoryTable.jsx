@@ -318,6 +318,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
               error={errors.categoryName}
               placeholder="Enter category name"
               required
+              maxLength={50}
             />
           </div>
           <div className="flex gap-2 flex-col">
@@ -334,6 +335,7 @@ export default function AdminCategoryTable({ enableMultiDel }) {
               error={errors.categoryDescription}
               className="h-[100px]"
               placeholder="Enter category description"
+              maxLength={200}
             />
           </div>
         </div>

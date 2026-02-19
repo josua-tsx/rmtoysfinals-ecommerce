@@ -120,6 +120,7 @@ export default function AdminCategory() {
                 error={errors.categoryName}
                 placeholder="Enter category name"
                 required
+                maxLength={50}
               />
               <p className="text-[10px] pt-1 text-gray-500 uppercase tracking-tight">
                 (Name should be 3-50 chars. Only letters, numbers and single
@@ -140,6 +141,7 @@ export default function AdminCategory() {
                 error={errors.categoryDescription}
                 className="h-[100px]"
                 placeholder="Enter category description"
+                maxLength={200}
               />
               <p className="text-[10px] pt-1 text-gray-500 uppercase tracking-tight">
                 (Max 200 characters allowed.)

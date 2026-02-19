@@ -6,6 +6,7 @@ import formatPrice from "../reusable/formatPrice";
 import { useState, useEffect } from "react";
 import { debounce } from "lodash"; // or your preferred debounce utility
 import { ConfirmModal } from "../reusable/ConfirmModal";
+import { updateCartQuantitySchema } from "../schemas/cart.schema";
 
 export default function CartCard({ productCart }) {
   const queryClient = useQueryClient();
@@ -103,7 +104,20 @@ export default function CartCard({ productCart }) {
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value >= 0) {
+
+    // Validate with Zod Schema
+    const result = updateCartQuantitySchema.safeParse({ quantity: value });
+
+    if (!result.success) {
+      // If invalid, show error and don't update (or just let the input be controlled)
+      // Actually we might want to allow typing but block the API call?
+      // For now, let's just warn if out of bounds (1-5)
+      const errorMsg = result.error.errors[0].message;
+      toast.error(errorMsg);
+      return;
+    }
+
+    if (!isNaN(value)) {
       setQuantity(value);
       debouncedUpdate(productCart?.productId?._id, value);
     }

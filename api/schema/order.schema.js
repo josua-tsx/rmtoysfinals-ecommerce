@@ -1,5 +1,8 @@
-import { z } from "zod";
+import {z} from "zod"
+
+import { emailSchema, phMobileSchema } from "../utils/validations.js";
 import mongoose from "mongoose";
+
 
 const objectIdSchema = z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
   message: "Invalid ID format",
@@ -16,26 +19,26 @@ const orderItemSchema = z.object({
 export const placeOrderSchema = z.object({
   body: z.object({
     orderItems: z.array(orderItemSchema).min(1, "Order must contain products"),
-    shippingAddress: z.string({ required_error: "Shipping address is required" }).trim().min(5, "Address must be at least 5 characters"),
+    shippingAddress: z.string({ required_error: "Shipping address is required" }).trim().min(5, "Address must be at least 5 characters").max(500, "Address cannot exceed 500 characters"),
     paymentMethod: z.enum(["Cod", "Online Payment", "GcashQR"]),
     shippingPrice: z.coerce.number().nonnegative().default(0),
     subtotal: z.coerce.number().nonnegative(),
     totalPrice: z.coerce.number().nonnegative(),
-    notes: z.string().optional(),
+    notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
     totalPoints: z.coerce.number().nonnegative().optional().default(0),
     usedCredits: z.coerce.number().nonnegative().optional().default(0),
     vatableSalesNet: z.coerce.number().optional().default(0),
     vatExemptSales: z.coerce.number().optional().default(0),
     totalVatAmount: z.coerce.number().optional().default(0),
     gcashQRmethod: z.object({
-      gcashPhoneNumber: z.string().optional(),
+      gcashPhoneNumber: phMobileSchema.optional(),
       proofOfPaymentImage: z.string().optional(),
-      gcashName: z.string().optional(),
+      gcashName: z.string().min(3, "Name must be at least 3 characters").max(100, "Name cannot exceed 100 characters").optional(),
     }).optional(),
     guestUser: z.object({
-      name: z.string(),
-      phone: z.string(),
-      email: z.string().email(),
+      name: z.string().min(2).max(100, "Name cannot exceed 100 characters"),
+      phone: phMobileSchema,
+      email: emailSchema,
     }).optional(),
   }).superRefine((data, ctx) => {
     if (data.paymentMethod === "GcashQR") {
@@ -46,6 +49,18 @@ export const placeOrderSchema = z.object({
           path: ["gcashQRmethod"],
         });
       }
+    }
+    // Guest User Validation
+    if (!data.userId && !data.guestUser && !data.isGuest) { 
+        // Note: isGuest might not be in body payload explicitly if inferred from token, 
+        // but let's assume if no token (handled by auth middleware) we might need guest details?
+        // Actually auth middleware handles req.user. 
+        // The schema validates the BODY. 
+        // If the controller logic relies on req.user to decide if guestUser is needed, 
+        // Zod might not know about req.user. 
+        // So we might need to keep guestUser check in controller OR pass context to Zod (harder here).
+        // For now, let's leave unconditional guestUser check to controller or make it optional in Zod 
+        // and rely on controller to enforce "if not logged in, must have guestUser".
     }
   }),
 });

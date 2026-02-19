@@ -21,9 +21,10 @@ export default function ResetPassword() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = useForm({
     resolver: zodResolver(resetPasswordSchema),
+    mode: "onChange",
     defaultValues: {
       password: "",
       confirmPassword: "",
@@ -102,7 +103,9 @@ export default function ResetPassword() {
             placeholder="Min 8 chars, 1 upper, 1 number, 1 symbol"
             {...register("password")}
             error={errors.password}
+            isValid={!errors.password && dirtyFields.password}
             required
+            maxLength={128}
           />
 
           <ValidatedInput
@@ -112,7 +115,9 @@ export default function ResetPassword() {
             placeholder="Repeat your new password"
             {...register("confirmPassword")}
             error={errors.confirmPassword}
+            isValid={!errors.confirmPassword && dirtyFields.confirmPassword}
             required
+            maxLength={128}
           />
 
           <div className="flex justify-center w-full mt-2">

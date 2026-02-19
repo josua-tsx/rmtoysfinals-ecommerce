@@ -292,6 +292,7 @@ export default function AdminWorkersTable() {
               error={errors.email}
               placeholder="Ex: worker@example.com"
               required
+              maxLength={254}
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
               (Enter a valid email address)
@@ -312,6 +313,7 @@ export default function AdminWorkersTable() {
               error={errors.username}
               placeholder="Ex: JuanDelaCruz"
               required
+              maxLength={30}
             />
             <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
               (5-50 letters, no numbers or special characters)
@@ -332,6 +334,7 @@ export default function AdminWorkersTable() {
                 {...register("password")}
                 error={errors.password}
                 placeholder="••••••••"
+                maxLength={128}
               />
               <button
                 type="button"
@@ -384,6 +387,7 @@ export default function AdminWorkersTable() {
               error={errors.jobDescription}
               placeholder="Ex: Customer Support & Verification"
               required
+              maxLength={200}
             />
           </div>
         </div>

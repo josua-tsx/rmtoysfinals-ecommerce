@@ -19,6 +19,7 @@ export default function ReusableTable({
     value: searchValue,
     onChange: onSearchChange,
     placeholder: searchPlaceholder = "Search...",
+    maxLength: searchMaxLength = 100,
   } = search || {};
 
   const {
@@ -81,6 +82,7 @@ export default function ReusableTable({
                   value={searchValue}
                   onChange={handleSearchChange}
                   placeholder={searchPlaceholder}
+                  maxLength={searchMaxLength}
                   className="border border-black w-full md:w-[300px] rounded-[5px] p-2 pr-10 focus:outline-none bg-gray-50 focus:bg-white transition-all font-bold uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px] placeholder:text-gray-300"
                 />
                 <IoSearch className="absolute right-3" size={20} />

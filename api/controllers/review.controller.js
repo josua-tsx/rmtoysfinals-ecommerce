@@ -26,6 +26,7 @@ export const userAddReview = async (req, res, next) => {
       return next(handleMakeError(400, "You've already reviewed this product"));
     }
 
+    /*
     if (rating < 0 || rating > 5)
       return next(handleMakeError(400, "Rating must be between 0-5"));
 
@@ -38,6 +39,9 @@ export const userAddReview = async (req, res, next) => {
           handleMakeError(400, "Comment must be 1-300 characters long")
         );
       }
+    */
+      if (commentReview) {
+      const trimmedComment = commentReview.trim();
 
       // 2. Profanity check
       if (hasProfanity(trimmedComment) || hasThreat(trimmedComment)) {

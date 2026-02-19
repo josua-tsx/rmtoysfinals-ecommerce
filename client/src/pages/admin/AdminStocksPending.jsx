@@ -66,9 +66,10 @@ export default function AdminStocksPending() {
   const quantity = watch("quantity");
   const deliveryId = watch("deliveryId");
 
-  // Calculate derived values
-  const totalCost =
+  // Calculate derived values — clamp to prevent layout-breaking numbers
+  const rawTotalCost =
     Number(supplierPrice) * Number(quantity) + Number(shippingPrice);
+  const totalCost = Math.min(rawTotalCost, 999999999);
 
   // Update totalCost when calculated
   useEffect(() => {
@@ -433,6 +434,8 @@ export default function AdminStocksPending() {
                 id="supplierPrice"
                 {...register("supplierPrice")}
                 error={errors.supplierPrice}
+                min={0}
+                max={1000000}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -447,6 +450,8 @@ export default function AdminStocksPending() {
                 id="shopPrice"
                 {...register("shopPrice")}
                 error={errors.shopPrice}
+                min={0}
+                max={1000000}
               />
             </div>
           </div>
@@ -470,6 +475,8 @@ export default function AdminStocksPending() {
                 id="shippingPrice"
                 {...register("shippingPrice")}
                 error={errors.shippingPrice}
+                min={0}
+                max={100000}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -484,15 +491,17 @@ export default function AdminStocksPending() {
                 id="quantity"
                 {...register("quantity")}
                 error={errors.quantity}
+                min={0}
+                max={1000}
               />
             </div>
           </div>
 
-          <div className="flex items-center flex-wrap gap-2 bg-gray-100 p-3 rounded-[5px] border-l-4 border-primary">
+          <div className="flex items-center flex-wrap gap-2 bg-gray-100 p-3 rounded-[5px] border-l-4 border-primary overflow-hidden">
             <span className="font-black uppercase text-xs tracking-widest">
               Total Cost:{" "}
             </span>
-            <span className="font-bold text-lg">
+            <span className="font-bold text-lg truncate max-w-[200px]">
               {formatPrice(totalCost)} PHP
             </span>
             <p className="text-[9px] text-gray-500 uppercase font-bold italic ml-auto">

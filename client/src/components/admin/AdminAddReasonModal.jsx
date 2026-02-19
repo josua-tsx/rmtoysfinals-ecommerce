@@ -66,6 +66,7 @@ export default function AdminAddReasonModal({ singleOrderData, onClose }) {
               placeholder="Enter rejection/cancel reason..."
               className="h-[150px] outline-none p-4 border border-black rounded-[5px] bg-gray-50 focus:bg-white transition-colors resize-none"
               required
+              maxLength={500}
             ></textarea>
           </div>
 

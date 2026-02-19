@@ -23,9 +23,10 @@ export default function SignUp() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = useForm({
     resolver: zodResolver(signupSchema),
+    mode: "onChange",
     defaultValues: {
       username: "",
       email: "",
@@ -76,7 +77,9 @@ export default function SignUp() {
             placeholder="Ex: example@domain.com"
             {...register("email")}
             error={errors.email}
+            isValid={!errors.email && dirtyFields.email}
             required
+            maxLength={254}
           />
 
           <ValidatedInput
@@ -85,8 +88,10 @@ export default function SignUp() {
             placeholder="Ex: johndoe123"
             {...register("username")}
             error={errors.username}
+            isValid={!errors.username && dirtyFields.username}
             required
             errorText="(3-30 chars, no special characters)"
+            maxLength={30}
           />
 
           <PasswordInput
@@ -99,6 +104,8 @@ export default function SignUp() {
                 : "(At least 8 chars, 1 uppercase, symbol, and number)"
             }
             className={errors.password ? "border-red-500" : ""}
+            isValid={!errors.password && dirtyFields.password}
+            maxLength={128}
           />
 
           <PasswordInput
@@ -107,6 +114,8 @@ export default function SignUp() {
             {...register("confirmPassword")}
             errorText={errors.confirmPassword?.message}
             className={errors.confirmPassword ? "border-red-500" : ""}
+            isValid={!errors.confirmPassword && dirtyFields.confirmPassword}
+            maxLength={128}
           />
 
           <div className="flex justify-center mt-4 gap-2">

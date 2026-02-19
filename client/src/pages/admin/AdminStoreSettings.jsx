@@ -236,6 +236,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 placeholder="RM Toys"
                 schema={storeNameSchema}
+                maxLength={100}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -249,6 +250,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 placeholder="Your Trusted Online Toy Store"
                 schema={taglineSchema}
+                maxLength={150}
               />
             </div>
           </div>
@@ -264,6 +266,7 @@ export default function AdminStoreSettings() {
               rows={3}
               placeholder="Tell customers about your store..."
               schema={aboutUsSchema}
+              maxLength={1000}
             />
           </div>
         </div>
@@ -285,6 +288,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 placeholder="Juan Dela Cruz"
                 schema={shortTextSchema}
+                maxLength={100}
               />
             </div>
           </div>
@@ -299,6 +303,7 @@ export default function AdminStoreSettings() {
               rows={3}
               className="border border-black w-full rounded-[5px] p-2 outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Founded RM Toys in 2020 with a passion for bringing joy to children..."
+              maxLength={1000}
             />
           </div>
         </div>
@@ -320,6 +325,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 placeholder="support@rmtoys.com"
                 schema={emailSchema}
+                maxLength={254}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -333,6 +339,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 placeholder="0917XXXXXXX"
                 schema={phMobileSchema}
+                maxLength={11}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -346,6 +353,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 placeholder="Manila, Philippines"
                 schema={shortTextSchema}
+                maxLength={100}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -359,6 +367,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 placeholder="Mon-Sat, 9AM-6PM"
                 schema={shortTextSchema}
+                maxLength={100}
               />
             </div>
           </div>
@@ -381,6 +390,7 @@ export default function AdminStoreSettings() {
                 rows={2}
                 className="border border-black w-full rounded-[5px] p-2 outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="Free shipping for orders over ₱1,500. Metro Manila: 2-3 days."
+                maxLength={1000}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -394,6 +404,7 @@ export default function AdminStoreSettings() {
                 rows={2}
                 className="border border-black w-full rounded-[5px] p-2 outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="7-day returns with original receipt and unopened packaging."
+                maxLength={1000}
               />
             </div>
           </div>
@@ -428,6 +439,7 @@ export default function AdminStoreSettings() {
               onChange={(e) => setNewPaymentMethod(e.target.value)}
               className="border border-black flex-1 rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Add payment method (e.g., Maya)"
+              maxLength={50}
             />
             <Buttons
               buttonName="Add"
@@ -455,6 +467,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 className="border border-black w-full rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="facebook.com/rmtoys"
+                maxLength={255}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -468,6 +481,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 className="border border-black w-full rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="@rmtoys"
+                maxLength={255}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -481,6 +495,7 @@ export default function AdminStoreSettings() {
                 onChange={handleChange}
                 className="border border-black w-full rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
                 placeholder="@rmtoys"
+                maxLength={255}
               />
             </div>
           </div>
@@ -520,6 +535,7 @@ export default function AdminStoreSettings() {
               onChange={(e) => setNewCustomRule(e.target.value)}
               className="border border-black flex-1 rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="e.g., Always mention our holiday sale - 15% off!"
+              maxLength={200}
             />
             <Buttons
               buttonName="Add Rule"
@@ -582,6 +598,7 @@ export default function AdminStoreSettings() {
               }
               className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Trigger phrase (e.g., pinaka magandang babae)"
+              maxLength={100}
             />
             <input
               type="text"
@@ -594,6 +611,7 @@ export default function AdminStoreSettings() {
               }
               className="border border-black rounded-[5px] p-2 outline-none bg-gray-50 focus:bg-white transition-colors"
               placeholder="Response (e.g., That would be Girlie Marie! 💕)"
+              maxLength={300}
             />
           </div>
           <Buttons

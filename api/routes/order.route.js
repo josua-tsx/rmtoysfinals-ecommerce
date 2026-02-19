@@ -57,7 +57,7 @@ router.post(`/place-order`, requireAuth, validateResource(placeOrderSchema), use
 
 // router.post(`/place-order-stripe`, optionalAuth, guestOrderLimiter, placeOrderStripe);
 
-router.post(`/place-order-gcashQR`, optionalAuth, guestOrderLimiter, placeOrderGcashQR);
+router.post(`/place-order-gcashQR`, optionalAuth, guestOrderLimiter, validateResource(placeOrderSchema), placeOrderGcashQR);
 
 router.post("/validate-guest", guestOrderLimiter, validateGuestOrder)
 

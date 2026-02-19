@@ -37,13 +37,25 @@ export const validateResource = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      // Include field path in error message for easier debugging
       const issues = error.issues || error.errors || [];
-      const errorMessage = issues.length > 0 
-        ? issues.map(e => e.message).join(", ")
-        : "Validation failed";
+
+      // Build user-friendly messages with field names
+      const formattedErrors = issues.map((issue) => {
+        // Get the field name from the path (skip "body", "params", "query" prefix)
+        const fieldPath = issue.path
+          .filter((p) => !["body", "params", "query"].includes(p))
+          .join(".");
         
-      console.error("Validation Error:", errorMessage); // Log for debugging
+        if (fieldPath) {
+          return `${fieldPath}: ${issue.message}`;
+        }
+        return issue.message;
+      });
+
+      // Return only the first error for cleaner UX
+      const errorMessage = formattedErrors[0] || "Validation failed";
+        
+      console.error("Validation Error:", formattedErrors.join(" | ")); // Log all for debugging
       return next(handleMakeError(400, errorMessage));
     }
     next(error);

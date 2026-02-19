@@ -24,15 +24,12 @@ export const createTicket = async (req, res, next) => {
       images,
     } = req.body;
 
-    // Validation
-    if (!email || !name || !issueType || !subject || !message) {
-      return next(
-        handleMakeError(
-          400,
-          "Please provide all required fields: email, name, issueType, subject, and message"
-        )
-      );
-    }
+    /* 
+      VALIDATION REFACTOR NOTE:
+      Manual validations for email, name, issueType, subject, and message 
+      have been removed. These are now handled by Zod middleware 
+      in routes/ticket.route.js
+    */
 
     // Get userId if user is authenticated
     const userId = req.user?._id || null;

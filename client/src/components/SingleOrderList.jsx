@@ -189,7 +189,7 @@ export default function SingleOrderList({ order, onClose }) {
                 <label className="font-black uppercase text-[10px] tracking-widest text-gray-400">
                   Shipping To
                 </label>
-                <div className="p-3 bg-white border border-black rounded-[5px] text-xs font-bold leading-relaxed">
+                <div className="p-3 bg-white border border-black rounded-[5px] text-xs font-bold leading-relaxed break-all">
                   {order.shippingAddress}
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default function SingleOrderList({ order, onClose }) {
                 <label className="font-black uppercase text-[10px] tracking-widest text-red-700">
                   Issue Reported
                 </label>
-                <p className="text-sm font-bold text-red-900">
+                <p className="text-sm font-bold text-red-900 break-all">
                   {order?.reason || "No reason specified."}
                 </p>
               </div>

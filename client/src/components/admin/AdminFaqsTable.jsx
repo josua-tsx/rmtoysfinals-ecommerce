@@ -314,6 +314,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
               {...register("title")}
               error={errors.title}
               required
+              maxLength={100}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -329,6 +330,7 @@ export default function AdminFaqsTable({ enableMultiDel }) {
               {...register("answer")}
               className={`border ${errors.answer ? "border-red-500" : "border-black"} w-full rounded-[5px] p-3 font-bold text-sm bg-white outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none`}
               required
+              maxLength={500}
             ></textarea>
             {errors.answer && (
               <p className="text-red-500 text-xs font-bold">

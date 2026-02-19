@@ -384,6 +384,7 @@ export default function ShippingAddressComponent() {
                       : "Select City first"
                   }
                   disabled={!selectedCityCode}
+                  maxLength={100}
                 />
               )}
               {errors.barangay && (
@@ -399,6 +400,7 @@ export default function ShippingAddressComponent() {
               {...register("streetBuildingHouseNum")}
               error={errors.streetBuildingHouseNum}
               placeholder="Ex: 14 St. #28"
+              maxLength={200}
             />
           </div>
 

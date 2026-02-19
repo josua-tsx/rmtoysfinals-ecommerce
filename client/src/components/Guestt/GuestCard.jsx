@@ -9,6 +9,7 @@ import {
   updateSelected,
 } from "../../lib/utils";
 import toast from "react-hot-toast";
+import { updateCartQuantitySchema } from "../../schemas/cart.schema";
 
 export default function GuestCard({ productCart, refreshCart }) {
   const [quantity, setQuantity] = useState(1);
@@ -107,14 +108,25 @@ export default function GuestCard({ productCart, refreshCart }) {
             max={cart.stocks?.quantity || 10}
             value={quantity}
             onChange={(e) => {
-              const newQuantity = Math.max(
-                1,
-                Math.min(
-                  parseInt(e.target.value) || 1,
-                  cart.stocks?.quantity || 10
-                )
-              );
-              handleUpdateQuantity(newQuantity);
+              const val = parseInt(e.target.value) || 0;
+
+              // Zod Validation
+              const result = updateCartQuantitySchema.safeParse({
+                quantity: val,
+              });
+              if (!result.success) {
+                toast.error(result.error.errors[0].message);
+                return;
+              }
+
+              // Also check against stock if available (schema handles max 5, but stock might be lower)
+              const stockLimit = cart.stocks?.quantity || 10;
+              if (val > stockLimit) {
+                toast.error(`Only ${stockLimit} items available in stock`);
+                return;
+              }
+
+              handleUpdateQuantity(val);
             }}
             className="w-14 text-center border rounded-[5px] border-black"
           />

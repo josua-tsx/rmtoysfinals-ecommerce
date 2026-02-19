@@ -15,6 +15,7 @@ const PasswordInput = forwardRef(
       containerClassName = "",
       labelClassName = "",
       errorText = "",
+      isValid = false,
       autoComplete = "current-password",
       ...props
     },
@@ -49,7 +50,11 @@ const PasswordInput = forwardRef(
             placeholder={placeholder}
             required={required}
             autoComplete={autoComplete}
-            className={`border border-black rounded-[5px] p-3 w-full outline-none bg-gray-50 focus:bg-white transition-colors ${className}`}
+            className={`border border-black rounded-[5px] p-3 w-full outline-none bg-gray-50 focus:bg-white transition-colors ${
+              isValid
+                ? "border-green-500 focus:ring-1 focus:ring-green-200"
+                : ""
+            } ${className}`}
             {...props}
           />
           <button

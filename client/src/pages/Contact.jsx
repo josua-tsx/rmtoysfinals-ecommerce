@@ -73,6 +73,7 @@ export default function Contact() {
                   placeholder="Your email address"
                   value={senderEmail}
                   onChange={(e) => setSenderEmail(e.target.value)}
+                  maxLength={254}
                 />
               </div>
 
@@ -88,6 +89,7 @@ export default function Contact() {
                   onChange={(e) => setMessage(e.target.value)}
                   className="p-3 border resize-none border-black rounded focus:outline-primary"
                   placeholder="Your message here..."
+                  maxLength={500}
                 ></textarea>
               </div>
 

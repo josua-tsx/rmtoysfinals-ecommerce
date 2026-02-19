@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+
 import axiosInstance from "../../lib/axios";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
@@ -14,17 +14,12 @@ import {
   listMuncities,
   listBarangays,
 } from "@jobuntux/psgc";
+import ValidatedInput from "../../reusable/ValidatedInput";
+import Buttons from "../../reusable/Buttons";
 
-// Zod Schema for validation (matching API schema)
-const onboardingSchema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
-  phoneNumber: z.string().min(10, "Phone number is required"),
-  region: z.string().min(1, "Region is required"),
-  stateProvince: z.string().min(1, "Province is required"),
-  city: z.string().min(1, "City is required"),
-  barangay: z.string().min(1, "Barangay is required"),
-  streetBuildingHouseNum: z.string().min(1, "Street address is required"),
-});
+import { onboardingSchema } from "../../schemas/auth.schema";
+
+// Zod Schema (REMOVED: Using shared schema)
 
 export default function UserOnboardingModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
@@ -48,9 +43,10 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
     handleSubmit,
     trigger,
     setValue,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = useForm({
     resolver: zodResolver(onboardingSchema),
+    mode: "onChange",
     defaultValues: {
       fullName: currentUser?.fullName || "",
       phoneNumber: currentUser?.phoneNumber || "",
@@ -208,36 +204,28 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
 
                     {/* Full Name */}
                     <div>
-                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
-                        Full Name
-                      </label>
-                      <input
-                        {...register("fullName")}
-                        className="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 transition-all font-medium"
+                      <ValidatedInput
+                        label="Full Name"
+                        id="fullName"
                         placeholder="e.g. Juan Dela Cruz"
+                        {...register("fullName")}
+                        error={errors.fullName}
+                        isValid={!errors.fullName && dirtyFields.fullName}
+                        maxLength={100}
                       />
-                      {errors.fullName && (
-                        <p className="text-red-500 text-xs mt-1 font-medium">
-                          {errors.fullName.message}
-                        </p>
-                      )}
                     </div>
 
                     {/* Phone Number */}
                     <div>
-                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
-                        Phone Number
-                      </label>
-                      <input
-                        {...register("phoneNumber")}
-                        className="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 transition-all font-medium"
+                      <ValidatedInput
+                        label="Phone Number"
+                        id="phoneNumber"
                         placeholder="e.g. 09171234567"
+                        {...register("phoneNumber")}
+                        error={errors.phoneNumber}
+                        isValid={!errors.phoneNumber && dirtyFields.phoneNumber}
+                        maxLength={13}
                       />
-                      {errors.phoneNumber && (
-                        <p className="text-red-500 text-xs mt-1 font-medium">
-                          {errors.phoneNumber.message}
-                        </p>
-                      )}
                     </div>
                   </motion.div>
                 ) : (
@@ -325,7 +313,6 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
                       </div>
 
                       {/* Barangay */}
-                      {/* Barangay */}
                       <div className="col-span-2">
                         {barangays.length > 0 ? (
                           <select
@@ -349,6 +336,7 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
                                 ? "Enter Barangay manually"
                                 : "Select City first"
                             }
+                            maxLength={100}
                             className="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 transition-all font-medium text-sm disabled:opacity-50"
                           />
                         )}
@@ -361,16 +349,17 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
 
                       {/* Street */}
                       <div className="col-span-2">
-                        <input
-                          {...register("streetBuildingHouseNum")}
-                          className="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 transition-all font-medium text-sm"
+                        <ValidatedInput
+                          id="streetBuildingHouseNum"
                           placeholder="Street / Building / House No."
+                          {...register("streetBuildingHouseNum")}
+                          error={errors.streetBuildingHouseNum}
+                          isValid={
+                            !errors.streetBuildingHouseNum &&
+                            dirtyFields.streetBuildingHouseNum
+                          }
+                          maxLength={200}
                         />
-                        {errors.streetBuildingHouseNum && (
-                          <p className="text-red-500 text-xs mt-1 font-medium">
-                            {errors.streetBuildingHouseNum.message}
-                          </p>
-                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -382,35 +371,38 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="flex-1 py-3 rounded-md font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
                 >
                   Update Later
                 </button>
 
                 {step === 1 ? (
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    className="flex-[2] py-3 rounded-xl font-bold bg-black text-white hover:opacity-80 transition-opacity"
-                  >
-                    Next Step
-                  </button>
+                  <div className="flex-[2]">
+                    <Buttons
+                      type="button"
+                      onClick={handleNext}
+                      buttonName="Next Step"
+                      className="w-full py-3 bg-[#22c55e]  border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                    />
+                  </div>
                 ) : (
                   <div className="flex-[2] flex gap-2">
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="px-4 py-3 rounded-xl font-bold bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+                      className="px-6 py-3 rounded-md font-bold bg-white text-black border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                     >
                       Back
                     </button>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 py-3 rounded-xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all disabled:opacity-50"
-                    >
-                      {loading ? "Saving..." : "Continue"}
-                    </button>
+                    <div className="flex-1">
+                      <Buttons
+                        buttonType="submit"
+                        isLoading={loading}
+                        loadingText="Saving..."
+                        buttonName="Continue"
+                        className="w-full py-3 bg-indigo-500 text-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
