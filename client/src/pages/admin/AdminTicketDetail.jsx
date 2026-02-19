@@ -107,7 +107,7 @@ export default function AdminTicketDetail() {
         if (data.suggestedReply) {
           setReplyMessage(data.suggestedReply);
           toast.success(
-            "AI suggestion generated! Feel free to edit before sending."
+            "AI suggestion generated! Feel free to edit before sending.",
           );
         }
       },
@@ -299,6 +299,7 @@ export default function AdminTicketDetail() {
                   }}
                   placeholder="Type your reply..."
                   className="w-full bg-gray-100 border border-black rounded-[5px] px-4 py-3 focus:bg-white transition-all resize-none min-h-[80px] max-h-40 outline-none placeholder:text-gray-500 focus:shadow-inner"
+                  maxLength={1000}
                 />
                 <div className="flex gap-3 items-center justify-between">
                   {/* AI Suggest Button */}

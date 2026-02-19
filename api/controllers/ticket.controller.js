@@ -176,7 +176,7 @@ export const getAllTickets = async (req, res, next) => {
 export const getUserTickets = async (req, res, next) => {
   try {
     const userId = req.user?._id;
-    const { email } = req.query;
+    const { email, search } = req.query;
 
     if (!userId && !email) {
       return next(
@@ -188,7 +188,20 @@ export const getUserTickets = async (req, res, next) => {
     }
 
     // Build filter
-    const filter = userId ? { userId } : { email: email.toLowerCase() };
+    let filter = userId ? { userId } : { email: email.toLowerCase() };
+
+    if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
+      filter.$or = [
+        { subject: searchRegex },
+        { issueType: searchRegex },
+      ];
+
+      // If search is a valid ObjectId, add it to the search criteria
+      if (search.match(/^[0-9a-fA-F]{24}$/)) {
+        filter.$or.push({ _id: search });
+      }
+    }
 
     const tickets = await Ticket.find(filter)
       .sort({ createdAt: -1 })
