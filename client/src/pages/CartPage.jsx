@@ -97,9 +97,9 @@ export default function CartPage() {
                 )}
               </>
             ) : (
-              <div className="bg-white rounded-[5px] p-12 text-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center justify-center gap-6">
+              <div className="bg-white rounded-[5px] p-12 text-center border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center justify-center gap-6">
                 <div className="bg-gray-100 p-6 rounded-full border-2 border-black">
-                  <FaShoppingCart className="text-5xl text-gray-400" />
+                  <FaShoppingCart className="text-5xl text-primary" />
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-black">
