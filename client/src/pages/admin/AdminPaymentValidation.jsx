@@ -128,6 +128,7 @@ export default function AdminPaymentValidation() {
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="Enter the reason why this payment is being rejected..."
                   rows={4}
+                  maxLength={1000}
                   className="w-full p-3 border-2 border-black rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
                 />
                 <p className="text-xs text-gray-500 mt-1 italic">
