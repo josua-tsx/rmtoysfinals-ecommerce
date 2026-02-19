@@ -2,6 +2,7 @@ import columnOnePic from "../assets/column1.png";
 import { IoMdSend } from "react-icons/io";
 import { IoIosNotifications } from "react-icons/io";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useUserStore } from "../stores/useUserStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
@@ -9,6 +10,7 @@ import toast from "react-hot-toast";
 export default function EmailSubscriptionComponent() {
   const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser();
+  const checkAuth = useUserStore((state) => state.checkAuth);
   const isSubscribed = currentUser?.isSubscribed ?? false;
 
   const { mutate: toggleSubscription, isPending } = useMutation({
@@ -16,8 +18,9 @@ export default function EmailSubscriptionComponent() {
       const res = await axiosInstance.patch(`/subscribe/toggle`);
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      await checkAuth(); // Sync local store
       toast.success(data.message);
     },
     onError: (err) => {

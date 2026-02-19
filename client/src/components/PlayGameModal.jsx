@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useUserStore } from "../stores/useUserStore";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import gameLoading from "../assets/gameLoading.gif";
@@ -45,6 +46,7 @@ const choices = [
 
 export default function PlayGameModal({ user, closeModal }) {
   const queryClient = useQueryClient();
+  const checkAuth = useUserStore((state) => state.checkAuth);
 
   const [userChoice, setUserChoice] = useState(null);
   const [computerChoice, setComputerChoice] = useState(null);
@@ -67,9 +69,10 @@ export default function PlayGameModal({ user, closeModal }) {
       const res = await axiosInstance.post(`/random/play`, data);
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["users", "user"] });
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      await checkAuth(); // Sync local store
       setComputerChoice(data.computerChoice);
       setRenderResult(data.result);
       setRenderWinCount(data.winCount);
@@ -154,20 +157,20 @@ export default function PlayGameModal({ user, closeModal }) {
           </div>
         </div>
       ) : (
-        <div className="bg-white relative w-full max-w-4xl border rounded-[5px] overflow-hidden border-black flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="bg-white relative w-full max-w-4xl border rounded-[5px] h-[95dvh] overflow-auto border-black flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-300">
           <button
             onClick={() => {
               closeModal();
               handleResetGame();
             }}
-            className="absolute z-10 top-4 right-4 bg-red-500 text-white p-1 hover:bg-red-600 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="absolute z-10 top-4 right-2 bg-red-500 text-white p-1 hover:bg-red-600 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             <IoIosClose size={24} />
           </button>
 
           {/* Game Header */}
           <div className="bg-primary border-b-4 border-black p-4 text-center">
-            <h1 className="text-2xl md:text-4xl font-black text-white italic uppercase tracking-widest drop-shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2">
+            <h1 className="text-xl md:text-4xl font-black text-white italic uppercase tracking-widest drop-shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2">
               Free Credits Arena{" "}
               <span className="not-italic">
                 <FaTrophy />
