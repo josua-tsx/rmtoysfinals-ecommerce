@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import axiosInstance from "../lib/axios";
+import FaqSkeleton from "./skeleton/FaqSkeleton";
 
 const List = [
   {
@@ -35,17 +36,20 @@ You can use your collected points as a discount to reduce the total price of you
 export default function Faq() {
   const [openAnswer, setOpenAnswer] = useState(null);
 
-  const { data: faqsComponent = [] } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["faqs"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/faqs/get-all-faqs`);
       return res.data;
     },
+    refetchOnWindowFocus: false,
   });
 
   const handleToggleList = (id) => {
     setOpenAnswer(openAnswer === id ? null : id);
   };
+
+  const faqs = data?.faqs || [];
 
   return (
     <section className=" bg-yellow p-3 font-main pt-28 ">
@@ -58,14 +62,54 @@ export default function Faq() {
           </div>
           <div className="h-10"></div> {/* Spacer for the sticker */}
           <div className="flex flex-col w-full md:w-[750px] gap-5">
-            {faqsComponent && faqsComponent.length > 0
-              ? faqsComponent.map((faq) => (
+            {isLoading ? (
+              <FaqSkeleton />
+            ) : faqs && faqs.length > 0 ? (
+              faqs.map((faq) => (
+                <li
+                  className="border flex flex-col w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                  key={faq._id}
+                  onClick={() => handleToggleList(faq._id)}
+                >
+                  <h3 className=" text-normal tracking-tight pr-4">
+                    {faq.title}
+                  </h3>
+
+                  <div
+                    className={`grid transition-all duration-300 ease-in-out ${
+                      openAnswer && openAnswer === faq._id
+                        ? "grid-rows-[1fr] opacity-100 mt-4"
+                        : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="overflow-hidden border-t-2 border-black/5 pt-4">
+                      <p className="text-gray-700 leading-relaxed font-main">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="absolute right-4 top-5">
+                    <IoMdAdd
+                      size={24}
+                      className={`${
+                        openAnswer && openAnswer === faq._id
+                          ? "rotate-45 text-red-600"
+                          : "rotate-0 text-black"
+                      } transition-all duration-300 transform scale-125`}
+                    />
+                  </div>
+                </li>
+              ))
+            ) : (
+              List.map((faq) => (
+                <>
                   <li
                     className="border flex flex-col w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     key={faq._id}
                     onClick={() => handleToggleList(faq._id)}
                   >
-                    <h3 className=" text-normal tracking-tight pr-4">
+                    <h3 className="text-normal md:text-lg  tracking-tight pr-4">
                       {faq.title}
                     </h3>
 
@@ -73,7 +117,7 @@ export default function Faq() {
                       className={`grid transition-all duration-300 ease-in-out ${
                         openAnswer && openAnswer === faq._id
                           ? "grid-rows-[1fr] opacity-100 mt-4"
-                          : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+                          : "grid-rows-[0fr] opacity-0 mt-0  pointer-events-none"
                       }`}
                     >
                       <div className="overflow-hidden border-t-2 border-black/5 pt-4">
@@ -94,45 +138,9 @@ export default function Faq() {
                       />
                     </div>
                   </li>
-                ))
-              : List.map((faq) => (
-                  <>
-                    <li
-                      className="border flex flex-col w-full list-none transition-all duration-300 bg-card border-black focus:outline-primary p-4 rounded-[5px] relative cursor-pointer pr-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
-                      key={faq._id}
-                      onClick={() => handleToggleList(faq._id)}
-                    >
-                      <h3 className="text-normal md:text-lg  tracking-tight pr-4">
-                        {faq.title}
-                      </h3>
-
-                      <div
-                        className={`grid transition-all duration-300 ease-in-out ${
-                          openAnswer && openAnswer === faq._id
-                            ? "grid-rows-[1fr] opacity-100 mt-4"
-                            : "grid-rows-[0fr] opacity-0 mt-0  pointer-events-none"
-                        }`}
-                      >
-                        <div className="overflow-hidden border-t-2 border-black/5 pt-4">
-                          <p className="text-gray-700 leading-relaxed font-main">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="absolute right-4 top-5">
-                        <IoMdAdd
-                          size={24}
-                          className={`${
-                            openAnswer && openAnswer === faq._id
-                              ? "rotate-45 text-red-600"
-                              : "rotate-0 text-black"
-                          } transition-all duration-300 transform scale-125`}
-                        />
-                      </div>
-                    </li>
-                  </>
-                ))}
+                </>
+              ))
+            )}
           </div>
         </div>
       </div>
