@@ -11,25 +11,30 @@ import { useNotificationStore } from "../stores/useNotificationStore";
  */
 export const useSocketNotifications = (user) => {
   const addNotification = useNotificationStore((state) => state.addNotification);
-  const isAdmin = user?.role === "admin" || user?.role === "validatorStaff" || user?.isAdmin;
+  const isAdmin =
+    user?.role === "admin" || user?.role === "validatorStaff" || user?.isAdmin;
   const isCustomer = user?.role === "customer" || (!user?.role && user?._id);
 
   useEffect(() => {
-    // Only connect if user is logged in
-    if (!user) return;
+    if (!user) {
+      if (socket.connected) {
+        socket.disconnect();
+      }
+      return;
+    }
 
-    // Connect to socket server
     if (!socket.connected) {
       socket.connect();
     }
+  }, [user]);
 
-    // Role-based Room Joining & Listeners
+  useEffect(() => {
+    if (!user) return;
+
     if (isAdmin) {
-      // Admin joins a special room for receiving notifications
       socket.emit("join-admin-room");
       console.log("Joined admin room");
 
-      // Listen for new ticket notifications
       const handleNewTicket = (data) => {
         addNotification({
           type: "new-ticket",
@@ -45,7 +50,6 @@ export const useSocketNotifications = (user) => {
         });
       };
 
-      // Listen for new reply notifications (Customer replying to Admin)
       const handleCustomerReply = (data) => {
         addNotification({
           type: "new-ticket-reply",
@@ -66,29 +70,26 @@ export const useSocketNotifications = (user) => {
       return () => {
         socket.off("new-ticket", handleNewTicket);
         socket.off("new-ticket-reply", handleCustomerReply);
-        socket.disconnect();
       };
-    } 
-    
+    }
+
     if (isCustomer) {
-      // Customer joins their personal room
       socket.emit("join-customer-room", user._id);
       console.log(`Joined customer room: ${user._id}`);
 
-      // Listen for admin replies
       const handleAdminReply = (data) => {
         addNotification({
           type: "admin-reply",
-          title: `Reply from Support`,
+          title: "Reply from Support",
           message: `${data.adminName}: ${data.replyPreview}`,
           ticketId: data.ticketId,
           timestamp: new Date().toISOString(),
         });
 
         toast.success(`💬 Support: ${data.replyPreview}`, {
-            duration: 4000,
-            icon: '💬',
-            position: "top-right",
+          duration: 4000,
+          icon: "💬",
+          position: "top-right",
         });
       };
 
@@ -96,9 +97,7 @@ export const useSocketNotifications = (user) => {
 
       return () => {
         socket.off("admin-reply", handleAdminReply);
-        socket.disconnect();
       };
     }
-
   }, [user, isAdmin, isCustomer, addNotification]);
 };

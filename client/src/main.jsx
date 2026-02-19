@@ -8,6 +8,7 @@ import {
   RootLayout,
   ValidatorStaffLayout,
 } from "./layout/RootLayout.jsx";
+import LoadingSpinner from "./reusable/LoadingSpinner.jsx";
 
 // Lazy load components
 const LandingPage = lazy(() => import("./pages/LandingPage.jsx"));
@@ -232,142 +233,130 @@ const router = createBrowserRouter([
         element: <AdminProducts />,
       },
       {
-        path: "/admin/addProducts",
+        path: "addProducts",
         element: <AdminAddProducts />,
       },
       {
-        path: "/admin/batch-upload",
+        path: "batch-upload",
         element: <AdminBatchUpload />,
       },
       {
-        path: "/admin/editProduct/:productid",
+        path: "editProduct/:productid",
         element: <AdminEditProducts />,
       },
       {
-        path: "/admin/category",
+        path: "category",
         element: <AdminCategory />,
       },
       {
-        path: "/admin/batch-category",
+        path: "batch-category",
         element: <AdminBatchCategory />,
       },
 
       // SUPPLIER
       {
-        path: "/admin/supplier",
+        path: "supplier",
         element: <AdminSupplier />,
       },
       {
-        path: "/admin/batch-supplier",
+        path: "batch-supplier",
         element: <AdminBatchSupplier />,
       },
 
       {
-        path: "/admin/user",
+        path: "user",
         element: <AdminUser />,
       },
 
       // STOCKS
       {
-        path: "/admin/stocks",
+        path: "stocks",
         element: <AdminStocks />,
       },
       {
-        path: "/admin/batch-stock",
+        path: "batch-stock",
         element: <AdminBatchStock />,
       },
 
       {
-        path: "/admin/pendingStocks",
+        path: "pendingStocks",
         element: <AdminStocksPending />,
       },
 
       {
-        path: "/admin/stockHistory",
+        path: "stockHistory",
         element: <AdminStockHistory />,
       },
 
       // WORKER
       {
-        path: "/admin/worker",
+        path: "worker",
         element: <AdminWorker />,
       },
 
       {
-        path: "/admin/orderStatus",
+        path: "orderStatus",
         element: <AdminOrderStatus />,
       },
 
       {
-        path: "/admin/orderTransactions",
+        path: "orderTransactions",
         element: <AdminOrderTransact />,
       },
 
       {
-        path: "/admin/audit",
+        path: "audit",
         element: <AdminAuditTrailLogs />,
       },
       {
-        path: "/admin/archives",
+        path: "archives",
         element: <AdminArchives />,
       },
 
       {
-        path: "/admin/productReviews",
+        path: "productReviews",
         element: <AdminProductReviews />,
       },
 
       //  RIDER
       {
-        path: "/admin/rider",
+        path: "rider",
         element: <AdminRider />,
       },
       {
-        path: "/admin/batch-rider",
+        path: "batch-rider",
         element: <AdminBatchRider />,
       },
       {
-        path: "/admin/batch-faq",
+        path: "batch-faq",
         element: <AdminBatchFaq />,
       },
 
       // VAT
 
       {
-        path: "/admin/vat",
+        path: "vat",
         element: <AdminVat />,
-      },
-
-      // AUDIT
-
-      {
-        path: "/admin/audit",
-        element: <AdminAuditTrailLogs />,
-      },
-
-      {
-        path: "/admin/orderTransactions",
-        element: <AdminOrderTransact />,
       },
 
       // FAQS
       {
-        path: "/admin/faqs",
+        path: "faqs",
         element: <AdminFaqs />,
       },
       // TICKETS
       {
-        path: "/admin/tickets",
+        path: "tickets",
         element: <AdminTicket />,
       },
       {
-        path: "/admin/ticket/:ticketId",
+        path: "ticket/:ticketId",
         element: <AdminTicketDetail />,
       },
 
       // STORE SETTINGS (AI CHATBOT CONFIG)
       {
-        path: "/admin/store-settings",
+        path: "store-settings",
         element: <AdminStoreSettings />,
       },
     ],

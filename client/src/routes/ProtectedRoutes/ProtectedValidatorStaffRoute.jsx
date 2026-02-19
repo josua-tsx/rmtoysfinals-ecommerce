@@ -18,7 +18,6 @@ export default function ProtectedValidatorStaffRoute({ children }) {
       </div>
     );
   }
-  0;
 
   // Check if the currentUser is loaded and contains the role
   if (!currentUser) {
