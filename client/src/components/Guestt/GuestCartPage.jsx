@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useOrderStore from "../../stores/useOrderStore";
 import { getGuestCart } from "../../lib/utils";
 import CreditPointsAuto from "../CreditPointsAuto";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaArrowRight, FaSearch } from "react-icons/fa";
 import formatPrice from "../../reusable/formatPrice";
 import Buttons from "../../reusable/Buttons";
 import GuestCard from "./GuestCard";
@@ -15,7 +15,7 @@ export default function GuestCartPage() {
   const [openOrderModal, setOrderModal] = useState(false);
   const [cart, setCart] = useState(getGuestCart());
   const [page, setPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const navigate = useNavigate();
 
@@ -29,7 +29,10 @@ export default function GuestCartPage() {
   }, [currentOrder, clearOrder]);
 
   const totalPrice = cart?.items?.reduce((total, item) => {
-    return total + item.price * item.quantity;
+    if (item.isSelected) {
+      return total + item.price * item.quantity;
+    }
+    return total;
   }, 0);
 
   const updateCart = () => {
@@ -42,127 +45,142 @@ export default function GuestCartPage() {
     cart?.items?.slice((page - 1) * itemsPerPage, page * itemsPerPage) || [];
 
   return (
-    <section className="pt-[130px] bg-yellow  text-sm md:text-normal font-main p-3">
+    <section className="pt-[130px] min-h-screen bg-yellow text-sm md:text-normal font-main p-4 md:p-8">
       {openOrderModal && (
         <GuestSummaryModal onClose={() => setOrderModal(false)} />
       )}
 
-      <div className="max-w-[1280px] bg-yellow h-screen mx-auto">
-        <div className="flex  w-full flex-col  mb-5 ">
-          <h1 className="text-3xl md:text-4xl">Guest Cart</h1>
-          <p className="text-gray-600 mt-2">
-            {cart?.items?.length > 1
-              ? cart?.items?.length + " items in your cart"
-              : cart?.items?.length + " item in your cart"}
+      <div className="max-w-[1280px] mx-auto">
+        <div className="flex w-full flex-col mb-8">
+          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
+            Guest Cart
+          </h1>
+          <p className="text-gray-600 mt-2 font-medium">
+            {totalItems > 0
+              ? `You have ${totalItems} ${totalItems === 1 ? "item" : "items"} ready for checkout`
+              : "Your cart is currently empty"}
           </p>
         </div>
 
         <CreditPointsAuto />
 
-        <form className="flex flex-col md:flex-row pb-10 w-full bg-yellow gap-4">
-          <div className="flex flex-col  gap-3  rounded-[5px]  h-[400px] md:h-[550px]  overflow-y-auto md:flex-1 ">
-            {/* PRODUCTS GOES HERE */}
-
+        <div className="flex flex-col lg:flex-row gap-8 pb-10 w-full relative">
+          {/* Cart Items List */}
+          <div className="flex-1 flex flex-col gap-4">
             {paginatedItems.length > 0 ? (
-              paginatedItems.map((item) => (
-                <GuestCard
-                  key={item._id}
-                  refreshCart={updateCart}
-                  productCart={item}
-                />
-              ))
-            ) : (
-              <div className="bg-white rounded-lg p-8 text-center shadow-sm border border-black">
-                <FaShoppingCart className="mx-auto text-4xl text-black mb-4" />
-                <h3 className="text-xl font-medium text-black mb-2">
-                  Your Cart is empty
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  {" "}
-                  Add items to your cart by clicking &quot;Add to Cart&quot; on
-                  products. They&apos;ll appear here ready for purchase.
-                </p>
-                <button
-                  onClick={() => navigate("/shop")}
-                  className="bg-primary border border-black p-2 rounded-[5px] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                >
-                  Browse products
-                </button>
-              </div>
-            )}
+              <>
+                <div className="flex flex-col gap-4 min-h-[150px]">
+                  {paginatedItems.map((item) => (
+                    <GuestCard
+                      key={item._id}
+                      refreshCart={updateCart}
+                      productCart={item}
+                    />
+                  ))}
+                </div>
 
-            {/* Pagination Controls */}
-            {totalItems > 0 && (
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                onPageChange={setPage}
-                isLoading={false}
-                currentItemsCount={paginatedItems.length}
-              />
+                {/* Pagination Controls */}
+                {totalPages > 0 && (
+                  <div className="mt-6 flex justify-center bg-yellow pb-4 pt-2 z-10">
+                    <Pagination
+                      currentPage={page}
+                      totalPages={totalPages}
+                      totalItems={totalItems}
+                      onPageChange={setPage}
+                      isLoading={false}
+                      currentItemsCount={paginatedItems.length}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="bg-white rounded-[5px] p-12 text-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center justify-center gap-6">
+                <div className="bg-gray-100 p-6 rounded-full border-2 border-black">
+                  <FaShoppingCart className="text-5xl text-gray-400" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-black">
+                    Your Cart is Empty
+                  </h3>
+                  <p className="text-gray-500 max-w-sm mx-auto">
+                    Looks like you haven't added anything yet. Explore our shop
+                    to find the best toys!
+                  </p>
+                </div>
+                <Buttons
+                  buttonName="Start Shopping"
+                  onClick={() => navigate("/shop")}
+                  icon={<FaSearch size={18} />}
+                  animateIcon={true}
+                  className="px-8 py-3 text-lg"
+                />
+              </div>
             )}
           </div>
 
+          {/* Order Summary Sidebar */}
           {cart?.items?.length > 0 && (
-            <div className="border w-full md:w-[320px] gap-4 flex flex-col bg-white rounded-lg p-6 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] self-start sticky top-[140px]">
-              <h1 className="text-2xl font-black uppercase tracking-widest border-b border-black pb-2">
-                Order Summary
-              </h1>
+            <div className="lg:w-[380px] flex-shrink-0">
+              <div className="bg-white border-2 border-black rounded-[5px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sticky top-[140px]">
+                <h2 className="text-2xl font-black uppercase tracking-widest border-b-2 border-black pb-4 mb-6">
+                  Order Summary
+                </h2>
 
-              <div className="bg-red-50 border border-black rounded-[5px] p-3 text-red-700 shadow-[4px_4px_0px_0px_rgba(239,68,68,0.2)]">
-                <div className="flex gap-2">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <svg
-                      className="h-4 w-4 text-red-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-[11px] font-bold leading-tight">
-                    <span className="uppercase font-black">Limit:</span> Max 5
-                    items per product per order.
+                {/* Limit Warning */}
+                <div className="bg-red-50 border-2 border-red-200 rounded-[5px] p-4 text-red-700 mb-6 flex gap-3 items-start">
+                  <svg
+                    className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <p className="text-xs font-bold leading-tight">
+                    <span className="uppercase font-black block mb-1">
+                      Purchase Limit
+                    </span>
+                    Max 5 items per product per order.
                   </p>
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-3 my-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-black uppercase text-gray-400">
-                    Total Items
-                  </span>
-                  <span className="font-bold">{cart?.items?.length}</span>
-                </div>
-                <div className="h-px bg-dashed border-b-2 border-dashed border-gray-100 my-1" />
-                <div className="flex justify-between items-end">
-                  <span className="text-sm font-black uppercase tracking-tighter">
-                    Subtotal
-                  </span>
-                  <div className="text-right">
-                    <span className="text-2xl font-black block leading-none text-indigo-600">
-                      {cart?.items ? formatPrice(totalPrice) : "0.00"}
+                <div className="space-y-4 mb-8">
+                  <div className="flex justify-between items-center text-gray-600 font-bold">
+                    <span>Total Items</span>
+                    <span>{cart?.items?.length}</span>
+                  </div>
+
+                  <div className="border-t-2 border-dashed border-gray-300 my-4" />
+
+                  <div className="flex justify-between items-end">
+                    <span className="text-lg font-black uppercase tracking-tight">
+                      Subtotal
                     </span>
-                    <span className="text-[10px] font-black uppercase text-gray-400">
-                      Philippine Peso
-                    </span>
+                    <div className="text-right">
+                      <span className="text-3xl font-black block leading-none text-indigo-600 drop-shadow-[1px_1px_0px_rgba(0,0,0,0.1)]">
+                        {cart?.items ? formatPrice(totalPrice) : "0.00"}
+                      </span>
+                      <span className="text-[10px] font-black uppercase text-gray-400">
+                        Philippine Peso
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <Buttons
-                buttonName="Proceed to Checkout"
-                onClick={() => setOrderModal(true)}
-                className="w-full py-4 text-base"
-              />
+                <Buttons
+                  buttonName="Proceed to Checkout"
+                  onClick={() => setOrderModal(true)}
+                  icon={<FaArrowRight size={18} />}
+                  animateIcon={true}
+                  className="w-full py-4 text-base font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                />
+              </div>
             </div>
           )}
-        </form>
+        </div>
       </div>
     </section>
   );
