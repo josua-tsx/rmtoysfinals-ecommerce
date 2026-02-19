@@ -8,7 +8,6 @@ import {
   RootLayout,
   ValidatorStaffLayout,
 } from "./layout/RootLayout.jsx";
-import LoadingSpinner from "./reusable/LoadingSpinner.jsx";
 
 // Lazy load components
 const LandingPage = lazy(() => import("./pages/LandingPage.jsx"));
