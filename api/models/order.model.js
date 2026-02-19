@@ -44,7 +44,7 @@ const OrderModelSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Online Payment", "Cod", "GcashQR"],
+      enum: ["Cod", "GcashQR"],
       default: "Cod",
     },
 
