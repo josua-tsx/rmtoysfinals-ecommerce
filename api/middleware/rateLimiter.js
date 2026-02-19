@@ -12,7 +12,7 @@ import rateLimit from "express-rate-limit";
 // Strict limiter for auth routes (login, register, password reset)
 export const authLimiter = rateLimit({
   windowMs: 1 * 60 * 2000, // 1 minute
-  max: 5, // 5 attempts per window
+  max: 8, // 5 attempts per window
   message: {
     success: false,
     message: "Too many attempts. Please try again after 2 minutes.",
@@ -36,7 +36,7 @@ export const apiLimiter = rateLimit({
 // Ultra-strict limiter for sensitive operations (e.g., password reset email)
 export const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // 3 requests per hour
+  max: 8, // 3 requests per hour
   message: {
     success: false,
     message: "Rate limit exceeded. Please try again in an hour.",
