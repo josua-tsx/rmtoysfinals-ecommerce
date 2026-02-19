@@ -42,7 +42,6 @@ export default function Faq() {
       const res = await axiosInstance.get(`/faqs/get-all-faqs`);
       return res.data;
     },
-    refetchOnWindowFocus: false,
   });
 
   const handleToggleList = (id) => {
