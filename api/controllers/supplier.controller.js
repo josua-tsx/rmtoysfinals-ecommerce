@@ -498,10 +498,20 @@ export const batchAddSuppliers = async (req, res, next) => {
     };
 
     // Cache existing suppliers
-    const existingSuppliers = await Supplier.find({}, "supplierName");
+    const existingSuppliers = await Supplier.find({}, "supplierName contactNumber");
     const existingNames = new Set(
       existingSuppliers.map((s) => s.supplierName.toLowerCase().trim())
     );
+    const existingSupplierPhones = new Set(
+      existingSuppliers.map((s) => s.contactNumber)
+    );
+
+    // Pre-fetch User and Rider phones for cross-collection duplicate check
+    const allUsers = await User.find({}, "phoneNumber");
+    const existingUserPhones = new Set(allUsers.map((u) => u.phoneNumber));
+
+    const allRiders = await Rider.find({}, "riderPhoneNumber");
+    const existingRiderPhones = new Set(allRiders.map((r) => r.riderPhoneNumber));
 
     for (const [index, row] of data.entries()) {
       const rowNum = index + 2;
@@ -551,6 +561,7 @@ export const batchAddSuppliers = async (req, res, next) => {
       }
 
       const normalizedName = supplierName.trim();
+      const normalizedPhone = contactNumber.trim();
 
       if (existingNames.has(normalizedName.toLowerCase())) {
         results.failed++;
@@ -561,12 +572,40 @@ export const batchAddSuppliers = async (req, res, next) => {
         continue;
       }
 
+      // Check duplications for phone
+      if (existingSupplierPhones.has(normalizedPhone)) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Phone '${normalizedPhone}' already exists in Suppliers`,
+        });
+        continue;
+      }
+
+      if (existingUserPhones.has(normalizedPhone)) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Phone '${normalizedPhone}' belongs to a registered User`,
+        });
+        continue;
+      }
+
+      if (existingRiderPhones.has(normalizedPhone)) {
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Phone '${normalizedPhone}' belongs to a registered Rider`,
+        });
+        continue;
+      }
+
       // Create Supplier
       try {
         const newSupplier = new Supplier({
           supplierName: normalizedName,
           contactPerson: contactPerson.trim(),
-          contactNumber: contactNumber.trim(),
+          contactNumber: normalizedPhone,
           supplierAddress: supplierAddress.trim(),
           enableNotifications:
             String(enableNotifications).toUpperCase() === "TRUE",

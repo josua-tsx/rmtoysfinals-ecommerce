@@ -1,6 +1,7 @@
 import Category from "../models/category.model.js";
 import { handleMakeError } from "../middleware/handleError.js";
 import { logAuditTrail } from "./audit.controller.js";
+import { createCategorySchema } from "../schema/category.schema.js";
 import Stocks from "../models/stocks.model.js";
 
 export const addCategory = async (req, res, next) => {
