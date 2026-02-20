@@ -44,6 +44,8 @@ export default function GcashPaymentPage() {
     }
   }, [currentOrder, navigate]);
 
+  console.log(currentOrder);
+
   const {
     register,
     handleSubmit,
@@ -431,23 +433,31 @@ export default function GcashPaymentPage() {
                 {currentOrder?.orderItems?.map((item, idx) => (
                   <div key={idx} className="flex gap-3 text-sm">
                     <div className="w-12 h-12 bg-white rounded border border-gray-200 flex-shrink-0 overflow-hidden">
-                      {/* Assuming item has image or fallback */}
                       <img
-                        src={item?.productImages?.[0] || item?.image}
+                        src={
+                          item?.productId?.productImages?.[0] ||
+                          item?.productImages?.[0] ||
+                          item?.image
+                        }
                         alt=""
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1">
                       <div className="font-medium text-gray-800 line-clamp-1">
-                        {item.name || "Product"}
+                        {item?.productId?.productName || item.name || "Product"}
                       </div>
                       <div className="text-gray-500">
-                        Qty: {item.quantity} × ₱{formatPrice(item.price)}
+                        Qty: {item.quantity} × ₱
+                        {formatPrice(item?.productId?.price || item.price)}
                       </div>
                     </div>
                     <div className="font-bold text-gray-700">
-                      ₱{formatPrice(item.price * item.quantity)}
+                      ₱
+                      {formatPrice(
+                        (item?.productId?.price || item.price || 0) *
+                          item.quantity,
+                      )}
                     </div>
                   </div>
                 ))}
