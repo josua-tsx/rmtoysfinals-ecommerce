@@ -42,7 +42,7 @@ export const productBodyBase = z.object({
       .array(z.string())
       .min(1, "At least one product image is required"),
       
-    points: z.coerce.number().optional().default(0),
+    points: z.coerce.number().min(0, "Points cannot be negative").optional().default(0),
     
     taxStatus: z.enum(["vatable", "exempt"]).optional().default("exempt"),
     

@@ -14,10 +14,12 @@ export const faqsSchema = z.object({
     title: z.string({ required_error: "Title is required" })
         .trim()
         .min(1, "Title is required")
+        .max(100, "Title cannot exceed 100 characters")
         .regex(titleRegex, "Invalid title format"),
     answer: z.string({ required_error: "Answer is required" })
         .trim()
         .min(1, "Answer is required")
+        .max(500, "Answer cannot exceed 500 characters"),
         // .regex(answerRegex, "Invalid answer format"), // Commented out to be less strict if needed, matching controller
   }),
 });
