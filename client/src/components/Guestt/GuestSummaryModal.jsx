@@ -6,6 +6,7 @@ import { IoIosClose } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import formatPrice from "../../reusable/formatPrice";
 import useOrderStore from "../../stores/useOrderStore";
+import useOrderCalculations from "../../hooks/useOrderCalculations";
 import axiosInstance from "../../lib/axios";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,14 +32,24 @@ const guestOrderSchema = z.object({
 });
 
 export default function GuestSummaryModal({ onClose }) {
-  const currentOrder = useOrderStore((state) => state.currentOrder);
+  const { buyNowItems, isSummaryModalOpen, setSummaryModalOpen } =
+    useOrderStore();
   const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
   const navigate = useNavigate();
-  // const [notes, setNotes] = useState(""); // Managed by RHF now
-  const [taxes] = useState(0);
   const [shippingFee] = useState(35);
   const [cartItems, setCartItems] = useState([]);
-  const [cart] = useState(guestSelectedCarts());
+
+  const cart = useMemo(() => {
+    if (!isSummaryModalOpen) return [];
+    if (buyNowItems) {
+      return buyNowItems.map((item) => ({
+        ...item,
+        quantity: item.buyNowQuantity || 1,
+        isSelected: true,
+      }));
+    }
+    return guestSelectedCarts();
+  }, [buyNowItems, isSummaryModalOpen]);
 
   // ── OTP State ──
   const [otpToken, setOtpToken] = useState(null);
@@ -152,7 +163,16 @@ export default function GuestSummaryModal({ onClose }) {
 
   const watchedPhone = watch("phoneNumber");
 
-  const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+  // Accessor functions for guest cart items (flat structure, not nested under productId)
+  const guestAccessors = useMemo(
+    () => ({
+      getPrice: (item) => item?.price,
+      getTaxStatus: (item) => item?.taxStatus,
+      getPoints: (item) => item?.points,
+      getVatPercent: (item) => item?.vat?.vatPercent,
+    }),
+    [],
+  );
 
   const {
     subtotal,
@@ -161,72 +181,7 @@ export default function GuestSummaryModal({ onClose }) {
     totalVatAmount,
     totalPoints,
     totalPrice,
-  } = useMemo(() => {
-    // Convert shipping to number safely
-    const shippingGross = Number(shippingFee || 0);
-
-    let grossExempt = 0;
-    let points = 0;
-    let itemsSubtotal = 0; // sum of item prices only
-
-    for (const item of cart || []) {
-      const price = Number(item?.price || 0);
-      const qty = Number(item?.quantity || 0);
-      const gross = price * qty;
-      const taxStatus = (item?.taxStatus || "").toLowerCase();
-
-      itemsSubtotal += gross;
-      points += Number(item?.points || 0) * qty;
-
-      if (taxStatus !== "vatable") {
-        // Exempt or zero-VAT - treat as non-taxable
-        grossExempt += gross;
-      }
-    }
-
-    // Shipping is VAT-exempt (not subject to VAT)
-
-    // Calculate VAT from vatable items (VAT-inclusive pricing)
-    // For each vatable item, price already includes VAT
-    let totalVatableNet = 0;
-    let totalVatAmount = 0;
-
-    for (const item of cart || []) {
-      const taxStatus = (item?.taxStatus || "").toLowerCase();
-      if (taxStatus === "vatable") {
-        const price = Number(item?.price || 0);
-        const qty = Number(item?.quantity || 0);
-        const gross = price * qty;
-
-        // Get VAT rate from product, default to 12% if not found
-        const vatRate = item?.vat?.vatPercent ?? 12;
-        const vatFactor = 1 + vatRate / 100;
-
-        // Calculate net and VAT (VAT-inclusive)
-        const net = gross / vatFactor;
-        const vat = gross - net;
-
-        totalVatableNet += net;
-        totalVatAmount += vat;
-      }
-    }
-
-    // Shipping is not included in VAT calculation
-
-    const subtotal = ROUND(itemsSubtotal);
-    const totalPrice = ROUND(itemsSubtotal + shippingGross);
-
-    return {
-      subtotal,
-      vatableSalesNet: ROUND(totalVatableNet),
-      vatExemptSales: ROUND(grossExempt),
-      totalVatAmount: ROUND(totalVatAmount),
-      totalPoints: points,
-      totalPrice,
-    };
-  }, [cart, shippingFee]);
-
-  console.log(currentOrder);
+  } = useOrderCalculations(cart, shippingFee, guestAccessors);
 
   useEffect(() => {
     if (cart) {
@@ -308,7 +263,7 @@ export default function GuestSummaryModal({ onClose }) {
         email: email.trim(),
       },
       paymentMethod,
-      taxPrice: taxes,
+      taxPrice: 0,
       shippingPrice: shippingFee,
       vatableSalesNet,
       vatExemptSales,
@@ -316,7 +271,7 @@ export default function GuestSummaryModal({ onClose }) {
       subtotal,
       totalPrice: totalPrice,
       notes,
-      quantity: cartItems?.quantity,
+      quantity: cartItems?.reduce((sum, item) => sum + (item.quantity || 0), 0),
       totalPoints,
       otpToken, // Include OTP verification token
     };
@@ -359,10 +314,14 @@ export default function GuestSummaryModal({ onClose }) {
     //     usedCredits: 0,
     //     otpToken, // Include OTP verification token
     //   };
-
-    //   placeStripeOrder(stripeOrderData);
-    // }
   };
+
+  const handleClose = () => {
+    setSummaryModalOpen(false);
+    onClose?.();
+  };
+
+  if (!isSummaryModalOpen) return null;
 
   return (
     <section className="fixed inset-0 overflow-y-auto flex items-center justify-center font-main z-50 backdrop-blur-sm p-4">
@@ -374,7 +333,7 @@ export default function GuestSummaryModal({ onClose }) {
             <h2 className="text-2xl">Order Summary</h2>
 
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="group border-2 border-black text-white bg-red-700 rounded-[5px] p-0.5 hover:bg-red-800 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               <IoIosClose size={28} />
@@ -502,8 +461,8 @@ export default function GuestSummaryModal({ onClose }) {
 
                     {!otpSent && (
                       <p className="text-xs text-gray-500">
-                        Enter your phone number above, then click {'"Send OTP"'}{" "}
-                        to verify.
+                        Enter your phone number above, then click &apos;Send
+                        OTP&apos; to verify.
                       </p>
                     )}
                   </>
@@ -591,7 +550,7 @@ export default function GuestSummaryModal({ onClose }) {
               </button>
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 className="px-8 py-4 border-2 border-black bg-[#b91c1c] text-white rounded-[5px] font-black uppercase tracking-widest text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] active:scale-95 transition-all outline-none"
               >
                 Cancel

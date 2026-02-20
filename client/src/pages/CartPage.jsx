@@ -3,7 +3,6 @@ import CartCard from "../components/CartCard";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useEffect, useState } from "react";
-import OrderSummaryModal from "../components/OrderSummaryModal";
 import formatPrice from "../reusable/formatPrice";
 import CreditPointsAuto from "../components/CreditPointsAuto";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +12,7 @@ import LoadingSpinner from "../reusable/LoadingSpinner";
 import Pagination from "../reusable/Pagination";
 
 export default function CartPage() {
-  const [openOrderModal, setOrderModal] = useState(false);
+  const { setSummaryModalOpen } = useOrderStore();
   const [page, setPage] = useState(1);
 
   const navigate = useNavigate();
@@ -53,10 +52,6 @@ export default function CartPage() {
 
   return (
     <section className="pt-[130px] min-h-screen bg-yellow text-sm md:text-normal font-main p-4 md:p-8">
-      {openOrderModal && (
-        <OrderSummaryModal onClose={() => setOrderModal(false)} />
-      )}
-
       <div className="max-w-[1280px] mx-auto">
         <div className="flex w-full flex-col mb-8">
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
@@ -106,8 +101,8 @@ export default function CartPage() {
                     Your Cart is Empty
                   </h3>
                   <p className="text-gray-500 max-w-sm mx-auto">
-                    Looks like you haven't added anything yet. Explore our shop
-                    to find the best toys!
+                    Looks like you haven&apos;t added anything yet. Explore our
+                    shop to find the best toys!
                   </p>
                 </div>
                 <Buttons
@@ -181,7 +176,7 @@ export default function CartPage() {
 
                 <Buttons
                   buttonName="Proceed to Checkout"
-                  onClick={() => setOrderModal(true)}
+                  onClick={() => setSummaryModalOpen(true)}
                   icon={<FaArrowRight size={18} />}
                   animateIcon={true}
                   className="w-full py-4 text-base font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"

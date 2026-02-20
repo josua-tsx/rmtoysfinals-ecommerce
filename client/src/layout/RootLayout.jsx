@@ -14,6 +14,8 @@ import ChatWidget from "../components/ChatWidget";
 import { useSocketNotifications } from "../hooks/useSocketNotifications";
 import UserOnboardingModal from "../components/modals/UserOnboardingModal";
 import CookieConsent from "../reusable/CookieConsent";
+import OrderSummaryModal from "../components/OrderSummaryModal";
+import GuestSummaryModal from "../components/Guestt/GuestSummaryModal";
 
 const RootLayout = () => {
   // 🧠 User store — keep checkAuth to populate Zustand for other components
@@ -27,7 +29,7 @@ const RootLayout = () => {
   // 🔔 Enable real-time notifications for customers (and admins if they use this layout)
   useSocketNotifications(currentUser);
 
-  // 🔍 Check auth on mount
+  // 🔍 Check auth
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -70,6 +72,7 @@ const RootLayout = () => {
       <header>
         <Navbar />
       </header>
+      {currentUser ? <OrderSummaryModal /> : <GuestSummaryModal />}
 
       {/* Main Content */}
       <main className="bg-yellow relative">

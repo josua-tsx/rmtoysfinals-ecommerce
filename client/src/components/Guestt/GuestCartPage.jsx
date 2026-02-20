@@ -8,13 +8,11 @@ import formatPrice from "../../reusable/formatPrice";
 import Buttons from "../../reusable/Buttons";
 import GuestCard from "./GuestCard";
 import Pagination from "../../reusable/Pagination";
-import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
-
-import GuestSummaryModal from "./GuestSummaryModal";
+import axiosInstance from "../../lib/axios";
 
 export default function GuestCartPage() {
-  const [openOrderModal, setOrderModal] = useState(false);
+  const { setSummaryModalOpen } = useOrderStore();
   const [cart, setCart] = useState(getGuestCart());
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
@@ -127,10 +125,6 @@ export default function GuestCartPage() {
 
   return (
     <section className="pt-[130px] min-h-screen bg-yellow text-sm md:text-normal font-main p-4 md:p-8">
-      {openOrderModal && (
-        <GuestSummaryModal onClose={() => setOrderModal(false)} />
-      )}
-
       <div className="max-w-[1280px] mx-auto">
         <div className="flex w-full flex-col mb-8">
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
@@ -224,7 +218,12 @@ export default function GuestCartPage() {
                     <span className="uppercase font-black block mb-1">
                       Purchase Limit
                     </span>
-                    Max 5 items per product per order.
+                    Doesn&apos;t apply to shipping. Max 5 items per product per
+                    order.
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Enter your phone number above, then click &apos;Send
+                    OTP&apos; to verify.
                   </p>
                 </div>
 
@@ -253,7 +252,7 @@ export default function GuestCartPage() {
 
                 <Buttons
                   buttonName="Proceed to Checkout"
-                  onClick={() => setOrderModal(true)}
+                  onClick={() => setSummaryModalOpen(true)}
                   icon={<FaArrowRight size={18} />}
                   animateIcon={true}
                   className="w-full py-4 text-base font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"

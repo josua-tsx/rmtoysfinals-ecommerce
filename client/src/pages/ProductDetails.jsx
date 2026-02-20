@@ -11,7 +11,13 @@ import toast from "react-hot-toast";
 import formatPrice from "../reusable/formatPrice.js";
 import LoadingSpinner from "../reusable/LoadingSpinner.jsx";
 import { useUserStore } from "../stores/useUserStore.js";
-import { FaCartPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import {
+  FaCartPlus,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaBolt,
+} from "react-icons/fa";
+import useOrderStore from "../stores/useOrderStore.js";
 import { MdRateReview } from "react-icons/md";
 import { SiGooglegemini } from "react-icons/si";
 
@@ -20,6 +26,7 @@ import { addToGuestCart } from "../lib/utils.jsx";
 export default function ProductDetails() {
   const params = useParams();
   const queryClient = useQueryClient();
+  const { setSummaryModalOpen } = useOrderStore();
 
   const currentUser = useUserStore((state) => state.currentUser);
 
@@ -370,6 +377,23 @@ export default function ProductDetails() {
                   icon={<FaCartPlus size={20} />}
                   animateIcon={true}
                   className=""
+                />
+
+                <Buttons
+                  onClick={() => {
+                    if (
+                      !singleProduct?.stocks?.quantity ||
+                      singleProduct.stocks.quantity <= 0
+                    ) {
+                      toast.error("This item is currently out of stock.");
+                      return;
+                    }
+                    setSummaryModalOpen(true, [singleProduct]);
+                  }}
+                  buttonName="Buy Now"
+                  icon={<FaBolt size={20} />}
+                  animateIcon={true}
+                  className="bg-[#fbbf24] !text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
                 />
 
                 <Buttons

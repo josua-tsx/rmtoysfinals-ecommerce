@@ -27,6 +27,7 @@ import {
 } from "../utils/validations.js";
 import { z } from "zod";
 import { checkAndSendStockAlerts } from "../services/stockAlert.service.js";
+import { validateOrderPrices } from "../utils/validateOrderPrices.js";
 
 
 
@@ -83,7 +84,7 @@ export const userPlaceOrder = async (req, res, next) => {
       quantity: item.quantity || 1,
     }));
 
-    let totalItemsOrdered = orderItems.reduce(
+    let totalItemsOrdered = orderItemsWithQuantity.reduce(
       (sum, item) => sum + (item.quantity || 0),
       0
     );
@@ -101,6 +102,20 @@ export const userPlaceOrder = async (req, res, next) => {
           )
         );
       }
+    }
+
+    // Server-side price re-validation — prevent price tampering
+    const priceCheck = await validateOrderPrices(
+      orderItemsWithQuantity,
+      subtotal,
+      totalPrice,
+      shippingPrice,
+      usedCredits,
+      session,
+    );
+    if (!priceCheck.valid) {
+      await session.abortTransaction();
+      return next(handleMakeError(400, priceCheck.message));
     }
 
     // Check credit availability if using credits
@@ -765,6 +780,20 @@ export const placeOrderGcashQR = async (req, res, next) => {
       }
     }
 
+    // Server-side price re-validation — prevent price tampering
+    const priceCheck = await validateOrderPrices(
+      orderItems,
+      subtotal,
+      totalPrice,
+      shippingPrice,
+      usedCredits,
+      session,
+    );
+    if (!priceCheck.valid) {
+      await session.abortTransaction();
+      return next(handleMakeError(400, priceCheck.message));
+    }
+
     /*
       VALIDATION NOTE:
       GCash fields and phone/name format validation 
@@ -886,6 +915,13 @@ export const placeOrderGcashQR = async (req, res, next) => {
         email: guestUser.email || null,
       };
     }
+
+    const totalItemsOrdered = orderItems.reduce(
+      (sum, item) => sum + (item.quantity || 0),
+      0
+    );
+
+    orderData.totalItemsOrdered = totalItemsOrdered;
 
     // Add GCash QR details if applicable
     if (paymentMethod === "GcashQR") {
