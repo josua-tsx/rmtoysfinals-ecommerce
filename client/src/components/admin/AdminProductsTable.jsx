@@ -251,6 +251,20 @@ export default function AdminProductsTable({ enableMultiDel }) {
       accessor: "points",
     },
     {
+      header: "Active Orders",
+      render: (product) => (
+        <span
+          className={`px-2 py-0.5 border border-black rounded-[3px] text-[16px] font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+            product.activeOrderCount > 0
+              ? "bg-orange-100 text-orange-700"
+              : "bg-gray-50 text-gray-400"
+          }`}
+        >
+          {product.activeOrderCount || 0}
+        </span>
+      ),
+    },
+    {
       header: "Created",
       className: "text-gray-500 font-mono",
       render: (product) => new Date(product.createdAt).toLocaleDateString(),

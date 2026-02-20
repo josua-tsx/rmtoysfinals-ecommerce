@@ -259,9 +259,42 @@ export const getProducts = async (req, res, next) => {
     // Get the total number of products matching the query for pagination
     const totalCount = await Product.countDocuments(query);
 
+    // Aggregate active order counts for the fetched products
+    const productIds = products.map((p) => p._id);
+    const activeOrderCounts = await Order.aggregate([
+      {
+        $match: {
+          status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
+        },
+      },
+      { $unwind: "$orderItems" },
+      {
+        $match: {
+          "orderItems.productId": { $in: productIds },
+        },
+      },
+      {
+        $group: {
+          _id: "$orderItems.productId",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const countMap = {};
+    activeOrderCounts.forEach((item) => {
+      countMap[item._id.toString()] = item.count;
+    });
+
+    const productsWithOrderCount = products.map((p) => {
+      const productObj = p.toObject();
+      productObj.activeOrderCount = countMap[p._id.toString()] || 0;
+      return productObj;
+    });
+
     // Send response with products and pagination info
     res.status(200).json({
-      products,
+      products: productsWithOrderCount,
       hasMore: totalCount > pageNum * limitNum,
       total: totalCount,
       totalPages: Math.ceil(totalCount / limitNum),
@@ -486,6 +519,21 @@ export const deleteProduct = async (req, res, next) => {
 
     if (!singleProduct) return next(handleMakeError(400, "Product not found"));
 
+    // Check if product is in any active order
+    const activeOrder = await Order.findOne({
+      "orderItems.productId": productId,
+      status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
+    });
+
+    if (activeOrder) {
+      return next(
+        handleMakeError(
+          400,
+          "This product is in an active order and cannot be archived until the order is completed."
+        )
+      );
+    }
+
     // SOFT DELETE: Mark as archived instead of removing from DB
     await Product.findByIdAndUpdate(productId, { isArchived: true });
 
@@ -633,6 +681,21 @@ export const deleteMultiProduct = async (req, res, next) => {
     // Soft Delete (Archive) each product
     for (const product of products) {
       // 1. Mark as Archived
+      // Check if any product is in an active order
+      const activeOrder = await Order.findOne({
+        "orderItems.productId": product._id,
+        status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
+      });
+
+      if (activeOrder) {
+        return next(
+          handleMakeError(
+            400,
+            `Product "${product.productName}" is in an active order and cannot be archived.`
+          )
+        );
+      }
+
       await Product.findByIdAndUpdate(product._id, { isArchived: true });
 
       // 2. Remove from Category
