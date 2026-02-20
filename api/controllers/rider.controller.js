@@ -142,9 +142,24 @@ export const deleteRider = async (req, res, next) => {
   try {
     const rider = await Rider.findById(riderId);
 
+    if (!rider) return next(handleMakeError(400, "Rider ID is not found!"));
+
     const riderName = rider.riderName;
 
-    if (!rider) return next(handleMakeError(400, "Rider ID is not found!"));
+    // Check if rider is assigned to any active order
+    const activeOrder = await Order.findOne({
+      riderId: riderId,
+      status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
+    });
+
+    if (activeOrder) {
+      return next(
+        handleMakeError(
+          400,
+          "This rider is currently assigned to an active order and cannot be archived."
+        )
+      );
+    }
 
     // SOFT DELETE
     await Rider.findByIdAndUpdate(riderId, { isArchived: true });
@@ -186,6 +201,22 @@ export const deleteMultiRider = async (req, res, next) => {
       const missingIds = riderIds.filter((id) => !foundIds.includes(id));
       return next(
         handleMakeError(400, `Riders not found: ${missingIds.join(", ")}`)
+      );
+    }
+
+    // Check if any rider is assigned to an active order
+    const activeOrders = await Order.find({
+      riderId: { $in: riderIds },
+      status: { $in: ["Pending", "Processing", "Shipped", "Out for Delivery"] },
+    }).populate("riderId", "riderName");
+
+    if (activeOrders.length > 0) {
+      const busyRiderNames = [...new Set(activeOrders.map((o) => o.riderId?.riderName))].filter(Boolean);
+      return next(
+        handleMakeError(
+          400,
+          `These riders are assigned to active orders and cannot be archived: ${busyRiderNames.join(", ")}`
+        )
       );
     }
 
