@@ -162,6 +162,7 @@ export const getProducts = async (req, res, next) => {
       color,
       sortBy = "createdAt",
       sortOrder = "desc",
+      status, // Optional status filter (e.g., "all", "draft", "published")
     } = req.query;
     
     const pageNum = parseInt(page);
@@ -170,7 +171,19 @@ export const getProducts = async (req, res, next) => {
 
     // Build the query object for filtering products
     // Exclude archived products by default
-    const query = { status: "published", isArchived: { $ne: true } };
+    const query = { isArchived: { $ne: true } };
+
+    // Status logic: 
+    // - If "all", show both published and draft.
+    // - If specific status provided, filter by it.
+    // - Default to "published" (maintains store behavior).
+    if (status === "all") {
+      query.status = { $in: ["published", "draft"] };
+    } else if (status) {
+      query.status = status;
+    } else {
+      query.status = "published";
+    }
 
     // Search logic: by productName (regex) or _id (exact)
     if (search) {
@@ -1057,6 +1070,33 @@ export const toggleBestProduct = async (req, res, next) => {
       message: `Product ${
         product.isBestProduct ? "added to" : "removed from"
       } best products`,
+      product,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const toggleProductVisibility = async (req, res, next) => {
+  const { productId } = req.params;
+  try {
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.isArchived) {
+      return res.status(400).json({ message: "Cannot toggle visibility of an archived product. Restore it first." });
+    }
+
+    // Toggle between published and draft
+    product.status = product.status === "published" ? "draft" : "published";
+
+    await product.save();
+
+    res.status(200).json({
+      message: `Product is now ${product.status}`,
       product,
     });
   } catch (error) {

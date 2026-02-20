@@ -23,6 +23,7 @@ import {
   mostReviewsProducts,
   // publishDraft,
   toggleBestProduct,
+  toggleProductVisibility,
   getProductCsvTemplate,
   batchUploadProducts,
   validateCartItems,
@@ -70,6 +71,7 @@ router.put(`/edit-product/:id`, requireAuth, requireAdmin, validateResource(upda
 router.get(`/get-product/:id`, getSingleProduct);
 
 router.put(`/add-to-slider/:productId`, requireAuth, requireAdmin, toggleBestProduct)
+router.patch(`/toggle-visibility/:productId`, requireAuth, requireAdmin, toggleProductVisibility)
 router.get(`/get-bestProducts`, getBestProducts)
 
 
