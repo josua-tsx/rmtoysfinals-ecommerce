@@ -1237,12 +1237,14 @@ export const batchUploadProducts = async (req, res, next) => {
           productDescription: true,
           productDetails: true,
           productImages: true,
+          points: true,
           taxStatus: true,
         }).safeParse({
           productName,
           productDescription,
           productDetails,
           productImages,
+          points: parseInt(row.points, 10) || 0,
           taxStatus,
         });
 

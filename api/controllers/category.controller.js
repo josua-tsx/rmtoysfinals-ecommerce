@@ -415,6 +415,27 @@ export const batchAddCategories = async (req, res, next) => {
         continue;
       }
 
+      // ----------------------------------------------------
+      // Use Zod Schema for validation
+      // Reuse the same schema as single add (createCategorySchema)
+      // ----------------------------------------------------
+      const validation = createCategorySchema.shape.body.safeParse({
+        categoryName: categoryName.trim(),
+        categoryDescription: (categoryDescription || "").trim(),
+      });
+
+      if (!validation.success) {
+        const errorMessages = validation.error.issues
+          .map((issue) => issue.message)
+          .join(", ");
+        results.failed++;
+        results.errors.push({
+          row: rowNum,
+          reason: `Validation Error: ${errorMessages}`,
+        });
+        continue;
+      }
+
       const normalizedName = categoryName.trim();
 
       if (existingNames.has(normalizedName.toLowerCase())) {
