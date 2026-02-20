@@ -1126,6 +1126,8 @@ export const getGuestOrder = async (req, res, next) => {
       status: {
         $in: ["Pending", "Processing", "Shipped", "Out for Delivery"],
       },
+      paymentMethod: "GcashQR",
+      paymentStatus: "Paid",
       isGuest: true,
     };
 
