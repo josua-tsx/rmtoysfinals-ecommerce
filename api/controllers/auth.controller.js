@@ -48,7 +48,8 @@ export const signup = async (req, res, next) => {
       email,
       username,
       password,
-      role: admin ? "customer" : "admin"
+      role: admin ? "customer" : "admin",
+      isPhoneVerified: true,
     });
 
     // authenticate

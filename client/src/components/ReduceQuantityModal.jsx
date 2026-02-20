@@ -50,7 +50,7 @@ export default function ReduceQuantityModal({ isOpen, onClose, singleStock }) {
         {/* Red Sticker Header */}
         <div className="absolute -top-5 -left-4 bg-red-600 text-white border border-black px-6 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-[5px] transform -rotate-1 z-20">
           <h1 className="font-black uppercase tracking-widest text-sm italic">
-            Adjust Stock
+            Reduce Stock
           </h1>
         </div>
 
