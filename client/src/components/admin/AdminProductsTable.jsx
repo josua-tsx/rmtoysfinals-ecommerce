@@ -1,5 +1,6 @@
 import { MdDelete } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
@@ -21,7 +22,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
 
   // Pagination State
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const limit = 10;
 
   // Debounced Search State
   const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
@@ -37,6 +38,7 @@ export default function AdminProductsTable({ enableMultiDel }) {
       const params = new URLSearchParams({
         page,
         limit,
+        status: "all", // Fetch both published and draft for management
       });
 
       if (debouncedSearchTerm) {
@@ -53,7 +55,6 @@ export default function AdminProductsTable({ enableMultiDel }) {
 
   const products = data?.products || [];
   const totalPages = data?.totalPages || 0;
-  const currentPage = data?.currentPage || 1;
   const totalItems = data?.total || 0;
 
   // Select/Unselect logic for ReusableTable
@@ -120,6 +121,19 @@ export default function AdminProductsTable({ enableMultiDel }) {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Products deleted successfully!");
       setSelectedIds([]);
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Something went wrong!");
+    },
+  });
+
+  const { mutate: toggleVisibility } = useMutation({
+    mutationFn: async (productId) => {
+      await axiosInstance.patch(`/product/toggle-visibility/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Visibility updated!");
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "Something went wrong!");
@@ -251,6 +265,20 @@ export default function AdminProductsTable({ enableMultiDel }) {
       accessor: "points",
     },
     {
+      header: "Active Orders",
+      render: (product) => (
+        <span
+          className={`px-2 py-0.5 border border-black rounded-[3px] text-[16px] font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+            product.activeOrderCount > 0
+              ? "bg-orange-100 text-orange-700"
+              : "bg-gray-50 text-gray-400"
+          }`}
+        >
+          {product.activeOrderCount || 0}
+        </span>
+      ),
+    },
+    {
       header: "Created",
       className: "text-gray-500 font-mono",
       render: (product) => new Date(product.createdAt).toLocaleDateString(),
@@ -265,6 +293,21 @@ export default function AdminProductsTable({ enableMultiDel }) {
             className="p-2 border border-black bg-yellow-400 text-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
           >
             <CiEdit size={18} className="stroke-[1px]" />
+          </button>
+          <button
+            onClick={() => toggleVisibility(product._id)}
+            title={
+              product.status === "published" ? "Hide Product" : "Show Product"
+            }
+            className={`p-2 border border-black rounded-[5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all ${
+              product.status === "published" ? "bg-green-400" : "bg-gray-400"
+            }`}
+          >
+            {product.status === "published" ? (
+              <FaEye size={18} />
+            ) : (
+              <FaEyeSlash size={18} />
+            )}
           </button>
           <button
             onClick={() => handleDeleteClick(product._id)}
