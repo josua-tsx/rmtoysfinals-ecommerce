@@ -23,10 +23,10 @@ export const passwordSchema = z
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character")
   .refine((val) => !/\s/.test(val), "Password cannot contain spaces");
 
-// PH Mobile Number validation.
+// PH Mobile Number validation (09XXXXXXXXX, 11 digits).
 export const phMobileSchema = z
   .string({ required_error: "Phone number is required" })
-  .regex(/^(09|\+639)\d{9}$/, "Invalid Philippine mobile number (must start with 09 or +639)");
+  .regex(/^09\d{9}$/, "Invalid Philippine mobile number (must start with 09 and be 11 digits)");
 
 // Full Name validation.
 export const fullNameSchema = z

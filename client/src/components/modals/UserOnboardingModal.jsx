@@ -224,7 +224,7 @@ export default function UserOnboardingModal({ isOpen, onClose }) {
                         {...register("phoneNumber")}
                         error={errors.phoneNumber}
                         isValid={!errors.phoneNumber && dirtyFields.phoneNumber}
-                        maxLength={13}
+                        maxLength={11}
                       />
                     </div>
                   </motion.div>
