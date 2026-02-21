@@ -3,7 +3,6 @@ import CartCard from "../components/CartCard";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { useEffect, useState } from "react";
-import OrderSummaryModal from "../components/OrderSummaryModal";
 import formatPrice from "../reusable/formatPrice";
 import CreditPointsAuto from "../components/CreditPointsAuto";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +12,7 @@ import LoadingSpinner from "../reusable/LoadingSpinner";
 import Pagination from "../reusable/Pagination";
 
 export default function CartPage() {
-  const [openOrderModal, setOrderModal] = useState(false);
+  const { setSummaryModalOpen } = useOrderStore();
   const [page, setPage] = useState(1);
 
   const navigate = useNavigate();
@@ -47,21 +46,17 @@ export default function CartPage() {
   const grandTotal = cartData?.grandTotal || 0;
   const totalPoints = cartData?.totalPoints || 0;
   const totalItemsCount = cartData?.total || 0;
+  // If the backend filtered out unavailable products, rawTotal > totalItemsCount
+  const hasUnavailableItems = cartData?.rawTotal > totalItemsCount;
 
   if (isPending) return <LoadingSpinner fullScreen />;
   if (isError) return <div>Error loading cart.</div>;
 
   return (
-    <section className="pt-[130px] min-h-screen bg-yellow text-sm md:text-normal font-main p-4 md:p-8">
-      {openOrderModal && (
-        <OrderSummaryModal onClose={() => setOrderModal(false)} />
-      )}
-
+    <section className="mt-[100px] min-h-screen bg-yellow text-sm md:text-normal font-main p-4 md:p-8">
       <div className="max-w-[1280px] mx-auto">
-        <div className="flex w-full flex-col mb-8">
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
-            Your Cart
-          </h1>
+        <div className="flex w-full flex-col  mb-4">
+          <h1 className="text-4xl ">Your Cart</h1>
           <p className="text-gray-600 mt-2 font-medium">
             {totalItemsCount > 0
               ? `You have ${totalItemsCount} ${totalItemsCount === 1 ? "item" : "items"} ready for checkout`
@@ -70,6 +65,31 @@ export default function CartPage() {
         </div>
 
         <CreditPointsAuto />
+
+        {/* Unavailable Items Warning */}
+        {hasUnavailableItems && (
+          <div className="mb-4 bg-orange-50 border-2 border-orange-300 rounded-[5px] p-4 flex gap-3 items-start">
+            <svg
+              className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-sm font-bold text-orange-700 leading-snug">
+              <span className="uppercase font-black block mb-0.5">
+                Some items are temporarily unavailable
+              </span>
+              One or more products in your cart have been hidden by the admin
+              and cannot be ordered right now. They will reappear once the issue
+              is resolved.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-8 pb-10 w-full relative">
           {/* Cart Items List */}
@@ -106,8 +126,8 @@ export default function CartPage() {
                     Your Cart is Empty
                   </h3>
                   <p className="text-gray-500 max-w-sm mx-auto">
-                    Looks like you haven't added anything yet. Explore our shop
-                    to find the best toys!
+                    Looks like you haven&apos;t added anything yet. Explore our
+                    shop to find the best toys!
                   </p>
                 </div>
                 <Buttons
@@ -181,7 +201,7 @@ export default function CartPage() {
 
                 <Buttons
                   buttonName="Proceed to Checkout"
-                  onClick={() => setOrderModal(true)}
+                  onClick={() => setSummaryModalOpen(true)}
                   icon={<FaArrowRight size={18} />}
                   animateIcon={true}
                   className="w-full py-4 text-base font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"

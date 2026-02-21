@@ -1,5 +1,4 @@
-import { FaCartPlus } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
+import { FaCartPlus, FaEye, FaBolt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import StarsRating from "./StarsRating";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,10 +9,12 @@ import formatPrice from "../reusable/formatPrice";
 import { CgUnavailable } from "react-icons/cg";
 import { useUserStore } from "../stores/useUserStore";
 import { addToGuestCart } from "../lib/utils";
+import useOrderStore from "../stores/useOrderStore";
 
 export default function ShopProductCards({ product }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { setSummaryModalOpen } = useOrderStore();
 
   const currentUser = useUserStore((state) => state.currentUser);
 
@@ -33,12 +34,12 @@ export default function ShopProductCards({ product }) {
 
   const sumOfRating = product?.reviews?.reduce(
     (sum, review) => sum + review.rating,
-    0
+    0,
   );
   const averageRating = sumOfRating / product?.reviews?.length;
 
   const colorDetail = product?.productDetails?.find(
-    (detail) => detail.label === "color"
+    (detail) => detail.label === "color",
   );
 
   const handleAddToCart = (productId) => {
@@ -92,6 +93,25 @@ export default function ShopProductCards({ product }) {
         />
         <div className="w-full absolute bottom-[-100%] border border-t-black transition-all duration-300 group-hover:bottom-0 text-black bg-card backdrop-blur-sm">
           <ul className="p-3 flex flex-col gap-3">
+            <li className="flex justify-between items-center group/btn">
+              <button
+                className="w-full text-start py-2 px-3 bg-[#fbbf24] text-black border border-black rounded-[5px] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all font-black uppercase text-xs flex justify-between items-center hover:bg-[#f59e0b]"
+                onClick={() => {
+                  if (
+                    !product?.stocks?.quantity ||
+                    product.stocks.quantity <= 0
+                  ) {
+                    toast.error("This item is currently out of stock.");
+                    return;
+                  }
+                  setSummaryModalOpen(true, [product]);
+                }}
+              >
+                Buy Now
+                <FaBolt size={14} />
+              </button>
+            </li>
+
             <li className="flex justify-between items-center group/btn">
               <button
                 className="w-full text-start py-2 px-3 bg-primary text-white border border-black rounded-[5px] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all font-black uppercase text-xs flex justify-between items-center hover:bg-primary/90"

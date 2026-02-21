@@ -82,7 +82,7 @@ export const getCarts = async (req, res, next) => {
     const carts = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages discount taxStatus isArchived",
+        "productName price points productDescription productImages discount taxStatus isArchived status",
       populate: [
         {
           path: "stocks",
@@ -106,8 +106,13 @@ export const getCarts = async (req, res, next) => {
       });
     }
 
-    // Defensive check: filter out items with null productId (deleted products) and archived products
-    const validItems = carts.items.filter((item) => item.productId && !item.productId.isArchived);
+    // Count total items before filtering (to detect unavailable products on the frontend)
+    const rawTotal = carts.items.length;
+
+    // Defensive check: filter out items with null productId (deleted/archived/draft products)
+    const validItems = carts.items.filter(
+      (item) => item.productId && !item.productId.isArchived && item.productId.status === "published"
+    );
 
     // Calculate totals for the ENTIRE cart (not just the page)
     const grandTotal = validItems.reduce((total, item) => {
@@ -128,6 +133,7 @@ export const getCarts = async (req, res, next) => {
     res.status(200).json({
       items: paginatedItems,
       total: validItems.length,
+      rawTotal,
       totalPages: Math.ceil(validItems.length / limitNum),
       currentPage: pageNum,
       grandTotal,
@@ -147,7 +153,7 @@ export const getSelectedCart = async (req, res, next) => {
     }).populate({
       path: "items.productId",
       select:
-        "productName price points productDescription productImages taxStatus isArchived",
+        "productName price points productDescription productImages taxStatus isArchived status",
       populate: [
         {
           path: "stocks",
@@ -164,7 +170,9 @@ export const getSelectedCart = async (req, res, next) => {
       return res.status(200).json([]);
     }
 
-    const selectedItems = carts.items.filter((item) => item.isSelected && item.productId && !item.productId.isArchived);
+    const selectedItems = carts.items.filter(
+      (item) => item.isSelected && item.productId && !item.productId.isArchived && item.productId.status === "published"
+    );
 
     res.status(200).json(selectedItems);
   } catch (error) {

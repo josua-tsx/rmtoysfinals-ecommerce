@@ -147,8 +147,8 @@ export default function Navbar() {
             ) : isExpanded ? (
               <div></div>
             ) : (
-              <div className="flex gap-4">
-                <div className="md:hidden">
+              <div className="flex gap-4 lg:hidden">
+                <div className="pr-6">
                   <GuestCart />
                 </div>
               </div>

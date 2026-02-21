@@ -47,9 +47,8 @@ export const addToGuestCart = (product) => {
 };
 
 export const guestSelectedCarts = () => {
-  const cart = JSON.parse(localStorage.getItem("guestCart"));
-  const filteredSelected = cart.items.filter((item) => item.isSelected);
-  return filteredSelected;
+  const cart = getGuestCart();
+  return cart.items.filter((item) => item.isSelected);
 };
 
 export const deleteGuestCart = (productId) => {

@@ -11,9 +11,12 @@ import LoadingSpinner from "../reusable/LoadingSpinner";
 import Buttons from "../reusable/Buttons";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { fullNameSchema, phMobileSchema } from "../schemas/common.schema";
+import useOrderCalculations from "../hooks/useOrderCalculations";
 
 export default function OrderSummaryModal({ onClose }) {
   const currentUser = useUserStore((state) => state.currentUser);
+  const { buyNowItems, isSummaryModalOpen, setSummaryModalOpen } =
+    useOrderStore();
   const setCurrentOrder = useOrderStore((state) => state.setCurrentOrder);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -28,6 +31,7 @@ export default function OrderSummaryModal({ onClose }) {
     isError: isActiveError,
   } = useQuery({
     queryKey: ["address"],
+    enabled: isSummaryModalOpen,
     queryFn: async () => {
       const res = await axiosInstance.get(`/address/get-activeAddress`);
       return res.data;
@@ -35,18 +39,28 @@ export default function OrderSummaryModal({ onClose }) {
   });
 
   const {
-    data: cart = [],
+    data: fetchedCart = [],
     isPending: isCartPending,
     isError: isCartError,
   } = useQuery({
     queryKey: ["selectedCarts"],
+    enabled: isSummaryModalOpen && !buyNowItems,
     queryFn: async () => {
       const res = await axiosInstance.get(`/cart/get-selecteds`);
       return res.data;
     },
   });
 
-  const ROUND = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+  const cart = useMemo(() => {
+    if (buyNowItems) {
+      return buyNowItems.map((item) => ({
+        productId: item,
+        quantity: item.buyNowQuantity || 1,
+        isSelected: true,
+      }));
+    }
+    return fetchedCart;
+  }, [buyNowItems, fetchedCart]);
 
   const {
     subtotal,
@@ -55,70 +69,7 @@ export default function OrderSummaryModal({ onClose }) {
     totalVatAmount,
     totalPoints,
     totalPrice,
-  } = useMemo(() => {
-    // Convert shipping to number safely
-    const shippingGross = Number(shippingFee || 0);
-
-    let grossExempt = 0;
-    let points = 0;
-    let itemsSubtotal = 0; // sum of item prices only
-
-    for (const item of cart || []) {
-      const price = Number(item?.productId?.price || 0);
-      const qty = Number(item?.quantity || 0);
-      const gross = price * qty;
-      const taxStatus = (item?.productId?.taxStatus || "").toLowerCase();
-
-      itemsSubtotal += gross;
-      points += Number(item?.productId?.points || 0) * qty;
-
-      if (taxStatus !== "vatable") {
-        // Exempt or zero-VAT - treat as non-taxable
-        grossExempt += gross;
-      }
-    }
-
-    // Shipping is VAT-exempt (not subject to VAT)
-
-    // Calculate VAT from vatable items (VAT-inclusive pricing)
-    // For each vatable item, price already includes VAT
-    let totalVatableNet = 0;
-    let totalVatAmount = 0;
-
-    for (const item of cart || []) {
-      const taxStatus = (item?.productId?.taxStatus || "").toLowerCase();
-      if (taxStatus === "vatable") {
-        const price = Number(item?.productId?.price || 0);
-        const qty = Number(item?.quantity || 0);
-        const gross = price * qty;
-
-        // Get VAT rate from product, default to 12% if not found
-        const vatRate = item?.productId?.vat?.vatPercent ?? 12;
-        const vatFactor = 1 + vatRate / 100;
-
-        // Calculate net and VAT (VAT-inclusive)
-        const net = gross / vatFactor;
-        const vat = gross - net;
-
-        totalVatableNet += net;
-        totalVatAmount += vat;
-      }
-    }
-
-    // Shipping is not included in VAT calculation
-
-    const subtotal = ROUND(itemsSubtotal);
-    const totalPrice = ROUND(itemsSubtotal + shippingGross);
-
-    return {
-      subtotal,
-      vatableSalesNet: ROUND(totalVatableNet),
-      vatExemptSales: ROUND(grossExempt),
-      totalVatAmount: ROUND(totalVatAmount),
-      totalPoints: points,
-      totalPrice,
-    };
-  }, [cart, shippingFee]);
+  } = useOrderCalculations(cart, shippingFee);
 
   // Calculate credits and final totalPrice
   const { usedCredits, deductedPrice } = useMemo(() => {
@@ -153,8 +104,10 @@ export default function OrderSummaryModal({ onClose }) {
     },
     onSuccess: () => {
       setNotes("");
-      onClose();
+      setSummaryModalOpen(false);
+      onClose?.();
       queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`Order placed!`);
     },
@@ -274,7 +227,7 @@ export default function OrderSummaryModal({ onClose }) {
       vatableSalesNet,
       vatExemptSales,
       totalVatAmount,
-      quantity: cartItems.quantity,
+      quantity: cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0),
       totalPoints,
       usedCredits: useCredits === "yes" ? usedCredits : 0,
     };
@@ -313,7 +266,14 @@ export default function OrderSummaryModal({ onClose }) {
     // }
   };
 
-  if (isActivePending || isCartPending)
+  const handleClose = () => {
+    setSummaryModalOpen(false);
+    onClose?.();
+  };
+
+  if (!isSummaryModalOpen) return null;
+
+  if (isActivePending || (isCartPending && !buyNowItems))
     return (
       <div className="absolute inset-0 backdrop-blur-sm  z-10">
         <LoadingSpinner fullScreen />
@@ -331,7 +291,7 @@ export default function OrderSummaryModal({ onClose }) {
             <h2 className="text-2xl">Order Summary</h2>
 
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="group border border-black text-white bg-red-700 rounded-[5px] p-0.5 hover:bg-red-800 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               <IoIosClose
@@ -584,7 +544,7 @@ export default function OrderSummaryModal({ onClose }) {
               />
               <Buttons
                 buttonType="button"
-                onClick={onClose}
+                onClick={handleClose}
                 buttonName="Cancel"
                 icon={<FaTimes size={18} />}
                 animateIcon={true}
