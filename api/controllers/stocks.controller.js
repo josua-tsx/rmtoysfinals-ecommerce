@@ -391,9 +391,19 @@ export const updateStockQuantity = async (req, res, next) => {
       throw handleMakeError(400, "Inventory levels cannot be negative.");
     }
 
+    // 4. Increase Threshold Guard: Prevent misuse for reordering
+    // Only apply to increases. Limit to 20 units or 10% of current stock, whichever is higher.
+    const delta = quantity - existingStock.quantity;
+    if (delta > 0) {
+      const threshold = Math.max(20, Math.ceil(existingStock.quantity * 0.1));
+      if (delta > threshold) {
+        throw handleMakeError(400, `Manual increase of ${delta} units exceeds the safety threshold (${threshold}). Please use the 'Reorder Stock' function for large inventory updates to maintain proper tracking.`);
+      }
+    }
+
     const { supplierPrice, shippingPrice, shopPrice, vatShopPrice, product, supplier, category, deliveryId, vat, vatPercentApplied } = existingStock;
 
-    // 4. Update the stock entry
+    // 5. Update the stock entry
     const updatedStock = await Stocks.findByIdAndUpdate(
       stockId,
       {
@@ -404,7 +414,7 @@ export const updateStockQuantity = async (req, res, next) => {
       { new: true, session }
     );
 
-    // 5. Audit Logging: Record the manual adjustment
+    // 6. Audit Logging: Record the manual adjustment with delta
     await orderStockLogs(
       {
         action: "manual_adjustment",
@@ -420,7 +430,7 @@ export const updateStockQuantity = async (req, res, next) => {
         receivedDate: new Date().toISOString(),
         receivedQuantity: quantity, // New quantity
         totalCost: updatedStock.totalCost,
-        reason: reason || "Quantity updated by admin",
+        reason: `[ADJ: ${delta > 0 ? "+" : ""}${delta}] ${reason}`,
       },
       session
     );
@@ -434,6 +444,7 @@ export const updateStockQuantity = async (req, res, next) => {
       message: "Stock quantity adjusted successfully.",
       previousQuantity: existingStock.quantity,
       newQuantity: updatedStock.quantity,
+      delta,
       updatedStock
     });
   } catch (error) {
