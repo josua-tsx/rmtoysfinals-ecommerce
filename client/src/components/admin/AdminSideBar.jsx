@@ -159,7 +159,7 @@ export default function AdminSideBar() {
       name: "Tickets",
       path: "/admin/tickets",
       icon: <BiSupport size={20} />,
-      allowedRoles: ["admin"],
+      allowedRoles: ["admin", "validatorStaff"],
     },
 
     {

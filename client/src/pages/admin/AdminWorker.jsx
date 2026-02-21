@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
 import ValidatedInput from "../../reusable/ValidatedInput";
+import PasswordInput from "../../reusable/PasswordInput";
 import { addWorkerSchema } from "../../schemas/worker.schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -129,41 +130,27 @@ export default function AdminWorker() {
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="password"
-                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
-              >
-                Password
-              </label>
-              <ValidatedInput
-                type="password"
-                id="password"
-                {...register("password")}
-                error={errors.password}
-                placeholder="••••••••"
-                required
-                maxLength={128}
-              />
-            </div>
+            <PasswordInput
+              label="Password"
+              id="password"
+              {...register("password")}
+              errorText={errors.password?.message}
+              placeholder="••••••••"
+              required
+              maxLength={128}
+              autoComplete="new-password"
+            />
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="confirmPassword"
-                className="font-black uppercase text-[10px] tracking-widest text-gray-500 pl-1"
-              >
-                Confirm password
-              </label>
-              <ValidatedInput
-                type="password"
-                id="confirmPassword"
-                {...register("confirmPassword")}
-                error={errors.confirmPassword}
-                placeholder="••••••••"
-                required
-                maxLength={128}
-              />
-            </div>
+            <PasswordInput
+              label="Confirm Password"
+              id="confirmPassword"
+              {...register("confirmPassword")}
+              errorText={errors.confirmPassword?.message}
+              placeholder="••••••••"
+              required
+              maxLength={128}
+              autoComplete="new-password"
+            />
 
             <div className="flex flex-col gap-2">
               <label

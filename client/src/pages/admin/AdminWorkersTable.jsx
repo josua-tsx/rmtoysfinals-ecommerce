@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ValidatedInput from "../../reusable/ValidatedInput";
+import PasswordInput from "../../reusable/PasswordInput";
 import {
   emailSchema,
   usernameSchema,
@@ -48,7 +49,6 @@ export default function AdminWorkersTable() {
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Edit Form Setup
   const {
@@ -167,10 +167,6 @@ export default function AdminWorkersTable() {
       delete submitData.password;
     }
     updateWorkerMutation(submitData);
-  };
-
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
   };
 
   if (isWorkersError) {
@@ -320,40 +316,15 @@ export default function AdminWorkersTable() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="editPassword"
-              className="font-black uppercase text-[10px] tracking-widest text-gray-500"
-            >
-              Password (leave blank to keep current)
-            </label>
-            <div className="flex flex-col gap-2 relative w-full">
-              <ValidatedInput
-                type={showPassword ? "text" : "password"}
-                id="editPassword"
-                {...register("password")}
-                error={errors.password}
-                placeholder="••••••••"
-                maxLength={128}
-              />
-              <button
-                type="button"
-                onClick={togglePassword}
-                className="absolute right-3 top-3.5 flex items-center gap-2 cursor-pointer bg-white border border-black px-2 py-0.5 rounded-[3px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-              >
-                <p className="text-[8px] font-black uppercase">Show</p>
-                <input
-                  type="checkbox"
-                  checked={showPassword}
-                  readOnly
-                  className="size-[10px] border border-black cursor-pointer"
-                />
-              </button>
-              <p className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">
-                (Min 8 chars, 1 uppercase, 1 number, 1 special char)
-              </p>
-            </div>
-          </div>
+          <PasswordInput
+            label="Password (leave blank to keep current)"
+            id="editPassword"
+            {...register("password")}
+            errorText={errors.password?.message}
+            placeholder="••••••••"
+            maxLength={128}
+            autoComplete="new-password"
+          />
 
           <div className="flex flex-col gap-2">
             <label

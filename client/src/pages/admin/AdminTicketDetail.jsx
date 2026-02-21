@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../../lib/axios";
 import toast from "react-hot-toast";
+import { useUserStore } from "../../stores/useUserStore";
 import LoadingSpinner from "../../reusable/LoadingSpinner";
 import {
   IoArrowBack,
@@ -46,6 +47,9 @@ export default function AdminTicketDetail() {
   const queryClient = useQueryClient();
   const [replyMessage, setReplyMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const currentUser = useUserStore((state) => state.currentUser);
+  const basePath =
+    currentUser?.role === "validatorStaff" ? "/validator" : "/admin";
 
   const {
     data: ticketData,
@@ -184,7 +188,7 @@ export default function AdminTicketDetail() {
       {/* Header / Back Button */}
       <div className="max-w-7xl mx-auto mb-6">
         <button
-          onClick={() => navigate("/admin/tickets")}
+          onClick={() => navigate(`${basePath}/tickets`)}
           className="inline-flex items-center gap-2 font-medium transition-colors"
         >
           <IoArrowBack size={20} />
