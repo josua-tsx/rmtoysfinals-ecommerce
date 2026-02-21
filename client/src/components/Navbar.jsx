@@ -148,7 +148,7 @@ export default function Navbar() {
               <div></div>
             ) : (
               <div className="flex gap-4">
-                <div className="md:hidden">
+                <div className="pr-6">
                   <GuestCart />
                 </div>
               </div>

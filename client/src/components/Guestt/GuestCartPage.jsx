@@ -124,12 +124,10 @@ export default function GuestCartPage() {
     cart?.items?.slice((page - 1) * itemsPerPage, page * itemsPerPage) || [];
 
   return (
-    <section className="pt-[130px] min-h-screen bg-yellow text-sm md:text-normal font-main p-4 md:p-8">
+    <section className="mt-[100px] min-h-screen bg-yellow text-sm md:text-normal font-main p-4 md:p-8">
       <div className="max-w-[1280px] mx-auto">
-        <div className="flex w-full flex-col mb-8">
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
-            Guest Cart
-          </h1>
+        <div className="flex w-full flex-col mb-4">
+          <h1 className="text-4xl ">Guest Cart</h1>
           <p className="text-gray-600 mt-2 font-medium">
             {totalItems > 0
               ? `You have ${totalItems} ${totalItems === 1 ? "item" : "items"} ready for checkout`

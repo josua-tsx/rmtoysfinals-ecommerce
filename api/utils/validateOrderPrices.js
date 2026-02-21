@@ -30,27 +30,36 @@ export async function validateOrderPrices(
     return item.productId?._id || item.productId;
   });
 
-  // Fetch authoritative prices from the database
-  const query = Product.find({ _id: { $in: productIds } }).select("_id price");
+  // Fetch authoritative prices and statuses from the database
+  const query = Product.find({ _id: { $in: productIds } }).select("_id price status productName");
   const products = session ? await query.session(session) : await query;
 
-  // Build a price map: productId -> server price
+  // Build a price map: productId -> { price, status, productName }
   const priceMap = new Map();
   for (const p of products) {
-    priceMap.set(p._id.toString(), p.price);
+    priceMap.set(p._id.toString(), { price: p.price, status: p.status, productName: p.productName });
   }
 
-  // Verify all products exist
+  // Verify all products exist and are published
   for (const item of orderItems) {
     const id =
       typeof item.productId === "string"
         ? item.productId
         : item.productId?._id || item.productId;
 
-    if (!priceMap.has(id.toString())) {
+    const productData = priceMap.get(id.toString());
+
+    if (!productData) {
       return {
         valid: false,
         message: `Product not found: ${id}. It may have been removed.`,
+      };
+    }
+
+    if (productData.status !== "published") {
+      return {
+        valid: false,
+        message: `"${productData.productName}" is currently unavailable for ordering. Please remove it from your cart and try again.`,
       };
     }
   }
@@ -63,7 +72,7 @@ export async function validateOrderPrices(
         ? item.productId
         : item.productId?._id || item.productId;
 
-    const serverPrice = priceMap.get(id.toString());
+    const serverPrice = priceMap.get(id.toString()).price;
     const qty = Number(item.quantity || 1);
     serverSubtotal += serverPrice * qty;
   }
