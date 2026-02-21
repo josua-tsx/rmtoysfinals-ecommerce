@@ -421,6 +421,15 @@ const router = createBrowserRouter([
         path: "stockHistory",
         element: <AdminStockHistory />,
       },
+      // TICKETS
+      {
+        path: "tickets",
+        element: <AdminTicket />,
+      },
+      {
+        path: "ticket/:ticketId",
+        element: <AdminTicketDetail />,
+      },
     ],
   },
   {

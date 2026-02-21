@@ -4,9 +4,14 @@ import axiosInstance from "../../lib/axios";
 import { useNavigate } from "react-router-dom";
 import ReusableTable from "../../reusable/ReusableTable";
 import useDebounce from "../../hooks/useDebounce";
+import { useUserStore } from "../../stores/useUserStore";
 
 export default function AdminTickets() {
   const navigate = useNavigate();
+
+  const currentUser = useUserStore((state) => state.currentUser);
+  const basePath =
+    currentUser?.role === "validatorStaff" ? "/validator" : "/admin";
 
   // State
   const [localSearchTerm, setLocalSearchTerm] = useState("");
@@ -52,7 +57,7 @@ export default function AdminTickets() {
   const currentPage = data?.pagination?.currentPage || 1;
 
   const handleViewTicket = (ticketId) => {
-    navigate(`/admin/ticket/${ticketId}`);
+    navigate(`${basePath}/ticket/${ticketId}`);
   };
 
   if (isError) return <p>Error loading tickets</p>;

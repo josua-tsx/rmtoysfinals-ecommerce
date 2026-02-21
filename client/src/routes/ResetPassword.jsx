@@ -5,7 +5,7 @@ import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
 import Buttons from "../reusable/Buttons";
 import { FaSignInAlt } from "react-icons/fa";
-import ValidatedInput from "../reusable/ValidatedInput";
+import PasswordInput from "../reusable/PasswordInput";
 import { resetPasswordSchema } from "../schemas/auth.schema";
 
 /* replace-imports-start */
@@ -96,29 +96,37 @@ export default function ResetPassword() {
             </div>
           </div>
 
-          <ValidatedInput
+          <PasswordInput
             label="New Password"
             id="password"
-            type="password"
             placeholder="Min 8 chars, 1 upper, 1 number, 1 symbol"
             {...register("password")}
-            error={errors.password}
             isValid={!errors.password && dirtyFields.password}
             required
             maxLength={128}
+            autoComplete="new-password"
           />
+          {errors.password && (
+            <p className="text-[10px] text-red-600 font-bold uppercase tracking-tighter -mt-3">
+              {errors.password.message}
+            </p>
+          )}
 
-          <ValidatedInput
+          <PasswordInput
             label="Confirm New Password"
             id="confirmPassword"
-            type="password"
             placeholder="Repeat your new password"
             {...register("confirmPassword")}
-            error={errors.confirmPassword}
             isValid={!errors.confirmPassword && dirtyFields.confirmPassword}
             required
             maxLength={128}
+            autoComplete="new-password"
           />
+          {errors.confirmPassword && (
+            <p className="text-[10px] text-red-600 font-bold uppercase tracking-tighter -mt-3">
+              {errors.confirmPassword.message}
+            </p>
+          )}
 
           <div className="flex justify-center w-full mt-2">
             <Buttons

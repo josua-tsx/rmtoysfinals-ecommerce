@@ -39,11 +39,11 @@ router.get("/user", requireAuth, getUserTickets);
 router.get("/:ticketId", optionalAuth, getSingleTicket);
 router.post("/:ticketId/customer-reply", requireAuth, validateResource(replyTicketSchema), customerReplyToTicket);
 
-// Admin routes (with params)
-router.put("/:ticketId/status", requireAuth, requireAdmin, validateResource(updateTicketStatusSchema), updateTicketStatus);
-router.post("/:ticketId/reply", requireAuth, requireAdmin, validateResource(replyTicketSchema), addReplyToTicket);
-router.put("/:ticketId/assign", requireAuth, requireAdmin, validateResource(assignTicketSchema), assignTicket);
-router.delete("/:ticketId", requireAuth, requireAdmin, deleteTicket);
+// Admin and validator staff routes (with params)
+router.put("/:ticketId/status", requireAuth, validateResource(updateTicketStatusSchema), updateTicketStatus);
+router.post("/:ticketId/reply", requireAuth, validateResource(replyTicketSchema), addReplyToTicket);
+router.put("/:ticketId/assign", requireAuth, validateResource(assignTicketSchema), assignTicket);
+router.delete("/:ticketId", requireAuth, deleteTicket);
 
 export default router;
 
