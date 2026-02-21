@@ -392,6 +392,10 @@ export default function ProductDetails() {
                   }}
                   buttonName="Buy Now"
                   icon={<FaBolt size={20} />}
+                  disabled={
+                    !singleProduct?.stocks?.quantity ||
+                    singleProduct.stocks.quantity <= 0
+                  }
                   animateIcon={true}
                   className="bg-[#fbbf24] !text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
                 />

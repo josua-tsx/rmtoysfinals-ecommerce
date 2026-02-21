@@ -79,6 +79,7 @@ export default function GcashPaymentPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`order placed`);
       clearOrder();

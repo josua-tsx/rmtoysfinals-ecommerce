@@ -107,6 +107,7 @@ export default function OrderSummaryModal({ onClose }) {
       setSummaryModalOpen(false);
       onClose?.();
       queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`Order placed!`);
     },
