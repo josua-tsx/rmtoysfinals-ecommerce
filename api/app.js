@@ -2,6 +2,7 @@ import express from "express";
 import { config } from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
 import { handleError } from "./middleware/handleError.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 
@@ -38,6 +39,12 @@ import otpRoute from "../api/routes/otp.route.js";
 config();
 
 const app = express();
+
+// Trust the first proxy (Vercel) so express-rate-limit gets the real client IP
+app.set("trust proxy", 1);
+
+// Security headers (XSS, clickjacking, MIME-sniffing, etc.)
+app.use(helmet());
 
 export const allowedOrigins = [
   "https://rmtoysfinals-8jgr.vercel.app", // Your Vercel frontend
