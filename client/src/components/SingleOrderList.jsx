@@ -357,7 +357,9 @@ export default function SingleOrderList({ order, onClose }) {
                           <div className="flex gap-3 mt-2 pt-2 border-t border-gray-100">
                             <button
                               onClick={() => {
-                                navigate(`/product/${item?.productId._id}`);
+                                navigate(
+                                  `/product/details/${item?.productId._id}`,
+                                );
                                 onClose();
                               }}
                               className="text-[10px] font-black uppercase text-indigo-600 hover:underline"
