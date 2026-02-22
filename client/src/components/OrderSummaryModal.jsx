@@ -332,6 +332,7 @@ export default function OrderSummaryModal({ onClose }) {
                         <Link
                           to={"/profile"}
                           className="underline text-blue-700"
+                          onClick={handleClose}
                         >
                           Click here!
                         </Link>{" "}
@@ -409,6 +410,7 @@ export default function OrderSummaryModal({ onClose }) {
                           <Link
                             to={"/profile"}
                             className="underline text-blue-700"
+                            onClick={handleClose}
                           >
                             {" "}
                             Profile Page
