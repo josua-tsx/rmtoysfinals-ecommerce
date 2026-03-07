@@ -45,7 +45,7 @@ export const updateTicketStatusSchema = z.object({
     ticketId: objectIdSchema,
   }),
   body: z.object({
-    status: z.enum(["Pending", "In Progress", "Resolved", "Closed"]).optional(),
+    status: z.enum(["Pending", "In Progress", "Awaiting Confirmation", "Resolved", "Closed"]).optional(),
     priority: z.enum(["Low", "Medium", "High"]).optional(),
   }).refine((data) => data.status || data.priority, {
     message: "At least one field (status or priority) must be provided",

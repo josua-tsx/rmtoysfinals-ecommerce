@@ -100,7 +100,7 @@ export default function AdminEditProducts() {
   }, [singleProduct, reset]);
 
   const {
-    data: categories = [],
+    data: categories,
     isPending: isCategoryPending,
     isError: isCategoryError,
   } = useQuery({
@@ -108,14 +108,24 @@ export default function AdminEditProducts() {
     queryFn: async () => {
       // Fetching with a high limit to get all categories for the dropdown
       const res = await axiosInstance.get(`/category/get-categories?limit=100`);
-      return res.data.categories || [];
+      return res.data;
     },
   });
+
+  const categoriesData = categories?.categories || [];
 
   const { data: vatOptions = [] } = useQuery({
     queryKey: ["vat"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/vat/get-vat`);
+      return res.data;
+    },
+  });
+
+  const { data: pointsOptions = [] } = useQuery({
+    queryKey: ["points"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/points/get-points`);
       return res.data;
     },
   });
@@ -544,8 +554,13 @@ export default function AdminEditProducts() {
                     {...register("points")}
                   >
                     <option value="0">No Points</option>
-                    <option value="10">10 Points</option>
-                    <option value="15">15 Points</option>
+                    {pointsOptions
+                      .filter((p) => p.pointsValue > 0)
+                      .map((opt) => (
+                        <option key={opt._id} value={opt.pointsValue}>
+                          {opt.pointsValue} Points
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -564,7 +579,7 @@ export default function AdminEditProducts() {
                     {...register("category")}
                   >
                     <option value="">Select Category</option>
-                    {categories.map((cat) => (
+                    {categoriesData.map((cat) => (
                       <option key={cat._id} value={cat._id}>
                         {cat.categoryName}
                       </option>

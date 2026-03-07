@@ -38,6 +38,10 @@ const STATUS_CONFIG = {
     color: "text-blue-700 bg-blue-50 border-blue-700",
     icon: IoAlertCircleOutline,
   },
+  "Awaiting Confirmation": {
+    color: "text-orange-700 bg-orange-50 border-orange-700",
+    icon: IoTimeOutline,
+  },
   Resolved: {
     color: "text-green-700 bg-green-50 border-green-700",
     icon: IoCheckmarkCircleOutline,
@@ -96,6 +100,22 @@ export default function CustomerTicketsPage() {
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || "Failed to send reply");
+    },
+  });
+
+  const { mutate: confirmResolution, isPending: isConfirming } = useMutation({
+    mutationFn: async (ticketId) => {
+      const res = await axiosInstance.patch(`/ticket/${ticketId}/confirm`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["userTickets"] });
+      toast.success(data.message || "Ticket confirmed as resolved!");
+    },
+    onError: (err) => {
+      toast.error(
+        err.response?.data?.message || "Failed to confirm resolution",
+      );
     },
   });
 
@@ -518,7 +538,61 @@ export default function CustomerTicketsPage() {
 
               {/* Input Area */}
               <div className="p-4 bg-white border-t border-black shrink-0">
-                {selectedTicket.status !== "Closed" ? (
+                {selectedTicket.status === "Awaiting Confirmation" ? (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-orange-50 border border-orange-300 rounded-[5px] text-center">
+                      <p className="text-sm font-bold text-orange-800 mb-1">
+                        ✉️ The support team believes your issue has been
+                        resolved.
+                      </p>
+                      <p className="text-xs text-orange-700 mb-3">
+                        Please confirm if your issue is resolved, or reply if
+                        you still need help.
+                      </p>
+                      <button
+                        onClick={() => confirmResolution(selectedTicket._id)}
+                        disabled={isConfirming}
+                        className="bg-green-600 text-white border border-black px-6 py-2.5 rounded-[5px] font-bold text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all disabled:opacity-50"
+                      >
+                        {isConfirming
+                          ? "Confirming..."
+                          : "✅ Yes, My Issue is Resolved"}
+                      </button>
+                    </div>
+                    {/* Still allow replying if they need more help */}
+                    <form
+                      onSubmit={handleSendReply}
+                      className="flex gap-2 items-end"
+                    >
+                      <textarea
+                        value={replyMessage}
+                        onChange={(e) => setReplyMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendReply(e);
+                          }
+                        }}
+                        placeholder="Still need help? Reply here..."
+                        rows={1}
+                        maxLength={1000}
+                        className="flex-1 bg-gray-200 border border-black rounded-[5px] px-4 py-3 focus:bg-white transition-all resize-none max-h-32 min-h-[46px] outline-none placeholder:text-gray-500"
+                        style={{ height: "auto", minHeight: "46px" }}
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSendingReply || !replyMessage.trim()}
+                        className="bg-primary text-card border border-black p-3 rounded-[5px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                      >
+                        {isSendingReply ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <IoSend size={20} className="ml-0.5" />
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                ) : selectedTicket.status !== "Closed" ? (
                   <form
                     onSubmit={handleSendReply}
                     className="flex flex-col gap-2 max-w-4xl mx-auto"

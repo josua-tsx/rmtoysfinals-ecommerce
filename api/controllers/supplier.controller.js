@@ -26,6 +26,15 @@ export const addSupplier = async (req, res, next) => {
   */
 
   try {
+    // Check for duplicate supplier name
+    const existingSupplier = await Supplier.findOne({
+      supplierName: { $regex: new RegExp(`^${supplierName.trim()}$`, "i") },
+    });
+
+    if (existingSupplier) {
+      return next(handleMakeError(400, "Supplier name already exists"));
+    }
+
     // Check for duplicate phone number across User, Rider, and Supplier collections
     const [phoneExistsInUser, phoneExistsInRider, phoneExistsInSupplier] = await Promise.all([
       User.findOne({ phoneNumber: contactNumber }),
@@ -335,6 +344,18 @@ export const editSupplier = async (req, res, next) => {
   */
 
   try {
+    // Check for duplicate supplier name
+    if (supplierName) {
+      const existingSupplierName = await Supplier.findOne({
+        supplierName: { $regex: new RegExp(`^${supplierName.trim()}$`, "i") },
+        _id: { $ne: supplierId },
+      });
+
+      if (existingSupplierName) {
+        return next(handleMakeError(400, "Supplier name already exists"));
+      }
+    }
+
     // Check for duplicate phone number across User, Rider, and Supplier collections
     if (contactNumber !== undefined) {
       const [phoneExistsInUser, phoneExistsInRider, phoneExistsInSupplier] = await Promise.all([

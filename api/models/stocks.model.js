@@ -5,7 +5,6 @@ const StocksModelSchema = new mongoose.Schema(
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      unique: true,
     },
     supplier: {
       type: mongoose.Schema.Types.ObjectId,

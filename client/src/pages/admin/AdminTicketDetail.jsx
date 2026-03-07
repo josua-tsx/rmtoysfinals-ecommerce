@@ -31,6 +31,10 @@ const STATUS_CONFIG = {
     color: "text-blue-700 bg-blue-100 border-blue-700",
     icon: IoAlertCircleOutline,
   },
+  "Awaiting Confirmation": {
+    color: "text-orange-700 bg-orange-50 border-orange-700",
+    icon: IoTimeOutline,
+  },
   Resolved: {
     color: "text-green-700 bg-green-50 border-green-700",
     icon: IoCheckmarkCircleOutline,
@@ -490,26 +494,55 @@ export default function AdminTicketDetail() {
                 >
                   <option value="Pending">Pending</option>
                   <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                  <option value="Closed">Closed</option>
+                  <option value="Awaiting Confirmation">
+                    Awaiting Confirmation
+                  </option>
+                  <option
+                    value="Closed"
+                    disabled={ticket.status !== "Resolved"}
+                  >
+                    Closed
+                  </option>
                 </select>
               </div>
+
+              {/* Info banner for Awaiting Confirmation */}
+              {ticket.status === "Awaiting Confirmation" && (
+                <div className="p-3 bg-orange-50 border border-orange-300 rounded-[5px] text-xs text-orange-800 font-medium">
+                  ⏳ Waiting for the customer to confirm that their issue is
+                  resolved.
+                </div>
+              )}
+
+              {ticket.status === "Resolved" && (
+                <div className="p-3 bg-green-50 border border-green-300 rounded-[5px] text-xs text-green-800 font-medium">
+                  ✅ Customer confirmed resolution. You can now close this
+                  ticket.
+                </div>
+              )}
 
               <div className="pt-2 space-y-2 border-t border-gray-100">
                 <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
                   Quick Actions
                 </h4>
                 <Buttons
-                  onClick={() => updateStatus({ status: "Resolved" })}
-                  disabled={isUpdatingStatus || ticket.status === "Resolved"}
-                  buttonName="Mark as Resolved"
+                  onClick={() =>
+                    updateStatus({ status: "Awaiting Confirmation" })
+                  }
+                  disabled={
+                    isUpdatingStatus ||
+                    ticket.status === "Awaiting Confirmation" ||
+                    ticket.status === "Resolved" ||
+                    ticket.status === "Closed"
+                  }
+                  buttonName="Request Confirmation"
                   icon={<FaCheckCircle size={18} />}
                   animateIcon={true}
-                  className="w-full bg-green-600 !text-white  py-2.5"
+                  className="w-full bg-orange-500 !text-white  py-2.5"
                 />
                 <Buttons
                   onClick={() => updateStatus({ status: "Closed" })}
-                  disabled={isUpdatingStatus || ticket.status === "Closed"}
+                  disabled={isUpdatingStatus || ticket.status !== "Resolved"}
                   buttonName="Close Ticket"
                   icon={<FaTimesCircle size={18} />}
                   animateIcon={true}

@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../../lib/axios";
 import { useEffect, useState } from "react";
 import formatPrice from "../../reusable/formatPrice";
-import AdminOrderRestockModal from "./AdminOrderRestockModal";
 import ReduceQuantityModal from "../ReduceQuantityModal";
 import { useUserStore } from "../../stores/useUserStore";
 import ReusableTable from "../../reusable/ReusableTable";
@@ -22,7 +21,6 @@ export default function AdminStocksTable() {
     setPage(1);
   }, [debouncedSearchTerm]);
 
-  const [openModal, setOpenModal] = useState(false);
   const [reduceModal, setReduceModal] = useState(false);
 
   const [deliveryId, setDeliveryId] = useState(null);
@@ -49,18 +47,6 @@ export default function AdminStocksTable() {
   const closeReduceModal = () => {
     setDeliveryId(null);
     setReduceModal(false);
-    setSingleDataStock(null);
-  };
-
-  const openSingleStockData = (stock) => {
-    setDeliveryId(stock._id);
-    setOpenModal(true);
-    setSingleDataStock(stock);
-  };
-
-  const closeSingleStockData = () => {
-    setDeliveryId(null);
-    setOpenModal(false);
     setSingleDataStock(null);
   };
 
@@ -221,15 +207,6 @@ export default function AdminStocksTable() {
         <div className="flex flex-col gap-2 min-w-[120px]">
           <button
             disabled={currentUser.role === "validatorStaff"}
-            onClick={() => openSingleStockData(stock)}
-            className={`${
-              currentUser.role === "validatorStaff" ? "hidden" : "block"
-            } border border-black p-1.5 px-3 rounded-[5px] bg-[#22c55e] text-white font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all disabled:opacity-50`}
-          >
-            Re-stock
-          </button>
-          <button
-            disabled={currentUser.role === "validatorStaff"}
             onClick={() => openReduceModal(stock)}
             className={`${
               currentUser.role === "validatorStaff" ? "hidden" : "block"
@@ -244,13 +221,6 @@ export default function AdminStocksTable() {
 
   return (
     <>
-      {openModal && (
-        <AdminOrderRestockModal
-          singleStock={singleDataStock}
-          onClose={closeSingleStockData}
-        />
-      )}
-
       {reduceModal && (
         <ReduceQuantityModal
           isOpen={reduceModal}

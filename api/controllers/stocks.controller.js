@@ -232,136 +232,9 @@ const processEmailsInBackground = async (
   return results;
 };
 
-export const reorderStock = async (req, res, next) => {
-  const {
-    product: productIdFromBody, // Rename to avoid confusion
-    supplier,
-    supplierPrice,
-    shopPrice,
-    quantity: newQuantity,
-    category,
-    shippingPrice,
-    totalCost: newTotalCost,
-    deliveryId,
-    dateDelivery,
-    vatPercent: newVatPercent,
-    vatShopPrice,
-  } = req.body;
-  const { stockId } = req.params;
-
-  const userId = req.user.id;
-
-  try {
-    // 1. Fetch Existing Stock Early
-    const existingStock = await Stocks.findById(stockId);
-    if (!existingStock) return next(handleMakeError(400, "No stock found!"));
-
-    const productId = productIdFromBody || existingStock.product;
-
-    /* 
-       Manual validation for reorder replaced by Zod schema
-       - Required fields
-       - Price limits
-       - Quantity checks
-    */
-
-    // 2. Determine VAT to use
-    let vatIdToUse = newVatPercent;
-    
-    // If not provided in body, fall back to existing stock's VAT
-    if (!vatIdToUse) {
-        vatIdToUse = existingStock.vat; 
-    }
-
-    // If still null, maybe check product (optional, but good for safety)
-    if (!vatIdToUse) {
-       const prod = await Product.findById(productId);
-       if (prod && prod.vat) {
-         vatIdToUse = prod.vat;
-       }
-    }
-
-    // 3. Fetch VAT details for calculation
-    let vatPercent = 0;
-    let vatDoc = null;
-
-    if (vatIdToUse) {
-        vatDoc = await Vat.findById(vatIdToUse);
-        if (vatDoc) {
-            vatPercent = vatDoc.vatPercent;
-        }
-    }
-
-    // 4. Calculate stats
-    const updatedQuantity = existingStock.quantity + Number(newQuantity);
-    
-    const calculatedVatShopPrice = Number(shopPrice) * (1 + vatPercent / 100);
-    const calculatedVatToRemit = (calculatedVatShopPrice - Number(shopPrice)) * updatedQuantity;
-
-    // 5. Update the stock
-    const updateDeliver = await Stocks.findByIdAndUpdate(
-      stockId,
-      {
-        product: productId,
-        supplier,
-        supplierPrice,
-        shopPrice,
-        quantity: updatedQuantity, 
-        category,
-        shippingPrice,
-        totalCost: Number(supplierPrice) * Number(updatedQuantity) + Number(shippingPrice), // Recalculate total cost carefully
-        deliveryStatus: "delivered",
-        deliveryId,
-        dateDelivery,
-        vat: vatDoc ? vatDoc._id : null, // Ensure we save the resolved ID
-        vatShopPrice: calculatedVatShopPrice,
-        vatToRemit: calculatedVatToRemit,
-      },
-      { new: true } 
-    );
-
-    // Update VAT relationship if valid
-    if (vatDoc) {
-        await Vat.findByIdAndUpdate(vatDoc._id, {
-        $addToSet: { productId: updateDeliver.product },
-        });
-    }
-
-    await orderStockLogs({
-      action: "admin_reordered_stock",
-      userId,
-      deliveryId,
-      supplier,
-      category,
-      quantityOrdered: Number(newQuantity),
-      supplierPrice,
-      shippingPrice,
-      vatPercentApplied: vatPercent, // Log the actual percent used
-      shopPrice: Number(shopPrice),
-      receivedDate: new Date(dateDelivery),
-      receivedQuantity: Number(newQuantity),
-      totalCost: Number(newTotalCost) || (Number(supplierPrice) * Number(newQuantity) + Number(shippingPrice)), // Use provided or calculated
-    });
-
-    await Product.findByIdAndUpdate(
-      existingStock.product,
-      {
-        price: calculatedVatShopPrice,
-        preVatPrice: Number(shopPrice),
-        taxStatus: vatPercent > 0 ? "vatable" : "exempt", // Update tax status based on effective VAT
-        totalVat: vatPercent,
-        supplier: supplier, // ✅ Update supplier on reorder
-      },
-      { new: true, runValidators: true }
-    );
-    res.status(200).json(updateDeliver);
-  } catch (error) {
-    next(error);
-  }
-};
 
 export const updateStockQuantity = async (req, res, next) => {
-  const { stockId } = req.params;
+  const { productId } = req.params;
   const { quantity, reason } = req.body;
   const userId = req.user.id;
 
@@ -369,67 +242,88 @@ export const updateStockQuantity = async (req, res, next) => {
   session.startTransaction();
 
   try {
-    const existingStock = await Stocks.findById(stockId).session(session);
-    if (!existingStock) {
-      throw handleMakeError(404, "No stock entry found with this ID.");
+    // 1. Fetch all stock batches for this product, ordered by oldest first (FIFO)
+    const stockBatches = await Stocks.find({ product: productId, deliveryStatus: "delivered" }).sort({ createdAt: 1 }).session(session);
+
+    if (!stockBatches || stockBatches.length === 0) {
+      throw handleMakeError(404, "No stock entries found for this product.");
     }
 
-    // 1. Identity Guard: Prevent redundant updates
-    if (quantity === existingStock.quantity) {
+    // Calculate total current stock
+    const currentTotalStock = stockBatches.reduce((sum, batch) => sum + batch.quantity, 0);
+
+    // Identity Guard: Prevent redundant updates
+    if (quantity === currentTotalStock) {
       throw handleMakeError(400, "The new quantity is identical to the current quantity. No changes made.");
     }
 
-    // 2. Reduction Guard: "If reduce count is equal to stock, do not allow it"
-    // This effectively means the stock cannot be reduced to exactly 0 via this adjustment.
-    const reductionAmount = existingStock.quantity - quantity;
-    if (reductionAmount === existingStock.quantity) {
+    // Reduction Guard
+    const reductionAmount = currentTotalStock - quantity;
+    if (reductionAmount === currentTotalStock) {
       throw handleMakeError(400, "Manual adjustments cannot reduce stock to zero. Please archive the stock or set a non-zero value.");
     }
 
-    // 3. Industry Best Practice: Ensure we aren't creating negative stock (schema handles this too)
     if (quantity < 0) {
       throw handleMakeError(400, "Inventory levels cannot be negative.");
     }
 
-    // 4. Increase Threshold Guard: Prevent misuse for reordering
-    // Only apply to increases. Limit to 20 units or 10% of current stock, whichever is higher.
-    const delta = quantity - existingStock.quantity;
+    // Increase Threshold Guard: Prevent misuse for reordering
+    const delta = quantity - currentTotalStock;
     if (delta > 0) {
-      const threshold = Math.max(20, Math.ceil(existingStock.quantity * 0.1));
+      const threshold = Math.max(20, Math.ceil(currentTotalStock * 0.1));
       if (delta > threshold) {
-        throw handleMakeError(400, `Manual increase of ${delta} units exceeds the safety threshold (${threshold}). Please use the 'Reorder Stock' function for large inventory updates to maintain proper tracking.`);
+        throw handleMakeError(400, `Manual increase of ${delta} units exceeds the safety threshold (${threshold}). Please use the 'Order Stock' function for large inventory updates to maintain proper tracking.`);
       }
     }
 
-    const { supplierPrice, shippingPrice, shopPrice, vatShopPrice, product, supplier, category, deliveryId, vat, vatPercentApplied } = existingStock;
+    // 2. Distribute the delta across batches
+    let remainingDelta = Math.abs(delta);
+    
+    // We need some reference values for logging based on the product
+    const referenceBatch = stockBatches[stockBatches.length - 1]; // Use latest for prices
+    
+    if (delta < 0) {
+      // REDUCTION (FIFO: Reduce oldest stocks first)
+      for (const batch of stockBatches) {
+        if (remainingDelta === 0) break;
+        
+        const amountToDeduct = Math.min(batch.quantity, remainingDelta);
+        batch.quantity -= amountToDeduct;
+        
+        // Recalculate totals for this batch
+        batch.totalCost = (batch.supplierPrice * batch.quantity) + batch.shippingPrice;
+        batch.vatToRemit = (batch.vatShopPrice - batch.shopPrice) * batch.quantity;
+        
+        await batch.save({ session });
+        remainingDelta -= amountToDeduct;
+      }
+    } else {
+      // INCREASE (Add to the most recent stock batch)
+      const latestBatch = stockBatches[stockBatches.length - 1];
+      latestBatch.quantity += remainingDelta;
+      
+      latestBatch.totalCost = (latestBatch.supplierPrice * latestBatch.quantity) + latestBatch.shippingPrice;
+      latestBatch.vatToRemit = (latestBatch.vatShopPrice - latestBatch.shopPrice) * latestBatch.quantity;
+      
+      await latestBatch.save({ session });
+    }
 
-    // 5. Update the stock entry
-    const updatedStock = await Stocks.findByIdAndUpdate(
-      stockId,
-      {
-        quantity,
-        totalCost: (supplierPrice * quantity) + shippingPrice,
-        vatToRemit: (vatShopPrice - shopPrice) * quantity,
-      },
-      { new: true, session }
-    );
-
-    // 6. Audit Logging: Record the manual adjustment with delta
+    // 3. Audit Logging
     await orderStockLogs(
       {
         action: "manual_adjustment",
         userId,
-        deliveryId: deliveryId || "MANUAL_ADJ",
-        supplier: supplier || null,
-        category: category || null,
-        quantityOrdered: existingStock.quantity, // Old quantity
-        supplierPrice: supplierPrice || 0,
-        shippingPrice: shippingPrice || 0,
-        vatPercentApplied: vatPercentApplied || 0,
-        shopPrice: shopPrice || 0,
+        deliveryId: "MANUAL_ADJ_BATCH",
+        supplier: referenceBatch.supplier || null,
+        category: referenceBatch.category || null,
+        quantityOrdered: currentTotalStock, // Old quantity
+        supplierPrice: referenceBatch.supplierPrice || 0,
+        shippingPrice: referenceBatch.shippingPrice || 0,
+        vatPercentApplied: referenceBatch.vatPercentApplied || 0,
+        shopPrice: referenceBatch.shopPrice || 0,
         receivedDate: new Date().toISOString(),
         receivedQuantity: quantity, // New quantity
-        totalCost: updatedStock.totalCost,
+        totalCost: referenceBatch.totalCost, // Approximate for log
         reason: `[ADJ: ${delta > 0 ? "+" : ""}${delta}] ${reason}`,
       },
       session
@@ -441,11 +335,10 @@ export const updateStockQuantity = async (req, res, next) => {
     checkAndSendStockAlerts();
 
     res.status(200).json({
-      message: "Stock quantity adjusted successfully.",
-      previousQuantity: existingStock.quantity,
-      newQuantity: updatedStock.quantity,
+      message: "Stock quantity adjusted successfully across batches.",
+      previousQuantity: currentTotalStock,
+      newQuantity: quantity,
       delta,
-      updatedStock
     });
   } catch (error) {
     await session.abortTransaction();
@@ -555,8 +448,36 @@ export const getStocks = async (req, res, next) => {
       });
     }
 
-    // Sort
+    // Sort by latest delivery
     pipeline.push({ $sort: { createdAt: -1 } });
+
+    // --- NEW: Group by Product so the table doesn't show duplicates ---
+    pipeline.push({
+      $group: {
+        _id: "$product._id",
+        // Keep the product details
+        product: { $first: "$product" },
+        // Keep the latest supplier details
+        supplier: { $first: "$supplier" },
+        // Keep the latest delivery date/ID for reference
+        deliveryId: { $first: "$deliveryId" },
+        dateDelivery: { $first: "$dateDelivery" },
+        createdAt: { $first: "$createdAt" },
+        // Aggregate stock numbers
+        quantity: { $sum: "$quantity" },
+        totalCost: { $sum: "$totalCost" },
+        vatToRemit: { $sum: "$vatToRemit" },
+        // Use the latest prices
+        shopPrice: { $first: "$shopPrice" },
+        vatShopPrice: { $first: "$vatShopPrice" },
+        supplierPrice: { $first: "$supplierPrice" },
+        shippingPrice: { $first: "$shippingPrice" },
+        vat: { $first: "$vat" },
+      }
+    });
+
+    // Sort the final grouped results alphabetically or by date
+    pipeline.push({ $sort: { "product.productName": 1 } });
 
     // Pagination Facet
     const facetPipeline = [

@@ -807,6 +807,21 @@ export const editProduct = async (req, res, next) => {
       return next(handleMakeError(400, "Cannot edit an archived product. Restore it first."));
     }
 
+    // Check for duplicate product name if it's being updated
+    if (productName && productName.trim() !== existingProduct.productName) {
+      const duplicateProduct = await Product.findOne({
+        productName: { $regex: new RegExp(`^${productName.trim()}$`, "i") },
+        _id: { $ne: id }
+      });
+      
+      if (duplicateProduct) {
+        const msg = duplicateProduct.status === "draft"
+          ? "This product name is already in draft"
+          : "Product name already exists";
+        return next(handleMakeError(400, msg));
+      }
+    }
+
     const updateProduct = await Product.findByIdAndUpdate(
       id,
       {

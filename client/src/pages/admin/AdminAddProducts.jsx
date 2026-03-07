@@ -95,6 +95,14 @@ export default function AdminAddProducts() {
     },
   });
 
+  const { data: pointsOptions = [] } = useQuery({
+    queryKey: ["points"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/points/get-points`);
+      return res.data;
+    },
+  });
+
   const { mutate: addProductMutation } = useMutation({
     mutationFn: async (data) => {
       const res = await axiosInstance.post(`/product/add-product`, data);
@@ -484,8 +492,13 @@ export default function AdminAddProducts() {
                     {...register("points")}
                   >
                     <option value="0">No Points</option>
-                    <option value="10">10 Points</option>
-                    <option value="15">15 Points</option>
+                    {pointsOptions
+                      .filter((p) => p.pointsValue > 0)
+                      .map((opt) => (
+                        <option key={opt._id} value={opt.pointsValue}>
+                          {opt.pointsValue} Points
+                        </option>
+                      ))}
                   </select>
                 </div>
 

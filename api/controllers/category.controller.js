@@ -15,6 +15,15 @@ export const addCategory = async (req, res, next) => {
   */
 
   try {
+    // Check for duplicate category name
+    const existingCategory = await Category.findOne({
+      categoryName: { $regex: new RegExp(`^${categoryName.trim()}$`, "i") },
+    });
+
+    if (existingCategory) {
+      return next(handleMakeError(400, "Category name already exists"));
+    }
+
     const newCategory = new Category({
       categoryName,
       categoryDescription,
@@ -301,6 +310,17 @@ export const editCategory = async (req, res, next) => {
   */
 
   try {
+    // Check for duplicate category name
+    if (categoryName) {
+      const duplicateCategory = await Category.findOne({
+        categoryName: { $regex: new RegExp(`^${categoryName.trim()}$`, "i") },
+        _id: { $ne: categoryId }
+      });
+      if (duplicateCategory) {
+        return next(handleMakeError(400, "Category name already exists"));
+      }
+    }
+
     const updateCategory = await Category.findByIdAndUpdate(categoryId, {
       categoryName,
       categoryDescription,
@@ -323,6 +343,7 @@ export const editCategory = async (req, res, next) => {
     res.status(200).json({ message: "Category Updated!" });
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
