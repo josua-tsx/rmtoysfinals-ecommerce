@@ -279,6 +279,29 @@ export const updateTicketStatus = async (req, res, next) => {
 
     const oldStatus = ticket.status;
 
+    // Status transition guards
+    if (status) {
+      // Admin cannot directly set "Resolved" — customer must confirm
+      if (status === "Resolved") {
+        return next(
+          handleMakeError(
+            400,
+            "Cannot set status to 'Resolved' directly. Set to 'Awaiting Confirmation' and wait for the customer to confirm."
+          )
+        );
+      }
+
+      // Admin can only close a ticket that is already "Resolved"
+      if (status === "Closed" && oldStatus !== "Resolved") {
+        return next(
+          handleMakeError(
+            400,
+            "Cannot close a ticket that is not yet resolved. The customer must confirm resolution first."
+          )
+        );
+      }
+    }
+
     // Update fields
     if (status) ticket.status = status;
     if (priority) ticket.priority = priority;
@@ -301,6 +324,81 @@ export const updateTicketStatus = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Ticket updated successfully",
+      ticket,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Customer confirms ticket resolution
+export const confirmTicketResolved = async (req, res, next) => {
+  try {
+    const { ticketId } = req.params;
+    const userId = req.user?._id;
+
+    const ticket = await Ticket.findById(ticketId);
+
+    if (!ticket) {
+      return next(handleMakeError(404, "Ticket not found"));
+    }
+
+    // Verify ownership
+    if (!ticket.userId || !ticket.userId.equals(userId)) {
+      return next(handleMakeError(403, "You can only confirm your own tickets"));
+    }
+
+    // Must be in "Awaiting Confirmation" status
+    if (ticket.status !== "Awaiting Confirmation") {
+      return next(
+        handleMakeError(
+          400,
+          `Cannot confirm a ticket that is in '${ticket.status}' status. Only tickets 'Awaiting Confirmation' can be confirmed.`
+        )
+      );
+    }
+
+    const oldStatus = ticket.status;
+    ticket.status = "Resolved";
+    ticket.customerConfirmedAt = new Date();
+
+    // Add a system message to the chat
+    ticket.messages.push({
+      sender: "customer",
+      senderName: ticket.name,
+      message: "✅ I confirm that my issue has been resolved. Thank you!",
+      timestamp: new Date(),
+      isRead: false,
+    });
+
+    await ticket.save();
+
+    // Send status update email
+    try {
+      await sendGrid(
+        ticket.email,
+        `Ticket Resolved - ${ticket.subject}`,
+        statusUpdateEmail(ticket, oldStatus, "Resolved")
+      );
+    } catch (emailError) {
+      console.error("Error sending confirmation email:", emailError);
+    }
+
+    // Notify admin via socket
+    try {
+      const io = getIO();
+      io.to("admin-room").emit("ticket-confirmed", {
+        ticketId: ticket._id,
+        subject: ticket.subject,
+        customerName: ticket.name,
+      });
+    } catch (socketError) {
+      console.error("Error emitting socket event:", socketError);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Thank you for confirming! Your ticket has been marked as resolved.",
       ticket,
     });
   } catch (error) {
@@ -497,6 +595,7 @@ export const getTicketStats = async (req, res, next) => {
     });
     const resolvedTickets = await Ticket.countDocuments({ status: "Resolved" });
     const closedTickets = await Ticket.countDocuments({ status: "Closed" });
+    const awaitingConfirmation = await Ticket.countDocuments({ status: "Awaiting Confirmation" });
 
     // Get tickets by issue type
     const ticketsByIssueType = await Ticket.aggregate([
@@ -524,6 +623,7 @@ export const getTicketStats = async (req, res, next) => {
         total: totalTickets,
         pending: pendingTickets,
         inProgress: inProgressTickets,
+        awaitingConfirmation,
         resolved: resolvedTickets,
         closed: closedTickets,
         byIssueType: ticketsByIssueType,

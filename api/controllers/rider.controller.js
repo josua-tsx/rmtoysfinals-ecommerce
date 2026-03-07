@@ -14,6 +14,16 @@ export const addRider = async (req, res, next) => {
     */
 
   try {
+    const existingRider = await Rider.findOne({
+      riderName: { $regex: new RegExp(`^${riderName.trim()}$`, "i") },
+    });
+
+    if (existingRider) {
+      return next(
+        handleMakeError(400, "A rider with this name already exists.")
+      );
+    }
+
     const existingPhoneNumber = await Rider.findOne({
       riderPhoneNumber,
     });
@@ -258,6 +268,20 @@ export const editRider = async (req, res, next) => {
   */
 
   try {
+    // Check for duplicate rider name
+    if (newName) {
+      const existingRiderName = await Rider.findOne({
+        riderName: { $regex: new RegExp(`^${newName.trim()}$`, "i") },
+        _id: { $ne: riderId },
+      });
+
+      if (existingRiderName) {
+        return next(
+          handleMakeError(400, "A rider with this name already exists.")
+        );
+      }
+    }
+
     const existingPhoneNumber = await Rider.findOne({
       riderPhoneNumber: newNumber,
       _id: { $ne: riderId },
@@ -267,7 +291,7 @@ export const editRider = async (req, res, next) => {
       return next(
         handleMakeError(
           400,
-          "This Phone number is already exist in the table. Try new one"
+          "This phone number is already in the rider table. Try new one."
         )
       );
     }

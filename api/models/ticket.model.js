@@ -51,7 +51,7 @@ const TicketModelSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Pending", "In Progress", "Resolved", "Closed"],
+      enum: ["Pending", "In Progress", "Awaiting Confirmation", "Resolved", "Closed"],
       default: "Pending",
     },
 
@@ -95,6 +95,11 @@ const TicketModelSchema = new mongoose.Schema(
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+
+    customerConfirmedAt: {
+      type: Date,
+      default: null,
     },
   },
   {

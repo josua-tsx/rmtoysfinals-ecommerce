@@ -77,8 +77,8 @@ import ProtectedValidatorStaffRoute from "./routes/ProtectedRoutes/ProtectedVali
 
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 
-const AdminStocksPending = lazy(
-  () => import("./pages/admin/AdminStocksPending.jsx"),
+const AdminOrderStocks = lazy(
+  () => import("./pages/admin/AdminOrderStocks.jsx"),
 );
 const PurchaseCancelPage = lazy(() => import("./pages/PurchaseCancelPage.jsx"));
 const PurchaseSuccessPage = lazy(
@@ -86,6 +86,7 @@ const PurchaseSuccessPage = lazy(
 );
 
 const AdminVat = lazy(() => import("./pages/admin/AdminVat.jsx"));
+const AdminPoints = lazy(() => import("./pages/admin/AdminPoints.jsx"));
 
 const GcashPaymentPage = lazy(() => import("./pages/GcashPaymentPage.jsx"));
 
@@ -287,8 +288,8 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "pendingStocks",
-        element: <AdminStocksPending />,
+        path: "orderStocks",
+        element: <AdminOrderStocks />,
       },
 
       {
@@ -349,6 +350,11 @@ const router = createBrowserRouter([
       {
         path: "vat",
         element: <AdminVat />,
+      },
+
+      {
+        path: "points",
+        element: <AdminPoints />,
       },
 
       // FAQS
@@ -414,8 +420,8 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "pendingStocks",
-        element: <AdminStocksPending />,
+        path: "orderStocks",
+        element: <AdminOrderStocks />,
       },
       {
         path: "stockHistory",

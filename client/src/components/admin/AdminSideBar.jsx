@@ -17,6 +17,7 @@ import {
   FaTruck,
   FaMotorcycle,
   FaArchive,
+  FaCoins,
 } from "react-icons/fa";
 import { BiSupport } from "react-icons/bi";
 import { AiOutlineAudit } from "react-icons/ai";
@@ -134,8 +135,8 @@ export default function AdminSideBar() {
       allowedRoles: ["admin", "validatorStaff"],
       inner: [
         {
-          name: "Pending Stocks",
-          path: "/admin/pendingStocks",
+          name: "Order Stocks",
+          path: "/admin/orderStocks",
         },
         {
           name: "Batch Stock",
@@ -153,6 +154,13 @@ export default function AdminSideBar() {
       icon: <FaPercentage size={20} />,
       allowedRoles: ["admin"],
       path: "/admin/vat",
+    },
+
+    {
+      name: "Credit Points",
+      icon: <FaCoins size={20} />,
+      allowedRoles: ["admin"],
+      path: "/admin/points",
     },
 
     {

@@ -9,13 +9,12 @@ import ValidatedInput from "../../reusable/ValidatedInput";
 import toast from "react-hot-toast";
 import formatPrice from "../../reusable/formatPrice";
 import { MdToggleOff, MdToggleOn } from "react-icons/md";
-import { ConfirmModal } from "../../reusable/ConfirmModal";
 import ReusableTable from "../../reusable/ReusableTable";
 import useDebounce from "../../hooks/useDebounce";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-export default function AdminStocksPending() {
+export default function AdminOrderStocks() {
   const currentUser = useUserStore((state) => state.currentUser);
   const queryClient = useQueryClient();
 
@@ -24,9 +23,6 @@ export default function AdminStocksPending() {
   const debouncedSearchTerm = useDebounce(localSearchTerm, 500);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-
-  const [productToDelete, setProductToDelete] = useState(null);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   // Modal & Selection State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,33 +77,20 @@ export default function AdminStocksPending() {
     setPage(1);
   }, [debouncedSearchTerm]);
 
-  const handleDeleteClick = (productId) => {
-    setProductToDelete(productId);
-    setIsConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (productToDelete) {
-      deleteProduct(productToDelete);
-      setIsConfirmOpen(false);
-      setProductToDelete(null);
-    }
-  };
-
   // Queries
   const {
     data,
     isPending: isProductsPending,
     isError: isProductsError,
   } = useQuery({
-    queryKey: ["pendingProducts", page, limit, debouncedSearchTerm],
+    queryKey: ["orderStockProducts", page, limit, debouncedSearchTerm],
     queryFn: async () => {
       const params = new URLSearchParams({ page, limit });
       if (debouncedSearchTerm) {
         params.append("search", debouncedSearchTerm);
       }
       const res = await axiosInstance.get(
-        `/product/get-stockStatus-pendings?${params.toString()}`,
+        `/product/get-products?${params.toString()}&status=all`,
       );
       return res.data;
     },
@@ -162,7 +145,7 @@ export default function AdminStocksPending() {
     },
     onSuccess: () => {
       toast.success("Stock ordered successfully!");
-      queryClient.invalidateQueries(["pendingProducts"]);
+      queryClient.invalidateQueries(["orderStockProducts"]);
       queryClient.invalidateQueries(["stocks"]);
       reset();
       setIsModalOpen(false);
@@ -170,22 +153,6 @@ export default function AdminStocksPending() {
     },
     onError: (err) => {
       toast.error(err.response.data.message || "Something went wrong!");
-    },
-  });
-
-  const { mutate: deleteProduct } = useMutation({
-    mutationFn: async (productId) => {
-      const res = await axiosInstance.delete(
-        `/product/delete-product/${productId}`,
-      );
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success("Pending product removed successfully");
-      queryClient.invalidateQueries(["pendingProducts"]);
-    },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || "Failed to remove product");
     },
   });
 
@@ -283,12 +250,6 @@ export default function AdminStocksPending() {
               >
                 Order Stock
               </button>
-              <button
-                onClick={() => handleDeleteClick(product._id)}
-                className="border bg-red-600 hover:bg-red-700 rounded-[5px] text-white px-3 py-1 border-black transition-colors"
-              >
-                Remove
-              </button>
             </>
           )}
         </div>
@@ -298,7 +259,7 @@ export default function AdminStocksPending() {
 
   return (
     <section className="bg-yellow text-sm md:text-normal h-screen font-main pb-20 overflow-y-auto">
-      <AdminHeader title={"PENDING STOCKS"} />
+      <AdminHeader title={"ORDER STOCKS"} />
 
       <div className="max-w-[90%] pt-14 pb-5 mx-auto flex gap-5 flex-col">
         <ReusableTable
@@ -317,7 +278,7 @@ export default function AdminStocksPending() {
             totalItems: totalItems,
             onPageChange: setPage,
           }}
-          emptyMessage="No pending stocks found."
+          emptyMessage="No products found to order."
         />
       </div>
 
@@ -527,14 +488,6 @@ export default function AdminStocksPending() {
           </div>
         </div>
       </FormModal>
-
-      <ConfirmModal
-        isOpen={isConfirmOpen}
-        title="Confirm Deletion"
-        message="Are you sure you want to remove this pending product? This will delete the product permanently."
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setIsConfirmOpen(false)}
-      />
     </section>
   );
 }

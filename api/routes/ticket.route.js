@@ -19,6 +19,7 @@ import {
   updateTicketStatus,
   addReplyToTicket,
   customerReplyToTicket,
+  confirmTicketResolved,
   assignTicket,
   deleteTicket,
   getTicketStats,
@@ -38,6 +39,7 @@ router.get("/user/:email", getUserTickets); // For guests to check by email
 router.get("/user", requireAuth, getUserTickets);
 router.get("/:ticketId", optionalAuth, getSingleTicket);
 router.post("/:ticketId/customer-reply", requireAuth, validateResource(replyTicketSchema), customerReplyToTicket);
+router.patch("/:ticketId/confirm", requireAuth, confirmTicketResolved);
 
 // Admin and validator staff routes (with params)
 router.put("/:ticketId/status", requireAuth, validateResource(updateTicketStatusSchema), updateTicketStatus);

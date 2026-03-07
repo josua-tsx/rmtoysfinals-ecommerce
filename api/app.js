@@ -33,6 +33,7 @@ import invoiceRoute from "../api/routes/invoice.route.js";
 import reportRoute from "../api/routes/report.route.js";
 import adminRoute from "../api/routes/admin.route.js";
 import otpRoute from "../api/routes/otp.route.js";
+import pointsRoute from "../api/routes/points.route.js";
 
 
 // Load environment variables from .env file
@@ -99,7 +100,7 @@ app.use(`/api/invoice`, invoiceRoute);
 app.use(`/api/report`, reportRoute);
 app.use(`/api/admin`, adminRoute);
 app.use(`/api/otp`, otpRoute);
-
+app.use(`/api/points`, pointsRoute);
 
 
 // Error handling middleware
