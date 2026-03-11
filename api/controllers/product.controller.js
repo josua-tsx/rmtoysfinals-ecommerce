@@ -178,7 +178,7 @@ export const getProducts = async (req, res, next) => {
     // - If specific status provided, filter by it.
     // - Default to "published" (maintains store behavior).
     if (status === "all") {
-      // Do not add query.status, which means all non-archived products will be returned
+      query.status = { $in: ["published", "draft", "pending", "processing"] };
     } else if (status) {
       query.status = status;
     } else {

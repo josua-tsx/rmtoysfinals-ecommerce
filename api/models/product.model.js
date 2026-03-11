@@ -50,7 +50,7 @@ const ProductModelSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "processing", "published"],
+      enum: ["draft", "pending", "processing", "published"],
       // default: "draft"
     },
 
