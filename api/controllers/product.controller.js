@@ -174,11 +174,11 @@ export const getProducts = async (req, res, next) => {
     const query = { isArchived: { $ne: true } };
 
     // Status logic: 
-    // - If "all", show both published and draft.
+    // - If "all", show all statuses (published, draft, pending, processing).
     // - If specific status provided, filter by it.
     // - Default to "published" (maintains store behavior).
     if (status === "all") {
-      query.status = { $in: ["published", "draft"] };
+      // Do not add query.status, which means all non-archived products will be returned
     } else if (status) {
       query.status = status;
     } else {

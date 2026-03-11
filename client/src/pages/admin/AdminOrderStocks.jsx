@@ -90,7 +90,7 @@ export default function AdminOrderStocks() {
         params.append("search", debouncedSearchTerm);
       }
       const res = await axiosInstance.get(
-        `/product/get-products?${params.toString()}&status=all`,
+        `/product/get-products?${params.toString()}&status=pending`,
       );
       return res.data;
     },

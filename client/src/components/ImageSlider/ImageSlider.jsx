@@ -4,17 +4,19 @@ import axiosInstance from "../../lib/axios";
 import ImageCardSkeleton from "../skeleton/ImageCardSkeleton";
 
 export default function ImageSlider() {
-  const {
-    data: bestProducts = [],
-    isPending,
-    isError,
-  } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["bestProducts"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/product/get-bestProducts`);
       return res.data;
     },
   });
+
+  const bestProducts = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.products)
+      ? data.products
+      : [];
 
   if (isError) return <p>Error.</p>;
 
