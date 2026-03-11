@@ -178,7 +178,7 @@ export const getProducts = async (req, res, next) => {
     // - If specific status provided, filter by it.
     // - Default to "published" (maintains store behavior).
     if (status === "all") {
-      query.status = { $in: ["published", "draft", "pending", "processing"] };
+      query.status = { $in: ["published", "draft"] };
     } else if (status) {
       query.status = status;
     } else {
