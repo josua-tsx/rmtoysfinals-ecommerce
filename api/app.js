@@ -50,6 +50,8 @@ app.use(helmet());
 export const allowedOrigins = [
   "https://rmtoysfinals-8jgr.vercel.app", // Your Vercel frontend
   "https://client-dun-seven-56.vercel.app",
+  "https://www.rmtoys.shop",
+  "https://rmtoys.shop",
   "http://localhost:5173", // For local testing (optional)
   "https://www.rmtoys.store",
   // "http://localhost:8081", // react native
